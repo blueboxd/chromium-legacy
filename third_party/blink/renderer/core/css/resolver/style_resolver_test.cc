@@ -13,6 +13,7 @@
 #include "third_party/blink/renderer/core/animation/element_animations.h"
 #include "third_party/blink/renderer/core/css/calculation_expression_anchor_query_node.h"
 #include "third_party/blink/renderer/core/css/cascade_layer_map.h"
+#include "third_party/blink/renderer/core/css/css_image_set_value.h"
 #include "third_party/blink/renderer/core/css/css_image_value.h"
 #include "third_party/blink/renderer/core/css/css_test_helpers.h"
 #include "third_party/blink/renderer/core/css/css_value_list.h"
@@ -50,8 +51,10 @@ class StyleResolverTest : public PageTestBase {
  protected:
   scoped_refptr<const ComputedStyle> StyleForId(AtomicString id) {
     Element* element = GetDocument().getElementById(id);
+    StyleRecalcContext recalc_context;
+    recalc_context.old_style = element->GetComputedStyle();
     auto style = GetStyleEngine().GetStyleResolver().ResolveStyle(
-        element, StyleRecalcContext());
+        element, recalc_context);
     DCHECK(style);
     return style;
   }
@@ -113,7 +116,9 @@ TEST_F(StyleResolverTest, AnimationBaseComputedStyle) {
   animations.SetAnimationStyleChange(true);
 
   StyleResolver& resolver = GetStyleEngine().GetStyleResolver();
-  auto style1 = resolver.ResolveStyle(div, StyleRecalcContext());
+  StyleRecalcContext recalc_context;
+  recalc_context.old_style = div->GetComputedStyle();
+  auto style1 = resolver.ResolveStyle(div, recalc_context);
   ASSERT_TRUE(style1);
   EXPECT_EQ(20, style1->FontSize());
   ASSERT_TRUE(style1->GetBaseComputedStyle());
@@ -126,11 +131,12 @@ TEST_F(StyleResolverTest, AnimationBaseComputedStyle) {
   StyleRequest style_request;
   style_request.parent_override = parent_style;
   style_request.layout_parent_override = parent_style;
-  EXPECT_EQ(10, resolver.ResolveStyle(div, StyleRecalcContext(), style_request)
-                    ->FontSize());
+  EXPECT_EQ(
+      10,
+      resolver.ResolveStyle(div, recalc_context, style_request)->FontSize());
   ASSERT_TRUE(style1->GetBaseComputedStyle());
   EXPECT_EQ(20, style1->GetBaseComputedStyle()->FontSize());
-  EXPECT_EQ(20, resolver.ResolveStyle(div, StyleRecalcContext())->FontSize());
+  EXPECT_EQ(20, resolver.ResolveStyle(div, recalc_context)->FontSize());
 }
 
 TEST_F(StyleResolverTest, HasEmUnits) {
@@ -378,12 +384,27 @@ const CSSImageValue& GetBackgroundImageValue(const ComputedStyle& style) {
       GetCSSPropertyBackgroundImage(), style);
 
   const CSSValueList* bg_img_list = To<CSSValueList>(computed_value);
+
   return To<CSSImageValue>(bg_img_list->Item(0));
 }
 
 const CSSImageValue& GetBackgroundImageValue(const Element* element) {
   DCHECK(element);
   return GetBackgroundImageValue(element->ComputedStyleRef());
+}
+
+const CSSImageSetValue& GetBackgroundImageSetValue(const ComputedStyle& style) {
+  const CSSValue* computed_value = ComputedStyleUtils::ComputedPropertyValue(
+      GetCSSPropertyBackgroundImage(), style);
+
+  const CSSValueList* bg_img_list = To<CSSValueList>(computed_value);
+
+  return To<CSSImageSetValue>(bg_img_list->Item(0));
+}
+
+const CSSImageSetValue& GetBackgroundImageSetValue(const Element* element) {
+  DCHECK(element);
+  return GetBackgroundImageSetValue(element->ComputedStyleRef());
 }
 
 }  // namespace
@@ -397,6 +418,10 @@ TEST_F(StyleResolverTest, BackgroundImageFetch) {
       }
       #inside-none {
         background-image: url(img-inside-none.png);
+      }
+      #none-image-set {
+        display: none;
+        background-image: image-set(url(img-none.png) 1x);
       }
       #hidden {
         visibility: hidden;
@@ -441,6 +466,8 @@ TEST_F(StyleResolverTest, BackgroundImageFetch) {
     <div id="none">
       <div id="inside-none"></div>
     </div>
+    <div id="none-image-set">
+    </div>
     <div id="hidden">
       <div id="inside-hidden"></div>
     </div>
@@ -468,6 +495,7 @@ TEST_F(StyleResolverTest, BackgroundImageFetch) {
 
   auto* none = GetDocument().getElementById("none");
   auto* inside_none = GetDocument().getElementById("inside-none");
+  auto* none_image_set = GetDocument().getElementById("none-image-set");
   auto* hidden = GetDocument().getElementById("hidden");
   auto* inside_hidden = GetDocument().getElementById("inside-hidden");
   auto* contents = GetDocument().getElementById("contents");
@@ -480,6 +508,7 @@ TEST_F(StyleResolverTest, BackgroundImageFetch) {
 
   inside_none->EnsureComputedStyle();
   non_slotted->EnsureComputedStyle();
+  none_image_set->EnsureComputedStyle();
   auto* before_style = no_pseudo->EnsureComputedStyle(kPseudoIdBefore);
   auto* first_line_style = first_line->EnsureComputedStyle(kPseudoIdFirstLine);
   auto* first_line_span_style =
@@ -503,6 +532,8 @@ TEST_F(StyleResolverTest, BackgroundImageFetch) {
       << "No fetch for display:none";
   EXPECT_TRUE(GetBackgroundImageValue(inside_none).IsCachePending())
       << "No fetch inside display:none";
+  EXPECT_TRUE(GetBackgroundImageSetValue(none_image_set).IsCachePending(1.0f))
+      << "No fetch for display:none";
   EXPECT_FALSE(GetBackgroundImageValue(hidden).IsCachePending())
       << "Fetch for visibility:hidden";
   EXPECT_FALSE(GetBackgroundImageValue(inside_hidden).IsCachePending())
@@ -2133,14 +2164,14 @@ TEST_F(StyleResolverTest, IsInertWithBackdrop) {
   UpdateAllLifecyclePhasesForTest();
 
   EXPECT_FALSE(IsBackdropInert(html));
-  EXPECT_EQ(body->GetPseudoElement(kPseudoIdBackdrop), nullptr);
+  EXPECT_FALSE(IsBackdropInert(body));
   EXPECT_EQ(dialog->GetPseudoElement(kPseudoIdBackdrop), nullptr);
 
   dialog->showModal(exception_state);
   UpdateAllLifecyclePhasesForTest();
 
   EXPECT_FALSE(IsBackdropInert(html));
-  EXPECT_EQ(body->GetPseudoElement(kPseudoIdBackdrop), nullptr);
+  EXPECT_FALSE(IsBackdropInert(body));
   EXPECT_FALSE(IsBackdropInert(dialog));
 }
 

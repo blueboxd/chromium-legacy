@@ -31,6 +31,7 @@
 #include "device/fido/discoverable_credential_metadata.h"
 #include "device/fido/features.h"
 #include "device/fido/fido_authenticator.h"
+#include "device/fido/fido_transport_protocol.h"
 #include "device/fido/fido_types.h"
 #include "device/fido/pin.h"
 #include "device/fido/public_key_credential_user_entity.h"
@@ -1071,7 +1072,9 @@ void AuthenticatorRequestDialogModel::PopulateMechanisms(
   const bool is_get_assertion = transport_availability_.request_type ==
                                 device::FidoRequestType::kGetAssertion;
   const bool is_passkey_request =
-      ((is_get_assertion && transport_availability_.has_empty_allow_list) ||
+      ((is_get_assertion &&
+        (transport_availability_.has_empty_allow_list ||
+         transport_availability_.is_only_hybrid_or_internal)) ||
        (!is_get_assertion && resident_key_requirement() !=
                                  device::ResidentKeyRequirement::kDiscouraged));
   // priority_transport contains the transport that should be activated
@@ -1164,6 +1167,7 @@ void AuthenticatorRequestDialogModel::PopulateMechanisms(
         !priority_transport.has_value() && win_api_should_be_priority);
   }
 
+  bool specific_phones_listed = false;
   if (base::Contains(transport_availability_.available_transports, kCable)) {
     for (const auto& phone_name : paired_phone_names()) {
       const std::u16string name16 = base::UTF8ToUTF16(phone_name);
@@ -1180,6 +1184,7 @@ void AuthenticatorRequestDialogModel::PopulateMechanisms(
                               base::Unretained(this), phone_name,
                               mechanisms_.size()),
           /*priority=*/false);
+      specific_phones_listed = true;
     }
   }
 
@@ -1212,14 +1217,14 @@ void AuthenticatorRequestDialogModel::PopulateMechanisms(
           transport_availability_.has_platform_authenticator_credential !=
               device::FidoRequestHandlerBase::RecognizedCredential::
                   kNoRecognizedCredential;
-      is_priority =
-          !base::ranges::any_of(
-              mechanisms_, [](const Mechanism& m) { return m.priority; }) &&
-          paired_phone_names().empty() && is_passkey_request &&
-          !platform_authenticator_could_fulfill_get_assertion;
+      is_priority = !base::ranges::any_of(mechanisms_, &Mechanism::priority) &&
+                    paired_phone_names().empty() && is_passkey_request &&
+                    !platform_authenticator_could_fulfill_get_assertion;
     }
-    const std::u16string label =
-        l10n_util::GetStringUTF16(IDS_WEBAUTHN_PASSKEY_DIFFERENT_DEVICE_LABEL);
+    const std::u16string label = l10n_util::GetStringUTF16(
+        specific_phones_listed
+            ? IDS_WEBAUTHN_PASSKEY_DIFFERENT_PHONE_OR_TABLET_LABEL
+            : IDS_WEBAUTHN_PASSKEY_PHONE_OR_TABLET_LABEL);
     mechanisms_.emplace_back(
         Mechanism::AddPhone(), label, label, kQrcodeGeneratorIcon,
         base::BindRepeating(

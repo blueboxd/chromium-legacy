@@ -320,6 +320,15 @@
       <message name="IDS_MULTITASK_MENU_EXIT_FLOAT_BUTTON_NAME" desc="Title and and accessible name of the float button on the multitask menu, when the window is in float state.">
         Exit float
       </message>
+      <message name="IDS_MULTITASK_MENU_NUDGE_TEXT" desc="Text that is shown when the clamshell multitask menu nudge is displayed.">
+        Keep hovering for more layout options
+      </message>
+      <message name="IDS_TABLET_MULTITASK_MENU_NUDGE_TEXT" desc="Text that is shown when the tablet multitask menu nudge is displayed.">
+        Swipe down for more layout options
+      </message>
+      <message name="IDS_MULTITASK_MENU_FEEDBACK_BUTTON_NAME" desc="Button text of the dogfood feedback button on the multitask menu.">
+        Send feedback
+      </message>
 
       <if expr="chromeos_ash">
         <!-- The following strings are located here for accessibility from both //ash and //chrome -->
@@ -2220,6 +2229,12 @@
         <message name="IDS_PERSONALIZATION_APP_CURRENTLY_SET" desc="Label for the currently set user wallpaper section.">
           Currently set
         </message>
+        <message name="IDS_PERSONALIZATION_APP_WALLPAPER_DESCRIPTION_DIALOG_OPEN" desc="Label for the button to open wallpaper description dialog">
+          About the art
+        </message>
+        <message name="IDS_PERSONALIZATION_APP_WALLPAPER_DESCRIPTION_DIALOG_CLOSE" desc="Label for the close button on wallpaper description dialog">
+          Close
+        </message>
         <message name="IDS_PERSONALIZATION_APP_GOOGLE_PHOTOS" desc="Label for the Google Photos page in the wallpaper app.">
           Google Photos
         </message>
@@ -2545,6 +2560,9 @@
         </message>
         <message name="IDS_PERSONALIZATION_APP_KEYBOARD_BACKLIGHT_WALLPAPER_COLOR_NUDGE_TEXT" desc="The text of the educational nudge for keyboard backlight wallpaper-extracted color.">
           Your keyboard can automatically match your wallpaper
+        </message>
+        <message name="IDS_PERSONALIZATION_APP_KEYBOARD_BACKLIGHT_ZONE_CUSTOMIZATION_BUTTON" desc="The text of the button that allows users to customize rgb keyboard zone colors.">
+          Customize
         </message>
 
         <!-- Personalization App Search Results -->

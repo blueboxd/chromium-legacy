@@ -219,6 +219,11 @@
   E_CPONLY(kColorButtonForegroundProminent) \
   E_CPONLY(kColorButtonForegroundTonal) \
   E_CPONLY(kColorButtonForegroundUnchecked) \
+  E_CPONLY(kColorMultitaskFeedbackButtonLabelBackground) \
+  E_CPONLY(kColorMultitaskFeedbackButtonLabelForeground) \
+  E_CPONLY(kColorMultitaskMenuNudgePulse) \
+  E_CPONLY(kColorComboboxBackground) \
+  E_CPONLY(kColorComboboxBackgroundDisabled) \
   E_CPONLY(kColorCustomFrameCaptionForeground) \
   E_CPONLY(kColorDebugBoundsOutline) \
   E_CPONLY(kColorDebugContentOutline) \
@@ -293,16 +298,6 @@
   E_CPONLY(kColorOverlayScrollbarStrokeHoveredLight) \
   E_CPONLY(kColorProgressBar) \
   E_CPONLY(kColorProgressBarPaused) \
-  E_CPONLY(kColorReadAnythingBackground) \
-  E_CPONLY(kColorReadAnythingBackgroundBlue) \
-  E_CPONLY(kColorReadAnythingBackgroundDark) \
-  E_CPONLY(kColorReadAnythingBackgroundLight) \
-  E_CPONLY(kColorReadAnythingBackgroundYellow) \
-  E_CPONLY(kColorReadAnythingForeground) \
-  E_CPONLY(kColorReadAnythingForegroundBlue) \
-  E_CPONLY(kColorReadAnythingForegroundDark) \
-  E_CPONLY(kColorReadAnythingForegroundLight) \
-  E_CPONLY(kColorReadAnythingForegroundYellow) \
   E_CPONLY(kColorScrollbarArrowBackgroundHovered) \
   E_CPONLY(kColorScrollbarArrowBackgroundPressed) \
   E_CPONLY(kColorScrollbarArrowForeground) \
@@ -358,10 +353,13 @@
   E_CPONLY(kColorThrobberPreconnect) \
   E_CPONLY(kColorToggleButtonShadow) \
   E_CPONLY(kColorToggleButtonThumbOff) \
+  E_CPONLY(kColorToggleButtonThumbOffDisabled) \
   E_CPONLY(kColorToggleButtonThumbOn) \
+  E_CPONLY(kColorToggleButtonThumbOnDisabled) \
   E_CPONLY(kColorToggleButtonThumbOnIcon) \
   E_CPONLY(kColorToggleButtonTrackOff) \
   E_CPONLY(kColorToggleButtonTrackOn) \
+  E_CPONLY(kColorToggleButtonTrackOnDisabled) \
   E_CPONLY(kColorTooltipBackground) \
   E_CPONLY(kColorTooltipForeground) \
   E_CPONLY(kColorTreeBackground) \

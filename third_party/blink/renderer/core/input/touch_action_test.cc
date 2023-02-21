@@ -32,7 +32,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/input/web_coalesced_input_event.h"
 #include "third_party/blink/public/common/input/web_touch_event.h"
-#include "third_party/blink/public/platform/web_url_loader_mock_factory.h"
 #include "third_party/blink/public/web/web_document.h"
 #include "third_party/blink/public/web/web_frame.h"
 #include "third_party/blink/public/web/web_hit_test_result.h"
@@ -57,6 +56,7 @@
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
+#include "third_party/blink/renderer/platform/testing/url_loader_mock_factory.h"
 #include "third_party/blink/renderer/platform/testing/url_test_helpers.h"
 
 using blink::test::RunPendingTasks;
@@ -112,7 +112,7 @@ class TouchActionTest : public testing::Test {
  public:
   TouchActionTest()
       : base_url_("http://www.test.com/"),
-        web_view_helper_(base::BindRepeating(
+        web_view_helper_(WTF::BindRepeating(
             &frame_test_helpers::WebViewHelper::CreateTestWebFrameWidget<
                 TouchActionTrackingWebFrameWidget>)) {
     // TODO(crbug.com/751425): We should use the mock functionality

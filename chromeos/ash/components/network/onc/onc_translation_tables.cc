@@ -21,9 +21,6 @@ namespace ash::onc {
 
 namespace {
 
-// TODO(b/162365553) Remove when shill constants are added.
-constexpr char kShillApnId[] = "id";
-
 const FieldTranslationEntry eap_fields[] = {
     {::onc::eap::kAnonymousIdentity, shill::kEapAnonymousIdentityProperty},
     // This field is converted during translation, see onc_translator_*.
@@ -125,6 +122,7 @@ const FieldTranslationEntry openvpn_fields[] = {
     {nullptr}};
 
 const FieldTranslationEntry wireguard_fields[] = {
+    {::onc::wireguard::kIPAddresses, shill::kWireGuardIPAddress},
     {::onc::wireguard::kPublicKey, shill::kWireGuardPublicKey},
     {::onc::wireguard::kPrivateKey, shill::kWireGuardPrivateKey},
     {::onc::wireguard::kPeers, shill::kWireGuardPeers},
@@ -192,7 +190,7 @@ const FieldTranslationEntry cellular_apn_fields[] = {
     {::onc::cellular_apn::kAttach, shill::kApnAttachProperty},
     // This field is converted during translation, see onc_translator_*.
     // {::onc::cellular_apn::kIpType, shill::kApnIpTypeProperty},
-    {::onc::cellular_apn::kId, kShillApnId},
+    {::onc::cellular_apn::kId, shill::kApnIdProperty},
     // This field is converted during translation, see onc_translator_*.
     // {::onc::cellular_apn::kApnTypes, shill::kApnTypesProperty},
     {nullptr}};
@@ -493,8 +491,9 @@ const FieldTranslationEntry* GetFieldTranslationTable(
     const chromeos::onc::OncValueSignature& onc_signature) {
   for (const OncValueTranslationEntry* it = onc_value_translation_table;
        it->onc_signature != nullptr; ++it) {
-    if (it->onc_signature == &onc_signature)
+    if (it->onc_signature == &onc_signature) {
       return it->field_translation_table;
+    }
   }
   return nullptr;
 }
@@ -544,8 +543,9 @@ bool GetShillPropertyName(const std::string& onc_field_name,
                           std::string* shill_property_name) {
   for (const FieldTranslationEntry* it = table; it->onc_field_name != nullptr;
        ++it) {
-    if (it->onc_field_name != onc_field_name)
+    if (it->onc_field_name != onc_field_name) {
       continue;
+    }
     *shill_property_name = it->shill_property_name;
     return true;
   }
@@ -556,8 +556,9 @@ bool TranslateStringToShill(const StringTranslationEntry table[],
                             const std::string& onc_value,
                             std::string* shill_value) {
   for (int i = 0; table[i].onc_value != nullptr; ++i) {
-    if (onc_value != table[i].onc_value)
+    if (onc_value != table[i].onc_value) {
       continue;
+    }
     *shill_value = table[i].shill_value;
     return true;
   }
@@ -571,8 +572,9 @@ bool TranslateStringToONC(const StringTranslationEntry table[],
                           const std::string& shill_value,
                           std::string* onc_value) {
   for (int i = 0; table[i].shill_value != nullptr; ++i) {
-    if (shill_value != table[i].shill_value)
+    if (shill_value != table[i].shill_value) {
       continue;
+    }
     *onc_value = table[i].onc_value;
     return true;
   }

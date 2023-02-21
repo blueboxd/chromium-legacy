@@ -74,12 +74,12 @@ class FakeDownloadDisplay : public DownloadDisplay {
 
   void Disable() override { enabled_ = false; }
 
-  void UpdateDownloadIcon() override {
+  void UpdateDownloadIcon(bool show_animation) override {
     icon_state_ = controller_->GetIconInfo().icon_state;
     is_active_ = controller_->GetIconInfo().is_active;
   }
 
-  void ShowDetails(bool show_animation) override { detail_shown_ = true; }
+  void ShowDetails() override { detail_shown_ = true; }
   void HideDetails() override { detail_shown_ = false; }
   bool IsShowingDetails() override { return detail_shown_; }
   bool IsFullscreenWithParentViewHidden() override { return is_fullscreen_; }
@@ -362,7 +362,7 @@ class DownloadDisplayControllerTest : public testing::Test {
   raw_ptr<Profile> profile_;
   std::unique_ptr<TestBrowserWindow> window_;
   std::unique_ptr<Browser> browser_;
-  MockDownloadCoreService* mock_download_core_service_;
+  raw_ptr<MockDownloadCoreService> mock_download_core_service_;
   std::unique_ptr<ChromeDownloadManagerDelegate> delegate_;
 };
 

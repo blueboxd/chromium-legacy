@@ -6,7 +6,6 @@
 
 #include <numeric>
 
-#include "ash/constants/ash_features.h"
 #include "ash/system/media/unified_media_controls_container.h"
 #include "ash/system/tray/interacted_by_tap_recorder.h"
 #include "ash/system/tray/tray_constants.h"
@@ -25,15 +24,20 @@
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/compositor/layer.h"
+#include "ui/gfx/geometry/insets.h"
 #include "ui/views/controls/scroll_view.h"
 #include "ui/views/focus/focus_manager.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/layout/flex_layout_view.h"
+#include "ui/views/view_class_properties.h"
 
 namespace ash {
 
 namespace {
+
+constexpr auto kPageIndicatorMargin = gfx::Insets::TLBR(0, 0, 8, 0);
+constexpr auto kSlidersContainerMargin = gfx::Insets::TLBR(4, 0, 0, 0);
 
 class DetailedViewContainer : public views::View {
  public:
@@ -141,7 +145,10 @@ QuickSettingsView::QuickSettingsView(UnifiedSystemTrayController* controller)
       std::make_unique<FeatureTilesContainerView>(controller_));
   page_indicator_view_ =
       system_tray_container_->AddChildView(std::make_unique<PageIndicatorView>(
-          controller_, /*initially_expanded=*/false));
+          controller_, /*initially_expanded=*/controller_->model()
+                               ->pagination_model()
+                               ->total_pages() > 1));
+  page_indicator_view_->SetProperty(views::kMarginsKey, kPageIndicatorMargin);
 
   if (base::FeatureList::IsEnabled(media::kGlobalMediaControlsForChromeOS)) {
     media_controls_container_ = system_tray_container_->AddChildView(
@@ -152,6 +159,7 @@ QuickSettingsView::QuickSettingsView(UnifiedSystemTrayController* controller)
   sliders_container_ = system_tray_container_->AddChildView(
       std::make_unique<views::FlexLayoutView>());
   sliders_container_->SetOrientation(views::LayoutOrientation::kVertical);
+  sliders_container_->SetProperty(views::kMarginsKey, kSlidersContainerMargin);
 
   footer_ = system_tray_container_->AddChildView(
       std::make_unique<QuickSettingsFooter>(controller_));
@@ -202,6 +210,9 @@ void QuickSettingsView::ShowMediaControls() {
   if (media_controls_container_->MaybeShowMediaControls()) {
     PreferredSizeChanged();
   }
+
+  feature_tiles_container_->SetRowsFromHeight(
+      CalculateHeightForFeatureTilesContainer());
 }
 
 void QuickSettingsView::SetDetailedView(

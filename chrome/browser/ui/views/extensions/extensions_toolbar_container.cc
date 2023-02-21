@@ -366,7 +366,7 @@ ToolbarActionViewController* ExtensionsToolbarContainer::GetPoppedOutAction()
 }
 
 void ExtensionsToolbarContainer::OnContextMenuShown(
-    ToolbarActionViewController* extension) {
+    const std::string& action_id) {
   // Only update the extension's toolbar visibility if the context menu is being
   // shown from an extension visible in the toolbar.
   if (!IsExtensionsMenuShowing()) {
@@ -375,13 +375,12 @@ void ExtensionsToolbarContainer::OnContextMenuShown(
     // fixed.
     HideActivePopup();
 #endif
-    extension_with_open_context_menu_id_ = extension->GetId();
+    extension_with_open_context_menu_id_ = action_id;
     UpdateIconVisibility(extension_with_open_context_menu_id_.value());
   }
 }
 
-void ExtensionsToolbarContainer::OnContextMenuClosed(
-    ToolbarActionViewController* extension) {
+void ExtensionsToolbarContainer::OnContextMenuClosed() {
   // |extension_with_open_context_menu_id_| does not have a value when a context
   // menu is being shown from within the extensions menu.
   if (extension_with_open_context_menu_id_.has_value()) {
@@ -398,25 +397,23 @@ bool ExtensionsToolbarContainer::CanShowActionsInToolbar() const {
 }
 
 bool ExtensionsToolbarContainer::IsActionVisibleOnToolbar(
-    const ToolbarActionViewController* action) const {
-  const std::string& extension_id = action->GetId();
-  return ShouldForceVisibility(extension_id) ||
-         model_->IsActionPinned(extension_id);
+    const std::string& action_id) const {
+  return GetActionVisibility(action_id) !=
+         extensions::ExtensionContextMenuModel::UNPINNED;
 }
 
 extensions::ExtensionContextMenuModel::ButtonVisibility
 ExtensionsToolbarContainer::GetActionVisibility(
-    const ToolbarActionViewController* action) const {
-  extensions::ExtensionContextMenuModel::ButtonVisibility visibility =
-      extensions::ExtensionContextMenuModel::PINNED;
-
-  if (ShouldForceVisibility(action->GetId()) &&
-      !model_->IsActionPinned(action->GetId())) {
-    visibility = extensions::ExtensionContextMenuModel::TRANSITIVELY_VISIBLE;
-  } else if (!IsActionVisibleOnToolbar(action)) {
-    visibility = extensions::ExtensionContextMenuModel::UNPINNED;
+    const std::string& action_id) const {
+  if (model_->IsActionPinned(action_id)) {
+    return extensions::ExtensionContextMenuModel::PINNED;
   }
-  return visibility;
+
+  if (ShouldForceVisibility(action_id)) {
+    return extensions::ExtensionContextMenuModel::TRANSITIVELY_VISIBLE;
+  }
+
+  return extensions::ExtensionContextMenuModel::UNPINNED;
 }
 
 void ExtensionsToolbarContainer::UndoPopOut() {

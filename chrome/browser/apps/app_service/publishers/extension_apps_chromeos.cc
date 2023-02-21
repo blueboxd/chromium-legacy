@@ -75,12 +75,16 @@
 #include "content/public/browser/clear_site_data_utils.h"
 #include "extensions/browser/app_window/app_window.h"
 #include "extensions/browser/extension_system.h"
+#include "extensions/browser/extension_util.h"
 #include "extensions/browser/management_policy.h"
 #include "extensions/browser/ui_util.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension_urls.h"
 #include "extensions/common/manifest_handlers/app_display_info.h"
+#include "extensions/common/manifest_handlers/file_handler_info.h"
 #include "extensions/common/manifest_handlers/options_page_info.h"
+#include "extensions/common/manifest_handlers/web_file_handlers_info.h"
+#include "net/base/url_util.h"
 #include "storage/browser/file_system/file_system_context.h"
 #include "storage/browser/file_system/file_system_url.h"
 #include "ui/message_center/public/cpp/notification.h"
@@ -103,6 +107,60 @@ std::string GetLaunchId(extensions::AppWindow* app_window) {
   return launch_id;
 }
 
+std::string GetSourceFromAppListSource(ash::ShelfLaunchSource source) {
+  switch (source) {
+    case ash::LAUNCH_FROM_APP_LIST:
+      return std::string(extension_urls::kLaunchSourceAppList);
+    case ash::LAUNCH_FROM_APP_LIST_SEARCH:
+      return std::string(extension_urls::kLaunchSourceAppListSearch);
+    default:
+      return std::string();
+  }
+}
+
+ash::ShelfLaunchSource ConvertLaunchSource(apps::LaunchSource launch_source) {
+  switch (launch_source) {
+    case apps::LaunchSource::kUnknown:
+    case apps::LaunchSource::kFromParentalControls:
+      return ash::LAUNCH_FROM_UNKNOWN;
+    case apps::LaunchSource::kFromAppListGrid:
+    case apps::LaunchSource::kFromAppListGridContextMenu:
+      return ash::LAUNCH_FROM_APP_LIST;
+    case apps::LaunchSource::kFromAppListQuery:
+    case apps::LaunchSource::kFromAppListQueryContextMenu:
+    case apps::LaunchSource::kFromAppListRecommendation:
+      return ash::LAUNCH_FROM_APP_LIST_SEARCH;
+    case apps::LaunchSource::kFromShelf:
+      return ash::LAUNCH_FROM_SHELF;
+    case apps::LaunchSource::kFromFileManager:
+    case apps::LaunchSource::kFromLink:
+    case apps::LaunchSource::kFromOmnibox:
+    case apps::LaunchSource::kFromChromeInternal:
+    case apps::LaunchSource::kFromKeyboard:
+    case apps::LaunchSource::kFromOtherApp:
+    case apps::LaunchSource::kFromMenu:
+    case apps::LaunchSource::kFromInstalledNotification:
+    case apps::LaunchSource::kFromTest:
+    case apps::LaunchSource::kFromArc:
+    case apps::LaunchSource::kFromSharesheet:
+    case apps::LaunchSource::kFromReleaseNotesNotification:
+    case apps::LaunchSource::kFromFullRestore:
+    case apps::LaunchSource::kFromSmartTextContextMenu:
+    case apps::LaunchSource::kFromDiscoverTabNotification:
+    case apps::LaunchSource::kFromManagementApi:
+    case apps::LaunchSource::kFromKiosk:
+    case apps::LaunchSource::kFromCommandLine:
+    case apps::LaunchSource::kFromBackgroundMode:
+    case apps::LaunchSource::kFromNewTabPage:
+    case apps::LaunchSource::kFromIntentUrl:
+    case apps::LaunchSource::kFromOsLogin:
+    case apps::LaunchSource::kFromProtocolHandler:
+    case apps::LaunchSource::kFromUrlHandler:
+    case apps::LaunchSource::kFromLockScreen:
+    case apps::LaunchSource::kFromAppHomePage:
+      return ash::LAUNCH_FROM_UNKNOWN;
+  }
+}
 }  // namespace
 
 namespace apps {
@@ -235,7 +293,10 @@ void ExtensionAppsChromeOs::LaunchAppWithIntent(const std::string& app_id,
     return;
   }
   bool is_quickoffice = extension_misc::IsQuickOfficeExtension(extension->id());
-  if (extension->is_app() || is_quickoffice) {
+  bool supports_web_file_handlers =
+      extensions::WebFileHandlers::SupportsWebFileHandlers(
+          extension->manifest_version());
+  if (extension->is_app() || is_quickoffice || supports_web_file_handlers) {
     content::WebContents* web_contents = LaunchAppWithIntentImpl(
         app_id, event_flags, std::move(intent), launch_source,
         std::move(window_info), std::move(callback));
@@ -714,6 +775,13 @@ bool ExtensionAppsChromeOs::Accepts(const extensions::Extension* extension) {
       return false;
     }
 
+    // Allow MV3 file handlers.
+    if (extensions::WebFileHandlers::SupportsWebFileHandlers(
+            extension->manifest_version()) &&
+        extensions::WebFileHandlers::HasFileHandlers(*extension)) {
+      return true;
+    }
+
     // QuickOffice has file_handlers which we need to register.
     if (extension_misc::IsQuickOfficeExtension(extension->id())) {
       // Don't publish quickoffice in ash if 1st party ash extension keep list
@@ -761,6 +829,27 @@ bool ExtensionAppsChromeOs::Accepts(const extensions::Extension* extension) {
   }
 
   return true;
+}
+
+AppLaunchParams ExtensionAppsChromeOs::ModifyAppLaunchParams(
+    const std::string& app_id,
+    LaunchSource launch_source,
+    AppLaunchParams params) {
+  ash::ShelfLaunchSource source = ConvertLaunchSource(launch_source);
+  if ((source == ash::LAUNCH_FROM_APP_LIST ||
+       source == ash::LAUNCH_FROM_APP_LIST_SEARCH) &&
+      app_id == extensions::kWebStoreAppId) {
+    // Get the corresponding source string.
+    std::string source_value = GetSourceFromAppListSource(source);
+
+    // Set an override URL to include the source.
+    const auto* extension = MaybeGetExtension(app_id);
+    DCHECK(extension);
+    GURL extension_url = extensions::AppLaunchInfo::GetFullLaunchURL(extension);
+    params.override_url = net::AppendQueryParameter(
+        extension_url, extension_urls::kWebstoreSourceField, source_value);
+  }
+  return params;
 }
 
 void ExtensionAppsChromeOs::SetShowInFields(

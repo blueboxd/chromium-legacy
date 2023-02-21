@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_SPECULATION_RULES_SPECULATION_RULE_SET_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_SPECULATION_RULES_SPECULATION_RULE_SET_H_
 
+#include "base/types/pass_key.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/speculation_rules/speculation_rule.h"
 #include "third_party/blink/renderer/platform/heap/collection_support/heap_vector.h"
@@ -17,6 +18,8 @@ class ExecutionContext;
 class KURL;
 class SpeculationRule;
 class StyleRule;
+
+using SpeculationRuleSetId = String;
 
 // A set of rules generated from a single <script type=speculationrules>, which
 // provides rules to identify URLs and corresponding conditions for speculation,
@@ -47,12 +50,16 @@ class CORE_EXPORT SpeculationRuleSet final
     Member<Document> document_;
   };
 
+  SpeculationRuleSet(base::PassKey<SpeculationRuleSet>, Source* source);
+
   // If provided, |out_error| may be populated with an error/warning message.
   // A warning may be present even if parsing succeeds, to indicate a case that,
   // though valid, is likely to be an error.
   static SpeculationRuleSet* Parse(Source* source,
                                    ExecutionContext* context,
                                    String* out_error = nullptr);
+
+  SpeculationRuleSetId InspectorId() const { return inspector_id_; }
 
   const HeapVector<Member<SpeculationRule>>& prefetch_rules() const {
     return prefetch_rules_;
@@ -74,6 +81,7 @@ class CORE_EXPORT SpeculationRuleSet final
   void Trace(Visitor*) const;
 
  private:
+  SpeculationRuleSetId inspector_id_;
   HeapVector<Member<SpeculationRule>> prefetch_rules_;
   HeapVector<Member<SpeculationRule>> prefetch_with_subresources_rules_;
   HeapVector<Member<SpeculationRule>> prerender_rules_;

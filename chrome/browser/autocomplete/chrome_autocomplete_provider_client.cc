@@ -87,6 +87,11 @@
 #include "chrome/browser/upgrade_detector/upgrade_detector.h"
 #endif
 
+#if BUILDFLAG(BUILD_WITH_TFLITE_LIB)
+#include "chrome/browser/autocomplete/autocomplete_scoring_model_service_factory.h"
+#include "components/omnibox/browser/autocomplete_scoring_model_service.h"
+#endif  // BUILDFLAG(BUILD_WITH_TFLITE_LIB)
+
 namespace {
 
 #if !BUILDFLAG(IS_ANDROID)
@@ -315,6 +320,16 @@ signin::IdentityManager* ChromeAutocompleteProviderClient::GetIdentityManager()
   return IdentityManagerFactory::GetForProfile(profile_);
 }
 
+AutocompleteScoringModelService*
+ChromeAutocompleteProviderClient::GetAutocompleteScoringModelService() const {
+#if BUILDFLAG(BUILD_WITH_TFLITE_LIB)
+  return AutocompleteScoringModelServiceFactory::GetInstance()->GetForProfile(
+      profile_);
+#else
+  return nullptr;
+#endif  // BUILDFLAG(BUILD_WITH_TFLITE_LIB)
+}
+
 bool ChromeAutocompleteProviderClient::IsOffTheRecord() const {
   return profile_->IsOffTheRecord();
 }
@@ -404,7 +419,8 @@ void ChromeAutocompleteProviderClient::StartServiceWorker(
     return;
 
   context->StartServiceWorkerForNavigationHint(
-      destination_url, blink::StorageKey(url::Origin::Create(destination_url)),
+      destination_url,
+      blink::StorageKey::CreateFirstParty(url::Origin::Create(destination_url)),
       base::DoNothing());
 }
 

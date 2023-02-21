@@ -44,8 +44,11 @@
 #include "components/autofill/core/browser/geo/country_data.h"
 #include "components/autofill/core/browser/geo/country_names.h"
 #include "components/autofill/core/browser/geo/phone_number_i18n.h"
+#include "components/autofill/core/browser/manual_testing_profile_import.h"
 #include "components/autofill/core/browser/metrics/autofill_metrics.h"
+#include "components/autofill/core/browser/metrics/payments/iban_metrics.h"
 #include "components/autofill/core/browser/metrics/payments/offers_metrics.h"
+#include "components/autofill/core/browser/metrics/payments/wallet_usage_data_metrics.h"
 #include "components/autofill/core/browser/metrics/stored_profile_metrics.h"
 #include "components/autofill/core/browser/personal_data_manager_observer.h"
 #include "components/autofill/core/browser/strike_databases/autofill_profile_migration_strike_database.h"
@@ -345,6 +348,11 @@ void PersonalDataManager::Init(
 
   personal_data_manager_cleaner_ = std::make_unique<PersonalDataManagerCleaner>(
       this, alternative_state_name_map_updater_.get(), pref_service);
+
+  // Potentially import profiles for testing. `Init()` is called whenever the
+  // corresponding Chrome profile is created. This is either during start-up or
+  // when the Chrome profile is changed (including incognito mode).
+  MaybeImportProfilesForManualTesting(weak_factory_.GetWeakPtr());
 }
 
 PersonalDataManager::~PersonalDataManager() {
@@ -1810,6 +1818,11 @@ void PersonalDataManager::RemoveStrikesToBlockProfileUpdate(
   GetProfileUpdateStrikeDatabase()->ClearStrikes(guid);
 }
 
+bool PersonalDataManager::IsSyncEnabledFor(syncer::ModelType model_type) const {
+  return sync_service_ != nullptr && sync_service_->CanSyncFeatureStart() &&
+         sync_service_->GetPreferredDataTypes().Has(model_type);
+}
+
 AutofillProfileMigrationStrikeDatabase*
 PersonalDataManager::GetProfileMigrationStrikeDatabase() {
   return const_cast<AutofillProfileMigrationStrikeDatabase*>(
@@ -2116,16 +2129,36 @@ void PersonalDataManager::LogStoredCreditCardMetrics() const {
         local_credit_cards_, server_credit_cards_,
         GetServerCardWithArtImageCount(), kDisusedDataModelTimeDelta);
 
-    // Only log this info once per chrome user profile load.
+    // Only log this info once per Chrome user profile load.
     has_logged_stored_credit_card_metrics_ = true;
+  }
+}
+
+void PersonalDataManager::LogStoredIbanMetrics() const {
+  if (!has_logged_stored_iban_metrics_) {
+    autofill_metrics::LogStoredIbanMetrics(local_ibans_,
+                                           kDisusedDataModelTimeDelta);
+
+    // Only log this info once per Chrome user profile load.
+    has_logged_stored_iban_metrics_ = true;
   }
 }
 
 void PersonalDataManager::LogStoredOfferMetrics() const {
   if (!has_logged_stored_offer_metrics_) {
     autofill_metrics::LogStoredOfferMetrics(autofill_offer_data_);
-    // Only log this info once per chrome user profile load.
+    // Only log this info once per Chrome user profile load.
     has_logged_stored_offer_metrics_ = true;
+  }
+}
+
+void PersonalDataManager::LogStoredVirtualCardUsageMetrics() const {
+  if (!has_logged_stored_virtual_card_usage_metrics_) {
+    autofill_metrics::LogStoredVirtualCardUsageCount(
+        autofill_virtual_card_usage_data_.size());
+
+    // Only log this info once per chrome user profile load.
+    has_logged_stored_virtual_card_usage_metrics_ = true;
   }
 }
 
@@ -2510,11 +2543,6 @@ bool PersonalDataManager::HasPendingQueries() {
          pending_customer_data_query_ != 0 || pending_upi_ids_query_ != 0 ||
          pending_offer_data_query_ != 0 ||
          pending_virtual_card_usage_data_query_ != 0;
-}
-
-bool PersonalDataManager::IsSyncEnabledFor(syncer::ModelType model_type) {
-  return sync_service_ != nullptr && sync_service_->CanSyncFeatureStart() &&
-         sync_service_->GetPreferredDataTypes().Has(model_type);
 }
 
 scoped_refptr<AutofillWebDataService> PersonalDataManager::GetLocalDatabase() {

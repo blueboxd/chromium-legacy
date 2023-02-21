@@ -2252,6 +2252,7 @@ class RemoteDebuggingTest : public extensions::ExtensionApiTest {
   void SetUpCommandLine(base::CommandLine* command_line) override {
     extensions::ExtensionApiTest::SetUpCommandLine(command_line);
     command_line->AppendSwitchASCII(switches::kRemoteDebuggingPort, "9222");
+    command_line->AppendSwitchASCII(switches::kRemoteAllowOrigins, "*");
 
     // Override the extension root path.
     base::PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir_);

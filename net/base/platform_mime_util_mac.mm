@@ -5,6 +5,7 @@
 #include "net/base/platform_mime_util.h"
 
 #import <Foundation/Foundation.h>
+#import <UniformTypeIdentifiers/UniformTypeIdentifiers.h>
 
 #include <string>
 
@@ -32,45 +33,79 @@
 namespace net {
 
 bool PlatformMimeUtil::GetPlatformMimeTypeFromExtension(
-    const base::FilePath::StringType& ext, std::string* result) const {
+    const base::FilePath::StringType& ext,
+    std::string* result) const {
   std::string ext_nodot = ext;
-  if (ext_nodot.length() >= 1 && ext_nodot[0] == L'.')
+  if (ext_nodot.length() >= 1 && ext_nodot[0] == L'.') {
     ext_nodot.erase(ext_nodot.begin());
-  base::ScopedCFTypeRef<CFStringRef> ext_ref(
-      base::SysUTF8ToCFStringRef(ext_nodot));
-  if (!ext_ref)
-    return false;
-  base::ScopedCFTypeRef<CFStringRef> uti(UTTypeCreatePreferredIdentifierForTag(
-      kUTTagClassFilenameExtension, ext_ref, nullptr));
-  if (!uti)
-    return false;
-  base::ScopedCFTypeRef<CFStringRef> mime_ref(
-      UTTypeCopyPreferredTagWithClass(uti, kUTTagClassMIMEType));
-  if (!mime_ref)
-    return false;
+  }
 
-  *result = base::SysCFStringRefToUTF8(mime_ref);
-  return true;
+  if (@available(macOS 11, iOS 14, *)) {
+    UTType* uttype =
+        [UTType typeWithFilenameExtension:base::SysUTF8ToNSString(ext_nodot)];
+    // Dynamic UTTypes are made by the system in the event that there's a
+    // non-identifiable mime type. For now, we should treat dynamic UTTypes as a
+    // nonstandard format.
+    if ([uttype isDynamic] || uttype.preferredMIMEType == nil) {
+      return false;
+    }
+    *result = base::SysNSStringToUTF8(uttype.preferredMIMEType);
+    return true;
+  } else {
+    base::ScopedCFTypeRef<CFStringRef> ext_ref(
+        base::SysUTF8ToCFStringRef(ext_nodot));
+    if (!ext_ref) {
+      return false;
+    }
+    base::ScopedCFTypeRef<CFStringRef> uti(
+        UTTypeCreatePreferredIdentifierForTag(kUTTagClassFilenameExtension,
+                                              ext_ref, nullptr));
+    if (!uti) {
+      return false;
+    }
+    base::ScopedCFTypeRef<CFStringRef> mime_ref(
+        UTTypeCopyPreferredTagWithClass(uti, kUTTagClassMIMEType));
+    if (!mime_ref) {
+      return false;
+    }
+
+    *result = base::SysCFStringRefToUTF8(mime_ref);
+    return true;
+  }
 }
 
 bool PlatformMimeUtil::GetPlatformPreferredExtensionForMimeType(
     const std::string& mime_type,
     base::FilePath::StringType* ext) const {
-  base::ScopedCFTypeRef<CFStringRef> mime_ref(
-      base::SysUTF8ToCFStringRef(mime_type));
-  if (!mime_ref)
-    return false;
-  base::ScopedCFTypeRef<CFStringRef> uti(UTTypeCreatePreferredIdentifierForTag(
-      kUTTagClassMIMEType, mime_ref, nullptr));
-  if (!uti)
-    return false;
-  base::ScopedCFTypeRef<CFStringRef> ext_ref(
-      UTTypeCopyPreferredTagWithClass(uti, kUTTagClassFilenameExtension));
-  if (!ext_ref)
-    return false;
+  if (@available(macOS 11, iOS 14, *)) {
+    UTType* uttype =
+        [UTType typeWithMIMEType:base::SysUTF8ToNSString(mime_type)];
+    if ([uttype isDynamic] || uttype.preferredFilenameExtension == nil) {
+      return false;
+    }
+    *ext = base::SysNSStringToUTF8(uttype.preferredFilenameExtension);
+    return true;
+  } else {
+    base::ScopedCFTypeRef<CFStringRef> mime_ref(
+        base::SysUTF8ToCFStringRef(mime_type));
+    if (!mime_ref) {
+      return false;
+    }
+    base::ScopedCFTypeRef<CFStringRef> uti(
+        UTTypeCreatePreferredIdentifierForTag(kUTTagClassMIMEType, mime_ref,
+                                              nullptr));
+    if (!uti) {
+      return false;
+    }
+    base::ScopedCFTypeRef<CFStringRef> ext_ref(
+        UTTypeCopyPreferredTagWithClass(uti, kUTTagClassFilenameExtension));
+    if (!ext_ref) {
+      return false;
+    }
 
-  *ext = base::SysCFStringRefToUTF8(ext_ref);
-  return true;
+    *ext = base::SysCFStringRefToUTF8(ext_ref);
+    return true;
+  }
 }
 
 void PlatformMimeUtil::GetPlatformExtensionsForMimeType(

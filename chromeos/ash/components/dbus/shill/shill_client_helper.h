@@ -88,7 +88,7 @@ class ShillClientHelper {
                        chromeos::DBusMethodCallback<base::Value> callback);
 
   // Calls a method with a value dictionary result.
-  void CallValueDictMethod(
+  void CallDictValueMethod(
       dbus::MethodCall* method_call,
       chromeos::DBusMethodCallback<base::Value::Dict> callback);
 
@@ -108,9 +108,9 @@ class ShillClientHelper {
                                          ErrorCallback error_callback);
 
   // Calls a method with a dictionary value result with error callback.
-  void CallValueMethodWithErrorCallback(
+  void CallDictValueMethodWithErrorCallback(
       dbus::MethodCall* method_call,
-      base::OnceCallback<void(base::Value result)> callback,
+      base::OnceCallback<void(base::Value::Dict result)> callback,
       ErrorCallback error_callback);
 
   // Calls a method with a boolean array result with error callback.

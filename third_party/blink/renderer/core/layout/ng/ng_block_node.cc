@@ -367,39 +367,6 @@ absl::optional<LayoutUnit> ContentMinimumInlineSize(
   return absl::nullopt;
 }
 
-// Convert a physical offset for an NG fragment to a physical legacy
-// LayoutPoint, to be used in LayoutBox. There are special considerations for
-// vertical-rl writing-mode, and also for block fragmentation (the block-offset
-// should include consumed space in previous fragments).
-inline LayoutPoint ToLayoutPoint(
-    const NGPhysicalBoxFragment& child_fragment,
-    PhysicalOffset offset,
-    const NGPhysicalBoxFragment& container_fragment,
-    const NGBlockBreakToken* previous_container_break_token) {
-  if (UNLIKELY(container_fragment.Style().IsFlippedBlocksWritingMode())) {
-    // Move the physical offset to the right side of the child fragment,
-    // relative to the right edge of the container fragment. This is the
-    // block-start offset in vertical-rl, and the legacy engine expects always
-    // expects the block offset to be relative to block-start.
-    offset.left = container_fragment.Size().width - offset.left -
-                  child_fragment.Size().width;
-  }
-
-  if (UNLIKELY(previous_container_break_token)) {
-    // Add the amount of block-size previously (in previous fragmentainers)
-    // consumed by the container fragment. This will map the child's offset
-    // nicely into the flow thread coordinate system used by the legacy engine.
-    LayoutUnit consumed =
-        previous_container_break_token->ConsumedBlockSizeForLegacy();
-    if (container_fragment.Style().IsHorizontalWritingMode())
-      offset.top += consumed;
-    else
-      offset.left += consumed;
-  }
-
-  return offset.ToLayoutPoint();
-}
-
 }  // namespace
 
 const NGLayoutResult* NGBlockNode::Layout(
@@ -1590,19 +1557,7 @@ void NGBlockNode::PlaceChildrenInFlowThread(
     }
 
     DCHECK(!child_box);
-    LogicalSize logical_size = converter.ToLogical(child_fragment.Size());
-
-    // TODO(layout-dev): This should really be checking if there are any
-    // descendants that take up block space rather than if it has overflow. In
-    // other words, we would still want to clamp a zero height fragmentainer if
-    // it had content with zero inline size and non-zero block size. This would
-    // likely require us to store an extra flag on NGPhysicalBoxFragment.
-    if (child_fragment.HasLayoutOverflow()) {
-      // Don't clamp the fragmentainer to a block size of 1 if it is truly a
-      // zero-height column.
-      logical_size.block_size =
-          ClampedToValidFragmentainerCapacity(logical_size.block_size);
-    }
+    LogicalSize logical_size = FragmentainerLogicalCapacity(child_fragment);
 
     if (has_processed_first_column_in_flow_thread) {
       // Non-uniform fragmentainer widths not supported by legacy layout.
@@ -1611,9 +1566,9 @@ void NGBlockNode::PlaceChildrenInFlowThread(
       }
     } else {
       // The offset of the flow thread is the same as that of the first column.
-      LayoutPoint point =
-          ToLayoutPoint(child_fragment, child.offset, physical_fragment,
-                        previous_container_break_token);
+      LayoutPoint point = LayoutBoxUtils::ComputeLocation(
+          child_fragment, child.offset, physical_fragment,
+          previous_container_break_token);
       // TODO(crbug.com/1353190): SetLocation*() and SetLogicalWidth() should
       // be removed.
       flow_thread->SetLocationAndUpdateOverflowControlsIfNeeded(point);
@@ -1645,9 +1600,9 @@ void NGBlockNode::PlaceChildrenInFlowThread(
       // engine LayoutPoint, which will also take care of converting it into the
       // flow thread coordinate space, if we happen to be nested inside another
       // fragmentation context.
-      LayoutPoint point =
-          ToLayoutPoint(child_fragment, physical_offset, physical_fragment,
-                        previous_container_break_token);
+      LayoutPoint point = LayoutBoxUtils::ComputeLocation(
+          child_fragment, physical_offset, physical_fragment,
+          previous_container_break_token);
 
       // TODO(crbug.com/1353190): SetLocation() and SetLogicalWidth() should
       // be removed.
@@ -1721,8 +1676,9 @@ void NGBlockNode::CopyChildFragmentPosition(
 
   DCHECK(layout_box->Parent()) << "Should be called on children only.";
 
-  LayoutPoint point = ToLayoutPoint(child_fragment, offset, container_fragment,
-                                    previous_container_break_token);
+  LayoutPoint point = LayoutBoxUtils::ComputeLocation(
+      child_fragment, offset, container_fragment,
+      previous_container_break_token);
   layout_box->SetLocationAndUpdateOverflowControlsIfNeeded(point);
 
   if (needs_invalidation_check)
@@ -1824,8 +1780,7 @@ bool NGBlockNode::IsAtomicInlineLevel() const {
 }
 
 bool NGBlockNode::IsInTopLayer() const {
-  auto* element = DynamicTo<Element>(GetLayoutBox()->GetNode());
-  return element && element->IsInTopLayer();
+  return GetLayoutBox()->IsInTopLayer();
 }
 
 bool NGBlockNode::HasAspectRatio() const {

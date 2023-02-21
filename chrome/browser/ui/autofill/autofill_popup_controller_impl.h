@@ -17,6 +17,7 @@
 #include "base/i18n/rtl.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/time/time.h"
 #include "build/build_config.h"
 #include "chrome/browser/ui/autofill/autofill_popup_controller.h"
 #include "chrome/browser/ui/autofill/popup_controller_common.h"
@@ -108,16 +109,17 @@ class AutofillPopupControllerImpl : public AutofillPopupController {
                               base::i18n::TextDirection text_direction);
   ~AutofillPopupControllerImpl() override;
 
-  void SelectionCleared() override;
   gfx::NativeView container_view() const override;
   content::WebContents* GetWebContents() const override;
   const gfx::RectF& element_bounds() const override;
   void SetElementBounds(const gfx::RectF& bounds);
   bool IsRTL() const override;
 
-  // AutofillPopupController implementation.
+  // AutofillPopupController:
   void OnSuggestionsChanged() override;
-  void AcceptSuggestion(int index) override;
+  void SelectSuggestion(absl::optional<size_t> index) override;
+  void AcceptSuggestion(int index, base::TimeDelta show_threshold) override;
+  bool RemoveSuggestion(int list_index) override;
   int GetLineCount() const override;
   const Suggestion& GetSuggestionAt(int row) const override;
   std::u16string GetSuggestionMainTextAt(int row) const override;
@@ -127,26 +129,7 @@ class AutofillPopupControllerImpl : public AutofillPopupController {
   bool GetRemovalConfirmationText(int list_index,
                                   std::u16string* title,
                                   std::u16string* body) override;
-  bool RemoveSuggestion(int list_index) override;
-  void SetSelectedLine(absl::optional<int> selected_line) override;
-  absl::optional<int> selected_line() const override;
   PopupType GetPopupType() const override;
-
-  // Increase the selected line by 1, properly handling wrapping.
-  void SelectNextLine();
-
-  // Decrease the selected line by 1, properly handling wrapping.
-  void SelectPreviousLine();
-
-  // The user has removed a suggestion.
-  bool RemoveSelectedLine();
-
-  // Returns true if the given id refers to an element that can be accepted.
-  bool CanAccept(int id);
-
-  // Returns true if the given id refers to an element that can be accepted if
-  // the user presses the tab key or shift tab.
-  bool CanAcceptForTabKeyPressEvent(int id);
 
   // Returns true if the popup still has non-options entries to show the user.
   bool HasSuggestions() const;
@@ -229,12 +212,17 @@ class AutofillPopupControllerImpl : public AutofillPopupController {
 
   friend class AutofillPopupControllerUnitTest;
   friend class AutofillPopupControllerAccessibilityUnitTest;
-  void SetViewForTesting(AutofillPopupView* view) { view_ = view; }
+  void SetViewForTesting(AutofillPopupView* view);
 
   PopupControllerCommon controller_common_;
   raw_ptr<content::WebContents, DanglingUntriaged> web_contents_;
   AutofillPopupViewPtr view_;
   base::WeakPtr<AutofillPopupDelegate> delegate_;
+
+  // The time the view was shown the last time. It is used to safeguard against
+  // accepting suggestions too quickly after a the popup view was shown (see the
+  // `show_threshold` parameter of `AcceptSuggestion`).
+  base::TimeTicks time_view_shown_;
 
   // If set to true, the popup will never be hidden because of stale data or if
   // the user interacts with native UI.

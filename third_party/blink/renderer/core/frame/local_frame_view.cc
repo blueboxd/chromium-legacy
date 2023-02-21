@@ -194,8 +194,8 @@
 // function.
 #define CHECK_FOR_DIRTY_LAYOUT(arg) \
   do {                              \
+    DCHECK(arg);                    \
     if (!(arg)) {                   \
-      NOTREACHED();                 \
       return false;                 \
     }                               \
   } while (false)
@@ -208,9 +208,15 @@ namespace {
 // reduced.
 void LogCursorSizeCounter(LocalFrame* frame, const ui::Cursor& cursor) {
   DCHECK(frame);
-  SkBitmap bitmap = cursor.custom_bitmap();
-  if (cursor.type() != ui::mojom::blink::CursorType::kCustom || bitmap.isNull())
+  if (cursor.type() != ui::mojom::blink::CursorType::kCustom) {
     return;
+  }
+
+  const SkBitmap& bitmap = cursor.custom_bitmap();
+  if (bitmap.isNull()) {
+    return;
+  }
+
   // Should not overflow, this calculation is done elsewhere when determining
   // whether the cursor exceeds its maximum size (see event_handler.cc).
   auto scaled_size =
@@ -1205,19 +1211,13 @@ void LocalFrameView::AdjustMediaTypeForPrinting(bool printing) {
 void LocalFrameView::AddBackgroundAttachmentFixedObject(LayoutObject* object) {
   DCHECK(!background_attachment_fixed_objects_.Contains(object));
   background_attachment_fixed_objects_.insert(object);
-
-  // Ensure main thread scrolling reasons of the ancestor scroll nodes are
-  // recomputed. The object's own scroll properties are not affected.
-  object->ForceAllAncestorsNeedPaintPropertyUpdate();
+  SetNeedsPaintPropertyUpdate();
 }
 
 void LocalFrameView::RemoveBackgroundAttachmentFixedObject(
     LayoutObject* object) {
   background_attachment_fixed_objects_.erase(object);
-
-  // Ensure main thread scrolling reasons of the ancestor scroll nodes are
-  // recomputed. The object's own scroll properties are not affected.
-  object->ForceAllAncestorsNeedPaintPropertyUpdate();
+  SetNeedsPaintPropertyUpdate();
 }
 
 bool LocalFrameView::RequiresMainThreadScrollingForBackgroundAttachmentFixed()
@@ -1538,7 +1538,8 @@ bool LocalFrameView::RunPostLayoutIntersectionObserverSteps() {
         // If the lifecycle state changed as a result of the notifications, we
         // should run the lifecycle again.
         needs_more_lifecycle_steps |= frame_view.Lifecycle().GetState() <
-                                      DocumentLifecycle::kPrePaintClean;
+                                          DocumentLifecycle::kPrePaintClean ||
+                                      frame_view.NeedsLayout();
       });
 
   return needs_more_lifecycle_steps;
@@ -2562,7 +2563,8 @@ bool LocalFrameView::RunViewTransitionSteps(
           transition->RunViewTransitionStepsOutsideMainFrame();
 
         re_run_lifecycle |= document->Lifecycle().GetState() <
-                            DocumentLifecycle::kPrePaintClean;
+                                DocumentLifecycle::kPrePaintClean ||
+                            frame_view.NeedsLayout();
       });
 
   return re_run_lifecycle;
@@ -4605,54 +4607,6 @@ bool LocalFrameView::WillDoPaintHoldingForFCP() const {
   return document && document->DeferredCompositorCommitIsAllowed() &&
          !have_deferred_main_frame_commits_ &&
          GetFrame().IsOutermostMainFrame();
-}
-
-MainThreadScrollingReasons LocalFrameView::MainThreadScrollingReasonsPerFrame()
-    const {
-  MainThreadScrollingReasons reasons =
-      static_cast<MainThreadScrollingReasons>(0);
-
-  if (ShouldThrottleRendering())
-    return reasons;
-
-  if (RequiresMainThreadScrollingForBackgroundAttachmentFixed()) {
-    reasons |=
-        cc::MainThreadScrollingReason::kHasBackgroundAttachmentFixedObjects;
-  }
-  return reasons;
-}
-
-MainThreadScrollingReasons LocalFrameView::GetMainThreadScrollingReasons()
-    const {
-  MainThreadScrollingReasons reasons =
-      static_cast<MainThreadScrollingReasons>(0);
-
-  if (!GetPage()->GetSettings().GetThreadedScrollingEnabled())
-    reasons |= cc::MainThreadScrollingReason::kThreadedScrollingDisabled;
-
-  if (!GetPage()->MainFrame()->IsLocalFrame())
-    return reasons;
-
-  // TODO(alexmos,kenrb): For OOPIF, local roots that are different from
-  // the main frame can't be used in the calculation, since they use
-  // different compositors with unrelated state, which breaks some of the
-  // calculations below.
-  if (&frame_->LocalFrameRoot() != GetPage()->MainFrame())
-    return reasons;
-
-  // Walk the tree to the root. Use the gathered reasons to determine
-  // whether the target frame should be scrolled on main thread regardless
-  // other subframes on the same page.
-  for (Frame* frame = frame_; frame; frame = frame->Tree().Parent()) {
-    auto* local_frame = DynamicTo<LocalFrame>(frame);
-    if (!local_frame)
-      continue;
-    reasons |= local_frame->View()->MainThreadScrollingReasonsPerFrame();
-  }
-
-  DCHECK(
-      !cc::MainThreadScrollingReason::HasNonCompositedScrollReasons(reasons));
-  return reasons;
 }
 
 String LocalFrameView::MainThreadScrollingReasonsAsText() {

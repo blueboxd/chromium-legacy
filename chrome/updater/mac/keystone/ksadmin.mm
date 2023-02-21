@@ -47,6 +47,16 @@
 
 namespace updater {
 
+namespace {
+
+std::string ReadPlist(const std::string& path, const std::string& key) {
+  return base::SysNSStringToUTF8([NSDictionary
+      dictionaryWithContentsOfFile:base::SysUTF8ToNSString(
+                                       path)][base::SysUTF8ToNSString(key)]);
+}
+
+}  // namespace
+
 // base::CommandLine can't be used because it enforces that all switches are
 // lowercase, but ksadmin has case-sensitive switches. This argument parser
 // converts an argv set into a map of switch name to switch value; for example
@@ -363,29 +373,44 @@ void KSAdminApp::PrintUsage(const std::string& error_message) {
 }
 
 void KSAdminApp::Register() {
-  const std::string app_path = SwitchValue(kCommandXCPath);
-  if (app_path.empty()) {
-    PrintUsage("Empty existence checker path.");
-    return;
-  }
-
   RegistrationRequest registration;
   registration.app_id = SwitchValue(kCommandProductId);
   registration.ap = SwitchValue(kCommandTag);
+  registration.brand_path = base::FilePath(SwitchValue(kCommandBrandPath));
   registration.version = base::Version(SwitchValue(kCommandVersion));
-  registration.existence_checker_path = base::FilePath(app_path);
+  registration.existence_checker_path =
+      base::FilePath(SwitchValue(kCommandXCPath));
 
   const std::string brand_key = SwitchValue(kCommandBrandKey);
-  if (brand_key.empty() ||
-      brand_key == base::SysNSStringToUTF8(kCRUTicketBrandKey)) {
-    registration.brand_path = base::FilePath(SwitchValue(kCommandBrandPath));
-  } else {
+  if (!brand_key.empty() &&
+      brand_key != base::SysNSStringToUTF8(kCRUTicketBrandKey)) {
     PrintUsage("Unsupported brand key.");
     return;
   }
 
-  if (registration.app_id.empty() || !registration.version.IsValid()) {
-    PrintUsage("Registration information invalid.");
+  const std::string tag_key = SwitchValue(kCommandTagKey);
+  const std::string tag_path = SwitchValue(kCommandTagPath);
+  if (tag_key.empty() != tag_path.empty()) {
+    PrintUsage("--tag-key must be set if and only if --tag_path is set.");
+    return;
+  }
+  if (!tag_key.empty()) {
+    registration.ap = ReadPlist(tag_path, tag_key);
+  }
+
+  const std::string version_key = SwitchValue(kCommandVersionKey);
+  const std::string version_path = SwitchValue(kCommandVersionPath);
+  if (version_key.empty() != version_path.empty()) {
+    PrintUsage(
+        "--version-key must be set if and only if --version_path is set.");
+    return;
+  }
+  if (!version_key.empty()) {
+    registration.version = base::Version(ReadPlist(version_path, version_key));
+  }
+
+  if (registration.app_id.empty()) {
+    PrintUsage("--register requires -P.");
     return;
   }
 
@@ -602,6 +627,18 @@ void KSAdminApp::FirstTaskRun() {
       return;
     }
   }
+
+  // Fallbacks to Register: if none of the above exist, these switches signal
+  // an intent to register.
+  for (const std::string& command :
+       {kCommandTag, kCommandTagKey, kCommandTagPath, kCommandBrandKey,
+        kCommandBrandPath, kCommandVersion, kCommandVersionKey,
+        kCommandVersionPath, kCommandXCPath}) {
+    if (HasSwitch(command)) {
+      Register();
+      return;
+    }
+  }
   PrintUsage("");
 }
 
@@ -617,6 +654,11 @@ int KSAdminAppMain(int argc, const char* argv[]) {
   const base::ScopedClosureRunner shutdown_thread_pool(
       base::BindOnce([]() { base::ThreadPoolInstance::Get()->Shutdown(); }));
   base::SingleThreadTaskExecutor main_task_executor(base::MessagePumpType::UI);
+
+  // base::CommandLine may reorder arguments and switches, this is not the exact
+  // command line.
+  VLOG(0) << base::CommandLine::ForCurrentProcess()->GetCommandLineString();
+
   return base::MakeRefCounted<KSAdminApp>(command_line)->Run();
 }
 

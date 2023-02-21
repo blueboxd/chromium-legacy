@@ -55,8 +55,8 @@
 #include "chrome/browser/ui/zoom/chrome_zoom_level_otr_delegate.h"
 #include "chrome/browser/webid/federated_identity_api_permission_context.h"
 #include "chrome/browser/webid/federated_identity_api_permission_context_factory.h"
-#include "chrome/browser/webid/federated_identity_auto_signin_permission_context.h"
-#include "chrome/browser/webid/federated_identity_auto_signin_permission_context_factory.h"
+#include "chrome/browser/webid/federated_identity_auto_reauthn_permission_context.h"
+#include "chrome/browser/webid/federated_identity_auto_reauthn_permission_context_factory.h"
 #include "chrome/browser/webid/federated_identity_permission_context.h"
 #include "chrome/browser/webid/federated_identity_permission_context_factory.h"
 #include "chrome/common/buildflags.h"
@@ -125,7 +125,7 @@
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
 #include "chrome/browser/content_settings/content_settings_supervised_provider.h"
 #include "chrome/browser/supervised_user/supervised_user_settings_service_factory.h"
-#include "components/supervised_user/core/common/supervised_user_settings_service.h"
+#include "components/supervised_user/core/browser/supervised_user_settings_service.h"
 #endif
 
 using content::BrowserThread;
@@ -708,9 +708,9 @@ OffTheRecordProfileImpl::GetFederatedIdentityApiPermissionContext() {
   return FederatedIdentityApiPermissionContextFactory::GetForProfile(this);
 }
 
-content::FederatedIdentityAutoSigninPermissionContextDelegate*
-OffTheRecordProfileImpl::GetFederatedIdentityAutoSigninPermissionContext() {
-  return FederatedIdentityAutoSigninPermissionContextFactory::GetForProfile(
+content::FederatedIdentityAutoReauthnPermissionContextDelegate*
+OffTheRecordProfileImpl::GetFederatedIdentityAutoReauthnPermissionContext() {
+  return FederatedIdentityAutoReauthnPermissionContextFactory::GetForProfile(
       this);
 }
 

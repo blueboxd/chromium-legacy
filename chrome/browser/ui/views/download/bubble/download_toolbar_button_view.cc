@@ -8,6 +8,7 @@
 
 #include "base/functional/bind.h"
 #include "base/i18n/number_formatting.h"
+#include "base/memory/raw_ptr.h"
 #include "base/strings/strcat.h"
 #include "cc/paint/paint_flags.h"
 #include "chrome/app/vector_icons/vector_icons.h"
@@ -96,7 +97,7 @@ class CircleBadgeImageSource : public gfx::CanvasImageSource {
 
  private:
   // Pointee may be modified to change the text color upon painting.
-  gfx::RenderText* const render_text_ = nullptr;
+  const raw_ptr<gfx::RenderText> render_text_ = nullptr;
   const SkColor text_color_;
   const SkColor background_color_;
 };
@@ -259,7 +260,13 @@ void DownloadToolbarButtonView::Disable() {
   SetEnabled(false);
 }
 
-void DownloadToolbarButtonView::UpdateDownloadIcon() {
+void DownloadToolbarButtonView::UpdateDownloadIcon(bool show_animation) {
+  if (show_animation && gfx::Animation::ShouldRenderRichAnimation()) {
+    has_pending_download_started_animation_ = true;
+    if (!needs_layout()) {
+      ShowPendingDownloadStartedAnimation();
+    }
+  }
   UpdateIcon();
 }
 
@@ -271,16 +278,10 @@ bool DownloadToolbarButtonView::IsFullscreenWithParentViewHidden() {
 // This function shows the partial view. If the main view is already showing,
 // we do not show the partial view. If the partial view is already showing,
 // there is nothing to do here, the controller should update the partial view.
-void DownloadToolbarButtonView::ShowDetails(bool show_animation) {
+void DownloadToolbarButtonView::ShowDetails() {
   if (!bubble_delegate_) {
     is_primary_partial_view_ = true;
     CreateBubbleDialogDelegate(GetPrimaryView());
-  }
-  if (show_animation && gfx::Animation::ShouldRenderRichAnimation()) {
-    has_pending_download_started_animation_ = true;
-    if (!needs_layout()) {
-      ShowPendingDownloadStartedAnimation();
-    }
   }
 }
 

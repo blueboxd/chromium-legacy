@@ -177,9 +177,12 @@ bool ParseAndCanonicalizeFacetURI(const std::string& input_uri,
   base::StringPiece scheme = ComponentString(input_uri, input_parsed.scheme);
   if (base::EqualsCaseInsensitiveASCII(scheme, url::kHttpsScheme)) {
     return CanonicalizeWebFacetURI(input_uri, input_parsed, canonical_uri);
-  } else if (base::EqualsCaseInsensitiveASCII(scheme, kAndroidAppScheme)) {
+  }
+  if (base::EqualsCaseInsensitiveASCII(scheme, kAndroidAppScheme)) {
     return CanonicalizeAndroidFacetURI(input_uri, input_parsed, canonical_uri);
   }
+
+  *canonical_uri = input_uri;
   return false;
 }
 
@@ -338,6 +341,17 @@ bool operator==(const Facet& lhs, const Facet& rhs) {
 }
 
 bool operator!=(const Facet& lhs, const Facet& rhs) {
+  return !(lhs == rhs);
+}
+
+bool operator==(const GroupedFacets& lhs, const GroupedFacets& rhs) {
+  if (!base::ranges::is_permutation(lhs.facets, rhs.facets)) {
+    return false;
+  }
+  return lhs.branding_info == rhs.branding_info;
+}
+
+bool operator!=(const GroupedFacets& lhs, const GroupedFacets& rhs) {
   return !(lhs == rhs);
 }
 

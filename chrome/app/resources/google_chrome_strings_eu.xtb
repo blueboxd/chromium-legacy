@@ -243,6 +243,7 @@ Google Chrome-k ezin ditu berreskuratu zure ezarpenak.</translation>
 <translation id="5678190148303298925">{COUNT,plural, =0{Chrome berrabiarazteko eskatu dizu administratzaileak, eguneratzea aplikatzeko}=1{Chrome berrabiarazteko eskatu dizu administratzaileak, eguneratzea aplikatzeko. Ezkutuko moduko leihoa ez da berriro irekiko.}other{Chrome berrabiarazteko eskatu dizu administratzaileak, eguneratzea aplikatzeko. Ezkutuko moduko # leihoak ez dira berriro irekiko.}}</translation>
 <translation id="5686916850681061684">Pertsonalizatu eta kontrolatu Google Chrome. Zure arreta behar duen zerbait dago. Sakatu informazio gehiago ikusteko.</translation>
 <translation id="5690427481109656848">Google LLC</translation>
+<translation id="570005089986962444">Aktibatuta dagoenean, Chrome-k tokia egiten du fitxa inaktiboen memorian. Horrela, fitxa aktiboek eta gainerako aplikazioek ordenagailuaren baliabide gehiago izango dituzte, eta bizkorrago ibiliko da Chrome. Fitxa inaktiboak haietara itzultzen zarenean aktibatuko dira berriro.</translation>
 <translation id="5715063361988620182">{SECONDS,plural, =1{1 segundo barru berrabiaraziko da Google Chrome}other{# segundo barru berrabiaraziko da Google Chrome}}</translation>
 <translation id="5727531838415286053">Chrome-k proba aktibo batean ausaz sartu bazaitu, agertzen zaizkizun iragarkietan eta behean estimatutako interesetan eragina izango du arakatze-historiak. Zure pribatutasuna babesteko, Chrome-k hilero ezabatzen ditu zure interesak. Interesak eguneratu egiten dira, haiek kendu ezean.</translation>
 <translation id="5736850870166430177">Webguneren bat pasahitza lapurtzen saiatzen bada edo fitxategi kaltegarriren bat deskargatzen baduzu, baliteke Chrome-k URLak ere bidaltzea (orriko edukiaren zati batzuk barne) Arakatze segurua eginbideari.</translation>
@@ -253,6 +254,7 @@ Google Chrome-k ezin ditu berreskuratu zure ezarpenak.</translation>
 <translation id="5895138241574237353">Berrabiarazi</translation>
 <translation id="5903106910045431592"><ph name="PAGE_TITLE" /> - Hasi saioa sarean</translation>
 <translation id="5924017743176219022">Internetera konektatzen…</translation>
+<translation id="5932997892801542621">Helbide-barran edo bilaketa-koadroan zerbait idazten duzunean, Chrome-k Google Drive-ra bidaltzen du, elementuen iradokizunak lortzeko. Ezkutuko moduan, aukera hori desaktibatuta dago.</translation>
 <translation id="5940385492829620908">Zure weba, laster-markak eta Chrome-n dituzun beste gauzak hemen bizi dira.</translation>
 <translation id="5941711191222866238">Minimizatu</translation>
 <translation id="5941830788786076944">Ezarri Google Chrome arakatzaile lehenetsi gisa</translation>
@@ -323,7 +325,6 @@ Baliteke webguneei eta aplikazioei emandako baimenak kontu honi aplikatzea. Goog
 <translation id="7410958280246779049">Chrome-k fitxategia blokeatu du arriskutsua delako</translation>
 <translation id="7426611252293106642">Google Chrome-k agian ez du behar bezala funtzionatuko ez delako jada bateragarria Linux banaketa honekin</translation>
 <translation id="7481213027396403996">Lortu Chrome-ren segurtasun-aukerarik sendoena</translation>
-<translation id="7486227612705979895">Chrome-k zure Drive unitatea atzituko du helbide-barran iradokizunak egiteko</translation>
 <translation id="7535429826459677826">Google Chrome Dev</translation>
 <translation id="7583399374488819119"><ph name="COMPANY_NAME" /> zerbitzuaren instalatzailea</translation>
 <translation id="7606334485649076285">Google ChromeOS Flex</translation>
@@ -366,7 +367,6 @@ Baliteke webguneei eta aplikazioei emandako baimenak kontu honi aplikatzea. Goog
 <translation id="8286862437124483331">Google Chrome pasahitzak erakusten saiatzen ari da. Hori baimentzeko, idatzi Windows pasahitza.</translation>
 <translation id="828798499196665338">Zure gurasoak "Webguneen, aplikazioen eta luzapenen baimenak" desaktibatu ditu Chrome-n. Ezin da gaitu <ph name="EXTENSION_TYPE_PARAMETER" />.</translation>
 <translation id="8290100596633877290">Google Chrome-k huts egin du. Berriro abiarazi nahi duzu?</translation>
-<translation id="8341646175450781745">Aktibatuta dagoenean, Chrome-k tokia egiten du fitxa inaktiboen memorian. Horrela, fitxa aktiboek eta gainerako aplikazioek ordenagailuaren baliabide gehiago izango dituzte, eta bizkorrago ibiliko da Chrome. Fitxa inaktiboak haietara itzultzen zarenean aktibatuko dira berriro. <ph name="BEGIN_LINK" />Lortu informazio gehiago<ph name="END_LINK" /> edo <ph name="BEGIN_LINK_2" />bidali oharrak<ph name="END_LINK_2" /></translation>
 <translation id="8342675569599923794">Fitxategia arriskutsua da; horregatik, blokeatu egin du Chrome-k.</translation>
 <translation id="8349795646647783032"><ph name="BEGIN_BOLD" />Nola erabiltzen ditugu datu horiek?<ph name="END_BOLD" /> Webguneek zure interesei buruzko informazioa gorde dezakete Chrome-n; esaterako, webgune batera joaten bazara maratoi baterako oinetakoak erostera, baliteke webgune horrek "maratoiak" definitzea interes gisa. Ondorioz, beranduago beste webgune batera joaten bazara lasterketa batean izena emateko, litekeena da webgune horrek lasterketetarako oinetakoekin erlazionatutako iragarki bat erakustea zure interesetan oinarrituta.</translation>
 <translation id="8370517070665726704">Copyright <ph name="YEAR" /> Google LLC. Eskubide guztiak erreserbatuta.</translation>
@@ -411,7 +411,6 @@ Baliteke webguneei eta aplikazioei emandako baimenak kontu honi aplikatzea. Goog
 <translation id="8986207147630327271">Arakatzaile honetan laneko profila gehitzera zoaz, eta laneko profilaren gaineko kontrola soilik emango diozu administratzaileari.</translation>
 <translation id="8989968390305463310">Agertzen zaizkizun iragarkietan eta behean estimatutako interesetan eragina du arakatze-historiak. Zure pribatutasuna babesteko, Chrome-k automatikoki ezabatzen ditu zure interesak hilero. Interesak eguneratu egin daitezke, haiek kendu ezean.</translation>
 <translation id="8999208279178790196">{0,plural, =0{Chrome arakatzailearen eguneratze bat dago erabilgarri}=1{Chrome arakatzailearen eguneratze bat dago erabilgarri}other{Chrome arakatzailearen eguneratze batek # egun daramatza erabilgarri}}</translation>
-<translation id="9003498785844995646">Aktibatuta dagoenean, Chrome-k bateria aurrezten du atzeko planoko jarduerak eta efektu bisualak (esaterako, korritze leuna eta bideoen irudi-abiadurak) mugatuta. <ph name="BEGIN_LINK" />Lortu informazio gehiago<ph name="END_LINK" /> edo <ph name="BEGIN_LINK_2" />bidali oharrak<ph name="END_LINK_2" /></translation>
 <translation id="9053892488859122171">ChromeOS Flex sistema</translation>
 <translation id="9067395829937117663">Windows 7 edo sistema berriagoa behar da Google Chrome erabiltzeko.</translation>
 <translation id="911206726377975832">Arakatze-datuak ere ezabatu nahi dituzu?</translation>
@@ -422,6 +421,7 @@ Baliteke webguneei eta aplikazioei emandako baimenak kontu honi aplikatzea. Goog
 <translation id="93760716455950538">Berrabiarazi ChromeOS Flex</translation>
 <translation id="940313311831216333">Chrome-ko gauzak gailu guztietan atzitze aldera, hasi saioa eta aktibatu sinkronizazioa.</translation>
 <translation id="943390475793766444">Chrome-k fitxategia aztertzea gomendatzen du, agian arriskutsua delako.</translation>
+<translation id="963650557422347554">Aktibatuta dagoenean, Chrome-k bateria aurrezten du atzeko planoko jarduerak eta efektu bisualak (esaterako, korritze leuna eta bideoen irudi-abiadurak) mugatuta.</translation>
 <translation id="989369509083708165">Google Chrome da arakatzaile lehenetsia</translation>
 <translation id="989816563149873169"><ph name="SHORTCUT" /> da Chrome-ko profil batetik bestera aldatzeko lasterbidea</translation>
 </translationbundle>

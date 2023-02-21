@@ -133,11 +133,13 @@ A continuació t'indico algunes coses que pots provar per començar.</translatio
 <translation id="163517899691012366">Les notificacions estan silenciades quan el mode No molestis està activat</translation>
 <translation id="1637505162081889933"><ph name="NUM_DEVICES" /> dispositius</translation>
 <translation id="1639239467298939599">S'està carregant</translation>
+<translation id="1647986356840967552">Pàgina anterior</translation>
 <translation id="1654477262762802994">Inicia una consulta per veu</translation>
 <translation id="1668469839109562275">VPN integrada</translation>
 <translation id="1677472565718498478">Temps restant: <ph name="TIME" /></translation>
 <translation id="1677507110654891115">La funció <ph name="FEATURE_NAME" /> no està connectada.</translation>
 <translation id="1677582821739292812">Algú està mirant la teva pantalla</translation>
+<translation id="1683399938733266832">Ús actual de la CPU: <ph name="CPU_USEAGE" />%</translation>
 <translation id="169515659049020177">Maj</translation>
 <translation id="1698080062160024910">Temporitzador de: <ph name="TOTAL_TIME" /> · <ph name="LABEL" /></translation>
 <translation id="1698760176351776263">Adreça IPv6: <ph name="ADDRESS" /></translation>
@@ -380,6 +382,7 @@ A continuació t'indico algunes coses que pots provar per començar.</translatio
 <translation id="3051189971848907985">S'està canviant el nom del perfil. Espera uns minuts.</translation>
 <translation id="3055162170959710888">Avui has fet servir aquest dispositiu durant <ph name="USED_TIME" /></translation>
 <translation id="3062298103034426069">No compatible</translation>
+<translation id="3068622547379332530">Versió <ph name="VERSION_NAME" /> (<ph name="OFFICIAL_STATUS" />) <ph name="CHANNEL_NAME" /> <ph name="PROCESSOR_VARIATION" /></translation>
 <translation id="3068711042108640621">El prestatge és a l'esquerra</translation>
 <translation id="3077734595579995578">maj</translation>
 <translation id="3081696990447829002">Desplega el menú</translation>
@@ -555,6 +558,7 @@ Connecta el dispositiu a l'alimentació.</translation>
 <translation id="397105322502079400">S’està calculant...</translation>
 <translation id="397726367135689299">És possible que la càrrega de la bateria sigui poc fiable.</translation>
 <translation id="3977512764614765090">La bateria s'està carregant i està a un <ph name="PERCENTAGE" />%.</translation>
+<translation id="3984536049089846927">Pàgina següent</translation>
 <translation id="3986082989454912832">Respon</translation>
 <translation id="3995138139523574647">Dispositiu USB-C (port posterior dret)</translation>
 <translation id="40062176907008878">Escriptura a mà</translation>
@@ -577,7 +581,7 @@ Connecta el dispositiu a l'alimentació.</translation>
 <translation id="4123259114412175274">Per desbloquejar el Chromebook, comprova que el Bluetooth del telèfon estigui activat</translation>
 <translation id="4125970834901680537">No es poden reproduir aplicacions en continu en mode de tauleta. Torna-ho a provar en mode de portàtil.</translation>
 <translation id="4129129681837227511">Per veure notificacions a la pantalla de bloqueig, desbloqueja el dispositiu per canviar aquesta opció</translation>
-<translation id="4130035430755296270">Mantén el cursor a sobre per veure més opcions de disseny</translation>
+<translation id="4131973331381812765">Temperatura: <ph name="TEMPERATURE" /> °C - Velocitat actual: <ph name="CPU_AVERAGE_CURRENT_FREQUENCY_GHZ" /> GHz</translation>
 <translation id="4136724716305260864">Activada fins a l'alba</translation>
 <translation id="4146833061457621061">Reprodueix música</translation>
 <translation id="4150201353443180367">Pantalla</translation>
@@ -732,6 +736,7 @@ Connecta el dispositiu a l'alimentació.</translation>
 <translation id="4895488851634969361">La bateria està carregada.</translation>
 <translation id="490375751687810070">Vertical</translation>
 <translation id="490788395437447240"><ph name="BATTERY_PERCENTAGE" />% de bateria</translation>
+<translation id="491504982845934899">Activa <ph name="NETWORK_NAME" /> després de configurar el dispositiu</translation>
 <translation id="4917385247580444890">Forta</translation>
 <translation id="4918086044614829423">Accepta</translation>
 <translation id="4919841137949306064"><ph name="APP_NAME" /> està utilitzant la càmera</translation>
@@ -1325,6 +1330,7 @@ Instal·lació nova</translation>
 <translation id="8131740175452115882">Confirma</translation>
 <translation id="8131994907636310308">Tanca la notificació del sistema d'ordenació</translation>
 <translation id="8132793192354020517">Connectat a <ph name="NAME" /></translation>
+<translation id="8138705869659070104">Activa després de configurar</translation>
 <translation id="813913629614996137">S'està inicialitzant…</translation>
 <translation id="8142441511840089262">Fes doble clic</translation>
 <translation id="8142699993796781067">Xarxa privada</translation>

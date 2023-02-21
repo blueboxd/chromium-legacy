@@ -17,6 +17,7 @@
 #include "net/dns/mock_host_resolver.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/views/controls/scroll_view.h"
 #include "ui/views/test/mock_input_event_activation_protector.h"
 
 namespace payments {
@@ -61,16 +62,15 @@ IN_PROC_BROWSER_TEST_F(PaymentSheetViewControllerTest,
       .WillOnce(testing::Return(true))
       .WillRepeatedly(testing::Return(false));
 
-  views::View* sheet_view = dialog_view()->GetViewByID(
-      static_cast<int>(DialogViewID::PAYMENT_REQUEST_SHEET));
+  views::View* sheet_view =
+      GetByDialogViewID(DialogViewID::PAYMENT_REQUEST_SHEET);
   static_cast<PaymentSheetViewController*>(
       dialog_view()->controller_map_for_testing()->at(sheet_view).get())
       ->SetInputEventActivationProtectorForTesting(std::move(input_protector));
 
   // Because of the input protector, the first press of the button should be
   // ignored.
-  views::View* button_view =
-      dialog_view()->GetViewByID(static_cast<int>(DialogViewID::PAY_BUTTON));
+  views::View* button_view = GetByDialogViewID(DialogViewID::PAY_BUTTON);
   ClickOnDialogView(button_view);
   EXPECT_FALSE(pay_was_called_);
 
@@ -101,12 +101,8 @@ IN_PROC_BROWSER_TEST_F(PaymentSheetViewControllerTest,
   EXPECT_TRUE(IsPayButtonEnabled());
 
   // Neither of the actionable buttons should receive default focus.
-  EXPECT_FALSE(dialog_view()
-                   ->GetViewByID(static_cast<int>(DialogViewID::PAY_BUTTON))
-                   ->HasFocus());
-  EXPECT_FALSE(dialog_view()
-                   ->GetViewByID(static_cast<int>(DialogViewID::CANCEL_BUTTON))
-                   ->HasFocus());
+  EXPECT_FALSE(GetByDialogViewID(DialogViewID::PAY_BUTTON)->HasFocus());
+  EXPECT_FALSE(GetByDialogViewID(DialogViewID::CANCEL_BUTTON)->HasFocus());
 }
 
 // The Enter key should not be accelerated for the main payment sheet; see
@@ -131,10 +127,42 @@ IN_PROC_BROWSER_TEST_F(PaymentSheetViewControllerTest, EnterDoesNotContinue) {
 
   // Trigger the 'Enter' accelerator - this should NOT be present and the
   // dispatch should fail.
-  views::View* summary_sheet = dialog_view()->GetViewByID(
-      static_cast<int>(DialogViewID::PAYMENT_REQUEST_SHEET));
+  views::View* summary_sheet =
+      GetByDialogViewID(DialogViewID::PAYMENT_REQUEST_SHEET);
   EXPECT_FALSE(summary_sheet->AcceleratorPressed(
       ui::Accelerator(ui::VKEY_RETURN, ui::EF_NONE)));
+}
+
+// Test that the content view of the payment sheet view is contained by a
+// ScrollView.
+IN_PROC_BROWSER_TEST_F(PaymentSheetViewControllerTest, ContentViewScrollable) {
+  // Installs two apps so that the Payment Request UI will be shown.
+  std::string a_method_name;
+  InstallPaymentApp("a.com", "/payment_request_success_responder.js",
+                    &a_method_name);
+  std::string b_method_name;
+  InstallPaymentApp("b.com", "/payment_request_success_responder.js",
+                    &b_method_name);
+
+  NavigateTo("/payment_request_no_shipping_test.html");
+  InvokePaymentRequestUIWithJs(content::JsReplace(
+      "buyWithMethods([{supportedMethods:$1}, {supportedMethods:$2}]);",
+      a_method_name, b_method_name));
+
+  views::View* sheet_view =
+      GetByDialogViewID(DialogViewID::PAYMENT_REQUEST_SHEET);
+  ASSERT_NE(nullptr, sheet_view);
+
+  // The scroll view should be contained by the root sheet view.
+  views::ScrollView* scroll_view =
+      static_cast<views::ScrollView*>(GetChildByDialogViewID(
+          sheet_view, DialogViewID::PAYMENT_SHEET_SCROLL_VIEW));
+  ASSERT_NE(nullptr, scroll_view);
+  ASSERT_NE(nullptr, scroll_view->contents());
+
+  // The content view should be contained by the scroll view.
+  EXPECT_NE(nullptr, GetChildByDialogViewID(scroll_view->contents(),
+                                            DialogViewID::CONTENT_VIEW));
 }
 
 using PaymentSheetViewControllerNoShippingTest = PaymentRequestBrowserTestBase;
@@ -156,15 +184,14 @@ IN_PROC_BROWSER_TEST_F(PaymentSheetViewControllerNoShippingTest,
       "buyWithMethods([{supportedMethods:$1}, {supportedMethods:$2}]);",
       a_method_name, b_method_name));
 
-  EXPECT_NE(nullptr, dialog_view()->GetViewByID(static_cast<int>(
-                         DialogViewID::PAYMENT_SHEET_SUMMARY_SECTION)));
-  EXPECT_EQ(nullptr,
-            dialog_view()->GetViewByID(static_cast<int>(
-                DialogViewID::PAYMENT_SHEET_SHIPPING_ADDRESS_SECTION)));
-  EXPECT_EQ(nullptr, dialog_view()->GetViewByID(static_cast<int>(
-                         DialogViewID::PAYMENT_SHEET_SHIPPING_OPTION_SECTION)));
-  EXPECT_EQ(nullptr, dialog_view()->GetViewByID(static_cast<int>(
-                         DialogViewID::PAYMENT_SHEET_CONTACT_INFO_SECTION)));
+  EXPECT_NE(nullptr,
+            GetByDialogViewID(DialogViewID::PAYMENT_SHEET_SUMMARY_SECTION));
+  EXPECT_EQ(nullptr, GetByDialogViewID(
+                         DialogViewID::PAYMENT_SHEET_SHIPPING_ADDRESS_SECTION));
+  EXPECT_EQ(nullptr, GetByDialogViewID(
+                         DialogViewID::PAYMENT_SHEET_SHIPPING_OPTION_SECTION));
+  EXPECT_EQ(nullptr, GetByDialogViewID(
+                         DialogViewID::PAYMENT_SHEET_CONTACT_INFO_SECTION));
 }
 
 typedef PaymentRequestBrowserTestBase PaymentHandlerUITest;

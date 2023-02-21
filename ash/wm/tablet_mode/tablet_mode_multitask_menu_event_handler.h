@@ -26,15 +26,13 @@ class TabletModeMultitaskMenuEventHandler : public ui::EventHandler {
       const TabletModeMultitaskMenuEventHandler&) = delete;
   ~TabletModeMultitaskMenuEventHandler() override;
 
-  void MaybeCreateMultitaskMenu(aura::Window* active_window);
+  // Creates and shows the menu.
+  void ShowMultitaskMenu(aura::Window* window);
 
   // Destroys the multitask menu.
   void ResetMultitaskMenu();
 
   // ui::EventHandler:
-  // TODO(crbug.com/1336836): Temporarily allow mouse wheel events to show or
-  // hide the multitask menu for developers. Remove this before launch.
-  void OnMouseEvent(ui::MouseEvent* event) override;
   void OnTouchEvent(ui::TouchEvent* event) override;
 
   TabletModeMultitaskMenu* multitask_menu_for_testing() {
@@ -46,16 +44,16 @@ class TabletModeMultitaskMenuEventHandler : public ui::EventHandler {
 
  private:
   // Drag data needed to process menu events. `initial_location` is the initial
-  // touch in screen coordinates, `can_open` indicates whether the drag was
-  // started from the target area, and `is_drag` indicates whether this was
-  // actually a drag, since the touch may have pressed and released on a button.
+  // touch in screen coordinates, and `is_drag` indicates whether this was
+  // actually a drag, since the touch may have pressed and released immediately.
   struct InitialDragData {
     gfx::PointF initial_location;
-    bool can_open;
     bool is_drag;
   };
 
   bool CanProcessEvent(aura::Window* window) const;
+
+  void MaybeCreateMultitaskMenu(aura::Window* active_window);
 
   // Valid if we may need to handle the event.
   absl::optional<InitialDragData> initial_drag_data_;

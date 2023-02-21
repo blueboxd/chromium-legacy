@@ -67,10 +67,7 @@ class SaveIbanBubbleViewFullFormBrowserTest
   class TestAutofillManager : public BrowserAutofillManager {
    public:
     TestAutofillManager(ContentAutofillDriver* driver, AutofillClient* client)
-        : BrowserAutofillManager(driver,
-                                 client,
-                                 "en-US",
-                                 EnableDownloadManager(false)) {}
+        : BrowserAutofillManager(driver, client, "en-US") {}
 
     testing::AssertionResult WaitForFormsSeen(int min_num_awaited_calls) {
       return forms_seen_waiter_.Wait(min_num_awaited_calls);
@@ -79,7 +76,7 @@ class SaveIbanBubbleViewFullFormBrowserTest
    private:
     TestAutofillManagerWaiter forms_seen_waiter_{
         *this,
-        {&AutofillManager::Observer::OnAfterFormsSeen}};
+        {AutofillManagerEvent::kFormsSeen}};
   };
 
   // Various events that can be waited on by the DialogEventWaiter.

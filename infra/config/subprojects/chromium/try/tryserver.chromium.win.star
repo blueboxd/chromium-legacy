@@ -10,30 +10,30 @@ load("//lib/try.star", "try_")
 load("//lib/consoles.star", "consoles")
 
 try_.defaults.set(
-    builder_group = "tryserver.chromium.win",
     executable = try_.DEFAULT_EXECUTABLE,
+    builder_group = "tryserver.chromium.win",
+    pool = try_.DEFAULT_POOL,
     builderless = True,
     cores = 8,
     os = os.WINDOWS_DEFAULT,
-    pool = try_.DEFAULT_POOL,
-    service_account = try_.DEFAULT_SERVICE_ACCOUNT,
     compilator_cores = 16,
     compilator_reclient_jobs = reclient.jobs.HIGH_JOBS_FOR_CQ,
     execution_timeout = try_.DEFAULT_EXECUTION_TIMEOUT,
     orchestrator_cores = 2,
     reclient_instance = reclient.instance.DEFAULT_UNTRUSTED,
     reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
+    service_account = try_.DEFAULT_SERVICE_ACCOUNT,
 )
 
 consoles.list_view(
     name = "tryserver.chromium.win",
-    branch_selector = branches.DESKTOP_EXTENDED_STABLE_MILESTONE,
+    branch_selector = branches.selector.WINDOWS_BRANCHES,
 )
 
 try_.builder(
     name = "win-annotator-rel",
-    goma_backend = goma.backend.RBE_PROD,
     mirrors = ["ci/win-annotator-rel"],
+    goma_backend = goma.backend.RBE_PROD,
 )
 
 try_.builder(
@@ -58,7 +58,7 @@ try_.builder(
 
 try_.builder(
     name = "win-libfuzzer-asan-rel",
-    branch_selector = branches.DESKTOP_EXTENDED_STABLE_MILESTONE,
+    branch_selector = branches.selector.WINDOWS_BRANCHES,
     executable = "recipe:chromium_libfuzzer_trybot",
     builderless = False,
     os = os.WINDOWS_ANY,
@@ -69,8 +69,7 @@ try_.builder(
 
 try_.orchestrator_builder(
     name = "win-rel",
-    branch_selector = branches.DESKTOP_EXTENDED_STABLE_MILESTONE,
-    compilator = "win-rel-compilator",
+    branch_selector = branches.selector.WINDOWS_BRANCHES,
     mirrors = [
         "ci/Win x64 Builder",
         "ci/Win10 Tests x64",
@@ -82,15 +81,16 @@ try_.orchestrator_builder(
             condition = builder_config.rts_condition.QUICK_RUN_ONLY,
         ),
     ),
-    main_list_view = "try",
+    compilator = "win-rel-compilator",
     # TODO (crbug.com/1413505) - disabling due to high pending times. test
     # history inaccuracies causing additional tests to be run.
     # check_for_flakiness = True,
     coverage_test_types = ["unit", "overall"],
-    tryjob = try_.job(),
     experiments = {
         "chromium_rts.inverted_rts": 100,
     },
+    main_list_view = "try",
+    tryjob = try_.job(),
     use_clang_coverage = True,
     # TODO (crbug.com/1372179): Use orchestrator pool once overloaded test pools
     # are addressed
@@ -99,13 +99,13 @@ try_.orchestrator_builder(
 
 try_.compilator_builder(
     name = "win-rel-compilator",
-    branch_selector = branches.DESKTOP_EXTENDED_STABLE_MILESTONE,
+    branch_selector = branches.selector.WINDOWS_BRANCHES,
+    check_for_flakiness = True,
     goma_backend = goma.backend.RBE_PROD,
     goma_jobs = goma.jobs.J300,
-    main_list_view = "try",
-    check_for_flakiness = True,
     # TODO (crbug.com/1245171): Revert when root issue is fixed
     grace_period = 4 * time.minute,
+    main_list_view = "try",
 )
 
 try_.builder(
@@ -117,7 +117,7 @@ try_.builder(
 
 try_.builder(
     name = "win_chromium_compile_dbg_ng",
-    branch_selector = branches.DESKTOP_EXTENDED_STABLE_MILESTONE,
+    branch_selector = branches.selector.WINDOWS_BRANCHES,
     mirrors = [
         "ci/Win Builder (dbg)",
     ],
@@ -167,10 +167,10 @@ try_.builder(
 
 try_.builder(
     name = "win_x64_archive",
-    goma_backend = goma.backend.RBE_PROD,
     mirrors = [
         "ci/win-archive-rel",
     ],
+    goma_backend = goma.backend.RBE_PROD,
 )
 
 try_.builder(
@@ -184,20 +184,20 @@ try_.builder(
 
 try_.builder(
     name = "win10-wpt-content-shell-fyi-rel",
-    goma_backend = goma.backend.RBE_PROD,
     mirrors = [
         "ci/win10-wpt-content-shell-fyi-rel",
     ],
     os = os.WINDOWS_10,
+    goma_backend = goma.backend.RBE_PROD,
 )
 
 try_.builder(
     name = "win11-wpt-content-shell-fyi-rel",
-    goma_backend = goma.backend.RBE_PROD,
     mirrors = [
         "ci/win11-wpt-content-shell-fyi-rel",
     ],
     os = os.WINDOWS_ANY,
+    goma_backend = goma.backend.RBE_PROD,
 )
 
 try_.builder(
@@ -214,7 +214,6 @@ try_.builder(
 
 try_.builder(
     name = "win10_chromium_inverse_fieldtrials_x64_fyi_rel_ng",
-    goma_backend = goma.backend.RBE_PROD,
     mirrors = [
         "ci/Win x64 Builder",
         "ci/Win10 Tests x64",
@@ -222,47 +221,22 @@ try_.builder(
         "ci/Win10 x64 Release (NVIDIA)",
     ],
     os = os.WINDOWS_10,
-)
-
-try_.orchestrator_builder(
-    name = "win-rel-inverse-fyi",
-    compilator = "win-rel-compilator",
-    mirrors = [
-        "ci/Win x64 Builder",
-        "ci/Win10 Tests x64",
-        "ci/GPU Win x64 Builder",
-        "ci/Win10 x64 Release (NVIDIA)",
-    ],
-    try_settings = builder_config.try_settings(
-        rts_config = builder_config.rts_config(
-            condition = builder_config.rts_condition.QUICK_RUN_ONLY,
-        ),
-    ),
-    # TODO (crbug.com/1413505) - disabling due to high pending times. test
-    # history inaccuracies causing additional tests to be run.
-    # check_for_flakiness = True,
-    coverage_test_types = ["unit", "overall"],
-    experiments = {
-        "chromium_rts.inverted_rts": 100,
-        "chromium_rts.inverted_rts_bail_early": 100,
-    },
-    use_clang_coverage = True,
-    use_orchestrator_pool = True,
+    goma_backend = goma.backend.RBE_PROD,
 )
 
 try_.builder(
     name = "win-fieldtrial-rel",
-    goma_backend = goma.backend.RBE_PROD,
     mirrors = ["ci/win-fieldtrial-rel"],
     os = os.WINDOWS_DEFAULT,
+    goma_backend = goma.backend.RBE_PROD,
 )
 
 try_.builder(
     name = "win-perfetto-rel",
-    goma_backend = goma.backend.RBE_PROD,
     mirrors = [
         "ci/win-perfetto-rel",
     ],
+    goma_backend = goma.backend.RBE_PROD,
 )
 
 try_.builder(
@@ -273,7 +247,7 @@ try_.builder(
 
 try_.gpu.optional_tests_builder(
     name = "win_optional_gpu_tests_rel",
-    branch_selector = branches.DESKTOP_EXTENDED_STABLE_MILESTONE,
+    branch_selector = branches.selector.WINDOWS_BRANCHES,
     builder_spec = builder_config.builder_spec(
         gclient_config = builder_config.gclient_config(
             config = "chromium",

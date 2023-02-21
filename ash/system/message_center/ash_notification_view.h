@@ -81,7 +81,11 @@ class ASH_EXPORT AshNotificationView
   // Returns `absl::nullopt` if the notification view is not draggable.
   absl::optional<gfx::ImageSkia> GetDragImage();
 
-  // Returns true if the notification view is draggable.
+  // Attaches the drop data. This method should be called only if this
+  // notification view is draggable.
+  void AttachDropData(ui::OSExchangeData* data);
+
+  // Returns true if this notification view is draggable.
   bool IsDraggable() const;
 
   // message_center::MessageView:
@@ -184,6 +188,9 @@ class ASH_EXPORT AshNotificationView
     // Perform expand/collapse animation in children views.
     void PerformExpandCollapseAnimation();
 
+    // Set the maximum available width for this view.
+    void SetMaxAvailableWidth(int max_available_width);
+
     // views::View:
     gfx::Size CalculatePreferredSize() const override;
     void OnThemeChanged() override;
@@ -198,6 +205,9 @@ class ASH_EXPORT AshNotificationView
     // Timestamp view shown alongside the title in collapsed state.
     views::Label* const title_row_divider_;
     views::Label* const timestamp_in_collapsed_view_;
+
+    // The maximum width available to the title row.
+    int max_available_width_ = 0;
 
     // Timer that updates the timestamp over time.
     base::OneShotTimer timestamp_update_timer_;
@@ -280,6 +290,10 @@ class ASH_EXPORT AshNotificationView
   // Label::IsDisplayTextTruncated doesn't work when `message_label()` hasn't
   // been laid out yet.
   bool IsMessageLabelTruncated();
+
+  // Attaches the large image's binary data as drop data. This method should be
+  // called only if this notification view is draggable.
+  void AttachBinaryImageAsDropData(ui::OSExchangeData* data);
 
   // Owned by views hierarchy.
   views::View* main_view_ = nullptr;

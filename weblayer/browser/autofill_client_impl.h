@@ -49,7 +49,7 @@ class AutofillClientImpl
   const translate::LanguageState* GetLanguageState() override;
   translate::TranslateDriver* GetTranslateDriver() override;
 
-  void ShowAutofillSettings(bool show_credit_card_settings) override;
+  void ShowAutofillSettings(autofill::PopupType popup_type) override;
   void ShowUnmaskPrompt(
       const autofill::CreditCard& card,
       const autofill::CardUnmaskPromptOptions& card_unmask_prompt_options,
@@ -156,6 +156,8 @@ class AutofillClientImpl
  private:
   explicit AutofillClientImpl(content::WebContents* web_contents);
   friend class content::WebContentsUserData<AutofillClientImpl>;
+
+  std::unique_ptr<autofill::AutofillDownloadManager> download_manager_;
 
   WEB_CONTENTS_USER_DATA_KEY_DECL();
 };

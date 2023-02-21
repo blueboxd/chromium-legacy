@@ -2,15 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/wm/multitask_menu_nudge_controller.h"
+#include "chromeos/ui/frame/multitask_menu/multitask_menu_nudge_controller.h"
 
 #include "ash/constants/ash_features.h"
 #include "ash/display/display_move_window_util.h"
 #include "ash/frame/non_client_frame_view_ash.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
+#include "ash/wm/multitask_menu_nudge_delegate_ash.h"
 #include "ash/wm/splitview/split_view_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller_test_api.h"
+#include "ash/wm/tablet_mode/tablet_mode_multitask_cue.h"
+#include "ash/wm/tablet_mode/tablet_mode_multitask_menu_event_handler.h"
+#include "ash/wm/tablet_mode/tablet_mode_window_manager.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/wm_event.h"
 #include "base/test/scoped_feature_list.h"
@@ -28,60 +32,93 @@
 
 namespace ash {
 
+namespace {
+
+// Returns the nudge controller associated with `window`.
+chromeos::MultitaskMenuNudgeController* GetNudgeControllerForWindow(
+    aura::Window* window) {
+  if (Shell::Get()->tablet_mode_controller()->InTabletMode()) {
+    return TabletModeControllerTestApi()
+        .tablet_mode_window_manager()
+        ->tablet_mode_multitask_menu_event_handler()
+        ->multitask_cue_for_testing()
+        ->nudge_controller_for_testing();
+  }
+
+  if (auto* frame = NonClientFrameViewAsh::Get(window)) {
+    return chromeos::FrameCaptionButtonContainerView::TestApi(
+               frame->GetHeaderView()->caption_button_container())
+        .nudge_controller();
+  }
+
+  return nullptr;
+}
+
+}  // namespace
+
 class MultitaskMenuNudgeControllerTest : public AshTestBase {
  public:
-  MultitaskMenuNudgeControllerTest() = default;
+  MultitaskMenuNudgeControllerTest()
+      : scoped_feature_list_(chromeos::wm::features::kWindowLayoutMenu) {}
   MultitaskMenuNudgeControllerTest(const MultitaskMenuNudgeControllerTest&) =
       delete;
   MultitaskMenuNudgeControllerTest& operator=(
       const MultitaskMenuNudgeControllerTest&) = delete;
   ~MultitaskMenuNudgeControllerTest() override = default;
 
-  views::Widget* GetWidget() { return controller_->nudge_widget_.get(); }
+  views::Widget* GetNudgeWidgetForWindow(aura::Window* window) {
+    chromeos::MultitaskMenuNudgeController* controller =
+        GetNudgeControllerForWindow(window);
+    return controller ? controller->nudge_widget_.get() : nullptr;
+  }
 
-  void FireDismissNudgeTimer() {
-    controller_->clamshell_nudge_dismiss_timer_.FireNow();
+  void FireDismissNudgeTimer(aura::Window* window) {
+    if (chromeos::MultitaskMenuNudgeController* controller =
+            GetNudgeControllerForWindow(window)) {
+      controller->clamshell_nudge_dismiss_timer_.FireNow();
+    }
   }
 
   // AshTestBase:
   void SetUp() override {
-    scoped_feature_list_.InitAndEnableFeature(
-        chromeos::wm::features::kWindowLayoutMenu);
-
     AshTestBase::SetUp();
 
-    MultitaskMenuNudgeController::SetSuppressNudgeForTesting(false);
-    controller_ = Shell::Get()->multitask_menu_nudge_controller();
-    controller_->SetOverrideClockForTesting(&test_clock_);
+    chromeos::MultitaskMenuNudgeController::SetSuppressNudgeForTesting(false);
+    chromeos::MultitaskMenuNudgeController::SetOverrideClockForTesting(
+        &test_clock_);
 
     // Advance the test clock so we aren't at zero time.
     test_clock_.Advance(base::Hours(50));
   }
 
   void TearDown() override {
-    controller_->SetOverrideClockForTesting(nullptr);
+    chromeos::MultitaskMenuNudgeController::SetOverrideClockForTesting(nullptr);
 
     AshTestBase::TearDown();
   }
 
  protected:
-  base::SimpleTestClock test_clock_;
-
   // Tests that the tablet mode nudge bounds in screen are correct.
   void ExpectCorrectTabletNudgeBounds(aura::Window* window) {
-    const gfx::Size size = GetWidget()->GetContentsView()->GetPreferredSize();
+    const gfx::Size size =
+        GetNudgeWidgetForWindow(window)->GetContentsView()->GetPreferredSize();
     const auto window_screen_bounds = window->GetBoundsInScreen();
+    const int tablet_nudge_y_offset =
+        MultitaskMenuNudgeDelegateAsh::kTabletNudgeAdditionalYOffset +
+        TabletModeMultitaskCue::kCueHeight +
+        TabletModeMultitaskCue::kCueYOffset;
     const gfx::Rect expected_bounds(
         (window_screen_bounds.width() - size.width()) / 2 +
             window_screen_bounds.x(),
-        MultitaskMenuNudgeController::kTabletNudgeYOffset +
-            window_screen_bounds.y(),
-        size.width(), size.height());
-    EXPECT_EQ(expected_bounds, GetWidget()->GetWindowBoundsInScreen());
+        tablet_nudge_y_offset + window_screen_bounds.y(), size.width(),
+        size.height());
+    EXPECT_EQ(expected_bounds,
+              GetNudgeWidgetForWindow(window)->GetWindowBoundsInScreen());
   }
 
+  base::SimpleTestClock test_clock_;
+
  private:
-  MultitaskMenuNudgeController* controller_;
   base::test::ScopedFeatureList scoped_feature_list_;
 };
 
@@ -89,7 +126,7 @@ class MultitaskMenuNudgeControllerTest : public AshTestBase {
 // test for https://crbug.com/1341142.
 TEST_F(MultitaskMenuNudgeControllerTest, NoCrashAfterFullscreening) {
   auto window = CreateAppWindow(gfx::Rect(300, 300));
-  ASSERT_TRUE(GetWidget());
+  ASSERT_TRUE(GetNudgeWidgetForWindow(window.get()));
 
   // Turn of animations for immersive mode, so we don't have to wait for the top
   // container to hide on fullscreen.
@@ -100,7 +137,7 @@ TEST_F(MultitaskMenuNudgeControllerTest, NoCrashAfterFullscreening) {
 
   const WMEvent event(WM_EVENT_TOGGLE_FULLSCREEN);
   WindowState::Get(window.get())->OnWMEvent(&event);
-  EXPECT_FALSE(GetWidget());
+  EXPECT_FALSE(GetNudgeWidgetForWindow(window.get()));
 
   // Window needs to be immersive enabled, but not revealed for the bug to
   // reproduce.
@@ -108,7 +145,7 @@ TEST_F(MultitaskMenuNudgeControllerTest, NoCrashAfterFullscreening) {
   ASSERT_FALSE(immersive_controller->IsRevealed());
 
   WindowState::Get(window.get())->OnWMEvent(&event);
-  EXPECT_FALSE(GetWidget());
+  EXPECT_FALSE(GetNudgeWidgetForWindow(window.get()));
 }
 
 // Tests that there is no crash after floating a window via the multitask menu.
@@ -116,7 +153,7 @@ TEST_F(MultitaskMenuNudgeControllerTest, NoCrashAfterFullscreening) {
 TEST_F(MultitaskMenuNudgeControllerTest,
        NoCrashAfterFloatingFromMultitaskMenu) {
   auto window = CreateAppWindow(gfx::Rect(300, 300));
-  ASSERT_TRUE(GetWidget());
+  ASSERT_TRUE(GetNudgeWidgetForWindow(window.get()));
 
   // Float the window from the multitask menu. Floating the window using the
   // accelerator does not cause the crash mentioned in the bug because the
@@ -138,32 +175,21 @@ TEST_F(MultitaskMenuNudgeControllerTest,
       static_cast<chromeos::MultitaskMenu*>(delegate->AsDialogDelegate());
 
   // After floating the window from the multitask menu, there is no crash.
-  GetEventGenerator()->MoveMouseTo(
-      multitask_menu->multitask_menu_view_for_testing()
-          ->float_button_for_testing()
-          ->GetBoundsInScreen()
-          .CenterPoint());
+  GetEventGenerator()->MoveMouseTo(multitask_menu->multitask_menu_view()
+                                       ->float_button_for_testing()
+                                       ->GetBoundsInScreen()
+                                       .CenterPoint());
   GetEventGenerator()->ClickLeftButton();
   ASSERT_TRUE(WindowState::Get(window.get())->IsFloated());
-  EXPECT_TRUE(GetWidget());
+  EXPECT_TRUE(GetNudgeWidgetForWindow(window.get()));
 }
 
 TEST_F(MultitaskMenuNudgeControllerTest, NudgeTimeout) {
   auto window = CreateAppWindow(gfx::Rect(300, 300));
-  ASSERT_TRUE(GetWidget());
+  ASSERT_TRUE(GetNudgeWidgetForWindow(window.get()));
 
-  FireDismissNudgeTimer();
-  EXPECT_FALSE(GetWidget());
-}
-
-// Tests that if a window gets destroyed while the nduge is showing, the nudge
-// disappears and there is no crash.
-TEST_F(MultitaskMenuNudgeControllerTest, WindowDestroyedWhileNudgeShown) {
-  auto window = CreateAppWindow(gfx::Rect(300, 300));
-  ASSERT_TRUE(GetWidget());
-
-  window.reset();
-  EXPECT_FALSE(GetWidget());
+  FireDismissNudgeTimer(window.get());
+  EXPECT_FALSE(GetNudgeWidgetForWindow(window.get()));
 }
 
 TEST_F(MultitaskMenuNudgeControllerTest, NudgeMultiDisplay) {
@@ -171,7 +197,7 @@ TEST_F(MultitaskMenuNudgeControllerTest, NudgeMultiDisplay) {
   ASSERT_EQ(2u, Shell::GetAllRootWindows().size());
 
   auto window = CreateAppWindow(gfx::Rect(300, 300));
-  ASSERT_TRUE(GetWidget());
+  ASSERT_TRUE(GetNudgeWidgetForWindow(window.get()));
 
   // Drag from the caption the window to the other display. The nudge should be
   // on the other display, even though the window is not (the window stays
@@ -181,55 +207,58 @@ TEST_F(MultitaskMenuNudgeControllerTest, NudgeMultiDisplay) {
   event_generator->set_current_screen_location(gfx::Point(150, 10));
   event_generator->PressLeftButton();
   event_generator->MoveMouseTo(gfx::Point(900, 0));
-  EXPECT_EQ(Shell::GetAllRootWindows()[1],
-            GetWidget()->GetNativeWindow()->GetRootWindow());
+  EXPECT_EQ(Shell::GetAllRootWindows()[1], GetNudgeWidgetForWindow(window.get())
+                                               ->GetNativeWindow()
+                                               ->GetRootWindow());
 
   event_generator->ReleaseLeftButton();
-  EXPECT_EQ(Shell::GetAllRootWindows()[1],
-            GetWidget()->GetNativeWindow()->GetRootWindow());
+  EXPECT_EQ(Shell::GetAllRootWindows()[1], GetNudgeWidgetForWindow(window.get())
+                                               ->GetNativeWindow()
+                                               ->GetRootWindow());
 
   display_move_window_util::HandleMoveActiveWindowBetweenDisplays();
-  EXPECT_EQ(Shell::GetAllRootWindows()[0],
-            GetWidget()->GetNativeWindow()->GetRootWindow());
+  EXPECT_EQ(Shell::GetAllRootWindows()[0], GetNudgeWidgetForWindow(window.get())
+                                               ->GetNativeWindow()
+                                               ->GetRootWindow());
 }
 
 // Tests that based on preferences (shown count, and last shown time), the nudge
 // may or may not be shown.
 TEST_F(MultitaskMenuNudgeControllerTest, NudgePreferences) {
   auto window = CreateAppWindow(gfx::Rect(300, 300));
-  ASSERT_TRUE(GetWidget());
-  FireDismissNudgeTimer();
-  ASSERT_FALSE(GetWidget());
+  ASSERT_TRUE(GetNudgeWidgetForWindow(window.get()));
+  FireDismissNudgeTimer(window.get());
+  ASSERT_FALSE(GetNudgeWidgetForWindow(window.get()));
 
   // Create the window. This does not show the nudge as 24 hours have not
   // elapsed since the nudge was shown.
   window.reset();
   window = CreateAppWindow(gfx::Rect(300, 300));
-  ASSERT_FALSE(GetWidget());
+  ASSERT_FALSE(GetNudgeWidgetForWindow(window.get()));
 
   // Create the window again after waiting 25 hours. The nudge should now show
   // for the second time.
   test_clock_.Advance(base::Hours(25));
   window.reset();
   window = CreateAppWindow(gfx::Rect(300, 300));
-  ASSERT_TRUE(GetWidget());
-  FireDismissNudgeTimer();
-  ASSERT_FALSE(GetWidget());
+  ASSERT_TRUE(GetNudgeWidgetForWindow(window.get()));
+  FireDismissNudgeTimer(window.get());
+  ASSERT_FALSE(GetNudgeWidgetForWindow(window.get()));
 
   // Show the nudge for a third time. This will be the last time it is shown.
   test_clock_.Advance(base::Hours(25));
   window.reset();
   window = CreateAppWindow(gfx::Rect(300, 300));
-  ASSERT_TRUE(GetWidget());
-  FireDismissNudgeTimer();
-  ASSERT_FALSE(GetWidget());
+  ASSERT_TRUE(GetNudgeWidgetForWindow(window.get()));
+  FireDismissNudgeTimer(window.get());
+  ASSERT_FALSE(GetNudgeWidgetForWindow(window.get()));
 
   // Advance the clock and attempt to show the nudge for a forth time. Verify
   // that it will not show.
   test_clock_.Advance(base::Hours(25));
   window.reset();
   window = CreateAppWindow(gfx::Rect(300, 300));
-  EXPECT_FALSE(GetWidget());
+  EXPECT_FALSE(GetNudgeWidgetForWindow(window.get()));
 }
 
 // Tests that the nudge works in tablet mode, and that its bounds in screen are
@@ -239,7 +268,7 @@ TEST_F(MultitaskMenuNudgeControllerTest, TabletNudgeBounds) {
 
   // The widget should appear the first time a window is activated.
   auto window = CreateAppWindow();
-  ASSERT_TRUE(GetWidget());
+  ASSERT_TRUE(GetNudgeWidgetForWindow(window.get()));
 
   // Test that the widget is shown at the correct bounds when the window is
   // first created.
@@ -252,15 +281,27 @@ TEST_F(MultitaskMenuNudgeControllerTest, TabletNudgeBounds) {
   // snapped in the primary position.
   split_view_controller->SnapWindow(
       window.get(), SplitViewController::SnapPosition::kPrimary);
-  ASSERT_TRUE(GetWidget());
+  ASSERT_TRUE(GetNudgeWidgetForWindow(window.get()));
   ExpectCorrectTabletNudgeBounds(window.get());
 
   // Tests that the widget is shown at the correct bounds when the window is
   // snapped in the secondary position.
   split_view_controller->SnapWindow(
       window.get(), SplitViewController::SnapPosition::kSecondary);
-  ASSERT_TRUE(GetWidget());
+  ASSERT_TRUE(GetNudgeWidgetForWindow(window.get()));
   ExpectCorrectTabletNudgeBounds(window.get());
+}
+
+// Tests that if a window gets destroyed while the nduge is showing in tablet
+// mode, the nudge disappears and there is no crash.
+TEST_F(MultitaskMenuNudgeControllerTest, TabletWindowDestroyedWhileNudgeShown) {
+  TabletModeControllerTestApi().EnterTabletMode();
+
+  auto window = CreateAppWindow(gfx::Rect(300, 300));
+  ASSERT_TRUE(GetNudgeWidgetForWindow(window.get()));
+
+  window.reset();
+  EXPECT_FALSE(GetNudgeWidgetForWindow(window.get()));
 }
 
 }  // namespace ash

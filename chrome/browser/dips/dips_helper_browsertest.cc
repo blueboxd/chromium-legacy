@@ -150,7 +150,11 @@ class DIPSTabHelperBrowserTest : public PlatformBrowserTest,
   void SetUp() override {
     if (IsPersistentStorageEnabled()) {
       scoped_feature_list_.InitAndEnableFeatureWithParameters(
-          dips::kFeature, {{"persist_database", "true"}});
+          dips::kFeature,
+          {{"persist_database", "true"}, {"triggering_action", "bounce"}});
+    } else {
+      scoped_feature_list_.InitAndEnableFeatureWithParameters(
+          dips::kFeature, {{"triggering_action", "bounce"}});
     }
     PlatformBrowserTest::SetUp();
   }
@@ -748,8 +752,8 @@ class DIPSPrepopulateTest : public PlatformBrowserTest {
         ->FlushLossyWebsiteSettings();
   }
 
-  DIPSService* dips_service;
-  base::SequenceBound<DIPSStorage>* storage;
+  raw_ptr<DIPSService> dips_service;
+  raw_ptr<base::SequenceBound<DIPSStorage>> storage;
 
  private:
   base::test::ScopedFeatureList feature_list_;

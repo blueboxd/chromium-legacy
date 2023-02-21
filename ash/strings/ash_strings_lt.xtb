@@ -133,11 +133,13 @@ Jei norite pradėti, pabandykite atlikti nurodytus veiksmus.</translation>
 <translation id="163517899691012366">Pranešimai nutildomi, kai įjungtas netrukdymo režimas</translation>
 <translation id="1637505162081889933">Įrenginių: <ph name="NUM_DEVICES" /></translation>
 <translation id="1639239467298939599">Įkeliama</translation>
+<translation id="1647986356840967552">Ankstesnis puslapis</translation>
 <translation id="1654477262762802994">Pradėti užklausą balsu</translation>
 <translation id="1668469839109562275">Įtaisytasis VPN</translation>
 <translation id="1677472565718498478">Liko <ph name="TIME" /></translation>
 <translation id="1677507110654891115">„<ph name="FEATURE_NAME" />“ neprijungta.</translation>
 <translation id="1677582821739292812">Kažkas žiūri į jūsų ekraną</translation>
+<translation id="1683399938733266832">Dabartinis centrinio procesoriaus naudojimas: <ph name="CPU_USEAGE" /> %</translation>
 <translation id="169515659049020177">Antrojo lygio klavišas</translation>
 <translation id="1698080062160024910"><ph name="TOTAL_TIME" /> laikmatis · <ph name="LABEL" /></translation>
 <translation id="1698760176351776263">„IPv6“ adresas: <ph name="ADDRESS" /></translation>
@@ -380,6 +382,7 @@ Jei norite pradėti, pabandykite atlikti nurodytus veiksmus.</translation>
 <translation id="3051189971848907985">Pervardijamas profilis. Palaukite kelias minutes.</translation>
 <translation id="3055162170959710888">Šį įrenginį šiandien naudojote <ph name="USED_TIME" /></translation>
 <translation id="3062298103034426069">Nepalaikoma</translation>
+<translation id="3068622547379332530"><ph name="VERSION_NAME" /> versija (<ph name="OFFICIAL_STATUS" />) <ph name="CHANNEL_NAME" /> <ph name="PROCESSOR_VARIATION" /></translation>
 <translation id="3068711042108640621">Lentyna kairėje</translation>
 <translation id="3077734595579995578">shift</translation>
 <translation id="3081696990447829002">Išskleisti meniu</translation>
@@ -555,6 +558,7 @@ Prijunkite įrenginį prie maitinimo šaltinio.</translation>
 <translation id="397105322502079400">Skaičiuojama...</translation>
 <translation id="397726367135689299">Akumuliatoriaus įkrovimas gali būti nepatikimas.</translation>
 <translation id="3977512764614765090">Aumuliatoriaus įkrova <ph name="PERCENTAGE" /> % ir jis įkraunamas.</translation>
+<translation id="3984536049089846927">Kitas puslapis</translation>
 <translation id="3986082989454912832">Atsakyti</translation>
 <translation id="3995138139523574647">USB-C įrenginys (prievadas dešinėje, užpakalinėje dalyje)</translation>
 <translation id="40062176907008878">Rašymas ranka</translation>
@@ -577,7 +581,7 @@ Prijunkite įrenginį prie maitinimo šaltinio.</translation>
 <translation id="4123259114412175274">Jei norite atrakinti „Chromebook“, įsitikinkite, kad įjungtas telefono „Bluetooth“ ryšys</translation>
 <translation id="4125970834901680537">Nepavyksta perduoti programų srautu planšetinio kompiuterio režimu. Bandykite dar kartą nešiojamojo kompiuterio režimu.</translation>
 <translation id="4129129681837227511">Jei norite matyti pranešimus užrakinimo ekrane, atrakinkite ir pakeiskite nustatymą</translation>
-<translation id="4130035430755296270">Laikykite pelės žymeklį, kad būtų parodyta daugiau išdėstymo parinkčių</translation>
+<translation id="4131973331381812765">Temperatūra: <ph name="TEMPERATURE" /> °C – dabartinė sparta: <ph name="CPU_AVERAGE_CURRENT_FREQUENCY_GHZ" /> GHz</translation>
 <translation id="4136724716305260864">Įjungta iki saulėtekio</translation>
 <translation id="4146833061457621061">„Play music“ (Leisk muziką)</translation>
 <translation id="4150201353443180367">Pateiktis</translation>
@@ -718,7 +722,6 @@ Prijunkite įrenginį prie maitinimo šaltinio.</translation>
 <translation id="481455355267255546">Toliau</translation>
 <translation id="4831034276697007977">Ar tikrai norite išjungti automatinius paspaudimus?</translation>
 <translation id="4849058404725798627">Paryškinti objektą jį suaktyvinus klaviatūra</translation>
-<translation id="4855250849489639581">Perbraukite žemyn, kad būtų rodoma daugiau išdėstymo parinkčių</translation>
 <translation id="485592688953820832">Nesiimti jokių veiksmų (pristabdyti)</translation>
 <translation id="485634149294284819">Klaviatūros pasirinkimo meniu</translation>
 <translation id="4860284199500934869">Patikrinkite tinklo ryšį, kad atsisiųstumėte failą „<ph name="FILENAME" />“</translation>
@@ -733,6 +736,7 @@ Prijunkite įrenginį prie maitinimo šaltinio.</translation>
 <translation id="4895488851634969361">Akumuliatorius visiškai įkrautas.</translation>
 <translation id="490375751687810070">Vertikaliai</translation>
 <translation id="490788395437447240">Akumuliatoriaus įkrovos lygis: <ph name="BATTERY_PERCENTAGE" /> proc.</translation>
+<translation id="491504982845934899">Suaktyvinti „<ph name="NETWORK_NAME" />“ po įrenginio sąrankos</translation>
 <translation id="4917385247580444890">Stiprus</translation>
 <translation id="4918086044614829423">Priimti</translation>
 <translation id="4919841137949306064">Programa „<ph name="APP_NAME" />“ šiuo metu naudoja fotoaparatą</translation>
@@ -1329,6 +1333,7 @@ Naujas įdiegimas</translation>
 <translation id="8131740175452115882">Patvirtinti</translation>
 <translation id="8131994907636310308">Uždaryti rūšiavimo iššokantįjį pranešimą</translation>
 <translation id="8132793192354020517">Prisijungta prie „<ph name="NAME" />“</translation>
+<translation id="8138705869659070104">Suaktyvinti po įrenginio sąrankos</translation>
 <translation id="813913629614996137">Inicijuojama...</translation>
 <translation id="8142441511840089262">Dukart spustelėti</translation>
 <translation id="8142699993796781067">Privatus tinklas</translation>

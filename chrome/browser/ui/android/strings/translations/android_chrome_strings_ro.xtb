@@ -450,6 +450,7 @@ Indicativele de stare private îmbunătățesc confidențialitatea pe web și nu
 <translation id="3421726884497337397">Alege când sunt blocate cookie-urile terțe</translation>
 <translation id="3428747202529429621">Te protejează în Chrome și poate fi folosită pentru a spori securitatea în alte aplicații Google dacă te-ai conectat</translation>
 <translation id="3429160811076349561">Funcțiile de încercare sunt dezactivate</translation>
+<translation id="3432973700170747422">Șterge ultimele 15 minute</translation>
 <translation id="3435465986463792564">Ai deschis multe ferestre? Gestionează-le de aici</translation>
 <translation id="3435738964857648380">Securitate</translation>
 <translation id="3443221991560634068">Reîncarcă pagina curentă</translation>
@@ -516,7 +517,6 @@ Indicativele de stare private îmbunătățesc confidențialitatea pe web și nu
 <translation id="3830886834687455630">Actualizează serviciile Google Play pentru a verifica parolele</translation>
 <translation id="3845098929839618392">Deschide într-o filă incognito</translation>
 <translation id="3856096718352044181">Confirmă dacă acesta este un furnizor valid sau încearcă din nou mai târziu</translation>
-<translation id="3858127568696903256">Vezi aici conținutul pe care îl urmărești</translation>
 <translation id="3858860766373142691">Nume</translation>
 <translation id="3861633093716975811">Videoclipuri populare</translation>
 <translation id="3874520961715512166">Site eliminat</translation>
@@ -1242,6 +1242,7 @@ De exemplu, unele site-uri pot răspunde la această solicitare afișând anunț
 <translation id="7682724950699840886">Încearcă următoarele sfaturi: asigură-te că există spațiu suficient pe dispozitiv, încearcă să exporți din nou.</translation>
 <translation id="7686086654630106285">Mai multe despre anunțurile sugerate de site-uri</translation>
 <translation id="768618399695552958">Unele pagini pe care le accesezi sunt preîncărcate. Este posibil ca paginile să fie preîncărcate prin serverele Google atunci când un site Google trimite un link spre ele.</translation>
+<translation id="7691043218961417207">Explorează conținutul de urmărit</translation>
 <translation id="7698359219371678927">Creează un e-mail în <ph name="APP_NAME" /></translation>
 <translation id="7707922173985738739">va folosi datele mobile;</translation>
 <translation id="7709094866268987903">Interesele eliminate vor apărea aici</translation>

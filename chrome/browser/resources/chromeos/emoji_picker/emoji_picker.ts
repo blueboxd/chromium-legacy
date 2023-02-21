@@ -86,9 +86,9 @@ export class EmojiPicker extends PolymerElement {
       searchExtensionEnabled: {type: Boolean, value: false},
       incognito: {type: Boolean, value: true},
       gifSupport: {type: Boolean, value: false},
-      gifDataInitialised: {type: Boolean, value: false},
       nextGifPos: {type: Object, value: () => ({})},
       status: {type: Status, value: null},
+      errorMessage: {type: String, value: constants.NO_INTERNET_VIEW_ERROR_MSG},
     };
   }
   private category: CategoryEnum;
@@ -114,7 +114,6 @@ export class EmojiPicker extends PolymerElement {
   private autoScrollingToGroup: boolean = false;
   private highlightBarMoving: boolean = false;
   private groupTabsMoving: boolean = false;
-  private gifDataInitialised: boolean;
   private nextGifPos: {[key: string]: string};
   private status: Status|null;
   private previousGifValidation: Date;
@@ -328,72 +327,76 @@ export class EmojiPicker extends PolymerElement {
     );
 
     if (this.gifSupport) {
-      this.validateRecentlyUsedGifs();
-
-      // Set Recently Used and Trending in the GIF tabs first before fetching
-      // Tenor API data
-      const trendingGifData = {name: constants.TRENDING};
-      const initialCategoryTabs = {
-        ...CATEGORY_TABS,
-        gif: this.setGifGroupsPagination([trendingGifData]),
-      };
-      this.allCategoryTabs = gifCategoryTabs(initialCategoryTabs);
-
-      // Fetch Tenor API category groups
-      const categoriesFetchPromise =
-          prevFetchPromise.then(() => this.apiProxy.getCategories());
-
-      const categoriesRenderPromise =
-          Promise.all([prevRenderPromise, categoriesFetchPromise])
-              .then((values) => {
-                const {gifCategories} = values[1];
-                const categoryTabs = {
-                  ...CATEGORY_TABS,
-                  gif: this.setGifGroupsPagination(
-                      [trendingGifData, ...gifCategories]),
-                };
-
-                gifCategories.map(
-                    category => this.nextGifPos[category.name] = '');
-                this.allCategoryTabs = gifCategoryTabs(categoryTabs);
-
-                // If user is on GIF category, update emojiGroupTabs to
-                // re-render emoji picker and display newly fetched GIF tabs
-                if (this.category === CategoryEnum.GIF) {
-                  const gifTabs = this.allCategoryTabs.filter(
-                      tab => tab.category === CategoryEnum.GIF);
-                  this.set('emojiGroupTabs', gifTabs);
-                  this.updateActiveGroup();
-                }
-              });
-      const featuredGifFetchPromise =
-          categoriesFetchPromise.then(() => this.apiProxy.getFeaturedGifs());
-      Promise.all([categoriesRenderPromise, featuredGifFetchPromise])
-          .then((values) => {
-            const {status, featuredGifs} = values[1];
-            this.status = status;
-            const trendingGifsElement: EmojiVariants[] =
-                this.apiProxy.convertTenorGifsToEmoji(featuredGifs);
-
-            const trendingGifs = [{
-              group: constants.TRENDING,
-              category: CategoryEnum.GIF,
-              emoji: trendingGifsElement,
-            }];
-            this.nextGifPos[constants.TRENDING] = featuredGifs.next;
-            this.gifDataInitialised = true;
-
-            this.updateCategoryData(trendingGifs, CategoryEnum.GIF);
-            this.activeInfiniteGroupId =
-                this.allCategoryTabs
-                    .find(tab => tab.name === constants.TRENDING)
-                    ?.groupId as string;
-          });
+      this.fetchAndProcessGifData(prevFetchPromise, prevRenderPromise);
     }
   }
 
+  private fetchAndProcessGifData(
+      prevFetchPromise = Promise.resolve(),
+      prevRenderPromise = Promise.resolve()) {
+    this.validateRecentlyUsedGifs();
+
+    // Set Recently Used and Trending in the GIF tabs first before fetching
+    // Tenor API data
+    const trendingGifData = {name: constants.TRENDING};
+    const initialCategoryTabs = {
+      ...CATEGORY_TABS,
+      gif: this.setGifGroupsPagination([trendingGifData]),
+    };
+    this.allCategoryTabs = gifCategoryTabs(initialCategoryTabs);
+
+    // Fetch Tenor API category groups
+    const categoriesFetchPromise =
+        prevFetchPromise.then(() => this.apiProxy.getCategories());
+
+    const categoriesRenderPromise =
+        Promise.all([prevRenderPromise, categoriesFetchPromise])
+            .then((values) => {
+              const {gifCategories} = values[1];
+              const categoryTabs = {
+                ...CATEGORY_TABS,
+                gif: this.setGifGroupsPagination(
+                    [trendingGifData, ...gifCategories]),
+              };
+
+              gifCategories.map(
+                  category => this.nextGifPos[category.name] = '');
+              this.allCategoryTabs = gifCategoryTabs(categoryTabs);
+
+              // If user is on GIF category, update emojiGroupTabs to
+              // re-render emoji picker and display newly fetched GIF tabs
+              if (this.category === CategoryEnum.GIF) {
+                const gifTabs = this.allCategoryTabs.filter(
+                    tab => tab.category === CategoryEnum.GIF);
+                this.set('emojiGroupTabs', gifTabs);
+                this.updateActiveGroup();
+              }
+            });
+    const featuredGifFetchPromise =
+        categoriesFetchPromise.then(() => this.apiProxy.getFeaturedGifs());
+    Promise.all([categoriesRenderPromise, featuredGifFetchPromise])
+        .then((values) => {
+          const {status, featuredGifs} = values[1];
+          this.status = status;
+          const trendingGifsElement: EmojiVariants[] =
+              this.apiProxy.convertTenorGifsToEmoji(featuredGifs);
+
+          const trendingGifs = [{
+            group: constants.TRENDING,
+            category: CategoryEnum.GIF,
+            emoji: trendingGifsElement,
+          }];
+          this.nextGifPos[constants.TRENDING] = featuredGifs.next;
+
+          this.updateCategoryData(trendingGifs, CategoryEnum.GIF);
+          this.activeInfiniteGroupId =
+              this.allCategoryTabs.find(tab => tab.name === constants.TRENDING)
+                  ?.groupId as string;
+        });
+  }
+
   onClickTryAgain() {
-    // TODO(b/266024083): Try fetch categories and trending gifs again on click
+    this.fetchAndProcessGifData();
   }
 
   private canScrollToGroup(category: CategoryEnum, groupId: string): boolean {
@@ -470,6 +473,12 @@ export class EmojiPicker extends PolymerElement {
     const categoriesGroupElements: EmojiGroupElement[] = [];
 
     data.filter(item => !item.searchOnly).forEach((emojiGroup, index) => {
+      if (emojiGroup.category === CategoryEnum.GIF &&
+          emojiGroup.emoji.length === 0) {
+        // EmojiGroup.emoji will be empty if and only if it is a gif category
+        // and there's an error when trying to fetch gifs.
+        return;
+      }
       const tabIndex = baseIndex + index;
       const tabCategory = this.allCategoryTabs[tabIndex]?.category;
       categoriesGroupElements.push(
@@ -910,12 +919,14 @@ export class EmojiPicker extends PolymerElement {
         // for text group button, the highlight bar only spans its inner width,
         // which excludes both padding and margin.
         if (index < subcategoryTabs.length) {
+          const padding = this.gifSupport ?
+              constants.V2_5_EMOJI_PICKER_SIDE_PADDING :
+              constants.EMOJI_PICKER_SIDE_PADDING;
           const barInlineGap =
               constants.TAB_BUTTON_MARGIN + constants.TEXT_GROUP_BUTTON_PADDING;
           const currentTab = subcategoryTabs[index];
           bar.style.left = `${
-              (currentTab?.offsetLeft ?? 0) -
-              constants.EMOJI_PICKER_SIDE_PADDING -
+              (currentTab?.offsetLeft ?? 0) - padding -
               this.calculateTabScrollLeftPosition(this.pagination)}px`;
           bar.style.width = `${
               (subcategoryTabs[index]?.clientWidth ?? 0) - barInlineGap * 2}px`;
@@ -1264,9 +1275,7 @@ export class EmojiPicker extends PolymerElement {
         this.allCategoryTabs.filter(tab => tab.category === newCategoryName);
     this.set('emojiGroupTabs', categoryTabs);
     afterNextRender(this, () => {
-      this.updateActiveGroup(
-          this.allCategoryTabs.find(tab => tab.category === newCategoryName)
-              ?.groupId);
+      this.updateActiveGroup();
       this.updateHistoryTabDisabledProperty();
       this.$.tabs.scrollLeft =
           this.calculateTabScrollLeftPosition(this.pagination);

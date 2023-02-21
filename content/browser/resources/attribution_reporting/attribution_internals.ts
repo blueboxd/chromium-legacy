@@ -5,15 +5,17 @@
 import 'chrome://resources/cr_elements/cr_tab_box/cr_tab_box.js';
 import './attribution_internals_table.js';
 
+import {assertNotReached} from 'chrome://resources/js/assert_ts.js';
 import {getTrustedHTML} from 'chrome://resources/js/static_types.js';
 import {Origin} from 'chrome://resources/mojo/url/mojom/origin.mojom-webui.js';
 
 import {TriggerAttestation} from './attribution.mojom-webui.js';
-import {Handler, HandlerInterface, ObserverInterface, ObserverReceiver, ReportID, WebUIDebugReport, WebUIRegistration, WebUIReport, WebUISource, WebUISource_Attributability, WebUISourceRegistration, WebUISourceRegistration_Status, WebUITrigger, WebUITrigger_Status} from './attribution_internals.mojom-webui.js';
+import {Factory, HandlerInterface, HandlerRemote, ObserverInterface, ObserverReceiver, ReportID, SourceStatus, WebUIDebugReport, WebUIRegistration, WebUIReport, WebUISource, WebUISource_Attributability, WebUISourceRegistration, WebUITrigger, WebUITrigger_Status} from './attribution_internals.mojom-webui.js';
 import {AttributionInternalsTableElement} from './attribution_internals_table.js';
 import {ReportType} from './attribution_reporting.mojom-webui.js';
 import {SourceRegistrationError} from './source_registration_error.mojom-webui.js';
 import {SourceType} from './source_type.mojom-webui.js';
+import {StoreSourceResult} from './store_source_result.mojom-webui.js';
 import {Column, TableModel} from './table_model.js';
 
 // If kAttributionAggregatableBudgetPerSource changes, update this value
@@ -435,7 +437,7 @@ class SourceRegistration extends Registration {
   constructor(mojo: WebUISourceRegistration) {
     super(mojo.registration);
     this.type = sourceTypeToText(mojo.type);
-    this.status = sourceRegistrationStatusToText(mojo.status, mojo.jsonError);
+    this.status = sourceRegistrationStatusToText(mojo.status);
   }
 }
 
@@ -553,7 +555,7 @@ class ReportTableModel<T extends Report> extends TableModel<T> {
   constructor(
       cols: Array<Column<T>>, showDebugReportsContainer: HTMLElement,
       private readonly sendReportsButton: HTMLButtonElement,
-      private readonly remote: HandlerInterface) {
+      private readonly handler: HandlerInterface) {
     super(
         commonReportTableColumns<T>().concat(cols),
         5,  // Sort by report time by default; the extra column is added below
@@ -655,7 +657,7 @@ class ReportTableModel<T extends Report> extends TableModel<T> {
     this.sendReportsButton.disabled = true;
     this.sendReportsButton.innerText = 'Sending...';
 
-    this.remote.sendReports(ids).then(() => {
+    this.handler.sendReports(ids).then(() => {
       this.sendReportsButton.innerText = previousText;
     });
   }
@@ -833,7 +835,7 @@ function sourceTypeToText(sourceType: SourceType): string {
     case SourceType.kEvent:
       return 'Event';
     default:
-      return sourceType.toString();
+      assertNotReached();
   }
 }
 
@@ -853,31 +855,34 @@ function attributabilityToText(attributability: WebUISource_Attributability):
     case WebUISource_Attributability.kReachedEventLevelAttributionLimit:
       return 'Attributable: reached event-level attribution limit';
     default:
-      return attributability.toString();
+      assertNotReached();
   }
 }
 
-function sourceRegistrationStatusToText(
-    status: WebUISourceRegistration_Status,
-    jsonError: SourceRegistrationError): string {
-  switch (status) {
-    case WebUISourceRegistration_Status.kSuccess:
-      return 'Success';
-    case WebUISourceRegistration_Status.kInvalidJson:
-      return `Rejected: invalid JSON: ${
-          sourceRegistrationErrorToText(jsonError)}`;
-    case WebUISourceRegistration_Status.kInternalError:
-      return 'Rejected: internal error';
-    case WebUISourceRegistration_Status.kInsufficientSourceCapacity:
-      return 'Rejected: insufficient source capacity';
-    case WebUISourceRegistration_Status.kInsufficientUniqueDestinationCapacity:
-      return 'Rejected: insufficient unique destination capacity';
-    case WebUISourceRegistration_Status.kExcessiveReportingOrigins:
-      return 'Rejected: excessive reporting origins';
-    case WebUISourceRegistration_Status.kProhibitedByBrowserPolicy:
-      return 'Rejected: prohibited by browser policy';
-    default:
-      return status.toString();
+function sourceRegistrationStatusToText(status: SourceStatus): string {
+  if (status.storeSourceResult !== undefined) {
+    switch (status.storeSourceResult) {
+      case StoreSourceResult.kSuccess:
+      case StoreSourceResult.kSuccessNoised:
+        return 'Success';
+      case StoreSourceResult.kInternalError:
+        return 'Rejected: internal error';
+      case StoreSourceResult.kInsufficientSourceCapacity:
+        return 'Rejected: insufficient source capacity';
+      case StoreSourceResult.kInsufficientUniqueDestinationCapacity:
+        return 'Rejected: insufficient unique destination capacity';
+      case StoreSourceResult.kExcessiveReportingOrigins:
+        return 'Rejected: excessive reporting origins';
+      case StoreSourceResult.kProhibitedByBrowserPolicy:
+        return 'Rejected: prohibited by browser policy';
+      default:
+        return status.toString();
+    }
+  } else if (status.jsonError !== undefined) {
+    return `Rejected: invalid JSON: ${
+        sourceRegistrationErrorToText(status.jsonError)}`;
+  } else {
+    return 'Unknown';
   }
 }
 
@@ -918,7 +923,7 @@ function triggerStatusToText(status: WebUITrigger_Status): string {
     case WebUITrigger_Status.kExcessiveEventLevelReports:
       return 'Failure: Excessive event-level reports';
     default:
-      return status.toString();
+      assertNotReached();
   }
 }
 
@@ -930,20 +935,20 @@ class AttributionInternals implements ObserverInterface {
   private readonly eventLevelReports: EventLevelReportTableModel;
   private readonly aggregatableReports: AggregatableAttributionReportTableModel;
 
-  private readonly remote = Handler.getRemote();
+  private readonly handler = new HandlerRemote();
 
   constructor() {
     this.eventLevelReports = new EventLevelReportTableModel(
         document.querySelector<HTMLButtonElement>('#show-debug-event-reports')!,
         document.querySelector<HTMLButtonElement>('#send-reports')!,
-        this.remote);
+        this.handler);
 
     this.aggregatableReports = new AggregatableAttributionReportTableModel(
         document.querySelector<HTMLButtonElement>(
             '#show-debug-aggregatable-reports')!,
         document.querySelector<HTMLButtonElement>('#send-aggregatable-reports')!
         ,
-        this.remote);
+        this.handler);
 
     installUnreadIndicator(
         this.sources, document.querySelector<HTMLElement>('#sources-tab')!);
@@ -992,8 +997,9 @@ class AttributionInternals implements ObserverInterface {
         .querySelector<AttributionInternalsTableElement<DebugReport>>(
             '#debugReportTable')!.setModel(this.debugReports);
 
-    this.remote.addObserver(
-        new ObserverReceiver(this).$.bindNewPipeAndPassRemote());
+    Factory.getRemote().create(
+        new ObserverReceiver(this).$.bindNewPipeAndPassRemote(),
+        this.handler.$.bindNewPipeAndPassReceiver());
   }
 
   onSourcesChanged() {
@@ -1046,11 +1052,11 @@ class AttributionInternals implements ObserverInterface {
     this.eventLevelReports.clear();
     this.aggregatableReports.clear();
     this.debugReports.clear();
-    this.remote.clearStorage();
+    this.handler.clearStorage();
   }
 
   refresh() {
-    this.remote.isAttributionReportingEnabled().then((response) => {
+    this.handler.isAttributionReportingEnabled().then((response) => {
       const featureStatusContent =
           document.querySelector<HTMLElement>('#feature-status-content')!;
       featureStatusContent.innerText =
@@ -1074,14 +1080,14 @@ class AttributionInternals implements ObserverInterface {
   }
 
   private updateSources() {
-    this.remote.getActiveSources().then((response) => {
+    this.handler.getActiveSources().then((response) => {
       this.sources.setStoredSources(
           response.sources.map((mojo) => new Source(mojo)));
     });
   }
 
   private updateReports(reportType: ReportType) {
-    this.remote.getReports(reportType).then((response) => {
+    this.handler.getReports(reportType).then((response) => {
       switch (reportType) {
         case ReportType.kEventLevel:
           this.eventLevelReports.setStoredReports(

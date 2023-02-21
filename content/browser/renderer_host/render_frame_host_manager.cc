@@ -571,11 +571,16 @@ void RenderFrameHostManager::BeforeUnloadCompleted(bool proceed) {
     // If we're about to close the tab and there's a speculative RFH, cancel it.
     // Otherwise, if the navigation in the speculative RFH completes before the
     // close in the current RFH, we'll lose the tab close.
+    // TODO(https://crbug.com/1406023): This condition may no longer be needed.
     if (speculative_render_frame_host_) {
       DiscardSpeculativeRFH(NavigationDiscardReason::kWillRemoveFrame);
     }
 
-    render_frame_host_->ClosePage();
+    // TODO(https://crbug.com/1406023): This is not always browser-initiated, so
+    // we should track whether the close is browser or renderer-initiated and
+    // use that here.
+    render_frame_host_->ClosePage(
+        RenderFrameHostImpl::ClosePageSource::kBrowser);
   }
 }
 
@@ -3899,8 +3904,14 @@ void RenderFrameHostManager::CommitPending(
     if (prev_state ==
         RenderFrameHostImpl::LifecycleStateImpl::kInBackForwardCache) {
       for (const auto& rvh : render_view_hosts_to_restore) {
-        rvh->LeaveBackForwardCache(
-            pending_stored_page->page_restore_params().Clone());
+        blink::mojom::PageRestoreParamsPtr page_restore_params =
+            pending_stored_page->page_restore_params().Clone();
+        // We only send view_transition_state to the main RenderViewHost, so
+        // clear it for any other RenderViewHosts.
+        if (&*rvh != current_frame_host()->GetRenderViewHost()) {
+          page_restore_params->view_transition_state.reset();
+        }
+        rvh->LeaveBackForwardCache(std::move(page_restore_params));
       }
     } else {
       DCHECK_EQ(prev_state,

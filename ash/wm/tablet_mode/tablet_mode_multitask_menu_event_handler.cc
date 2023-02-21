@@ -13,7 +13,6 @@
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
 #include "base/functional/bind.h"
-#include "chromeos/ui/frame/multitask_menu/multitask_menu_metrics.h"
 #include "ui/events/event.h"
 #include "ui/events/event_target.h"
 #include "ui/events/types/event_type.h"
@@ -24,7 +23,7 @@ namespace ash {
 namespace {
 
 // The dimensions of the area that can activate the multitask menu.
-constexpr gfx::SizeF kTargetAreaSize(510.f, 113.f);
+constexpr gfx::SizeF kTargetAreaSize(200.f, 40.f);
 
 }  // namespace
 
@@ -37,58 +36,14 @@ TabletModeMultitaskMenuEventHandler::~TabletModeMultitaskMenuEventHandler() {
   Shell::Get()->RemovePreTargetHandler(this);
 }
 
-void TabletModeMultitaskMenuEventHandler::MaybeCreateMultitaskMenu(
-    aura::Window* active_window) {
-  if (!multitask_menu_) {
-    multitask_menu_ =
-        std::make_unique<TabletModeMultitaskMenu>(this, active_window);
-
-    multitask_cue_->DismissCue();
-  }
+void TabletModeMultitaskMenuEventHandler::ShowMultitaskMenu(
+    aura::Window* window) {
+  MaybeCreateMultitaskMenu(window);
+  multitask_menu_->Animate(/*show=*/true);
 }
 
 void TabletModeMultitaskMenuEventHandler::ResetMultitaskMenu() {
   multitask_menu_.reset();
-}
-
-void TabletModeMultitaskMenuEventHandler::OnMouseEvent(ui::MouseEvent* event) {
-  if (event->type() != ui::ET_MOUSEWHEEL)
-    return;
-
-  // Note that connecting a mouse normally puts the device in clamshell mode
-  // unless a developer switch is enabled.
-  if (!debug::DeveloperAcceleratorsEnabled())
-    return;
-
-  const float y_offset = event->AsMouseWheelEvent()->y_offset();
-  if (y_offset == 0.f)
-    return;
-
-  aura::Window* target = static_cast<aura::Window*>(event->target());
-
-  // Close the multitask menu if it is the target and we have a upwards scroll.
-  if (y_offset > 0.f && multitask_menu_ &&
-      target == multitask_menu_->widget()->GetNativeWindow()) {
-    multitask_menu_->Animate(/*show=*/false);
-    return;
-  }
-
-  if (multitask_menu_)
-    return;
-
-  aura::Window* active_window = window_util::GetActiveWindow();
-  if (!active_window || !active_window->Contains(target) ||
-      !WindowState::Get(active_window)->CanMaximize()) {
-    return;
-  }
-
-  // Show the multitask menu if it is in the top quarter of the target and is a
-  // downwards scroll.
-  if (y_offset < 0.f &&
-      event->location_f().y() < target->bounds().height() / 4.f) {
-    MaybeCreateMultitaskMenu(active_window);
-    multitask_menu_->Animate(/*show=*/true);
-  }
 }
 
 void TabletModeMultitaskMenuEventHandler::OnTouchEvent(ui::TouchEvent* event) {
@@ -114,16 +69,16 @@ void TabletModeMultitaskMenuEventHandler::OnTouchEvent(ui::TouchEvent* event) {
       target_area.set_y(window_bounds.y());
       if (!multitask_menu_ && target_area.Contains(screen_location)) {
         // On the first touch, we don't know yet if this touch will turn into a
-        // drag, but mark `SetHandled()` to avoid showing the webui tabstrip.
-        initial_drag_data_ = InitialDragData{screen_location, /*can_open=*/true,
-                                             /*is_drag=*/false};
+        // drag, but mark `SetHandled()` to avoid turning into a long press.
+        initial_drag_data_ =
+            InitialDragData{screen_location, /*is_drag=*/false};
         event->SetHandled();
       }
       if (multitask_menu_ &&
           gfx::RectF(multitask_menu_->widget()->GetWindowBoundsInScreen())
               .Contains(screen_location)) {
-        initial_drag_data_ = InitialDragData{
-            screen_location, /*can_open=*/false, /*is_drag=*/false};
+        initial_drag_data_ =
+            InitialDragData{screen_location, /*is_drag=*/false};
         // Do not mark `SetHandled()` since the press may be on a button.
       }
       break;
@@ -148,14 +103,20 @@ void TabletModeMultitaskMenuEventHandler::OnTouchEvent(ui::TouchEvent* event) {
                                          &window_location);
 
       if (!multitask_menu_) {
-        if (initial_drag_data_->can_open && !down) {
-          // If the touch started in the target area but moved up, do nothing.
+        if (!down) {
+          // If no menu is shown and we drag up, do nothing.
           initial_drag_data_.reset();
           return;
         }
-        // Otherwise if the touch moved down, we should begin a drag.
         MaybeCreateMultitaskMenu(active_window);
-        multitask_menu_->BeginDrag(window_location.y(), down);
+      }
+      if (!initial_drag_data_->is_drag) {
+        // If this is the first move after the touch, begin a drag. Note that
+        // `initial_location` was saved in screen coordinates, so we must
+        // convert to window coordinates to pass to the menu.
+        gfx::PointF initial_location = initial_drag_data_->initial_location;
+        wm::ConvertPointFromScreen(target, &initial_location);
+        multitask_menu_->BeginDrag(initial_location.y(), down);
       }
       multitask_menu_->UpdateDrag(window_location.y(), down);
       event->SetHandled();
@@ -199,6 +160,15 @@ bool TabletModeMultitaskMenuEventHandler::CanProcessEvent(
   }
   auto* window_state = WindowState::Get(window);
   return !window_state->IsFloated() && window_state->CanMaximize();
+}
+
+void TabletModeMultitaskMenuEventHandler::MaybeCreateMultitaskMenu(
+    aura::Window* active_window) {
+  if (!multitask_menu_) {
+    multitask_menu_ =
+        std::make_unique<TabletModeMultitaskMenu>(this, active_window);
+    multitask_cue_->DismissCue();
+  }
 }
 
 }  // namespace ash

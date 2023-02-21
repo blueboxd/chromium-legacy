@@ -157,6 +157,7 @@ extern const char kChromeUIOsUrlAppURL[];
 #endif
 extern const char kChromeUIPasswordManagerInternalsHost[];
 extern const char kChromeUIPasswordManagerURL[];
+extern const char kChromeUIPasswordManagerCheckupURL[];
 extern const char kChromeUIPerformanceSettingsURL[];
 extern const char kChromeUIPolicyHost[];
 extern const char kChromeUIPolicyURL[];
@@ -312,6 +313,8 @@ extern const char kChromeUIEmojiPickerURL[];
 extern const char kChromeUIEmojiPickerHost[];
 extern const char kChromeUIEnterpriseReportingHost[];
 extern const char kChromeUIEnterpriseReportingURL[];
+extern const char kChromeUIHealthdInternalsHost[];
+extern const char kChromeUIHealthdInternalsURL[];
 extern const char kChromeUIInternetConfigDialogURL[];
 extern const char kChromeUIInternetDetailDialogURL[];
 extern const char kChromeUIInternetConfigDialogHost[];

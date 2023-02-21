@@ -445,6 +445,14 @@
           'all',
         ],
       },
+      'linux-lacros-archive-rel': {
+        'mixins': [
+          'linux-bionic',
+        ],
+        'additional_compile_targets': [
+          'chrome',
+        ],
+      },
       'linux-official': {
         'additional_compile_targets': [
           'all',
@@ -1897,6 +1905,9 @@
         ],
       },
       'ToTWin': {
+        'mixins': [
+          'win10',
+        ],
         'test_suites': {
           'gtest_tests': 'chromium_win_gtests',
           'isolated_scripts': 'win_specific_isolated_scripts_and_sizes',
@@ -1906,6 +1917,9 @@
         ],
       },
       'ToTWin(dbg)': {
+        'mixins': [
+          'win10',
+        ],
         'test_suites': {
           'gtest_tests': 'chromium_win_gtests',
           # Doesn't run win_specific_isolated_scripts because the mini
@@ -1917,6 +1931,9 @@
         ],
       },
       'ToTWin(dll)': {
+        'mixins': [
+          'win10',
+        ],
         'test_suites': {
           'gtest_tests': 'chromium_win_gtests',
           'isolated_scripts': 'win_specific_isolated_scripts_and_sizes',
@@ -1965,6 +1982,10 @@
         ],
       },
       'ToTWin64PGO': {
+        'mixins': [
+          'x86-64',
+          'win10',
+        ],
         'additional_compile_targets': [
           'all',
         ],
@@ -1973,6 +1994,9 @@
         },
       },
       'ToTWinASanLibfuzzer': {
+        'mixins': [
+          'win10',
+        ],
         'additional_compile_targets': [
           'all',
         ],
@@ -2175,10 +2199,11 @@
       },
       'linux-lacros-code-coverage': {
         'additional_compile_targets': [
-          'chrome',
+          'chrome'
         ],
         'mixins': [
           'isolate_profile_data',
+          'linux-bionic'
         ],
         'test_suites': {
           'gtest_tests': 'linux_lacros_gtests',
@@ -3183,6 +3208,21 @@
           'isolated_scripts': 'chromeos_isolated_scripts',
         },
       },
+      'ios-blink-dbg-fyi': {
+        'additional_compile_targets': [
+          'all'
+        ],
+        'mixins': [
+          'has_native_resultdb_integration',
+          'mac_toolchain',
+          'out_dir_arg',
+          'xcode_14_main',
+          'xctest',
+        ],
+        'test_suites': {
+          'isolated_scripts': 'ios_blink_dbg_tests'
+        },
+      },
       'ios-fieldtrial-rel': {
         'mixins': [
           'finch-chromium-swarming-pool',
@@ -3278,7 +3318,7 @@
           'xctest',
         ],
         'test_suites': {
-          'isolated_scripts': 'wpt_web_tests_ios',
+          'isolated_scripts': 'wpt_tests_ios',
         },
       },
       'ios15-beta-simulator': {
@@ -3459,6 +3499,9 @@
         },
       },
       'linux-headless-shell-rel': {
+        'mixins': [
+          'linux-bionic',
+        ],
         'test_suites': {
           'gtest_tests': 'headless_browser_gtests',
         },
@@ -4751,54 +4794,6 @@
           'gpu_telemetry_tests': 'gpu_fyi_win_release_telemetry_tests',
         },
       },
-      'gpu-fyi-chromeos-jacuzzi-exp': {
-        'additional_compile_targets': [
-          'chromiumos_preflight',
-        ],
-        'browser_config': 'cros-chrome',
-        'os_type': 'chromeos',
-        'skip_merge_script': True,
-        'mixins': [
-          'chromeos-jacuzzi',
-          'gpu-exp-swarming-pool',
-          'limited_capacity_bot',
-        ],
-        'test_suites': {
-          'gpu_telemetry_tests': 'gpu_noop_sleep_telemetry_test',
-        },
-      },
-      'gpu-fyi-chromeos-octopus-exp': {
-        'additional_compile_targets': [
-          'chromiumos_preflight',
-        ],
-        'browser_config': 'cros-chrome',
-        'os_type': 'chromeos',
-        'skip_merge_script': True,
-        'mixins': [
-          'chromeos-octopus',
-          'gpu-exp-swarming-pool',
-          'limited_capacity_bot',
-        ],
-        'test_suites': {
-          'gpu_telemetry_tests': 'gpu_noop_sleep_telemetry_test',
-        },
-      },
-      'gpu-fyi-chromeos-zork-exp': {
-        'additional_compile_targets': [
-          'chromiumos_preflight',
-        ],
-        'browser_config': 'cros-chrome',
-        'os_type': 'chromeos',
-        'skip_merge_script': True,
-        'mixins': [
-          'chromeos-zork',
-          'gpu-exp-swarming-pool',
-          'limited_capacity_bot',
-        ],
-        'test_suites': {
-          'gpu_telemetry_tests': 'gpu_noop_sleep_telemetry_test',
-        },
-      },
     },
   },
   {
@@ -5024,6 +5019,9 @@
         'additional_compile_targets': [
           'all',
         ],
+        'test_suites': {
+          'scripts': 'chromium_ios_scripts'
+        },
       },
       'ios-simulator': {
         'additional_compile_targets': [
@@ -5234,7 +5232,7 @@
         'mixins': [
           'has_native_resultdb_integration',
           'bullhead',
-          'marshmallow',
+          'nougat',
         ],
         'os_type': 'android',
       },
@@ -5941,7 +5939,7 @@
         'os_type': 'android',
         'mixins': ['walleye', 'pie_fleet'],
         'test_suites': {
-          'gtest_tests': 'webrtc_android_tests_with_baremetal_tests',
+          'gtest_tests': 'webrtc_chromium_simple_gtests',
         },
       },
       'WebRTC Chromium Linux Builder': {
@@ -5967,7 +5965,8 @@
           'mac_12_x64',
         ],
         'test_suites': {
-          'gtest_tests': 'webrtc_chromium_tests_with_baremetal_tests',
+          # TODO(crbug.com/1409418): Reenable baremetal_tests.
+          'gtest_tests': 'webrtc_chromium_gtests',
         },
       },
       'WebRTC Chromium Win Builder': {
@@ -6898,6 +6897,19 @@
           'content_unittests',
           'remoting_unittests',
         ],
+      },
+      'webrtc_linux_chromium': {
+        'additional_compile_targets': [
+          'blink_unittests',
+          'browser_tests',
+          'capture_unittests',
+          'content_browsertests',
+          'content_unittests',
+          'remoting_unittests',
+        ],
+        'test_suites': {
+          'isolated_scripts': 'webrtc_chromium_wpt_tests',
+        },
       },
       'win_chromium_compile': {
         'additional_compile_targets': [

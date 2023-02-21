@@ -133,11 +133,13 @@ Oto kilka rzeczy, które możesz wypróbować na początek.</translation>
 <translation id="163517899691012366">Po włączeniu trybu Nie przeszkadzać powiadomienia są wyciszone</translation>
 <translation id="1637505162081889933">Urządzenia: <ph name="NUM_DEVICES" /></translation>
 <translation id="1639239467298939599">Wczytuję</translation>
+<translation id="1647986356840967552">Poprzednia strona</translation>
 <translation id="1654477262762802994">Rozpocznij zapytanie głosowe</translation>
 <translation id="1668469839109562275">Wbudowana sieć VPN</translation>
 <translation id="1677472565718498478">Pozostało <ph name="TIME" /></translation>
 <translation id="1677507110654891115">Funkcja <ph name="FEATURE_NAME" /> nie ma połączenia.</translation>
 <translation id="1677582821739292812">Ktoś patrzy na Twój ekran</translation>
+<translation id="1683399938733266832">Bieżące wykorzystanie procesora: <ph name="CPU_USEAGE" />%</translation>
 <translation id="169515659049020177">Shift</translation>
 <translation id="1698080062160024910">Minutnik <ph name="TOTAL_TIME" /> · <ph name="LABEL" /></translation>
 <translation id="1698760176351776263">Adres IPv6: <ph name="ADDRESS" /></translation>
@@ -380,6 +382,7 @@ Oto kilka rzeczy, które możesz wypróbować na początek.</translation>
 <translation id="3051189971848907985">Zmieniam nazwę profilu. Odczekaj kilka minut.</translation>
 <translation id="3055162170959710888">Urządzenie było dziś przez Ciebie używane przez <ph name="USED_TIME" /></translation>
 <translation id="3062298103034426069">Nieobsługiwana</translation>
+<translation id="3068622547379332530">Wersja <ph name="VERSION_NAME" /> (<ph name="OFFICIAL_STATUS" />) <ph name="CHANNEL_NAME" /> <ph name="PROCESSOR_VARIATION" /></translation>
 <translation id="3068711042108640621">Półka po lewej</translation>
 <translation id="3077734595579995578">shift</translation>
 <translation id="3081696990447829002">Rozwiń menu</translation>
@@ -555,6 +558,7 @@ Podłącz urządzenie do zasilania.</translation>
 <translation id="397105322502079400">Obliczanie...</translation>
 <translation id="397726367135689299">Ładowanie baterii może przebiegać nieprawidłowo.</translation>
 <translation id="3977512764614765090">Naładowanie baterii: <ph name="PERCENTAGE" />%. Trwa ładowanie.</translation>
+<translation id="3984536049089846927">Następna strona</translation>
 <translation id="3986082989454912832">Odpowiedz</translation>
 <translation id="3995138139523574647">Urządzenie USB-C (tylny port na prawym boku)</translation>
 <translation id="40062176907008878">Pismo odręczne</translation>
@@ -577,7 +581,7 @@ Podłącz urządzenie do zasilania.</translation>
 <translation id="4123259114412175274">Aby odblokować Chromebooka, sprawdź, czy na telefonie jest włączony Bluetooth</translation>
 <translation id="4125970834901680537">W trybie tabletu nie można strumieniować aplikacji. Spróbuj ponownie w trybie laptopa.</translation>
 <translation id="4129129681837227511">Aby wyświetlać powiadomienia na ekranie blokady, odblokuj ekran i zmień ustawienie</translation>
-<translation id="4130035430755296270">Najedź kursorem, aby zobaczyć więcej opcji układu</translation>
+<translation id="4131973331381812765">Temperatura: <ph name="TEMPERATURE" />°C – aktualna szybkość: <ph name="CPU_AVERAGE_CURRENT_FREQUENCY_GHZ" /> GHz</translation>
 <translation id="4136724716305260864">Włączone do wschodu słońca</translation>
 <translation id="4146833061457621061">Włącz muzykę</translation>
 <translation id="4150201353443180367">Wyświetlacz</translation>
@@ -718,7 +722,6 @@ Podłącz urządzenie do zasilania.</translation>
 <translation id="481455355267255546">Następne</translation>
 <translation id="4831034276697007977">Czy na pewno chcesz wyłączyć automatyczne kliknięcia?</translation>
 <translation id="4849058404725798627">Podświetlaj obiekt wybrany za pomocą klawiatury</translation>
-<translation id="4855250849489639581">Aby zobaczyć więcej opcji układu, przesuń w dół</translation>
 <translation id="485592688953820832">Brak działania (wstrzymaj)</translation>
 <translation id="485634149294284819">Otwórz menu klawiatury</translation>
 <translation id="4860284199500934869">Aby pobrać plik <ph name="FILENAME" />, sprawdź połączenie sieciowe</translation>
@@ -733,6 +736,7 @@ Podłącz urządzenie do zasilania.</translation>
 <translation id="4895488851634969361">Bateria jest pełna.</translation>
 <translation id="490375751687810070">Pionowo</translation>
 <translation id="490788395437447240">Bateria: <ph name="BATTERY_PERCENTAGE" />%</translation>
+<translation id="491504982845934899">Aktywuj po konfiguracji urządzenia – <ph name="NETWORK_NAME" /></translation>
 <translation id="4917385247580444890">Silny</translation>
 <translation id="4918086044614829423">Akceptuj</translation>
 <translation id="4919841137949306064"><ph name="APP_NAME" /> używa teraz kamery</translation>
@@ -1328,6 +1332,7 @@ Podłącz urządzenie do zasilania.</translation>
 <translation id="8131740175452115882">Potwierdź</translation>
 <translation id="8131994907636310308">Komunikat Zamknij sortowanie</translation>
 <translation id="8132793192354020517">Połączono z <ph name="NAME" /></translation>
+<translation id="8138705869659070104">Aktywuj po konfiguracji urządzenia</translation>
 <translation id="813913629614996137">Inicjuję…</translation>
 <translation id="8142441511840089262">Dwukrotne kliknięcie</translation>
 <translation id="8142699993796781067">Sieć prywatna</translation>

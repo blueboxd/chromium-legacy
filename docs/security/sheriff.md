@@ -18,6 +18,12 @@ go/chrome-security-bugs](http://go/chrome-security-bugs).
 You might also like the [HOWTO: Be A Security Sheriff
 deck](https://docs.google.com/presentation/d/1eISJXxyv7dUCGUKk_rvUI9t9s2xb98QY4d_-dZSa7Wg/edit#slide=id.p).
 
+The [Chrome Security FAQ](faq.md), [Extensions Security
+FAQ](/extensions/docs/security_faq.md), and [Service Worker Security
+FAQ](service-worker-security-faq.md) include commonly-raised questions about
+security and what is or is not considered a security bug. When triaging new
+bugs, you may want to reference these to see if there's an established stance.
+
 ## What Is A Security Sheriff Or Marshal?
 
 A security sheriff (as well as a security marshal) is a member of a rotation
@@ -300,6 +306,10 @@ and set the corresponding `FoundIn` label (for example `FoundIn-66` if the
 extended stable milestone is 66 and you've confirmed it's reproducible on M66).
 If you reproduced the bug with ClusterFuzz, it should do this on your behalf.
 
+If you performed a bisection or were provided one with the commit that
+introduced the problem, you can check which milestone has that commit by
+navigating to https://chromiumdash.appspot.com/commit/COMMIT_HASH_HERE.
+
 Sometimes Extended Stable is the same milestone as Stable; sometimes it
 differs. If in doubt about the currently active milestones, check
 [ChromiumDash](https://chromiumdash.appspot.com/releases?platform=Windows).
@@ -326,12 +336,15 @@ was filed using the Security template):
 
 * **Restrict-View-SecurityTeam**
 * **Type-Bug-Security**
-* **If the reporter wants to remain anonymous or if the bug description or
-  comments contain PII**, add **Restrict-View-SecurityEmbargo**.
+* If you want to prevent the bug from becoming unrestricted after it has been
+  closed, add **Restrict-View-SecurityEmbargo**. This should be done if the
+  reporter wishes to remain anonymous, if the description or comments contain
+  PII, or if the bug contains malware samples.
 * **Security_Severity** - your responsibility as Sheriff.
 * **FoundIn** - your responsibility as Sheriff.
 * **reward_to** - if the bug was filed internally on behalf of somebody
-  external. This is also very important; please check.
+  external (for instance, a @chromium.org email reporting "I'm filing this on
+  behalf of" and the like). This is also very important; please check.
 
 You can expect Sheriffbot to fill in lots of other labels; for example,
 the `M-` label to indicate the target milestone. It's best to allow
@@ -350,7 +363,7 @@ explanatory text.
     * [Report phishing](https://safebrowsing.google.com/safebrowsing/report_phish/?hl=en)
     * [Report incorrect phishing warning](https://safebrowsing.google.com/safebrowsing/report_error/?hl=en)
   * Googlers: see instructions at [go/safebrowsing-escalation](https://goto.google.com/safebrowsing-escalation)
-  * Report suspected malicious file attachments to SafeBrowsing and VirusTotal.
+  * Report suspected malicious file attachments to SafeBrowsing.
 * Make sure the report is properly forwarded when the vulnerability is in an
   upstream project, the OS, or some other dependency.
 * For vulnerabilities in services Chrome uses (e.g. Omaha, Chrome Web Store,
@@ -433,20 +446,11 @@ If you find a vulnerability in a Permission API and need to use the Global
 Permissions Kill Switch, then follow [the
 instructions](https://docs.google.com/document/d/17JeYt3c1GgghYoxy4NKJnlxrteAX8F4x-MAzTeXqP4U)
 
-### Wrap Up The Fixed Issue
+### Wrapping Up The Fixed Issue
 
-1. For any **Security_Severity-**{**Critical**, **High**, **Medium**} bugs that
-  **Security_Impact-**{**Beta**, **Stable**}, add **Merge-Requested** so that
-  the fix gets merged into the next release. Exercise discretion according to
-  security severity and risk associated with the bug fix; you can ask the patch
-  author whether any risky code paths are affected. The actual merging and
-  drafting of release notes is taken care of by the [security release management
-  role](https://www.chromium.org/Home/chromium-security/security-release-management).
-1. Chrome's [Vulnerability Rewards
-  Program](https://www.google.com/about/appsecurity/chrome-rewards/index.html)
-  TPM adds the **reward-topanel** label by mass modification, but **do** label
-  any bugs reported by a @chromium.org email that should be rewarded (e.g. "I'm
-  filing this on behalf of" or the like).
+1. Check with the developer that the issue can be closed as Fixed to allow
+   Sheriffbot to add the appropriate merge-review labels based on
+   Security_Severity and Security_Impact.
 
 ## End Of Rotation
 

@@ -8,11 +8,10 @@ load("//lib/try.star", "try_")
 try_.defaults.set(
     bucket = "try",
     executable = "recipe:chromium_trybot",
+    pool = "luci.chromium.try",
     cores = 8,
     os = os.LINUX_DEFAULT,
     cpu = cpu.X86_64,
-    pool = "luci.chromium.try",
-    service_account = "chromium-try-gpu-builder@chops-service-accounts.iam.gserviceaccount.com",
     build_numbers = True,
     caches = [
         swarming.cache(
@@ -26,6 +25,7 @@ try_.defaults.set(
     # out: http://shortn/_8PaHsdYmlq. Keep this in sync.
     expiration_timeout = 2 * time.hour,
     reclient_instance = reclient.instance.DEFAULT_UNTRUSTED,
+    service_account = "chromium-try-gpu-builder@chops-service-accounts.iam.gserviceaccount.com",
     subproject_list_view = "luci.chromium.try",
     task_template_canary_percentage = 5,
 )
@@ -125,33 +125,11 @@ gpu_chromeos_builder(
 )
 
 gpu_chromeos_builder(
-    name = "gpu-fyi-try-chromeos-jacuzzi-exp",
-    mirrors = [
-        "ci/gpu-fyi-chromeos-jacuzzi-exp",
-    ],
-    pool = "luci.chromium.gpu.chromeos.jacuzzi.try",
-)
-
-gpu_chromeos_builder(
     name = "gpu-fyi-try-chromeos-kevin",
     mirrors = [
         "ci/ChromeOS FYI Release (kevin)",
     ],
     pool = "luci.chromium.gpu.chromeos.kevin.try",
-)
-
-gpu_chromeos_builder(
-    name = "gpu-fyi-try-chromeos-octopus-exp",
-    mirrors = [
-        "ci/gpu-fyi-chromeos-octopus-exp",
-    ],
-    pool = "luci.chromium.gpu.chromeos.octopus.try",
-)
-
-gpu_chromeos_builder(
-    name = "gpu-fyi-try-chromeos-zork-exp",
-    mirrors = ["ci/gpu-fyi-chromeos-zork-exp"],
-    pool = "luci.chromium.gpu.chromeos.zork.try",
 )
 
 def gpu_linux_builder(*, name, **kwargs):

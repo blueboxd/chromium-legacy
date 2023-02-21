@@ -1023,6 +1023,7 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   void DidStopLoading() override;
   bool IsHidden() override;
   int GetOuterDelegateFrameTreeNodeId() override;
+  RenderFrameHostImpl* GetProspectiveOuterDocument() override;
   FrameTree* LoadingTree() override;
   void SetFocusedFrame(FrameTreeNode* node, SiteInstanceGroup* source) override;
 
@@ -1438,6 +1439,10 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   FRIEND_TEST_ALL_PREFIXES(PointerLockBrowserTest,
                            PointerLockInnerContentsCrashes);
   FRIEND_TEST_ALL_PREFIXES(PointerLockBrowserTest, PointerLockOopifCrashes);
+  FRIEND_TEST_ALL_PREFIXES(WebContentsImplBrowserTest,
+                           PopupWindowBrowserNavResumeLoad);
+  FRIEND_TEST_ALL_PREFIXES(WebContentsImplBrowserTest,
+                           SuppressedPopupWindowBrowserNavResumeLoad);
 
   // So |find_request_manager_| can be accessed for testing.
   friend class FindRequestManagerTest;

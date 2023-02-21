@@ -54,6 +54,7 @@
         ],
       },
       'android-nougat-x86-rel': {
+        'ci_only': True,
         'swarming': {
           'shards': 9,
         },
@@ -1310,6 +1311,8 @@
         'swarming': {
           # Reducing parallelism due to DUT shortage (b/238271231)
           'shards': 5,
+          # Increased timeout to 3 hours due to shard timeout.
+          'hard_timeout': 10800,
         }
       },
     },
@@ -1507,6 +1510,16 @@
       'android-12-x64-rel': {
         'args': [
           '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator_12.chrome_public_unit_test_apk.filter',
+        ],
+      },
+      'android-12l-x64-dbg-tests': {
+        'args': [
+          '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator_12l.chrome_public_unit_test_apk.filter',
+        ],
+      },
+      'android-13-x64-rel': {
+        'args': [
+          '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator_13.chrome_public_unit_test_apk.filter',
         ],
       },
     },
@@ -1975,9 +1988,20 @@
         'args': [
           '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator_12.content_shell_test_apk.filter',
         ],
+        'ci_only': True,
         'swarming': {
           'inverse_quickrun_shards': 6,
         },
+      },
+      'android-12l-x64-dbg-tests': {
+        'args': [
+          '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator_12l.content_shell_test_apk.filter',
+        ],
+      },
+      'android-13-x64-rel': {
+        'args': [
+          '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator_13.content_shell_test_apk.filter',
+        ],
       },
       'android-nougat-x86-rel': {
         'args': [
@@ -3073,12 +3097,6 @@
         ],
       },
     },
-  },
-  'overlay_prioritization_viz_unittests': {
-    'remove_from': [
-      # Reduce CQ load
-      'Linux Tests (Wayland)',
-    ],
   },
   'ozone_unittests': {
     'modifications': {

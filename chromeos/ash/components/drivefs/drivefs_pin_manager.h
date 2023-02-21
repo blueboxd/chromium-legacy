@@ -192,7 +192,6 @@ class COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_DRIVEFS) PinManager
   void OnError(const mojom::DriveError& error) override;
 
   base::WeakPtr<PinManager> GetWeakPtr() {
-    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     return weak_ptr_factory_.GetWeakPtr();
   }
 
@@ -260,16 +259,10 @@ class COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_DRIVEFS) PinManager
   // Check if the given item can be pinned.
   static bool CanPin(const mojom::FileMetadata& md, const Path& path);
 
-  // Adds an item to the files to track.  Does nothing if an item with the same
-  // ID already exists in the map. Updates the total number of bytes to transfer
-  // and the required space. Returns whether an item was actually added.
-  bool Add(Id id,
-           const Path& path,
-           int64_t size,
-           bool pinned,
-           bool available_offline = false);
-
-  // Adds an item to the files to track if it is of interest.
+  // Adds an item to the files to track if it is of interest. Does nothing if an
+  // item with the same ID already exists in the map. Updates the total number
+  // of bytes to transfer and the required space. Returns whether an item was
+  // actually added.
   bool Add(const mojom::FileMetadata& md, const Path& path);
 
   // Removes an item from the files to track. Does nothing if the item is not in
@@ -382,14 +375,18 @@ class COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_DRIVEFS) PinManager
   // cached yet.
   Files files_to_track_ GUARDED_BY_CONTEXT(sequence_checker_);
 
-  base::WeakPtrFactory<PinManager> weak_ptr_factory_
-      GUARDED_BY_CONTEXT(sequence_checker_){this};
+  base::WeakPtrFactory<PinManager> weak_ptr_factory_{this};
 
   FRIEND_TEST_ALL_PREFIXES(DriveFsPinManagerTest, Add);
   FRIEND_TEST_ALL_PREFIXES(DriveFsPinManagerTest, Update);
   FRIEND_TEST_ALL_PREFIXES(DriveFsPinManagerTest, Remove);
   FRIEND_TEST_ALL_PREFIXES(DriveFsPinManagerTest, OnSyncingEvent);
   FRIEND_TEST_ALL_PREFIXES(DriveFsPinManagerTest, CanPin);
+  FRIEND_TEST_ALL_PREFIXES(DriveFsPinManagerTest, OnFileCreated);
+  FRIEND_TEST_ALL_PREFIXES(DriveFsPinManagerTest, OnFileModified);
+  FRIEND_TEST_ALL_PREFIXES(DriveFsPinManagerTest, OnFileDeleted);
+  FRIEND_TEST_ALL_PREFIXES(DriveFsPinManagerTest, OnMetadataForCreatedFile);
+  FRIEND_TEST_ALL_PREFIXES(DriveFsPinManagerTest, OnMetadataForModifiedFile);
 };
 
 COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_DRIVEFS)

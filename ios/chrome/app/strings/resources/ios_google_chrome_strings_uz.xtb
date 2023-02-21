@@ -67,6 +67,7 @@
 <translation id="5162467219239570114">Chrome versiyasi eskirgan. Agar <ph name="BEGIN_LINK" />App Store<ph name="END_LINK" /> orqali chiqmasa, demak qurilmangizda yangi versiyadagi Chrome nashrlari ishlamasligi mumkin.</translation>
 <translation id="5389212809648216794">Google Chrome kamerangizdan foydalana olmaydi, chuki boshqa ilova allaqachon kamerani ishlatmoqda.</translation>
 <translation id="5460571915754665838">4. Chrome brauzerini tanlang</translation>
+<translation id="5492504007368565877">Google Parollar menejeri parollaringizni tekshira olmaydi.</translation>
 <translation id="5552137475244467770">Vaqti-vaqti bilan Chrome internetda oshkor etilgan roʻyxatlarda parolingiz borligini tekshirib turadi. Bunda parolingiz va foydalanuvchi nomingiz shifrlanadi, hatto Google xodimlariga ham koʻrinmaydi.</translation>
 <translation id="5639704535586432836">Kameradan foydalanishga ruxsat berish uchun “Sozlamalar &gt; Maxfiylik &gt; Kamera &gt; Google Chrome” bandini oching.</translation>
 <translation id="5642200033778930880">Google Chrome kamerangizdan Split View rejimida foydalana olmaydi.</translation>
@@ -112,6 +113,7 @@
 <translation id="7780154209050837198">Chrome imkoniyatlaridan maksimal foydalanish uchun Chromega Google hisobingiz bilan kiring.</translation>
 <translation id="7855730255114109580">Google Chrome versiyasi yangi</translation>
 <translation id="7939179037291298976">iPhone sozlamalari orqali “Parol variantlari” sahifasini oching va “Chrome” ilovasini tanlang</translation>
+<translation id="7975131781538454817">Chrome bildirishnomalari qurilma sozlamalaridan faolsizlantirilgan. Ularga ruxsat bering.</translation>
 <translation id="8022947259858476807">Havolalarni ochish, vidjetlar orqali qidiruv, boshqa ilovalarda parollar avtomatik kitilishda Chrome birlamchi ilova sifatida ishlatilsin</translation>
 <translation id="81358522153858150">Chrome endi boshqariladigan hisobingiz uchun foydalanuvchi siyosatlarini qoʻllab-quvvatlaydi</translation>
 <translation id="8160472928944011082">Chrome yangilanmadi</translation>
@@ -141,6 +143,7 @@ Bularni hisobga olish kerak:
   • Chromeda nosozlik yuz bersa, u haqidagi maʼlumotlar, shuningdek, ayrim shaxsiy axborotlar ham yuboriladi
 
   • Sinxronizatsiya yoqilsa, koʻrsatkichlarga siz kiritgan URL manzillar ham biriktiriladi<ph name="END_INDENT" /></translation>
+<translation id="9101160735177453133">“Narxni kuzatish” uchun Qurilma sozlamalari orqali Chrome bildirishnomalariga ruxsat bering</translation>
 <translation id="9103442491611662960">Bu Chrome profili standart xavfsizlik tizimi bilan himoyalangan</translation>
 <translation id="9112744793181547300">Chrome asosiy brauzer sifatida tanlansinmi?</translation>
 <translation id="9122931302567044771">Bunda Chrome har safar saytning kompyuter versiyasini talab qiladi.</translation>

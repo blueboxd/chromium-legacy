@@ -217,6 +217,7 @@ BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kResourceLoadViaDataPipe);
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kServiceWorkerUpdateDelay);
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kStopInBackground);
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kDropInputEventsBeforeFirstPaint);
+BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kDroppedTouchSequenceIncludesTouchEnd);
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kFileHandlingIcons);
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kAllowSyncXHRInPageDismissal);
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kPrefetchPrivacyChanges);
@@ -268,6 +269,10 @@ BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kDispatchBeforeUnloadOnFreeze);
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kLowLatencyCanvas2dImageChromium);
 
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kWebviewAccelerateSmallCanvases);
+
+BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kCanvas2DHibernation);
+
+BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kCanvasCompressHibernatedImage);
 
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kCanvasFreeMemoryWhenHidden);
 
@@ -711,13 +716,6 @@ BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kPrefetchFontLookupTables);
 // scanner.
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kPrecompileInlineScripts);
 
-// If enabled, CSS will be tokenized in a background thread when possible.
-BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kPretokenizeCSS);
-BLINK_COMMON_EXPORT extern const base::FeatureParam<bool>
-    kPretokenizeInlineSheets;
-BLINK_COMMON_EXPORT extern const base::FeatureParam<bool>
-    kPretokenizeExternalSheets;
-
 // TODO(accessibility): This flag is set to accommodate JAWS on Windows so they
 // can adjust to us not simulating click events on a focus action. It should be
 // disabled by default (and removed) before 5/17/2023.
@@ -978,6 +976,21 @@ BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(
 // Extend ScriptResource's lifetime to match its payload's lifetime.
 // See https://crbug.com/1393246.
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kExtendScriptResourceLifetime);
+
+// Use WebIDL instead of iteration to populate RTCStatsReport.
+BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kWebRtcStatsReportIdl);
+
+// Makes preloaded fonts render-blocking up to the limits below.
+// See https://crbug.com/1412861
+BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kRenderBlockingFonts);
+
+// Max milliseconds from navigation start that fonts can block rendering.
+BLINK_COMMON_EXPORT extern const base::FeatureParam<int>
+    kMaxBlockingTimeMsForRenderBlockingFonts;
+
+// Max milliseconds that font are allowed to delay of FCP.
+BLINK_COMMON_EXPORT extern const base::FeatureParam<int>
+    kMaxFCPDelayMsForRenderBlockingFonts;
 
 }  // namespace features
 }  // namespace blink

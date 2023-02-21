@@ -67,13 +67,11 @@ blink::StorageKey Convert(const storage_key_proto::StorageKey& storage_key) {
   StorageKey::OneOfCase storage_key_type = storage_key.OneOf_case();
 
   if (storage_key_type == StorageKeyType::ONEOF_NOT_SET)
-    return blink::StorageKey(origin);
+    return blink::StorageKey::CreateFirstParty(origin);
 
   if (storage_key_type == StorageKeyType::kUnguessableToken) {
     auto nonce = base::UnguessableToken::Create();
-    return blink::StorageKey::CreateWithOptionalNonce(
-        origin, net::SchemefulSite(origin), &nonce,
-        blink::mojom::AncestorChainBit::kSameSite);
+    return blink::StorageKey::CreateWithNonce(origin, nonce);
   }
 
   if (storage_key_type == StorageKey::OneOfCase::kTopLevelSite) {
@@ -82,9 +80,8 @@ blink::StorageKey Convert(const storage_key_proto::StorageKey& storage_key) {
     url::Origin top_level_site = MakeOrigin(top_level_site_proto.origin());
     blink::mojom::AncestorChainBit ancestor_chain_bit =
         MakeAncestorChainBit(storage_key.ancestor_chain_bit());
-    return blink::StorageKey::CreateWithOptionalNonce(
-        origin, net::SchemefulSite(top_level_site), nullptr,
-        ancestor_chain_bit);
+    return blink::StorageKey::Create(origin, net::SchemefulSite(top_level_site),
+                                     ancestor_chain_bit);
   }
 
   return blink::StorageKey();

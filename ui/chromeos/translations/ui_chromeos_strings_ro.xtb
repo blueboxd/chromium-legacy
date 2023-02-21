@@ -27,12 +27,12 @@
 <translation id="1201402288615127009">Înainte</translation>
 <translation id="1209796539517632982">Servere de nume automate</translation>
 <translation id="1210831758834677569">Laoțiană</translation>
+<translation id="1221555006497674479">Spațiu de stocare limitat: <ph name="REMAINING_PERCENTAGE" /> % din spațiul de stocare Drive în comun de <ph name="TOTAL_SPACE" />.</translation>
 <translation id="1243314992276662751">Încărcați</translation>
 <translation id="1249250836236328755">Gen</translation>
 <translation id="1254593899333212300">Conexiune directă la internet</translation>
 <translation id="1272293450992660632">Valorile PIN nu se potrivesc.</translation>
 <translation id="1280820357415527819">Se caută rețele mobile</translation>
-<translation id="1291603679744561561">Card SIM blocat</translation>
 <translation id="1293556467332435079">Fișiere</translation>
 <translation id="1297922636971898492">Google Drive nu este disponibil momentan. Încărcarea va reporni automat când Google Drive va putea fi accesat.</translation>
 <translation id="1307931752636661898">Fișierele Linux nu pot fi afișate</translation>
@@ -74,6 +74,7 @@
 <translation id="1641780993263690097">Chineză Pinyin</translation>
 <translation id="1646019627374511909"><ph name="NUMBER_OF_ITEMS" /> fișiere devin disponibile offline</translation>
 <translation id="164969095109328410">Dispozitiv Chrome</translation>
+<translation id="1661207570040737402">Ai folosit tot spațiul de stocare Drive în comun din Google Workspace.</translation>
 <translation id="1661867754829461514">Codul PIN lipsește</translation>
 <translation id="166439687370499867">Nu se permite modificarea configurațiilor de rețea cu acces comun</translation>
 <translation id="1665611772925418501">Fișierul nu a putut fi modificat.</translation>
@@ -192,6 +193,7 @@
 <translation id="2574327434504608656">Un dosar cu acces permis pentru Bruschetta</translation>
 <translation id="2578394532502990878">Tamilă fonetică</translation>
 <translation id="2579959351793446050">Odia</translation>
+<translation id="2587195714949534472">Se pregătește sincronizarea pentru <ph name="FILE_NAME" />…</translation>
 <translation id="2602810353103180630">Rețeaua <ph name="NETWORK_INDEX" /> din <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" />, Puterea semnalului: <ph name="SIGNAL_STRENGTH" /> %, Blocată de administrator, Detalii</translation>
 <translation id="2614589611416690597">Videoclip <ph name="VIDEO_TYPE" /></translation>
 <translation id="2620090360073999360">Disc Google nu poate fi accesat în acest moment.</translation>
@@ -293,6 +295,7 @@
 <translation id="3486821258960016770">Mongolă</translation>
 <translation id="3495304270784461826"><ph name="COUNT" /> erori.</translation>
 <translation id="3509680540198371098">Rețeaua <ph name="NETWORK_INDEX" /> din <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, puterea semnalului: <ph name="SIGNAL_STRENGTH" /> %, detalii</translation>
+<translation id="3511705761158917664">Se pregătește sincronizarea pentru <ph name="NUMBER_OF_ITEMS" /> elemente...</translation>
 <translation id="3522708245912499433">Portugheză</translation>
 <translation id="3524311639100184459">Atenție: aceste fișiere sunt temporare și pot fi șterse automat pentru a elibera spațiu pe disc.  <ph name="BEGIN_LINK" />Află mai multe<ph name="END_LINK" /></translation>
 <translation id="3527085408025491307">Dosar</translation>

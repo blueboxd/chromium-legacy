@@ -36,6 +36,8 @@ bool IsCommandAllowedInAppMode(int command_id, bool is_popup) {
 
   constexpr int kAllowed[] = {
       IDC_BACK,
+      // TODO(b/265405666): add more devtools-related shortcuts.
+      IDC_DEV_TOOLS,
       IDC_FORWARD,
       IDC_RELOAD,
       IDC_CLOSE_FIND_OR_STOP,
@@ -71,8 +73,9 @@ bool IsRunningInForcedAppModeForApp(const std::string& app_id) {
   DCHECK(!app_id.empty());
 
   absl::optional<std::string> forced_app_mode_app = GetForcedAppModeApp();
-  if (!forced_app_mode_app.has_value())
+  if (!forced_app_mode_app.has_value()) {
     return false;
+  }
 
   return app_id == forced_app_mode_app.value();
 }

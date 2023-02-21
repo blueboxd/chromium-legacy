@@ -76,6 +76,8 @@ The tables are parsed in this file as critical user journeys. Lines are consider
 | WMLC | install_or_shortcut_windowed | navigate_browser(Standalone) | check_install_icon_not_shown |
 | WMLC | install_or_shortcut_windowed | navigate_browser(Standalone) | check_launch_icon_shown |
 | WMLC | install_or_shortcut_windowed(MinimalUi) | navigate_browser(MinimalUi) | check_launch_icon_shown |
+| WMLC | install_or_shortcut_windowed(Tabbed) | check_app_in_list_windowed(Tabbed) |
+| WMLC | install_or_shortcut_windowed(Tabbed) | navigate_browser(Tabbed) | check_launch_icon_shown | check_install_icon_not_shown |
 | WMLC | install_or_shortcut_windowed(NotPromotable) | check_app_in_list_windowed(NotPromotable) |
 | WMLC | install_or_shortcut_windowed(NotPromotable) | navigate_browser(NotPromotable) | check_create_shortcut_not_shown |
 | WMLC | install_or_shortcut_windowed(NotPromotable) | navigate_browser(NotPromotable) | check_install_icon_not_shown |
@@ -238,6 +240,12 @@ Note: Updating display to "browser" means the default windowed experience is now
 | WMLC | install_or_shortcut_windowed_with_shortcut(StandaloneNestedA) | manifest_update_scope_to(StandaloneNestedA, Standalone) | await_manifest_update(StandaloneNestedA) | navigate_browser(StandaloneNestedB) | check_launch_icon_shown |
 | WMLC | install_or_shortcut_windowed_with_shortcut(StandaloneNestedA) | manifest_update_scope_to(StandaloneNestedA, Standalone) | await_manifest_update(StandaloneNestedA) | navigate_browser(StandaloneNestedA) | check_install_icon_not_shown |
 | WMLC | install_or_shortcut_windowed_with_shortcut(StandaloneNestedA) | manifest_update_scope_to(StandaloneNestedA, Standalone) | await_manifest_update(StandaloneNestedA) | navigate_browser(StandaloneNestedA) | check_launch_icon_shown |
+
+The following specialization is required here since in tabbed mode, launching may add a tab to the existing window instead of making a new one.
+
+| #Platforms | Test -> | | | | | | | | | | | | | | | | |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| WMLC  | install_or_shortcut_windowed_with_shortcut | manifest_update_display(Standalone, Tabbed) | maybe_close_pwa | await_manifest_update | launch | check_window_created | check_tab_not_created | check_window_display_tabbed |
 
 These mac specializations are required due to launching from platform shortcut actually focusing the window, instead of creating a new one.
 

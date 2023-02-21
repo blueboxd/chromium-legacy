@@ -23,10 +23,6 @@ BASE_FEATURE(kAssistantDebugging,
              "AssistantDebugging",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-BASE_FEATURE(kAssistantRoutines,
-             "AssistantRoutines",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
 BASE_FEATURE(kAssistantWaitScheduling,
              "AssistantWaitScheduling",
              base::FEATURE_ENABLED_BY_DEFAULT);
@@ -54,7 +50,7 @@ BASE_FEATURE(kDisableVoiceMatch,
 
 BASE_FEATURE(kEnableLibAssistantV2,
              "LibAssistantV2",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kEnableLibAssistantDlc,
              "LibAssistantDlc",
@@ -83,10 +79,6 @@ bool IsPowerManagerEnabled() {
 
 bool IsLibAssistantBetaBackendEnabled() {
   return base::FeatureList::IsEnabled(kEnableLibAssistantBetaBackend);
-}
-
-bool IsRoutinesEnabled() {
-  return base::FeatureList::IsEnabled(kAssistantRoutines);
 }
 
 bool IsStereoAudioInputEnabled() {

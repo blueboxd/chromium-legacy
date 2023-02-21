@@ -450,6 +450,7 @@ Tokeny súkromného stavu zlepšujú ochranu súkromia na internete a nedá sa 
 <translation id="3421726884497337397">Vyberte, kedy blokovať súbory cookie tretích strán</translation>
 <translation id="3428747202529429621">Chráni vás v Chrome a môže zlepšiť zabezpečenie v ďalších aplikáciách Google, keď sa prihlásite</translation>
 <translation id="3429160811076349561">Skúšobné funkcie sú vypnuté</translation>
+<translation id="3432973700170747422">Odstrániť posledných 15 min</translation>
 <translation id="3435465986463792564">Máte veľa okien? Tu ich môžete spravovať.</translation>
 <translation id="3435738964857648380">Bezpečnosť</translation>
 <translation id="3443221991560634068">Opätovné načítanie aktuálnej stránky</translation>
@@ -516,7 +517,6 @@ Tokeny súkromného stavu zlepšujú ochranu súkromia na internete a nedá sa 
 <translation id="3830886834687455630">Ak chcete skontrolovať heslá, aktualizujte Služby Google Play</translation>
 <translation id="3845098929839618392">Otvoriť na karte inkognito</translation>
 <translation id="3856096718352044181">Overte, že ide o platného poskytovateľa, alebo to skúste znova</translation>
-<translation id="3858127568696903256">Zobraziť obsah, ktorý tu sledujete</translation>
 <translation id="3858860766373142691">Názov</translation>
 <translation id="3861633093716975811">Populárne videá</translation>
 <translation id="3874520961715512166">Web bol odstránený</translation>
@@ -1242,6 +1242,7 @@ Niektoré weby môžu napríklad na túto žiadosť reagovať tak, že vám zobr
 <translation id="7682724950699840886">Skúste tieto tipy: Uistite sa, že máte v zariadení dosť miesta, a potom skúste znova spustiť exportovanie.</translation>
 <translation id="7686086654630106285">Ďalšie informácie o reklamách navrhovaných webmi</translation>
 <translation id="768618399695552958">Niektoré stránky, ktoré navštevujete, sú prednačítané. Stránky môžu byť prednačítané prostredníctvom serverov Googlu, keď s nimi prepojíte web Google.</translation>
+<translation id="7691043218961417207">Pozrite si obsah na sledovanie</translation>
 <translation id="7698359219371678927">Vytvorte správu v aplikácii <ph name="APP_NAME" /></translation>
 <translation id="7707922173985738739">Používať mobilné dáta</translation>
 <translation id="7709094866268987903">Tu sa budú zobrazovať záujmy, ktoré odstránite</translation>

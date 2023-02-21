@@ -71,6 +71,9 @@ chromium-metrics-reviews@google.com.
 <variants name="OptimizationType">
   <variant name="AboutThisSite"
       summary="Provides 'About this site' data about the site being visited"/>
+  <variant name="AutofillSamplingRate"
+      summary="This optimization provides information about a sampling rate
+               of Autofill UKM metrics per origin based on origin popularity."/>
   <variant name="BloomFilterValidation"
       summary="Validates bloom filer allowlist/blocklist based hints"/>
   <variant name="CompressPublicImages" summary="Compresses public images"/>
@@ -140,6 +143,8 @@ chromium-metrics-reviews@google.com.
       summary="Batch update of hints for result links off the Google SRP"/>
   <variant name="BatchUpdateModels" summary="Batch update of models"/>
   <variant name="Bookmarks" summary="Batch update of hints for bookmarks"/>
+  <variant name="Journeys" summary="Journeys surface"/>
+  <variant name="NewTabPage" summary="New tab page"/>
   <variant name="PageNavigation" summary="Page navigation"/>
 </variants>
 
@@ -225,7 +230,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="OptimizationGuide.HintCacheLevelDBStore.Status"
     enum="OptimizationGuideHintCacheLevelDBStoreStatus"
-    expires_after="2023-06-18">
+    expires_after="2023-08-20">
   <owner>mcrouse@chromium.org</owner>
   <owner>sophiechang@chromium.org</owner>
   <summary>
@@ -989,7 +994,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="OptimizationGuide.PageTopicsOverrideList.UsedOverride"
-    enum="Boolean" expires_after="2023-06-11">
+    enum="Boolean" expires_after="2023-08-13">
   <owner>robertogden@chromium.org</owner>
   <owner>chrome-intelligence-core@google.com</owner>
   <summary>
@@ -1436,7 +1441,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="OptimizationGuide.RemoteFetchingEnabled" enum="BooleanEnabled"
-    expires_after="2023-06-18">
+    expires_after="2023-08-20">
   <owner>sophiechang@chromium.org</owner>
   <owner>mcrouse@chromium.org</owner>
   <summary>

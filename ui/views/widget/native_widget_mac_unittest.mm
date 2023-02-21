@@ -30,6 +30,7 @@
 #import "ui/base/cocoa/constrained_window/constrained_window_animation.h"
 #import "ui/base/cocoa/window_size_constants.h"
 #import "ui/base/test/scoped_fake_full_keyboard_access.h"
+#import "ui/base/test/windowed_nsnotification_observer.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/recyclable_compositor_mac.h"
 #import "ui/events/test/cocoa_test_event_utils.h"
@@ -45,6 +46,7 @@
 #include "ui/views/test/widget_test.h"
 #include "ui/views/widget/native_widget_mac.h"
 #include "ui/views/widget/native_widget_private.h"
+#include "ui/views/widget/widget_interactive_uitest_utils.h"
 #include "ui/views/window/dialog_delegate.h"
 
 namespace {
@@ -66,6 +68,7 @@ const std::string kDummyWindowRestorationData = "e30=";
 @property(readonly, nonatomic) int invalidateShadowCount;
 @property(assign, nonatomic) BOOL fakeOnInactiveSpace;
 @property(assign, nonatomic) bool* deallocFlag;
++ (void)waitForDealloc;
 @end
 
 // Used to mock BridgedContentView so that calls to drawRect: can be
@@ -495,8 +498,14 @@ TEST_F(NativeWidgetMacTest, MiniaturizeExternally) {
 
   EXPECT_TRUE(view->IsDrawn());
   EXPECT_EQ(0, view->paint_count());
-  widget->Show();
-  base::RunLoop().RunUntilIdle();
+
+  {
+    views::test::PropertyWaiter visibility_waiter(
+        base::BindRepeating(&Widget::IsVisible, base::Unretained(widget)),
+        true);
+    widget->Show();
+    EXPECT_TRUE(visibility_waiter.Wait());
+  }
 
   EXPECT_EQ(1, observer.gained_visible_count());
   EXPECT_EQ(0, observer.lost_visible_count());
@@ -511,8 +520,13 @@ TEST_F(NativeWidgetMacTest, MiniaturizeExternally) {
   // First try performMiniaturize:, which requires a minimize button. Note that
   // Cocoa just blocks the UI thread during the animation, so no need to do
   // anything fancy to wait for it finish.
-  [ns_window performMiniaturize:nil];
-  base::RunLoop().RunUntilIdle();
+  {
+    views::test::PropertyWaiter minimize_waiter(
+        base::BindRepeating(&Widget::IsMinimized, base::Unretained(widget)),
+        true);
+    [ns_window performMiniaturize:nil];
+    EXPECT_TRUE(minimize_waiter.Wait());
+  }
 
   EXPECT_TRUE(widget->IsMinimized());
   EXPECT_FALSE(widget->IsVisible());  // Minimizing also makes things invisible.
@@ -526,8 +540,13 @@ TEST_F(NativeWidgetMacTest, MiniaturizeExternally) {
   // button is highlighted for performMiniaturize.
   EXPECT_EQ(1, view->paint_count());
 
-  [ns_window deminiaturize:nil];
-  base::RunLoop().RunUntilIdle();
+  {
+    views::test::PropertyWaiter deminimize_waiter(
+        base::BindRepeating(&Widget::IsMinimized, base::Unretained(widget)),
+        false);
+    [ns_window deminiaturize:nil];
+    EXPECT_TRUE(deminimize_waiter.Wait());
+  }
 
   EXPECT_FALSE(widget->IsMinimized());
   EXPECT_TRUE(widget->IsVisible());
@@ -538,8 +557,13 @@ TEST_F(NativeWidgetMacTest, MiniaturizeExternally) {
   view->WaitForPaintCount(2);  // A single paint when deminiaturizing.
   EXPECT_FALSE([ns_window isMiniaturized]);
 
-  widget->Minimize();
-  base::RunLoop().RunUntilIdle();
+  {
+    views::test::PropertyWaiter minimize_waiter(
+        base::BindRepeating(&Widget::IsMinimized, base::Unretained(widget)),
+        true);
+    widget->Minimize();
+    EXPECT_TRUE(minimize_waiter.Wait());
+  }
 
   EXPECT_TRUE(widget->IsMinimized());
   EXPECT_TRUE([ns_window isMiniaturized]);
@@ -548,8 +572,13 @@ TEST_F(NativeWidgetMacTest, MiniaturizeExternally) {
   EXPECT_EQ(restored_bounds, widget->GetRestoredBounds());
   EXPECT_EQ(2, view->paint_count());  // No paint when miniaturizing.
 
-  widget->Restore();  // If miniaturized, should deminiaturize.
-  base::RunLoop().RunUntilIdle();
+  {
+    views::test::PropertyWaiter deminimize_waiter(
+        base::BindRepeating(&Widget::IsMinimized, base::Unretained(widget)),
+        false);
+    widget->Restore();  // If miniaturized, should deminiaturize.
+    EXPECT_TRUE(deminimize_waiter.Wait());
+  }
 
   EXPECT_FALSE(widget->IsMinimized());
   EXPECT_FALSE([ns_window isMiniaturized]);
@@ -558,8 +587,13 @@ TEST_F(NativeWidgetMacTest, MiniaturizeExternally) {
   EXPECT_EQ(restored_bounds, widget->GetRestoredBounds());
   view->WaitForPaintCount(3);
 
-  widget->Restore();  // If not miniaturized, does nothing.
-  base::RunLoop().RunUntilIdle();
+  {
+    views::test::PropertyWaiter deminimize_waiter(
+        base::BindRepeating(&Widget::IsMinimized, base::Unretained(widget)),
+        false);
+    widget->Restore();  // If not miniaturized, does nothing.
+    EXPECT_TRUE(deminimize_waiter.Wait());
+  }
 
   EXPECT_FALSE(widget->IsMinimized());
   EXPECT_FALSE([ns_window isMiniaturized]);
@@ -877,9 +911,13 @@ TEST_F(NativeWidgetMacTest, NonWidgetParentLastReference) {
     [native_parent close];
   }
 
-  // Check this only once the autorelease pool has been drained: AppKit likes to
-  // autorelease NSWindows when tearing them down, presumably to make UAF bugs
-  // with NSWindows less likely.
+  // As of macOS 13 (Ventura), it seems that exiting the autoreleasepool
+  // block does not immediately trigger a release of its contents. Wait
+  // here for the deallocations to occur before proceeding.
+  while (!child_dealloced || !native_parent_dealloced) {
+    [NativeWidgetMacTestWindow waitForDealloc];
+  }
+
   EXPECT_TRUE(child_dealloced);
   EXPECT_TRUE(native_parent_dealloced);
 }
@@ -890,14 +928,25 @@ TEST_F(NativeWidgetMacTest, NonWidgetParentLastReference) {
 TEST_F(NativeWidgetMacTest, VisibleAfterNativeParentDeminiaturize) {
   NSWindow* native_parent = MakeBorderlessNativeParent();
   [native_parent makeKeyAndOrderFront:nil];
+
+  base::scoped_nsobject<WindowedNSNotificationObserver> miniaturizationObserver(
+      [[WindowedNSNotificationObserver alloc]
+          initForNotification:NSWindowDidMiniaturizeNotification
+                       object:native_parent]);
   [native_parent miniaturize:nil];
+  [miniaturizationObserver wait];
   Widget* child = AttachPopupToNativeParent(native_parent);
 
   child->Show();
   EXPECT_FALSE([native_parent isVisible]);
   EXPECT_FALSE(child->IsVisible());  // Parent is hidden so child is also.
 
+  base::scoped_nsobject<WindowedNSNotificationObserver>
+      deminiaturizationObserver([[WindowedNSNotificationObserver alloc]
+          initForNotification:NSWindowDidDeminiaturizeNotification
+                       object:native_parent]);
   [native_parent deminiaturize:nil];
+  [deminiaturizationObserver wait];
   EXPECT_TRUE([native_parent isVisible]);
   // Don't WaitForVisibleCounts() here: deminiaturize is synchronous, so any
   // spurious _occlusion_ state change would have already occurred. Further
@@ -2381,10 +2430,29 @@ TEST_F(NativeWidgetMacTest, FocusManagerChangeOnReparentNativeView) {
 @synthesize fakeOnInactiveSpace = _fakeOnInactiveSpace;
 @synthesize deallocFlag = _deallocFlag;
 
++ (base::RunLoop**)runLoop {
+  static base::RunLoop* runLoop = nullptr;
+  return &runLoop;
+}
+
+// Returns once the NativeWidgetMacTestWindow's -dealloc method has been
+// called.
++ (void)waitForDealloc {
+  base::RunLoop runLoop;
+  base::SingleThreadTaskRunner::GetCurrentDefault()->PostDelayedTask(
+      FROM_HERE, runLoop.QuitClosure(), TestTimeouts::action_timeout());
+  (*[NativeWidgetMacTestWindow runLoop]) = &runLoop;
+  runLoop.Run();
+  (*[NativeWidgetMacTestWindow runLoop]) = nullptr;
+}
+
 - (void)dealloc {
   if (_deallocFlag) {
     DCHECK(!*_deallocFlag);
     *_deallocFlag = true;
+    if (*[NativeWidgetMacTestWindow runLoop]) {
+      (*[NativeWidgetMacTestWindow runLoop])->Quit();
+    }
   }
   [super dealloc];
 }

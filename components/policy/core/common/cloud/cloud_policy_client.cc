@@ -688,9 +688,14 @@ void CloudPolicyClient::UploadSecurityEventReport(
     content::BrowserContext* context,
     bool include_device_info,
     base::Value::Dict report,
-    StatusCallback callback) {
+    ResultCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  CHECK(is_registered());
+
+  if (!is_registered()) {
+    std::move(callback).Run(CloudPolicyClient::Result(NotRegistered()));
+    return;
+  }
+
   CreateNewRealtimeReportingJob(
       std::move(report),
       service()->configuration()->GetReportingConnectorServerUrl(context),
@@ -727,9 +732,14 @@ void CloudPolicyClient::UploadEncryptedReport(
 }
 
 void CloudPolicyClient::UploadAppInstallReport(base::Value::Dict report,
-                                               StatusCallback callback) {
+                                               ResultCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  CHECK(is_registered());
+
+  if (!is_registered()) {
+    std::move(callback).Run(CloudPolicyClient::Result(NotRegistered()));
+    return;
+  }
+
   CancelAppInstallReportUpload();
   app_install_report_request_job_ = CreateNewRealtimeReportingJob(
       std::move(report),
@@ -749,9 +759,14 @@ void CloudPolicyClient::CancelAppInstallReportUpload() {
 }
 
 void CloudPolicyClient::UploadExtensionInstallReport(base::Value::Dict report,
-                                                     StatusCallback callback) {
+                                                     ResultCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  CHECK(is_registered());
+
+  if (!is_registered()) {
+    std::move(callback).Run(CloudPolicyClient::Result(NotRegistered()));
+    return;
+  }
+
   CancelExtensionInstallReportUpload();
   extension_install_report_request_job_ = CreateNewRealtimeReportingJob(
       std::move(report),
@@ -809,7 +824,7 @@ DeviceManagementService::Job* CloudPolicyClient::CreateNewRealtimeReportingJob(
     const std::string& server_url,
     bool include_device_info,
     bool add_connector_url_params,
-    StatusCallback callback) {
+    ResultCallback callback) {
   std::unique_ptr<RealtimeReportingJobConfiguration> config =
       std::make_unique<RealtimeReportingJobConfiguration>(
           this, server_url, include_device_info, add_connector_url_params,
@@ -1313,7 +1328,7 @@ void CloudPolicyClient::OnReportUploadCompleted(ResultCallback callback,
 }
 
 void CloudPolicyClient::OnRealtimeReportUploadCompleted(
-    StatusCallback callback,
+    ResultCallback callback,
     DeviceManagementService::Job* job,
     DeviceManagementStatus status,
     int reponse_code,
@@ -1323,7 +1338,7 @@ void CloudPolicyClient::OnRealtimeReportUploadCompleted(
     NotifyClientError();
   }
 
-  std::move(callback).Run(status == DM_STATUS_SUCCESS);
+  std::move(callback).Run(CloudPolicyClient::Result(status));
   RemoveJob(job);
 }
 
@@ -1376,7 +1391,11 @@ void CloudPolicyClient::OnClientCertProvisioningRequestResponse(
       &CloudPolicyClient::RemoveJob, base::Unretained(this), result.job));
 
   last_dm_status_ = result.dm_status;
-  if (!result.response.has_client_certificate_provisioning_response()) {
+  // For DM_STATUS_SUCCESS, always expect that the response contains the correct
+  // sub-proto. Forward other error codes without modifying them even if no
+  // response sub-proto is filled.
+  if (last_dm_status_ == DM_STATUS_SUCCESS &&
+      !result.response.has_client_certificate_provisioning_response()) {
     last_dm_status_ = DM_STATUS_RESPONSE_DECODING_ERROR;
   }
 

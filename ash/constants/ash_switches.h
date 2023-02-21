@@ -95,6 +95,8 @@ COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kChildWallpaperSmall[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kCrosRegion[];
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const char kCryptohomeRecoveryReauthUrl[];
+COMPONENT_EXPORT(ASH_CONSTANTS)
+extern const char kCryptohomeRecoveryUseTestEnvironment[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kCryptohomeUseAuthSession[];
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const char kCryptohomeUseOldEncryptionForTesting[];
@@ -281,6 +283,7 @@ COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const char kSkipForceOnlineSignInForTesting[];
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const char kSkipReorderNudgeShowThresholdDurationForTest[];
+COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kSwCursorOnWideDisplays[];
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const char kStabilizeTimeDependentViewForTests[];
 COMPONENT_EXPORT(ASH_CONSTANTS)

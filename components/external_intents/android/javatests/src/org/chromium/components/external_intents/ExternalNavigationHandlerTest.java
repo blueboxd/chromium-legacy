@@ -75,7 +75,9 @@ import java.util.regex.Pattern;
 @RunWith(BaseJUnit4ClassRunner.class)
 @Batch(Batch.UNIT_TESTS)
 @Features.DisableFeatures(ExternalIntentsFeatures.EXTERNAL_NAVIGATION_DEBUG_LOGS_NAME)
-@Features.EnableFeatures({ExternalIntentsFeatures.BLOCK_SUBFRAME_INTENT_TO_SELF_NAME})
+@Features.EnableFeatures({ExternalIntentsFeatures.BLOCK_SUBFRAME_INTENT_TO_SELF_NAME,
+        ExternalIntentsFeatures.BLOCK_FRAME_RENAVIGATIONS_NAME,
+        ExternalIntentsFeatures.DO_NOT_REQUIRE_SPECIALIZED_CCT_HANDLER_NAME})
 public class ExternalNavigationHandlerTest {
     // Expectations
     private static final int IGNORE = 0x0;
@@ -205,7 +207,9 @@ public class ExternalNavigationHandlerTest {
     @Test
     @SmallTest
     public void testStartActivityToTrustedPackageWithoutUserGesture() {
-        mDelegate.add(new IntentActivity(YOUTUBE_URL, YOUTUBE_PACKAGE_NAME));
+        IntentActivity filter = new IntentActivity(YOUTUBE_URL, YOUTUBE_PACKAGE_NAME);
+        filter.setIsNotSpecialized(true);
+        mDelegate.add(filter);
 
         RedirectHandler handler = RedirectHandler.create();
         handler.updateNewUrlLoading(
@@ -2394,6 +2398,14 @@ public class ExternalNavigationHandlerTest {
                 .expecting(OverrideUrlLoadingResultType.OVERRIDE_WITH_EXTERNAL_INTENT,
                         START_OTHER_ACTIVITY);
 
+        Assert.assertEquals(null, mUrlHandler.mStartActivityIntent.getPackage());
+
+        mDelegate.setIsCallingAppTrusted(true);
+
+        checkUrl(YOUTUBE_URL, redirectHandlerForLinkClick())
+                .expecting(OverrideUrlLoadingResultType.OVERRIDE_WITH_EXTERNAL_INTENT,
+                        START_OTHER_ACTIVITY);
+
         Assert.assertEquals("target.package", mUrlHandler.mStartActivityIntent.getPackage());
     }
 
@@ -2604,6 +2616,17 @@ public class ExternalNavigationHandlerTest {
         doTestSubframeIntentTargetsSelf(false);
     }
 
+    @Test
+    @SmallTest
+    public void testBlockCrossFrameReNavigation() {
+        mDelegate.add(new IntentActivity(YOUTUBE_URL, YOUTUBE_PACKAGE_NAME));
+
+        checkUrl(YOUTUBE_URL, redirectHandlerForLinkClick())
+                .withIsInitialNavigationInFrame(false)
+                .withIsCrossFrame(true)
+                .expecting(OverrideUrlLoadingResultType.NO_OVERRIDE, IGNORE);
+    }
+
     private static List<ResolveInfo> makeResolveInfos(ResolveInfo... infos) {
         return Arrays.asList(infos);
     }
@@ -2631,6 +2654,7 @@ public class ExternalNavigationHandlerTest {
         private String mUrlPrefix;
         private String mPackageName;
         private boolean mIsExported;
+        private boolean mIsNotSpecialized;
 
         public IntentActivity(String urlPrefix, String packageName) {
             this(urlPrefix, packageName, true);
@@ -2654,7 +2678,12 @@ public class ExternalNavigationHandlerTest {
             return mIsExported;
         }
 
+        public void setIsNotSpecialized(boolean isNotSpecialized) {
+            mIsNotSpecialized = isNotSpecialized;
+        }
+
         public boolean isSpecialized() {
+            if (mIsNotSpecialized) return false;
             // Specialized if URL prefix is more than just a scheme.
             return Pattern.compile("[^:/]+://.+").matcher(mUrlPrefix).matches();
         }
@@ -2917,8 +2946,7 @@ public class ExternalNavigationHandlerTest {
         }
 
         @Override
-        public boolean isIntentForTrustedCallingApp(
-                Intent intent, Supplier<List<ResolveInfo>> resolveInfoSupplier) {
+        public boolean isForTrustedCallingApp(Supplier<List<ResolveInfo>> resolveInfoSupplier) {
             return mIsCallingAppTrusted;
         }
 
@@ -2928,14 +2956,11 @@ public class ExternalNavigationHandlerTest {
         }
 
         @Override
-        public boolean maybeSetTargetPackage(
-                Intent intent, Supplier<List<ResolveInfo>> resolveInfoSupplier) {
+        public void setPackageForTrustedCallingApp(Intent intent) {
+            assert mIsCallingAppTrusted;
             if (mTargetPackageName != null) {
-                intent.setSelector(null);
                 intent.setPackage(mTargetPackageName);
-                return true;
             }
-            return false;
         }
 
         @Override
@@ -3068,6 +3093,8 @@ public class ExternalNavigationHandlerTest {
         private RedirectHandler mRedirectHandler;
         private boolean mIsRendererInitiated = true;
         private boolean mIsMainFrame = true;
+        private boolean mIsInitialNavigationInFrame;
+        private boolean mIsCrossFrame;
 
         private ExternalNavigationTestParams(String url, RedirectHandler handler) {
             mUrl = url;
@@ -3127,6 +3154,17 @@ public class ExternalNavigationHandlerTest {
             return this;
         }
 
+        public ExternalNavigationTestParams withIsInitialNavigationInFrame(
+                boolean isInitialNavigationInFrame) {
+            mIsInitialNavigationInFrame = isInitialNavigationInFrame;
+            return this;
+        }
+
+        public ExternalNavigationTestParams withIsCrossFrame(boolean isCrossFrame) {
+            mIsCrossFrame = isCrossFrame;
+            return this;
+        }
+
         public void expecting(
                 @OverrideUrlLoadingResultType int expectedOverrideResult, int otherExpectation) {
             expecting(expectedOverrideResult, OverrideUrlLoadingAsyncActionType.NO_ASYNC_ACTION,
@@ -3172,6 +3210,8 @@ public class ExternalNavigationHandlerTest {
                             .setHasUserGesture(mHasUserGesture)
                             .setIsRendererInitiated(mIsRendererInitiated)
                             .setAsyncActionTakenCallback(callback)
+                            .setIsInitialNavigationInFrame(mIsInitialNavigationInFrame)
+                            .setIsCrossFrameNavigation(mIsCrossFrame)
                             .build();
             OverrideUrlLoadingResult result = mUrlHandler.shouldOverrideUrlLoading(params);
 

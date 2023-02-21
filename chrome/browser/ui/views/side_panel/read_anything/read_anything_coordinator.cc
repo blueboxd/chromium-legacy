@@ -52,13 +52,13 @@ void ReadAnythingCoordinator::InitModelWithUserPrefs() {
       browser->profile()->GetPrefs()->GetInteger(
           prefs::kAccessibilityReadAnythingColorInfo));
 
-  read_anything::mojom::Spacing prefs_line_spacing;
-  prefs_line_spacing = static_cast<read_anything::mojom::Spacing>(
+  read_anything::mojom::LineSpacing prefs_line_spacing;
+  prefs_line_spacing = static_cast<read_anything::mojom::LineSpacing>(
       browser->profile()->GetPrefs()->GetInteger(
           prefs::kAccessibilityReadAnythingLineSpacing));
 
-  read_anything::mojom::Spacing prefs_letter_spacing;
-  prefs_letter_spacing = static_cast<read_anything::mojom::Spacing>(
+  read_anything::mojom::LetterSpacing prefs_letter_spacing;
+  prefs_letter_spacing = static_cast<read_anything::mojom::LetterSpacing>(
       browser->profile()->GetPrefs()->GetInteger(
           prefs::kAccessibilityReadAnythingLetterSpacing));
 
@@ -160,7 +160,7 @@ std::unique_ptr<views::View> ReadAnythingCoordinator::CreateContainerView() {
   // Note that a coordinator would normally maintain ownership of these objects,
   // but objects extending {ui/views/view.h} prefer ownership over raw pointers.
   auto container_view = std::make_unique<ReadAnythingContainerView>(
-      std::move(toolbar), std::move(content_web_view));
+      this, std::move(toolbar), std::move(content_web_view));
 
   return std::move(container_view);
 }

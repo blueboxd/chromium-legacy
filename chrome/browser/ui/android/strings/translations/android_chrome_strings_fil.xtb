@@ -450,6 +450,7 @@ Pinapahusay ng mga private state token ang privacy sa web at hindi magagamit ang
 <translation id="3421726884497337397">Piliin kung kailan iba-block ang cookies ng third-party</translation>
 <translation id="3428747202529429621">Pinapanatili kang ligtas sa Chrome at puwedeng gamitin para paigtingin ang iyong seguridad sa iba pang Google app kapag naka-sign in ka</translation>
 <translation id="3429160811076349561">Naka-off ang mga feature ng trial</translation>
+<translation id="3432973700170747422">I-delete ang huling 15 min</translation>
 <translation id="3435465986463792564">Maraming window? Puwede mong pamahalaan ang mga ito mula rito</translation>
 <translation id="3435738964857648380">Seguridad</translation>
 <translation id="3443221991560634068">I-reload ang kasalukuyang page</translation>
@@ -516,7 +517,6 @@ Pinapahusay ng mga private state token ang privacy sa web at hindi magagamit ang
 <translation id="3830886834687455630">I-update ang mga serbisyo ng Google Play para tingnan ang iyong mga password</translation>
 <translation id="3845098929839618392">Buksan sa Incognito tab</translation>
 <translation id="3856096718352044181">Paki-verify na valid na provider ito o subukan ulit sa ibang pagkakataon</translation>
-<translation id="3858127568696903256">Tingnan ang content na sinusubaybayan mo rito</translation>
 <translation id="3858860766373142691">Pangalan</translation>
 <translation id="3861633093716975811">Mga sikat na video</translation>
 <translation id="3874520961715512166">Inalis ang site</translation>
@@ -1242,6 +1242,7 @@ Halimbawa, puwedeng tumugon ang ilang website sa kahilingang ito sa pamamagitan 
 <translation id="7682724950699840886">Subukan ang mga sumusunod na tip: tiyaking may sapat na espasyo sa iyong device, at subukang mag-export muli.</translation>
 <translation id="7686086654630106285">Higit pa tungkol sa mga ad na iminumungkahi ng site</translation>
 <translation id="768618399695552958">Na-preload ang ilan sa mga page na binibisita mo. Posibleng mag-preload ng mga page sa pamamagitan ng mga server ng Google kapag naka-link mula sa isang site ng Google.</translation>
+<translation id="7691043218961417207">Mag-explore ng content na susubaybayan</translation>
 <translation id="7698359219371678927">Gumawa ng email sa <ph name="APP_NAME" /></translation>
 <translation id="7707922173985738739">Gumamit ng mobile data</translation>
 <translation id="7709094866268987903">Lalabas dito ang mga interes na inalis mo</translation>

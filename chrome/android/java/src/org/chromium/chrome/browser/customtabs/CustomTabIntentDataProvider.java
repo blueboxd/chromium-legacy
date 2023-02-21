@@ -262,6 +262,13 @@ public class CustomTabIntentDataProvider extends BrowserServicesIntentDataProvid
             "androidx.browser.customtabs.extra.ACTIVITY_SIDE_SHEET_BREAKPOINT_DP";
 
     /**
+     * Extra that, if set, allows you to set how you want to distinguish the PCCT side sheet from
+     * the rest of the display. Options include shadow, a divider line, or no decoration.
+     */
+    public static final String EXTRA_ACTIVITY_SIDE_SHEET_DECORATION_TYPE =
+            "androidx.browser.customtabs.extra.ACTIVITY_SIDE_SHEET_DECORATION_TYPE";
+
+    /**
      * Extra that, if set, makes the toolbar's top corner radii to be x pixels. This will only have
      * effect if the custom tab is behaving as a bottom sheet. Currently, this is capped at 16dp.
      * TODO(jinsukkim): Deprecate this.
@@ -284,6 +291,13 @@ public class CustomTabIntentDataProvider extends BrowserServicesIntentDataProvid
     public static final StringCachedFieldTrialParameter ALLOWLIST_ENTRIES =
             new StringCachedFieldTrialParameter(ChromeFeatureList.CCT_RESIZABLE_FOR_THIRD_PARTIES,
                     ALLOWLIST_ENTRIES_PARAM_NAME, "");
+
+    /**
+     * Extra that specifies the {@link PendingIntent} to be sent when the user swipes up from the
+     * secondary (bottom) toolbar.
+     */
+    public static final String EXTRA_SECONDARY_TOOLBAR_SWIPE_UP_ACTION =
+            "androidx.browser.customtabs.extra.SECONDARY_TOOLBAR_SWIPE_UP_ACTION";
 
     private final Intent mIntent;
     private final CustomTabsSessionToken mSession;
@@ -315,8 +329,11 @@ public class CustomTabIntentDataProvider extends BrowserServicesIntentDataProvid
     private List<CustomButtonParams> mToolbarButtons = new ArrayList<>(1);
     private List<CustomButtonParams> mBottombarButtons = new ArrayList<>(2);
     private RemoteViews mRemoteViews;
+    @SideSheetDecorationType
+    private int mSideSheetDecorationType;
     private int[] mClickableViewIds;
     private PendingIntent mRemoteViewsPendingIntent;
+    private PendingIntent mSecondaryToolbarSwipeUpPendingIntent;
     // OnFinished listener for PendingIntents. Used for testing only.
     private PendingIntent.OnFinished mOnFinished;
 
@@ -417,6 +434,15 @@ public class CustomTabIntentDataProvider extends BrowserServicesIntentDataProvid
         return breakPointDp < 0 ? DEFAULT_BREAKPOINT_DP : breakPointDp;
     }
 
+    private static int getActivitySideSheetDecorationTypeFromIntent(Intent intent) {
+        int decorationType =
+                IntentUtils.safeGetIntExtra(intent, EXTRA_ACTIVITY_SIDE_SHEET_DECORATION_TYPE,
+                        ACTIVITY_SIDE_SHEET_DECORATION_TYPE_DEFAULT);
+        return decorationType < 0 || decorationType > ACTIVITY_SIDE_SHEET_DECORATION_TYPE_MAX
+                ? ACTIVITY_SIDE_SHEET_DECORATION_TYPE_DEFAULT
+                : decorationType;
+    }
+
     /**
      * Get the package name from {@link #getReferrerUriString(Activity)}. If the referrer format
      * is invalid, return an empty string.
@@ -504,6 +530,10 @@ public class CustomTabIntentDataProvider extends BrowserServicesIntentDataProvid
                 intent, CustomTabsIntent.EXTRA_REMOTEVIEWS_VIEW_IDS);
         mRemoteViewsPendingIntent = IntentUtils.safeGetParcelableExtra(
                 intent, CustomTabsIntent.EXTRA_REMOTEVIEWS_PENDINGINTENT);
+        if (ChromeFeatureList.sCctBottomBarSwipeUpGesture.isEnabled()) {
+            mSecondaryToolbarSwipeUpPendingIntent = IntentUtils.safeGetParcelableExtra(
+                    intent, EXTRA_SECONDARY_TOOLBAR_SWIPE_UP_ACTION);
+        }
         mMediaViewerUrl = isMediaViewer()
                 ? IntentUtils.safeGetStringExtra(intent, EXTRA_MEDIA_VIEWER_URL)
                 : null;
@@ -546,6 +576,7 @@ public class CustomTabIntentDataProvider extends BrowserServicesIntentDataProvid
         int backgroundInteractBehavior = IntentUtils.safeGetIntExtra(
                 intent, EXTRA_ENABLE_BACKGROUND_INTERACTION, BACKGROUND_INTERACT_DEFAULT);
         mInteractWithBackground = backgroundInteractBehavior != BACKGROUND_INTERACT_OFF;
+        mSideSheetDecorationType = getActivitySideSheetDecorationTypeFromIntent(intent);
 
         logCustomTabFeatures(intent, colorScheme, usingDynamicFeatures);
     }
@@ -827,6 +858,10 @@ public class CustomTabIntentDataProvider extends BrowserServicesIntentDataProvid
                     intent, CustomTabIntentDataProvider.EXTRA_ACTIVITY_SIDE_SHEET_BREAKPOINT_DP)) {
             featureUsage.log(CustomTabsFeature.EXTRA_ACTIVITY_SIDE_SHEET_BREAKPOINT_DP);
         }
+        if (IntentUtils.safeHasExtra(intent,
+                    CustomTabIntentDataProvider.EXTRA_ACTIVITY_SIDE_SHEET_DECORATION_TYPE)) {
+            featureUsage.log(CustomTabsFeature.EXTRA_ACTIVITY_SIDE_SHEET_DECORATION_TYPE);
+        }
         if (mEnableEmbeddedMediaExperience) {
             featureUsage.log(CustomTabsFeature.EXTRA_ENABLE_EMBEDDED_MEDIA_EXPERIENCE);
         }
@@ -896,6 +931,9 @@ public class CustomTabIntentDataProvider extends BrowserServicesIntentDataProvid
         if (showSideSheetMaximizeButton()) {
             featureUsage.log(CustomTabsFeature.EXTRA_ACTIVITY_SIDE_SHEET_ENABLE_MAXIMIZATION);
         }
+        if (mSecondaryToolbarSwipeUpPendingIntent != null) {
+            featureUsage.log(CustomTabsFeature.EXTRA_SECONDARY_TOOLBAR_SWIPE_UP_ACTION);
+        }
     }
 
     @Override
@@ -933,6 +971,13 @@ public class CustomTabIntentDataProvider extends BrowserServicesIntentDataProvid
     @Override
     public boolean isPartialWidthCustomTab() {
         return getInitialActivityWidth() > 0;
+    }
+
+    @Override
+    public boolean isPartialCustomTab() {
+        return isPartialHeightCustomTab()
+                || (ChromeFeatureList.sCctResizableSideSheet.isEnabled()
+                        && isPartialWidthCustomTab());
     }
 
     @Override
@@ -1032,6 +1077,12 @@ public class CustomTabIntentDataProvider extends BrowserServicesIntentDataProvid
     @Nullable
     public PendingIntent getRemoteViewsPendingIntent() {
         return mRemoteViewsPendingIntent;
+    }
+
+    @Nullable
+    @Override
+    public PendingIntent getSecondaryToolbarSwipeUpPendingIntent() {
+        return mSecondaryToolbarSwipeUpPendingIntent;
     }
 
     @Override
@@ -1179,6 +1230,12 @@ public class CustomTabIntentDataProvider extends BrowserServicesIntentDataProvid
         }
 
         return version;
+    }
+
+    @SideSheetDecorationType
+    @Override
+    public int getActivitySideSheetDecorationType() {
+        return mSideSheetDecorationType;
     }
 
     @Override

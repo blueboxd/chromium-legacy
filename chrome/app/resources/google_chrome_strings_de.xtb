@@ -236,6 +236,7 @@
 <translation id="5678190148303298925">{COUNT,plural, =0{Dein Administrator empfiehlt dir, Chrome neu zu starten, um dieses Update durchzuführen}=1{Dein Administrator empfiehlt dir, Chrome neu zu starten, um dieses Update durchzuführen. Dein Inkognitofenster wird nicht wieder geöffnet.}other{Dein Administrator empfiehlt dir, Chrome neu zu starten, um dieses Update durchzuführen. Deine # Inkognitofenster werden nicht wieder geöffnet.}}</translation>
 <translation id="5686916850681061684">Du kannst Google Chrome anpassen und Einstellungen festlegen. Etwas erfordert deine Aufmerksamkeit – klicke hier, um mehr zu erfahren.</translation>
 <translation id="5690427481109656848">Google LLC</translation>
+<translation id="570005089986962444">Wenn diese Option aktiviert ist, gibt Chrome von inaktiven Tabs belegten Arbeitsspeicher frei. Dadurch können aktive Tabs und andere Apps auf mehr Ressourcen zugreifen und Chrome bleibt schnell. Deine inaktiven Tabs werden automatisch wieder aktiviert, sobald du sie aufrufst.</translation>
 <translation id="5715063361988620182">{SECONDS,plural, =1{Google Chrome wird in 1 Sekunde neu gestartet}other{Google Chrome wird in # Sekunden neu gestartet}}</translation>
 <translation id="5727531838415286053">Wenn Chrome dich zufällig für einen aktiven Test angemeldet hat, hat dein Browserverlauf Einfluss auf die unten stehenden, geschätzten Interessen und darauf, welche Werbung dir gezeigt wird. Zum Schutz deiner Daten löscht Chrome jeden Monat fortlaufend deine Interessen. Solange du deine Interessen nicht entfernst, werden sie aktualisiert.</translation>
 <translation id="5736850870166430177">Wenn eine Website versucht, dein Passwort zu stehlen, oder wenn du eine schädliche Datei herunterlädst, kann Chrome auch URLs, einschließlich Teile von Seiteninhalten, an Safe Browsing senden</translation>
@@ -316,7 +317,6 @@ Berechtigungen, die du Websites und Apps bereits gewährt hast, gelten mögliche
 <translation id="7410958280246779049">Chrome hat diese Datei blockiert, weil sie gefährlich ist</translation>
 <translation id="7426611252293106642">Google Chrome funktioniert unter Umständen nicht ordnungsgemäß, da es unter dieser Linux-Distribution nicht mehr unterstützt wird</translation>
 <translation id="7481213027396403996">Höchste Sicherheit in Chrome erhalten</translation>
-<translation id="7486227612705979895">Chrome greift auf Google Drive zu, um in der Adressleiste Vorschläge zu machen</translation>
 <translation id="7535429826459677826">Google Chrome Dev</translation>
 <translation id="7583399374488819119"><ph name="COMPANY_NAME" />-Installationsprogramm</translation>
 <translation id="7606334485649076285">Google Chrome OS Flex</translation>
@@ -359,7 +359,6 @@ Berechtigungen, die du Websites und Apps bereits gewährt hast, gelten mögliche
 <translation id="8286862437124483331">Google Chrome möchte Passwörter anzeigen. Gib dein Windows-Passwort ein, um dies zuzulassen.</translation>
 <translation id="828798499196665338">Dein Elternteil hat "Berechtigungen für Websites, Apps und Erweiterungen" für Chrome deaktiviert. Das Aktivieren dieser <ph name="EXTENSION_TYPE_PARAMETER" /> ist nicht zulässig.</translation>
 <translation id="8290100596633877290">Google Chrome ist abgestürzt. Jetzt neu starten?</translation>
-<translation id="8341646175450781745">Wenn diese Option aktiviert ist, gibt Chrome von inaktiven Tabs belegten Arbeitsspeicher frei. Dadurch können aktive Tabs und andere Apps auf mehr Ressourcen zugreifen und Chrome bleibt schnell. Deine inaktiven Tabs werden automatisch wieder aktiviert, sobald du sie aufrufst. <ph name="BEGIN_LINK" />Weitere Informationen<ph name="END_LINK" /> oder <ph name="BEGIN_LINK_2" />Feedback geben<ph name="END_LINK_2" /></translation>
 <translation id="8342675569599923794">Diese Datei ist schädlich und wurde von Chrome blockiert.</translation>
 <translation id="8349795646647783032"><ph name="BEGIN_BOLD" />So verwenden wir diese Daten<ph name="END_BOLD" />: Websites können Daten zu deinen Interessen bei Chrome speichern. Wenn du beispielsweise im Internet Schuhe für einen Marathon kaufst, definiert die Website möglicherweise Marathons als eines deiner Interessen. Wenn du dann später eine andere Website besuchst, um dich für ein Wettrennen anzumelden, kann dir auf Grundlage deiner Interessen Werbung zu Laufschuhen angezeigt werden.</translation>
 <translation id="8370517070665726704">Copyright <ph name="YEAR" /> Google LLC. Alle Rechte vorbehalten.</translation>
@@ -404,7 +403,6 @@ Berechtigungen, die du Websites und Apps bereits gewährt hast, gelten mögliche
 <translation id="8986207147630327271">Du fügst diesem Browser ein Arbeitsprofil hinzu und erteilst deinem Administrator nur Rechte für das Arbeitsprofil.</translation>
 <translation id="8989968390305463310">Dein Browserverlauf hat Einfluss auf die unten stehenden, geschätzten Interessen und darauf, welche Werbung dir gezeigt wird. Zum Schutz deiner Daten löscht Chrome automatisch jeden Monat deine Interessen. Solange du deine Interessen nicht entfernst, können sie aktualisiert werden.</translation>
 <translation id="8999208279178790196">{0,plural, =0{Ein Chrome-Update ist verfügbar}=1{Ein Chrome-Update ist verfügbar}other{Ein Chrome-Update ist seit # Tagen verfügbar}}</translation>
-<translation id="9003498785844995646">Wenn die Option aktiviert ist, reduziert Chrome den Akkuverbrauch, indem Hintergrundaktivitäten und visuelle Effekte wie optimiertes Scrollen und Video-Framerates eingeschränkt werden. <ph name="BEGIN_LINK" />Weitere Informationen<ph name="END_LINK" /> oder <ph name="BEGIN_LINK_2" />Feedback senden<ph name="END_LINK_2" /></translation>
 <translation id="9053892488859122171">Chrome OS Flex-System</translation>
 <translation id="9067395829937117663">Für Google Chrome ist Windows 7 oder höher erforderlich.</translation>
 <translation id="911206726377975832">Auch die Browserdaten löschen?</translation>
@@ -415,6 +413,7 @@ Berechtigungen, die du Websites und Apps bereits gewährt hast, gelten mögliche
 <translation id="93760716455950538">Chrome OS Flex neu starten</translation>
 <translation id="940313311831216333">Wenn du auf allen deinen Geräten auf deine Chrome-Inhalte zugreifen möchtest, melde dich an und aktiviere die Synchronisierung.</translation>
 <translation id="943390475793766444">Chrome empfiehlt, diese Datei zu scannen, da sie gefährlich sein könnte.</translation>
+<translation id="963650557422347554">Wenn die Option aktiviert ist, reduziert Chrome den Akkuverbrauch, indem Hintergrundaktivitäten und visuelle Effekte wie optimiertes Scrollen und Video-Framerates eingeschränkt werden.</translation>
 <translation id="989369509083708165">Google Chrome ist dein Standardbrowser</translation>
 <translation id="989816563149873169">Mit <ph name="SHORTCUT" /> kann zwischen Chrome-Profilen gewechselt werden</translation>
 </translationbundle>

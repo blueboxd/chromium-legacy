@@ -9,12 +9,14 @@
 #endif
 
 // Custom symbol names.
+#if BUILDFLAG(IOS_USE_BRANDED_SYMBOLS)
+NSString* const kGoogleIconSymbol = @"google_icon";
+NSString* const kGoogleShieldSymbol = @"google_shield";
+NSString* const kChromeSymbol = @"chrome_symbol";
+#endif  // BUILDFLAG(IOS_USE_BRANDED_SYMBOLS)
 NSString* const kPrivacySymbol = @"checkerboard_shield";
 NSString* const kSyncDisabledSymbol = @"arrow_triangle_slash_circlepath";
 NSString* const kSafetyCheckSymbol = @"checkermark_shield";
-#if BUILDFLAG(IOS_USE_BRANDED_SYMBOLS)
-NSString* const kGoogleIconSymbol = @"google_icon";
-#endif  // BUILDFLAG(IOS_USE_BRANDED_SYMBOLS)
 NSString* const kArrowClockWiseSymbol = @"arrow_clockwise";
 NSString* const kIncognitoSymbol = @"incognito";
 NSString* const kSquareNumberSymbol = @"square_number";
@@ -40,12 +42,10 @@ NSString* const kCameraLensSymbol = @"camera_lens";
 NSString* const kDownTrendSymbol = @"line_downtrend";
 NSString* const kIncognitoCircleFilliOS14Symbol =
     @"incognito_circle_fill_ios14";
-#if BUILDFLAG(IOS_USE_BRANDED_SYMBOLS)
-NSString* const kGoogleShieldSymbol = @"google_shield";
-#endif  // BUILDFLAG(IOS_USE_BRANDED_SYMBOLS)
 NSString* const kShieldSymbol = @"shield";
 NSString* const kCloudSlashSymbol = @"cloud_slash";
 NSString* const kCloudAndArrowUpSymbol = @"cloud_and_arrow_up";
+NSString* const kDinoSymbol = @"dino";
 
 // Custom symbol names which can be configured with a color palette.
 NSString* const kIncognitoCircleFillSymbol = @"incognito_circle_fill";
@@ -86,7 +86,9 @@ NSString* const kPrinterSymbol = @"printer";
 NSString* const kCreditCardSymbol = @"creditcard";
 NSString* const kMicrophoneFillSymbol = @"mic.fill";
 NSString* const kMicrophoneSymbol = @"mic";
+NSString* const kMagnifyingglassSymbol = @"magnifyingglass";
 NSString* const kEllipsisCircleFillSymbol = @"ellipsis.circle.fill";
+NSString* const kPinSymbol = @"pin";
 NSString* const kPinSlashSymbol = @"pin.slash";
 NSString* const kSettingsSymbol = @"gearshape";
 NSString* const kSettingsFilledSymbol = @"gearshape.fill";

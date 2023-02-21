@@ -163,6 +163,10 @@ class HttpStreamFactory::JobController
   // Returns true if |this| has a pending alternative job that is not completed.
   bool HasPendingAltJob() const;
 
+  base::TimeDelta get_main_job_wait_time_for_tests() {
+    return main_job_wait_time_;
+  }
+
  private:
   friend class test::JobControllerPeer;
 
@@ -316,7 +320,7 @@ class HttpStreamFactory::JobController
   // |alternative_job_| and |dns_alpn_h3_job_| are unable to do so, |this| will
   // notify |main_job_| to proceed and then race the two jobs.
   // For preconnect job, |main_job_| is started first, and if it fails with
-  // ERR_DNS_NO_MACHING_SUPPORTED_ALPN, |preconnect_backup_job_| will be
+  // ERR_DNS_NO_MATCHING_SUPPORTED_ALPN, |preconnect_backup_job_| will be
   // started.
   std::unique_ptr<Job> main_job_;
   std::unique_ptr<Job> alternative_job_;

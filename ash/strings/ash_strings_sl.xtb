@@ -133,11 +133,13 @@ Tu je nekaj stvari, ki jih lahko poskusite za začetek.</translation>
 <translation id="163517899691012366">Obvestila so utišana, ko je vklopljen način Ne moti.</translation>
 <translation id="1637505162081889933">Št. naprav: <ph name="NUM_DEVICES" /></translation>
 <translation id="1639239467298939599">Nalaganje</translation>
+<translation id="1647986356840967552">Prejšnja stran</translation>
 <translation id="1654477262762802994">Začetek glasovne poizvedbe</translation>
 <translation id="1668469839109562275">Vgrajeno omrežje VPN</translation>
 <translation id="1677472565718498478">Še <ph name="TIME" /></translation>
 <translation id="1677507110654891115">Povezava s funkcijo <ph name="FEATURE_NAME" /> ni vzpostavljena.</translation>
 <translation id="1677582821739292812">Nekdo gleda na vaš zaslon</translation>
+<translation id="1683399938733266832">Trenutna uporaba CPE-ja: <ph name="CPU_USEAGE" /> %</translation>
 <translation id="169515659049020177">Shift</translation>
 <translation id="1698080062160024910">Časovnik (<ph name="TOTAL_TIME" />) · <ph name="LABEL" /></translation>
 <translation id="1698760176351776263">Naslov IPv6: <ph name="ADDRESS" /></translation>
@@ -380,6 +382,7 @@ Tu je nekaj stvari, ki jih lahko poskusite za začetek.</translation>
 <translation id="3051189971848907985">Preimenovanje profila. Počakajte nekaj minut.</translation>
 <translation id="3055162170959710888">To napravo si danes uporabljal <ph name="USED_TIME" /></translation>
 <translation id="3062298103034426069">Ni podprto</translation>
+<translation id="3068622547379332530">Različica <ph name="VERSION_NAME" /> (<ph name="OFFICIAL_STATUS" />) <ph name="CHANNEL_NAME" /> <ph name="PROCESSOR_VARIATION" /></translation>
 <translation id="3068711042108640621">Polica na levi</translation>
 <translation id="3077734595579995578">shift</translation>
 <translation id="3081696990447829002">Razširi meni</translation>
@@ -555,6 +558,7 @@ Priklopite napravo v vir napajanja.</translation>
 <translation id="397105322502079400">Izračunavanje …</translation>
 <translation id="397726367135689299">Polnjenje baterije je morda nezanesljivo.</translation>
 <translation id="3977512764614765090">Akumulator je <ph name="PERCENTAGE" />-% napolnjen in se polni.</translation>
+<translation id="3984536049089846927">Naslednja stran</translation>
 <translation id="3986082989454912832">Odgovor</translation>
 <translation id="3995138139523574647">Naprava USB-C (vrata desno zadaj)</translation>
 <translation id="40062176907008878">Rokopis</translation>
@@ -577,7 +581,7 @@ Priklopite napravo v vir napajanja.</translation>
 <translation id="4123259114412175274">Če želite odkleniti Chromebook, mora biti vklopljen Bluetooth v telefonu.</translation>
 <translation id="4125970834901680537">V načinu tabličnega računalnika ni mogoče pretočno predvajati aplikacij. Poskusite znova v načinu prenosnika.</translation>
 <translation id="4129129681837227511">Če si želite ogledati obvestila na zaklenjenem zaslonu, ga odklenite in spremenite nastavitev</translation>
-<translation id="4130035430755296270">Premikajte miškin kazalec, če želite več možnosti postavitve.</translation>
+<translation id="4131973331381812765">Temperatura: <ph name="TEMPERATURE" /> °C – trenutna hitrost: <ph name="CPU_AVERAGE_CURRENT_FREQUENCY_GHZ" /> GHz</translation>
 <translation id="4136724716305260864">Vklopljeno do sončnega vzhoda</translation>
 <translation id="4146833061457621061">Predvajaj glasbo</translation>
 <translation id="4150201353443180367">Prikaz</translation>
@@ -732,6 +736,7 @@ Priklopite napravo v vir napajanja.</translation>
 <translation id="4895488851634969361">Akumulator je poln.</translation>
 <translation id="490375751687810070">Navpično</translation>
 <translation id="490788395437447240"><ph name="BATTERY_PERCENTAGE" /> % energije akumulatorja</translation>
+<translation id="491504982845934899">Aktiviranje omrežja <ph name="NETWORK_NAME" /> po nastavitvi naprave</translation>
 <translation id="4917385247580444890">Močan</translation>
 <translation id="4918086044614829423">Sprejmi</translation>
 <translation id="4919841137949306064"><ph name="APP_NAME" /> trenutno uporablja vašo kamero.</translation>
@@ -1328,6 +1333,7 @@ Nova namestitev</translation>
 <translation id="8131740175452115882">Potrdi</translation>
 <translation id="8131994907636310308">Zapiranje obvestila za razvrščanje</translation>
 <translation id="8132793192354020517">Povezava z <ph name="NAME" /> je vzpostavljena </translation>
+<translation id="8138705869659070104">Aktiv. po nastavitvi naprave</translation>
 <translation id="813913629614996137">Inicializiranje ...</translation>
 <translation id="8142441511840089262">Dvoklik</translation>
 <translation id="8142699993796781067">Zasebno omrežje</translation>

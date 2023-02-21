@@ -148,6 +148,15 @@ struct BLINK_COMMON_EXPORT
           blink::AuctionConfig::MaybePromiseBuyerTimeouts> {};
 
 template <>
+struct BLINK_COMMON_EXPORT UnionTraits<
+    blink::mojom::AuctionAdConfigMaybePromiseDirectFromSellerSignalsDataView,
+    blink::AuctionConfig::MaybePromiseDirectFromSellerSignals>
+    : public AdConfigMaybePromiseTraitsHelper<
+          blink::mojom::
+              AuctionAdConfigMaybePromiseDirectFromSellerSignalsDataView,
+          blink::AuctionConfig::MaybePromiseDirectFromSellerSignals> {};
+
+template <>
 struct BLINK_COMMON_EXPORT StructTraits<
     blink::mojom::AuctionReportBuyersConfigDataView,
     blink::AuctionConfig::NonSharedParams::AuctionReportBuyersConfig> {
@@ -200,6 +209,12 @@ struct BLINK_COMMON_EXPORT
   static const blink::AuctionConfig::MaybePromiseBuyerTimeouts& buyer_timeouts(
       const blink::AuctionConfig::NonSharedParams& params) {
     return params.buyer_timeouts;
+  }
+
+  static const blink::AuctionConfig::MaybePromiseBuyerTimeouts&
+  buyer_cumulative_timeouts(
+      const blink::AuctionConfig::NonSharedParams& params) {
+    return params.buyer_cumulative_timeouts;
   }
 
   static const base::flat_map<url::Origin, std::uint16_t>&
@@ -268,7 +283,7 @@ struct BLINK_COMMON_EXPORT
     return config.non_shared_params;
   }
 
-  static const absl::optional<blink::DirectFromSellerSignals>&
+  static const blink::AuctionConfig::MaybePromiseDirectFromSellerSignals&
   direct_from_seller_signals(const blink::AuctionConfig& params) {
     return params.direct_from_seller_signals;
   }

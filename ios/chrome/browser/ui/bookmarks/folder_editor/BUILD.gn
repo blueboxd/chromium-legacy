@@ -16,6 +16,7 @@ source_set("coordinator_headers") {
   visibility = [
     ":coordinator_impl",
     ":folder_editor",
+    "//ios/chrome/browser/ui/bookmarks/folder_chooser:coordinator_impl",
   ]
   sources = [
     "bookmarks_folder_editor_coordinator.h",
@@ -35,6 +36,12 @@ source_set("coordinator_impl") {
     ":coordinator_headers",
     ":ui",
     "//base",
+    "//components/bookmarks/browser",
+    "//ios/chrome/browser/bookmarks",
+    "//ios/chrome/browser/main:public",
+    "//ios/chrome/browser/ui/bookmarks:core",
+    "//ios/chrome/browser/ui/bookmarks/folder_chooser:coordinator_headers",
+    "//ios/chrome/browser/ui/commands",
   ]
 }
 
@@ -42,20 +49,11 @@ source_set("coordinator_impl") {
 # Contains folder editor ui implementation.
 source_set("ui") {
   configs += [ "//build/config/compiler:enable_arc" ]
-
-  # TODO(crbug.com/1409488): This target should only be in the deps of :coordinator_impl.
-  # The other targets should be removed after folder editor view controller use cases are replaced with coordinator.
-  visibility = [
-    ":coordinator_impl",
-    "//ios/chrome/browser/ui/bookmarks",
-    "//ios/chrome/browser/ui/bookmarks/folder_chooser:ui",
-  ]
+  visibility = [ ":coordinator_impl" ]
   sources = [
     "bookmarks_folder_editor_view_controller.h",
     "bookmarks_folder_editor_view_controller.mm",
   ]
-
-  # TODO(crbug.com/1409488): Move folder_chooser_coordinator_headers target to :coordinator_impl target.
   deps = [
     "//base",
     "//base:i18n",
@@ -68,9 +66,7 @@ source_set("ui") {
     "//ios/chrome/browser/ui/bookmarks:constants",
     "//ios/chrome/browser/ui/bookmarks:core",
     "//ios/chrome/browser/ui/bookmarks/cells",
-    "//ios/chrome/browser/ui/bookmarks/folder_chooser:coordinator_headers",
     "//ios/chrome/browser/ui/commands",
-    "//ios/chrome/browser/ui/coordinators:chrome_coordinators",
     "//ios/chrome/browser/ui/icons",
     "//ios/chrome/browser/ui/image_util",
     "//ios/chrome/browser/ui/keyboard",

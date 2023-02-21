@@ -42,6 +42,7 @@
 #include "third_party/blink/renderer/core/css/style_change_reason.h"
 #include "third_party/blink/renderer/core/css/style_engine.h"
 #include "third_party/blink/renderer/core/display_lock/display_lock_utilities.h"
+#include "third_party/blink/renderer/core/dom/css_toggle_inference.h"
 #include "third_party/blink/renderer/core/dom/css_toggle_map.h"
 #include "third_party/blink/renderer/core/dom/element_traversal.h"
 #include "third_party/blink/renderer/core/dom/first_letter_pseudo_element.h"
@@ -3114,6 +3115,12 @@ void LayoutObject::StyleDidChange(StyleDifference diff,
     }
   }
 
+  if (old_style &&
+      (old_style->ToggleTrigger() != StyleRef().ToggleTrigger() ||
+       old_style->ToggleVisibility() != StyleRef().ToggleVisibility())) {
+    GetDocument().EnsureCSSToggleInference().MarkNeedsRebuild();
+  }
+
   if (StyleRef().AnchorName())
     MarkMayHaveAnchorQuery();
 }
@@ -3862,15 +3869,6 @@ void LayoutObject::SetDescendantNeedsPaintPropertyUpdate() {
        ancestor && !ancestor->DescendantNeedsPaintPropertyUpdate();
        ancestor = ancestor->Parent()) {
     ancestor->bitfields_.SetDescendantNeedsPaintPropertyUpdate(true);
-  }
-}
-
-void LayoutObject::ForceAllAncestorsNeedPaintPropertyUpdate() {
-  NOT_DESTROYED();
-  LayoutObject* ancestor = Parent();
-  while (ancestor) {
-    ancestor->SetNeedsPaintPropertyUpdate();
-    ancestor = ancestor->Parent();
   }
 }
 

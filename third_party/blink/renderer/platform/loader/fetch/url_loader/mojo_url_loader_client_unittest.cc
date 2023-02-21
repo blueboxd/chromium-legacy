@@ -23,10 +23,9 @@
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom.h"
 #include "third_party/blink/public/platform/resource_load_info_notifier_wrapper.h"
 #include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
-#include "third_party/blink/public/platform/web_back_forward_cache_loader_helper.h"
-#include "third_party/blink/public/platform/web_resource_request_sender.h"
 #include "third_party/blink/public/platform/web_runtime_features.h"
 #include "third_party/blink/renderer/platform/loader/fetch/back_forward_cache_loader_helper.h"
+#include "third_party/blink/renderer/platform/loader/fetch/url_loader/resource_request_sender.h"
 #include "third_party/blink/renderer/platform/testing/testing_platform_support.h"
 
 namespace blink {
@@ -35,11 +34,11 @@ namespace {
 
 constexpr size_t kDataPipeCapacity = 4096;
 
-class MockWebResourceRequestSender : public WebResourceRequestSender {
+class MockResourceRequestSender : public ResourceRequestSender {
  public:
   struct Context;
-  MockWebResourceRequestSender() : context_(new Context()) {}
-  ~MockWebResourceRequestSender() override = default;
+  MockResourceRequestSender() : context_(new Context()) {}
+  ~MockResourceRequestSender() override = default;
 
   void OnUploadProgress(int64_t position, int64_t size) override {
     EXPECT_FALSE(context_->complete);
@@ -54,7 +53,7 @@ class MockWebResourceRequestSender : public WebResourceRequestSender {
     ++context_->seen_redirects;
     context_->last_load_timing = head->load_timing;
     if (context_->defer_on_redirect) {
-      context_->url_laoder_client->Freeze(WebLoaderFreezeMode::kStrict);
+      context_->url_laoder_client->Freeze(LoaderFreezeMode::kStrict);
     }
   }
 
@@ -85,7 +84,7 @@ class MockWebResourceRequestSender : public WebResourceRequestSender {
       return;
     context_->total_encoded_data_length += transfer_size_diff;
     if (context_->defer_on_transfer_size_updated) {
-      context_->url_laoder_client->Freeze(WebLoaderFreezeMode::kStrict);
+      context_->url_laoder_client->Freeze(LoaderFreezeMode::kStrict);
     }
   }
 
@@ -163,7 +162,7 @@ std::string ReadOneChunk(mojo::ScopedDataPipeConsumerHandle* handle) {
 }
 
 std::string GetRequestPeerContextBody(
-    MockWebResourceRequestSender::Context* context) {
+    MockResourceRequestSender::Context* context) {
   if (context->body_handle) {
     context->data += ReadOneChunk(&context->body_handle);
   }
@@ -188,7 +187,7 @@ class WebMojoURLLoaderClientTest : public ::testing::Test,
                                    public ::testing::WithParamInterface<bool> {
  protected:
   WebMojoURLLoaderClientTest()
-      : resource_request_sender_(new MockWebResourceRequestSender()) {
+      : resource_request_sender_(new MockResourceRequestSender()) {
     if (DeferWithBackForwardCacheEnabled()) {
       scoped_feature_list_.InitAndEnableFeature(
           blink::features::kLoadingTasksUnfreezable);
@@ -206,8 +205,8 @@ class WebMojoURLLoaderClientTest : public ::testing::Test,
     client_ = std::make_unique<MojoURLLoaderClient>(
         resource_request_sender_.get(), loading_task_runner,
         url_loader_factory->BypassRedirectChecks(), request->url,
-        WebBackForwardCacheLoaderHelper(
-            MakeGarbageCollected<TestBackForwardCacheLoaderHelper>()));
+        /*back*/
+        MakeGarbageCollected<TestBackForwardCacheLoaderHelper>());
     context_ = resource_request_sender_->context();
     context_->url_laoder_client = client_.get();
     url_loader_ = ThrottlingURLLoader::CreateLoaderAndStart(
@@ -262,8 +261,8 @@ class WebMojoURLLoaderClientTest : public ::testing::Test,
   base::test::ScopedFeatureList scoped_feature_list_;
   std::unique_ptr<ThrottlingURLLoader> url_loader_;
   std::unique_ptr<MojoURLLoaderClient> client_;
-  std::unique_ptr<MockWebResourceRequestSender> resource_request_sender_;
-  MockWebResourceRequestSender::Context* context_;
+  std::unique_ptr<MockResourceRequestSender> resource_request_sender_;
+  MockResourceRequestSender::Context* context_;
   int request_id_ = 0;
   mojo::Remote<network::mojom::URLLoaderClient> url_loader_client_;
 };
@@ -450,13 +449,13 @@ TEST_P(WebMojoURLLoaderClientTest, Defer) {
   EXPECT_FALSE(context_->received_response);
   EXPECT_FALSE(context_->complete);
 
-  client_->Freeze(WebLoaderFreezeMode::kStrict);
+  client_->Freeze(LoaderFreezeMode::kStrict);
 
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(context_->received_response);
   EXPECT_FALSE(context_->complete);
 
-  client_->Freeze(WebLoaderFreezeMode::kNone);
+  client_->Freeze(LoaderFreezeMode::kNone);
   EXPECT_FALSE(context_->received_response);
   EXPECT_FALSE(context_->complete);
 
@@ -489,14 +488,14 @@ TEST_P(WebMojoURLLoaderClientTest, DeferWithResponseBody) {
   EXPECT_FALSE(context_->complete);
   EXPECT_EQ("", GetRequestPeerContextBody(context_));
 
-  client_->Freeze(WebLoaderFreezeMode::kStrict);
+  client_->Freeze(LoaderFreezeMode::kStrict);
 
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(context_->received_response);
   EXPECT_FALSE(context_->complete);
   EXPECT_EQ("", GetRequestPeerContextBody(context_));
 
-  client_->Freeze(WebLoaderFreezeMode::kNone);
+  client_->Freeze(LoaderFreezeMode::kNone);
   EXPECT_FALSE(context_->received_response);
   EXPECT_FALSE(context_->complete);
   EXPECT_EQ("", GetRequestPeerContextBody(context_));
@@ -512,7 +511,7 @@ TEST_P(WebMojoURLLoaderClientTest,
   if (!DeferWithBackForwardCacheEnabled())
     return;
   // Call OnReceiveResponse while deferred (not for back-forward cache).
-  client_->Freeze(WebLoaderFreezeMode::kStrict);
+  client_->Freeze(LoaderFreezeMode::kStrict);
   mojo::ScopedDataPipeProducerHandle producer_handle;
   mojo::ScopedDataPipeConsumerHandle consumer_handle;
   ASSERT_EQ(MOJO_RESULT_OK,
@@ -535,7 +534,7 @@ TEST_P(WebMojoURLLoaderClientTest,
   EXPECT_EQ("", GetRequestPeerContextBody(context_));
 
   // Defer for back-forward cache.
-  client_->Freeze(WebLoaderFreezeMode::kBufferIncoming);
+  client_->Freeze(LoaderFreezeMode::kBufferIncoming);
   std::string msg2 = "ll";
   size = static_cast<uint32_t>(msg2.size());
   ASSERT_EQ(MOJO_RESULT_OK, producer_handle->WriteData(
@@ -545,7 +544,7 @@ TEST_P(WebMojoURLLoaderClientTest,
   EXPECT_EQ("", GetRequestPeerContextBody(context_));
 
   // Defer not for back-forward cache again.
-  client_->Freeze(WebLoaderFreezeMode::kBufferIncoming);
+  client_->Freeze(LoaderFreezeMode::kBufferIncoming);
   std::string msg3 = "o";
   size = static_cast<uint32_t>(msg3.size());
   ASSERT_EQ(MOJO_RESULT_OK, producer_handle->WriteData(
@@ -555,7 +554,7 @@ TEST_P(WebMojoURLLoaderClientTest,
   EXPECT_EQ("", GetRequestPeerContextBody(context_));
 
   // Stop deferring.
-  client_->Freeze(WebLoaderFreezeMode::kNone);
+  client_->Freeze(LoaderFreezeMode::kNone);
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(context_->received_response);
   EXPECT_FALSE(context_->complete);
@@ -578,7 +577,7 @@ TEST_P(WebMojoURLLoaderClientTest,
   if (!DeferWithBackForwardCacheEnabled())
     return;
   // Call OnReceiveResponse, OnComplete while deferred.
-  client_->Freeze(WebLoaderFreezeMode::kBufferIncoming);
+  client_->Freeze(LoaderFreezeMode::kBufferIncoming);
   mojo::ScopedDataPipeProducerHandle producer_handle;
   mojo::ScopedDataPipeConsumerHandle consumer_handle;
   ASSERT_EQ(MOJO_RESULT_OK,
@@ -606,7 +605,7 @@ TEST_P(WebMojoURLLoaderClientTest,
 
   // Stop deferring. OnComplete message shouldn't be dispatched yet because
   // we're still waiting for the response body pipe to be closed.
-  client_->Freeze(WebLoaderFreezeMode::kNone);
+  client_->Freeze(LoaderFreezeMode::kNone);
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(context_->received_response);
   // When the body is buffered, we'll wait until the pipe is closed before
@@ -638,7 +637,7 @@ TEST_P(WebMojoURLLoaderClientTest,
   if (!DeferWithBackForwardCacheEnabled())
     return;
   // Call OnReceiveResponse, OnComplete while deferred.
-  client_->Freeze(WebLoaderFreezeMode::kBufferIncoming);
+  client_->Freeze(LoaderFreezeMode::kBufferIncoming);
   mojo::ScopedDataPipeProducerHandle producer_handle;
   mojo::ScopedDataPipeConsumerHandle consumer_handle;
   ASSERT_EQ(MOJO_RESULT_OK,
@@ -679,7 +678,7 @@ TEST_P(WebMojoURLLoaderClientTest,
   producer_handle.reset();
 
   // Stop deferring.
-  client_->Freeze(WebLoaderFreezeMode::kNone);
+  client_->Freeze(LoaderFreezeMode::kNone);
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(context_->received_response);
   // When the body is buffered, BodyBuffer shouldn't be finished writing to the
@@ -727,7 +726,7 @@ TEST_P(WebMojoURLLoaderClientTest, DeferWithTransferSizeUpdated) {
   EXPECT_EQ("", GetRequestPeerContextBody(context_));
   EXPECT_EQ(0, context_->total_encoded_data_length);
 
-  client_->Freeze(WebLoaderFreezeMode::kStrict);
+  client_->Freeze(LoaderFreezeMode::kStrict);
 
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(context_->received_response);
@@ -735,7 +734,7 @@ TEST_P(WebMojoURLLoaderClientTest, DeferWithTransferSizeUpdated) {
   EXPECT_EQ("", GetRequestPeerContextBody(context_));
   EXPECT_EQ(0, context_->total_encoded_data_length);
 
-  client_->Freeze(WebLoaderFreezeMode::kNone);
+  client_->Freeze(LoaderFreezeMode::kNone);
   EXPECT_FALSE(context_->received_response);
   EXPECT_FALSE(context_->complete);
   EXPECT_EQ("", GetRequestPeerContextBody(context_));
@@ -780,7 +779,7 @@ TEST_P(WebMojoURLLoaderClientTest, SetDeferredDuringFlushingDeferredMessage) {
   EXPECT_EQ("", GetRequestPeerContextBody(context_));
   EXPECT_EQ(0, context_->total_encoded_data_length);
 
-  client_->Freeze(WebLoaderFreezeMode::kStrict);
+  client_->Freeze(LoaderFreezeMode::kStrict);
 
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(0, context_->seen_redirects);
@@ -789,7 +788,7 @@ TEST_P(WebMojoURLLoaderClientTest, SetDeferredDuringFlushingDeferredMessage) {
   EXPECT_EQ("", GetRequestPeerContextBody(context_));
   EXPECT_EQ(0, context_->total_encoded_data_length);
 
-  client_->Freeze(WebLoaderFreezeMode::kNone);
+  client_->Freeze(LoaderFreezeMode::kNone);
   EXPECT_EQ(0, context_->seen_redirects);
   EXPECT_FALSE(context_->received_response);
   EXPECT_FALSE(context_->complete);
@@ -804,7 +803,7 @@ TEST_P(WebMojoURLLoaderClientTest, SetDeferredDuringFlushingDeferredMessage) {
   EXPECT_EQ(0, context_->total_encoded_data_length);
   EXPECT_FALSE(context_->cancelled);
 
-  client_->Freeze(WebLoaderFreezeMode::kNone);
+  client_->Freeze(LoaderFreezeMode::kNone);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1, context_->seen_redirects);
   EXPECT_TRUE(context_->received_response);
@@ -837,14 +836,14 @@ TEST_P(WebMojoURLLoaderClientTest,
   EXPECT_FALSE(context_->complete);
   EXPECT_EQ(0, context_->total_encoded_data_length);
 
-  client_->Freeze(WebLoaderFreezeMode::kStrict);
+  client_->Freeze(LoaderFreezeMode::kStrict);
 
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(context_->received_response);
   EXPECT_FALSE(context_->complete);
   EXPECT_EQ(0, context_->total_encoded_data_length);
 
-  client_->Freeze(WebLoaderFreezeMode::kNone);
+  client_->Freeze(LoaderFreezeMode::kNone);
   EXPECT_FALSE(context_->received_response);
   EXPECT_FALSE(context_->complete);
   EXPECT_EQ(0, context_->total_encoded_data_length);
@@ -855,7 +854,7 @@ TEST_P(WebMojoURLLoaderClientTest,
   EXPECT_EQ(4, context_->total_encoded_data_length);
   EXPECT_FALSE(context_->cancelled);
 
-  client_->Freeze(WebLoaderFreezeMode::kNone);
+  client_->Freeze(LoaderFreezeMode::kNone);
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(context_->received_response);
   EXPECT_TRUE(context_->complete);

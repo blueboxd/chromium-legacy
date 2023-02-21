@@ -21,8 +21,10 @@ TEST_F(WebDragSourceMacTest, DragInvalidlyEscapedBookmarklet) {
   base::scoped_nsobject<NSView> view(
       [[NSView alloc] initWithFrame:NSMakeRect(0, 0, 10, 10)]);
 
-  std::unique_ptr<DropData> dropData(new DropData);
-  dropData->url = GURL("javascript:%");
+  base::scoped_nsobject<WebDragSource> source([[WebDragSource alloc]
+      initWithHost:nullptr
+          dropData:drop_data
+      isPrivileged:NO]);
 
   scoped_refptr<ui::UniquePasteboard> pasteboard1 = new ui::UniquePasteboard;
   base::scoped_nsobject<WebDragSource> source([[WebDragSource alloc]

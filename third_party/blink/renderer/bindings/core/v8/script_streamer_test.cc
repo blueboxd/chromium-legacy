@@ -13,9 +13,6 @@
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-blink.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
-#include "third_party/blink/public/platform/web_back_forward_cache_loader_helper.h"
-#include "third_party/blink/public/platform/web_url_loader.h"
-#include "third_party/blink/public/platform/web_url_loader_mock_factory.h"
 #include "third_party/blink/public/platform/web_url_request_extra_data.h"
 #include "third_party/blink/renderer/bindings/core/v8/referrer_script_info.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_evaluation_result.h"
@@ -36,6 +33,7 @@
 #include "third_party/blink/renderer/platform/loader/fetch/resource_loader.h"
 #include "third_party/blink/renderer/platform/loader/fetch/response_body_loader.h"
 #include "third_party/blink/renderer/platform/loader/fetch/script_fetch_options.h"
+#include "third_party/blink/renderer/platform/loader/fetch/url_loader/url_loader.h"
 #include "third_party/blink/renderer/platform/loader/testing/mock_fetch_context.h"
 #include "third_party/blink/renderer/platform/loader/testing/test_resource_fetcher_properties.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread_scheduler.h"
@@ -43,6 +41,7 @@
 #include "third_party/blink/renderer/platform/testing/mock_context_lifecycle_notifier.h"
 #include "third_party/blink/renderer/platform/testing/testing_platform_support_with_mock_scheduler.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
+#include "third_party/blink/renderer/platform/testing/url_loader_mock_factory.h"
 #include "third_party/blink/renderer/platform/wtf/cross_thread_copier_base.h"
 #include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/wtf/text/text_encoding.h"
@@ -80,37 +79,37 @@ class TestResourceClient final : public GarbageCollected<TestResourceClient>,
 // TODO(leszeks): This class has a similar class in resource_loader_test.cc,
 // the two should probably share the same class.
 class NoopLoaderFactory final : public ResourceFetcher::LoaderFactory {
-  std::unique_ptr<WebURLLoader> CreateURLLoader(
+  std::unique_ptr<URLLoader> CreateURLLoader(
       const ResourceRequest& request,
       const ResourceLoaderOptions& options,
       scoped_refptr<base::SingleThreadTaskRunner> freezable_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> unfreezable_task_runner,
-      WebBackForwardCacheLoaderHelper) override {
-    return std::make_unique<NoopWebURLLoader>(std::move(freezable_task_runner));
+      BackForwardCacheLoaderHelper*) override {
+    return std::make_unique<NoopURLLoader>(std::move(freezable_task_runner));
   }
   std::unique_ptr<WebCodeCacheLoader> CreateCodeCacheLoader() override {
     return std::make_unique<CodeCacheLoaderMock>();
   }
 
-  class NoopWebURLLoader final : public WebURLLoader {
+  class NoopURLLoader final : public URLLoader {
    public:
-    explicit NoopWebURLLoader(
+    explicit NoopURLLoader(
         scoped_refptr<base::SingleThreadTaskRunner> task_runner)
         : task_runner_(std::move(task_runner)) {}
-    ~NoopWebURLLoader() override = default;
+    ~NoopURLLoader() override = default;
     void LoadSynchronously(
         std::unique_ptr<network::ResourceRequest> request,
         scoped_refptr<WebURLRequestExtraData> url_request_extra_data,
         bool pass_response_pipe_to_client,
         bool no_mime_sniffing,
         base::TimeDelta timeout_interval,
-        WebURLLoaderClient*,
+        URLLoaderClient*,
         WebURLResponse&,
         absl::optional<WebURLError>&,
-        WebData&,
+        scoped_refptr<SharedBuffer>&,
         int64_t& encoded_data_length,
         uint64_t& encoded_body_length,
-        WebBlobInfo& downloaded_blob,
+        scoped_refptr<BlobDataHandle>& downloaded_blob,
         std::unique_ptr<blink::ResourceLoadInfoNotifierWrapper>
             resource_load_info_notifier_wrapper) override {
       NOTREACHED();
@@ -121,8 +120,8 @@ class NoopLoaderFactory final : public ResourceFetcher::LoaderFactory {
         bool no_mime_sniffing,
         std::unique_ptr<blink::ResourceLoadInfoNotifierWrapper>
             resource_load_info_notifier_wrapper,
-        WebURLLoaderClient*) override {}
-    void Freeze(WebLoaderFreezeMode) override {}
+        URLLoaderClient*) override {}
+    void Freeze(LoaderFreezeMode) override {}
     void DidChangePriority(WebURLRequest::Priority, int) override {
       NOTREACHED();
     }

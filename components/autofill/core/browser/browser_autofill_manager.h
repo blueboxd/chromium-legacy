@@ -100,17 +100,14 @@ class BrowserAutofillManager : public AutofillManager,
  public:
   BrowserAutofillManager(AutofillDriver* driver,
                          AutofillClient* client,
-                         const std::string& app_locale,
-                         // TODO(crbug.com/1394786): Remove parameter.
-                         EnableDownloadManager enable_download_manager =
-                             EnableDownloadManager(true));
+                         const std::string& app_locale);
 
   BrowserAutofillManager(const BrowserAutofillManager&) = delete;
   BrowserAutofillManager& operator=(const BrowserAutofillManager&) = delete;
 
   ~BrowserAutofillManager() override;
 
-  void ShowAutofillSettings(bool show_credit_card_settings);
+  void ShowAutofillSettings(PopupType popup_type);
 
   // Whether the |field| should show an entry to scan a credit card.
   virtual bool ShouldShowScanCreditCard(const FormData& form,
@@ -315,9 +312,9 @@ class BrowserAutofillManager : public AutofillManager,
                                           const FormData& form,
                                           const FormFieldData& field);
 
-  // Sets where the accepted autofill suggestion came from: touch to fill,
-  // keyboard accessory, etc.
-  virtual void SetAutofillSuggestionMethod(AutofillSuggestionMethod state);
+  // Set Fast Checkout run ID on the corresponding form event logger.
+  virtual void SetFastCheckoutRunId(FieldTypeGroup field_type_group,
+                                    int64_t run_id);
 
   void SetExternalDelegateForTest(
       std::unique_ptr<AutofillExternalDelegate> external_delegate) {
@@ -714,6 +711,11 @@ class BrowserAutofillManager : public AutofillManager,
   // each field and record into FieldInfo UKM event.
   void ProcessFieldLogEventsInForm(const FormStructure& form_structure);
 
+  // Log the number of log events of all types which have been recorded until
+  // the FieldInfo metric is recorded into UKM at form submission or form
+  // destruction time (whatever comes first).
+  void LogEventCountsUMAMetric(const FormStructure& form_structure);
+
   // Delegates to perform external processing (display, selection) on
   // our behalf.
   std::unique_ptr<AutofillExternalDelegate> external_delegate_;
@@ -810,13 +812,6 @@ class BrowserAutofillManager : public AutofillManager,
   // value="7" label="Phone Collected, WebOTP Used, OTC Used"
   uint32_t phone_collection_metric_state_ = 0;
 
-  // Used to record metrics. It is supposed to be set right after the user
-  // selects an autofill suggestions and reflects 'and reflects the method how
-  // the accepted suggestion was offered to the user:: touch to fill, keyboard
-  // accessory, etc.
-  AutofillSuggestionMethod autofill_suggestion_method_ =
-      AutofillSuggestionMethod::kUnknown;
-
   // List of callbacks to be called for sending blur votes. Only one callback is
   // stored per FormSignature. We rely on FormSignatures rather than
   // FormGlobalId to send votes for the various signatures of a form while it
@@ -839,6 +834,9 @@ class BrowserAutofillManager : public AutofillManager,
   // processed before form submission votes. This is important so that a
   // submission can trigger the upload of blur votes.
   scoped_refptr<base::SequencedTaskRunner> vote_upload_task_runner_;
+
+  // When the form was submitted.
+  base::TimeTicks form_submitted_timestamp_;
 
   base::WeakPtrFactory<BrowserAutofillManager> weak_ptr_factory_{this};
 };

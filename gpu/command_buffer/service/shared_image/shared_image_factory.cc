@@ -137,7 +137,7 @@ SharedImageFactory::SharedImageFactory(
       is_for_display_compositor_(is_for_display_compositor),
       gr_context_type_(context_state ? context_state->gr_context_type()
                                      : GrContextType::kGL) {
-#if BUILDFLAG(IS_MAC)
+#if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_IOS)
   // OSX
   DCHECK(gr_context_type_ == GrContextType::kGL ||
          gr_context_type_ == GrContextType::kMetal ||
@@ -324,10 +324,13 @@ bool SharedImageFactory::CreateSharedImage(const Mailbox& mailbox,
   auto backing = factory->CreateSharedImage(
       mailbox, format, surface_handle, size, color_space, surface_origin,
       alpha_type, usage, IsSharedBetweenThreads(usage));
-  DVLOG(1) << "CreateSharedImage[" << backing->GetName()
-           << "] size=" << size.ToString()
-           << " usage=" << CreateLabelForSharedImageUsage(usage)
-           << " resource_format=" << format.ToString();
+
+  if (backing) {
+    DVLOG(1) << "CreateSharedImage[" << backing->GetName()
+             << "] size=" << size.ToString()
+             << " usage=" << CreateLabelForSharedImageUsage(usage)
+             << " resource_format=" << format.ToString();
+  }
   return RegisterBacking(std::move(backing));
 }
 
@@ -635,8 +638,9 @@ SharedImageBackingFactory* SharedImageFactory::GetFactoryByUsage(
 
   bool share_between_threads = IsSharedBetweenThreads(usage);
   for (auto& factory : factories_) {
-    if (factory->IsSupported(usage, format, size, share_between_threads,
-                             gmb_type, gr_context_type_, pixel_data)) {
+    if (factory->CanCreateSharedImage(usage, format, size,
+                                      share_between_threads, gmb_type,
+                                      gr_context_type_, pixel_data)) {
       return factory.get();
     }
   }

@@ -31,6 +31,7 @@
 #import "ios/chrome/browser/discover_feed/feed_model_configuration.h"
 #import "ios/chrome/browser/follow/follow_browser_agent.h"
 #import "ios/chrome/browser/follow/followed_web_site.h"
+#import "ios/chrome/browser/follow/followed_web_site_state.h"
 #import "ios/chrome/browser/main/browser.h"
 #import "ios/chrome/browser/ntp/features.h"
 #import "ios/chrome/browser/ntp/new_tab_page_tab_helper.h"
@@ -144,7 +145,7 @@ bool IsNTPActiveForWebState(web::WebState* web_state) {
   // Observes changes in the DiscoverFeed.
   std::unique_ptr<DiscoverFeedObserverBridge> _discoverFeedObserverBridge;
 
-  // Bridges C++ WebStateListObserver methods to this NewTabPageMediator.
+  // Bridges C++ WebStateListObserver methods to this NewTabPageCoordinator.
   std::unique_ptr<WebStateListObserverBridge> _webStateListObserver;
 }
 
@@ -156,7 +157,7 @@ bool IsNTPActiveForWebState(web::WebState* web_state) {
 @property(nonatomic, strong) NewTabPageViewController* NTPViewController;
 
 // Mediator owned by this coordinator.
-@property(nonatomic, strong) NewTabPageMediator* ntpMediator;
+@property(nonatomic, strong) NewTabPageMediator* NTPMediator;
 
 // View controller wrapping the feed.
 @property(nonatomic, strong)
@@ -243,6 +244,9 @@ bool IsNTPActiveForWebState(web::WebState* web_state) {
 // The Webstate associated with this coordinator.
 @property(nonatomic, assign) web::WebState* webState;
 
+// Returns `YES` if the coordinator is started.
+@property(nonatomic, assign) BOOL started;
+
 @end
 
 @implementation NewTabPageCoordinator
@@ -264,11 +268,6 @@ bool IsNTPActiveForWebState(web::WebState* web_state) {
 
 - (void)start {
   if (self.started) {
-    // The coordinator is already started, but the call to -start is a hint
-    // that the active WebState may have changed and the observer callback
-    // might not have happened yet.
-    [self didChangeActiveWebState:self.browser->GetWebStateList()
-                                      ->GetActiveWebState()];
     return;
   }
 
@@ -297,7 +296,7 @@ bool IsNTPActiveForWebState(web::WebState* web_state) {
     self.incognitoViewController =
         [[IncognitoViewController alloc] initWithUrlLoader:URLLoader];
     self.started = YES;
-    [self ntpDidChangeVisibility:YES];
+    [self NTPDidChangeVisibility:YES];
     return;
   }
 
@@ -330,7 +329,7 @@ bool IsNTPActiveForWebState(web::WebState* web_state) {
   [self configureNTPViewController];
 
   self.started = YES;
-  [self ntpDidChangeVisibility:YES];
+  [self NTPDidChangeVisibility:YES];
 }
 
 - (void)stop {
@@ -392,8 +391,8 @@ bool IsNTPActiveForWebState(web::WebState* web_state) {
   self.authService = nil;
   self.templateURLService = nil;
 
-  [self.ntpMediator shutdown];
-  self.ntpMediator = nil;
+  [self.NTPMediator shutdown];
+  self.NTPMediator = nil;
 
   if (self.feedViewController) {
     self.discoverFeedService->RemoveFeedViewController(self.feedViewController);
@@ -454,7 +453,7 @@ bool IsNTPActiveForWebState(web::WebState* web_state) {
   if (self.browser->GetBrowserState()->IsOffTheRecord()) {
     return;
   }
-  self.discoverFeedService->RefreshFeed();
+  self.discoverFeedService->RefreshFeed(/*feed_visible=*/true);
   [self reloadContentSuggestions];
 }
 
@@ -489,7 +488,7 @@ bool IsNTPActiveForWebState(web::WebState* web_state) {
 
 - (void)handleFeedModelDidEndUpdates:(FeedType)feedType {
   DCHECK(self.NTPViewController);
-  if (!self.feedViewController || !self.NTPViewController.viewDidAppear) {
+  if (!self.feedViewController) {
     return;
   }
   // When the visible feed has been updated, recalculate the minimum NTP height.
@@ -501,12 +500,12 @@ bool IsNTPActiveForWebState(web::WebState* web_state) {
 - (void)didNavigateToNTP {
   if (self.started) {
     self.webState = self.browser->GetWebStateList()->GetActiveWebState();
-    [self ntpDidChangeVisibility:YES];
+    [self NTPDidChangeVisibility:YES];
   }
 }
 
 - (void)didNavigateAwayFromNTP {
-  [self ntpDidChangeVisibility:NO];
+  [self NTPDidChangeVisibility:NO];
   self.webState = nullptr;
   [self stopIfNeeded];
 }
@@ -578,7 +577,7 @@ bool IsNTPActiveForWebState(web::WebState* web_state) {
 - (void)initializeNTPComponents {
   self.NTPViewController = [[NewTabPageViewController alloc] init];
   self.headerController = [[ContentSuggestionsHeaderViewController alloc] init];
-  self.ntpMediator = [[NewTabPageMediator alloc]
+  self.NTPMediator = [[NewTabPageMediator alloc]
               initWithWebState:self.webState
             templateURLService:self.templateURLService
                      URLLoader:UrlLoadingBrowserAgent::FromBrowser(self.browser)
@@ -633,7 +632,7 @@ bool IsNTPActiveForWebState(web::WebState* web_state) {
 // Configures `self.headerController`.
 - (void)configureHeaderController {
   DCHECK(self.headerController);
-  DCHECK(self.ntpMediator);
+  DCHECK(self.NTPMediator);
 
   self.headerController.isGoogleDefaultSearchEngine =
       [self isGoogleDefaultSearchEngine];
@@ -664,17 +663,18 @@ bool IsNTPActiveForWebState(web::WebState* web_state) {
   [self.contentSuggestionsCoordinator start];
 }
 
-// Configures `self.ntpMediator`.
+// Configures `self.NTPMediator`.
 - (void)configureNTPMediator {
-  DCHECK(self.ntpMediator);
+  NewTabPageMediator* NTPMediator = self.NTPMediator;
+  DCHECK(NTPMediator);
   DCHECK(self.contentSuggestionsCoordinator.contentSuggestionsMediator);
-  self.ntpMediator.browser = self.browser;
-  self.ntpMediator.feedControlDelegate = self;
-  self.ntpMediator.contentSuggestionsHeaderConsumer = self.headerController;
-  self.ntpMediator.consumer = self.NTPViewController;
-  self.ntpMediator.suggestionsMediator =
+  NTPMediator.browser = self.browser;
+  NTPMediator.feedControlDelegate = self;
+  NTPMediator.contentSuggestionsHeaderConsumer = self.headerController;
+  NTPMediator.consumer = self.NTPViewController;
+  NTPMediator.suggestionsMediator =
       self.contentSuggestionsCoordinator.contentSuggestionsMediator;
-  [self.ntpMediator setUp];
+  [NTPMediator setUp];
 }
 
 // Configures `self.feedMetricsRecorder`.
@@ -735,8 +735,7 @@ bool IsNTPActiveForWebState(web::WebState* web_state) {
 #pragma mark - Properties
 
 - (UIViewController*)viewController {
-  // TODO(crbug.com/1348459): Stop lazy loading in NTPCoordinator.
-  [self start];
+  DCHECK(self.started);
   if (self.browser->GetBrowserState()->IsOffTheRecord()) {
     return self.incognitoViewController;
   } else {
@@ -762,7 +761,7 @@ bool IsNTPActiveForWebState(web::WebState* web_state) {
 #pragma mark - ContentSuggestionsHeaderCommands
 
 - (void)updateForHeaderSizeChange {
-  [self updateFeedLayout];
+  [self.NTPViewController updateHeightAboveFeedAndScrollToTopIfNeeded];
 }
 
 - (void)identityDiscWasTapped {
@@ -841,7 +840,7 @@ bool IsNTPActiveForWebState(web::WebState* web_state) {
           addItemWithTitle:l10n_util::GetNSString(
                                IDS_IOS_DISCOVER_FEED_MENU_MANAGE_ACTIVITY_ITEM)
                     action:^{
-                      [weakSelf.ntpMediator handleFeedManageActivityTapped];
+                      [weakSelf.NTPMediator handleFeedManageActivityTapped];
                     }
                      style:UIAlertActionStyleDefault];
 
@@ -849,7 +848,7 @@ bool IsNTPActiveForWebState(web::WebState* web_state) {
           addItemWithTitle:l10n_util::GetNSString(
                                IDS_IOS_DISCOVER_FEED_MENU_MANAGE_INTERESTS_ITEM)
                     action:^{
-                      [weakSelf.ntpMediator handleFeedManageInterestsTapped];
+                      [weakSelf.NTPMediator handleFeedManageInterestsTapped];
                     }
                      style:UIAlertActionStyleDefault];
     }
@@ -860,7 +859,7 @@ bool IsNTPActiveForWebState(web::WebState* web_state) {
       addItemWithTitle:l10n_util::GetNSString(
                            IDS_IOS_DISCOVER_FEED_MENU_LEARN_MORE_ITEM)
                 action:^{
-                  [weakSelf.ntpMediator handleFeedLearnMoreTapped];
+                  [weakSelf.NTPMediator handleFeedLearnMoreTapped];
                 }
                  style:UIAlertActionStyleDefault];
 
@@ -979,25 +978,25 @@ bool IsNTPActiveForWebState(web::WebState* web_state) {
 #pragma mark - FeedDelegate
 
 - (void)contentSuggestionsWasUpdated {
-  [self updateFeedLayout];
+  [self.NTPViewController updateHeightAboveFeedAndScrollToTopIfNeeded];
 }
 
 #pragma mark - FeedManagementNavigationDelegate
 
 - (void)handleNavigateToActivity {
-  [self.ntpMediator handleFeedManageActivityTapped];
+  [self.NTPMediator handleFeedManageActivityTapped];
 }
 
 - (void)handleNavigateToInterests {
-  [self.ntpMediator handleFeedManageInterestsTapped];
+  [self.NTPMediator handleFeedManageInterestsTapped];
 }
 
 - (void)handleNavigateToHidden {
-  [self.ntpMediator handleFeedManageHiddenTapped];
+  [self.NTPMediator handleFeedManageHiddenTapped];
 }
 
 - (void)handleNavigateToFollowedURL:(const GURL&)url {
-  [self.ntpMediator handleVisitSiteFromFollowManagementList:url];
+  [self.NTPMediator handleVisitSiteFromFollowManagementList:url];
 }
 
 #pragma mark - FeedSignInPromoDelegate
@@ -1115,8 +1114,9 @@ bool IsNTPActiveForWebState(web::WebState* web_state) {
 
 - (BOOL)doesFollowingFeedHaveContent {
   for (FollowedWebSite* web_site in self.followedWebSites) {
-    if (web_site.available)
+    if (web_site.state == FollowedWebSiteStateStateActive) {
       return YES;
+    }
   }
 
   return NO;
@@ -1304,14 +1304,14 @@ bool IsNTPActiveForWebState(web::WebState* web_state) {
   }
 
   if (IsNTPActiveForWebState(self.webState)) {
-    [self ntpDidChangeVisibility:NO];
+    [self NTPDidChangeVisibility:NO];
   }
 
   bool active = IsNTPActiveForWebState(newWebState);
   self.webState = active ? newWebState : nullptr;
 
   if (active) {
-    [self ntpDidChangeVisibility:YES];
+    [self NTPDidChangeVisibility:YES];
   }
 }
 
@@ -1396,6 +1396,8 @@ bool IsNTPActiveForWebState(web::WebState* web_state) {
   if (self.feedViewController) {
     self.discoverFeedService->RemoveFeedViewController(self.feedViewController);
   }
+
+  [self.feedTopSectionCoordinator stop];
 
   self.NTPViewController.feedWrapperViewController = nil;
   self.NTPViewController.feedTopSectionViewController = nil;
@@ -1587,13 +1589,13 @@ bool IsNTPActiveForWebState(web::WebState* web_state) {
   }
 
   _webState = webState;
-  self.ntpMediator.webState = _webState;
+  self.NTPMediator.webState = _webState;
   self.contentSuggestionsCoordinator.webState = _webState;
 }
 
 // Called when the NTP changes visibility, either when the user navigates to
 // or away from the NTP, or when the active WebState changes.
-- (void)ntpDidChangeVisibility:(BOOL)visible {
+- (void)NTPDidChangeVisibility:(BOOL)visible {
   DCHECK(self.started);
   DCHECK(self.webState);
 

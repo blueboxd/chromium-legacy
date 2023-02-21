@@ -31,9 +31,8 @@ import org.chromium.ui.accessibility.AccessibilityFeatures;
  * so it must not compromise the Android security model (i.e., WebView must still protect the app's
  * private data from being user visible).
  *
- * <p>
- * This lives in the common package so it can be shared by dev UI (to know which features/flags to
- * display) as well as the WebView implementation (so it knows which features/flags are safe to
+ * <p>This lives in the common package so it can be shared by dev UI (to know which features/flags
+ * to display) as well as the WebView implementation (so it knows which features/flags are safe to
  * honor).
  */
 public final class ProductionSupportedFlagList {
@@ -178,8 +177,6 @@ public final class ProductionSupportedFlagList {
             Flag.baseFeature(AutofillFeatures.AUTOFILL_ALWAYS_PARSE_PLACEHOLDERS,
                     "When enabled, Autofill local heuristics consider the placeholder attribute "
                             + "for determining field types."),
-            Flag.baseFeature(AutofillFeatures.AUTOFILL_IMPROVED_LABEL_FOR_INFERENCE,
-                    "When enabled, Autofill associates assigned labels with inputs in unowned forms."),
             Flag.baseFeature(AutofillFeatures.AUTOFILL_SERVER_BEHAVIORS,
                     "When enabled, Autofill will request experimental "
                             + "predictions from the Autofill API."),
@@ -288,8 +285,6 @@ public final class ProductionSupportedFlagList {
             Flag.baseFeature(BaseFeatures.ALWAYS_ABANDON_SCHEDULED_TASK,
                     "Controls whether or not the scheduled task is always abandoned when a timer "
                             + "is stopped or resets."),
-            Flag.baseFeature(BlinkFeatures.PRETOKENIZE_CSS,
-                    "If enabled, CSS will be tokenized in a background thread when possible."),
             Flag.baseFeature(BlinkFeatures.VIEW_TRANSITION,
                     "Enables the experimental View Transitions API."
                             + " See https://github.com/WICG/view-transitions/blob/main/explainer.md."),
@@ -381,6 +376,11 @@ public final class ProductionSupportedFlagList {
             Flag.baseFeature(BlinkFeatures.STYLUS_RICH_GESTURES,
                     "When enabled, stylus input can be used to draw rich gestures which "
                             + "affect text in editable web content."),
+            Flag.baseFeature(AwFeatures.WEBVIEW_ZOOM_KEYBOARD_SHORTCUTS,
+                    "Enables WebView to use zoom keyboard shortcuts on hardware keyboards."),
+            Flag.baseFeature(ContentFeatures.PRIVACY_SANDBOX_ADS_AP_IS_OVERRIDE,
+                    "When enabled, the following ads APIs will be available: Attribution Reporting,"
+                            + "FLEDGE, Topics."),
             // Add new commandline switches and features above. The final entry should have a
             // trailing comma for cleaner diffs.
     };

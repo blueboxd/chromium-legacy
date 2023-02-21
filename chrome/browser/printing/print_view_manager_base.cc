@@ -22,6 +22,7 @@
 #include "chrome/browser/bad_message.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/printing/print_error_dialog.h"
 #include "chrome/browser/printing/print_job.h"
 #include "chrome/browser/printing/print_job_manager.h"
 #include "chrome/browser/printing/print_view_manager_common.h"
@@ -34,6 +35,7 @@
 #include "components/printing/browser/print_composite_client.h"
 #include "components/printing/browser/print_manager_utils.h"
 #include "components/printing/common/print.mojom.h"
+#include "components/printing/common/print_params.h"
 #include "components/services/print_compositor/public/cpp/print_service_mojo_types.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -53,10 +55,6 @@
 #include "printing/printing_features.h"
 #include "printing/printing_utils.h"
 #include "ui/base/l10n/l10n_util.h"
-
-#if !BUILDFLAG(IS_ANDROID)
-#include "chrome/browser/printing/print_error_dialog.h"
-#endif
 
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
 #include "chrome/browser/printing/print_view_manager.h"
@@ -83,6 +81,7 @@ using PrintSettingsCallback =
 
 void OnDidGetDefaultPrintSettings(
     scoped_refptr<PrintQueriesQueue> queue,
+    bool want_pdf_settings,
     std::unique_ptr<PrinterQuery> printer_query,
     mojom::PrintManagerHost::GetDefaultPrintSettingsCallback callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
@@ -91,6 +90,10 @@ void OnDidGetDefaultPrintSettings(
       printer_query->last_status() == mojom::ResultCode::kSuccess) {
     RenderParamsFromPrintSettings(printer_query->settings(), params.get());
     params->document_cookie = printer_query->cookie();
+  }
+
+  if (!want_pdf_settings && !PrintMsgPrintParamsIsValid(*params)) {
+    ShowPrintErrorDialogForInvalidPrinterError();
   }
 
   std::move(callback).Run(std::move(params));
@@ -574,7 +577,7 @@ void PrintViewManagerBase::GetDefaultPrintSettings(
   // will hang until the settings are retrieved.
   auto* printer_query_ptr = printer_query.get();
   printer_query_ptr->GetDefaultSettings(
-      base::BindOnce(&OnDidGetDefaultPrintSettings, queue_,
+      base::BindOnce(&OnDidGetDefaultPrintSettings, queue_, want_pdf_settings,
                      std::move(printer_query), std::move(callback_wrapper)),
       !render_process_host->IsPdf(), want_pdf_settings);
 }
@@ -660,8 +663,8 @@ void PrintViewManagerBase::ScriptedPrint(mojom::ScriptedPrintParamsPtr params,
   if (base::FeatureList::IsEnabled(features::kEnablePrintContentAnalysis) &&
       enterprise_connectors::ContentAnalysisDelegate::IsEnabled(
           Profile::FromBrowserContext(web_contents()->GetBrowserContext()),
-          web_contents()->GetLastCommittedURL(), &scanning_data,
-          enterprise_connectors::AnalysisConnector::PRINT)) {
+          web_contents()->GetOutermostWebContents()->GetLastCommittedURL(),
+          &scanning_data, enterprise_connectors::AnalysisConnector::PRINT)) {
     auto scanning_done_callback = base::BindOnce(
         &PrintViewManagerBase::CompleteScriptedPrintAfterContentAnalysis,
         weak_ptr_factory_.GetWeakPtr(), std::move(params), std::move(callback));
@@ -688,7 +691,6 @@ void PrintViewManagerBase::PrintingFailed(int32_t cookie,
 
   PrintManager::PrintingFailed(cookie, reason);
 
-#if !BUILDFLAG(IS_ANDROID)  // Android does not implement this function.
   // `PrintingFailed()` can occur because asynchronous compositing results
   // don't complete until after a print job has already failed and been
   // destroyed.  In such cases the error notification to the user will
@@ -698,7 +700,6 @@ void PrintViewManagerBase::PrintingFailed(int32_t cookie,
       print_job_->document()->cookie() == cookie) {
     ShowPrintErrorDialogForGenericError();
   }
-#endif
 
   ReleasePrinterQuery();
 }
@@ -709,12 +710,6 @@ void PrintViewManagerBase::AddObserver(Observer& observer) {
 
 void PrintViewManagerBase::RemoveObserver(Observer& observer) {
   observers_.RemoveObserver(&observer);
-}
-
-void PrintViewManagerBase::ShowInvalidPrinterSettingsError() {
-#if !BUILDFLAG(IS_ANDROID)  // Android does not implement this function.
-  ShowPrintErrorDialogForInvalidPrinterError();
-#endif
 }
 
 void PrintViewManagerBase::RenderFrameHostStateChanged(
@@ -786,10 +781,8 @@ void PrintViewManagerBase::OnCanceling() {
 }
 
 void PrintViewManagerBase::OnFailed() {
-#if !BUILDFLAG(IS_ANDROID)  // Android does not implement this function.
   if (!canceling_job_)
     ShowPrintErrorDialogForGenericError();
-#endif
 
   TerminatePrintJob(true);
 }
@@ -1199,7 +1192,7 @@ void PrintViewManagerBase::OnCompositedForContentAnalysis(
   data.page = std::move(page_region);
 
   enterprise_connectors::ContentAnalysisDelegate::CreateForWebContents(
-      web_contents(), std::move(data),
+      web_contents()->GetOutermostWebContents(), std::move(data),
       base::BindOnce(
           [](base::OnceCallback<void(bool should_proceed)> callback,
              const enterprise_connectors::ContentAnalysisDelegate::Data& data,

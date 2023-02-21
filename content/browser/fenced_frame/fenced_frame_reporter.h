@@ -24,6 +24,23 @@ namespace content {
 class AttributionDataHostManager;
 class RenderFrameHostImpl;
 
+struct CONTENT_EXPORT AutomaticBeaconInfo {
+  AutomaticBeaconInfo(
+      const std::string& data,
+      const std::vector<blink::FencedFrame::ReportingDestination>& destination);
+
+  AutomaticBeaconInfo(const AutomaticBeaconInfo&);
+  AutomaticBeaconInfo(AutomaticBeaconInfo&&);
+
+  AutomaticBeaconInfo& operator=(const AutomaticBeaconInfo&);
+  AutomaticBeaconInfo& operator=(AutomaticBeaconInfo&&);
+
+  ~AutomaticBeaconInfo();
+
+  std::string data;
+  std::vector<blink::FencedFrame::ReportingDestination> destination;
+};
+
 // Class that receives report events from fenced frames, and uses a
 // per-destination-type maps of events to URLs to send reports. The maps may be
 // received after the report event calls, in which case the reports will be
@@ -101,12 +118,20 @@ class CONTENT_EXPORT FencedFrameReporter
   // attempted, unless the reporting URL map for `reporting_destination` is
   // pending. In that case, errors are currently never reported, even if the
   // reporting URL map results in no request being sent.
+  //
+  // Note: `navigation_id` will only be non-null in the case of an automatic
+  // beacon `reserved.top_navigation` sent as a result of a top-level navigation
+  // from a fenced frame. It will be set to the ID of the navigation request
+  // initiated from the fenced frame and targeting the new top-level frame.
+  // In all other cases (including the fence.reportEvent() case), the navigation
+  // id will be null.
   bool SendReport(
       const std::string& event_type,
       const std::string& event_data,
       blink::FencedFrame::ReportingDestination reporting_destination,
       RenderFrameHostImpl* request_initiator_frame,
-      std::string& error_message);
+      std::string& error_message,
+      absl::optional<int64_t> navigation_id = absl::nullopt);
 
   // Stores the payload that will be sent as part of the
   // `reserved.top_navigation` automatic beacon.
@@ -120,6 +145,10 @@ class CONTENT_EXPORT FencedFrameReporter
   // is not included in the returned map.
   base::flat_map<blink::FencedFrame::ReportingDestination, ReportingUrlMap>
   GetAdBeaconMapForTesting();
+
+  const absl::optional<AutomaticBeaconInfo>& automatic_beacon_info() {
+    return automatic_beacon_info_;
+  }
 
  private:
   friend class base::RefCounted<FencedFrameReporter>;
@@ -201,9 +230,7 @@ class CONTENT_EXPORT FencedFrameReporter
   //
   // The data will be sent directly to the network, without going back to any
   // renderer process, so they are not made part of the redacted properties.
-  absl::optional<std::string> automatic_beacon_data_;
-  std::vector<blink::FencedFrame::ReportingDestination>
-      automatic_beacon_destination_;
+  absl::optional<AutomaticBeaconInfo> automatic_beacon_info_;
 };
 
 }  // namespace content

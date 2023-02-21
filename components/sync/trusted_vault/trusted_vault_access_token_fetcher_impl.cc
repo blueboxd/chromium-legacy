@@ -8,7 +8,9 @@
 
 #include "base/location.h"
 #include "base/task/sequenced_task_runner.h"
+#include "base/types/expected.h"
 #include "components/sync/base/bind_to_task_runner.h"
+#include "components/sync/trusted_vault/trusted_vault_access_token_fetcher.h"
 #include "components/sync/trusted_vault/trusted_vault_access_token_fetcher_frontend.h"
 
 namespace syncer {
@@ -22,10 +24,11 @@ void FetchAccessTokenOnUIThread(
     const CoreAccountId& account_id,
     TrustedVaultAccessTokenFetcher::TokenCallback callback) {
   if (!frontend) {
-    std::move(callback).Run(absl::nullopt);
-  } else {
-    frontend->FetchAccessToken(account_id, std::move(callback));
+    // This is likely to happen during the browser shutdown, leave request
+    // hanging.
+    return;
   }
+  frontend->FetchAccessToken(account_id, std::move(callback));
 }
 
 }  // namespace

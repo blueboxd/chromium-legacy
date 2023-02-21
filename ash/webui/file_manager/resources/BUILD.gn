@@ -3,13 +3,13 @@
 # found in the LICENSE file.
 
 import("//build/config/chromeos/ui_mode.gni")
-import("//chrome/browser/resources/tools/optimize_webui.gni")
 import("//chrome/common/features.gni")
 import("//third_party/closure_compiler/compile_js.gni")
 import("//tools/grit/grit_rule.gni")
 import("//tools/grit/preprocess_if_expr.gni")
 import("//tools/typescript/ts_library.gni")
 import("//ui/webui/resources/tools/generate_grd.gni")
+import("//ui/webui/resources/tools/optimize_webui.gni")
 
 assert(is_chromeos_ash)
 
@@ -118,7 +118,7 @@ if (!optimize_webui) {
   ts_library("labs_build_ts") {
     root_dir = target_gen_dir
     out_dir = "$target_gen_dir/tsc"
-    tsconfig_base = "labs/tsconfig_base.json"
+    enable_source_maps = true
     extra_deps = [ ":copy_labs" ]
 
     in_files = ts_files

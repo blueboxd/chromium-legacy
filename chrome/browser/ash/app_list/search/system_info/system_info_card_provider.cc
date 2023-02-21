@@ -8,15 +8,22 @@
 #include <optional>
 #include <string>
 
+#include "ash/strings/grit/ash_strings.h"
 #include "base/functional/bind.h"
 #include "base/functional/callback.h"
 #include "base/strings/strcat.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
+#include "chrome/browser/ash/app_list/search/common/icon_constants.h"
 #include "chrome/browser/ash/app_list/search/system_info/cpu_data.h"
 #include "chrome/browser/ash/app_list/search/system_info/cpu_usage_data.h"
+#include "chrome/browser/ash/app_list/search/system_info/system_info_answer_result.h"
 #include "chrome/browser/ash/app_list/search/system_info/system_info_util.h"
+#include "chrome/browser/ash/app_list/vector_icons/vector_icons.h"
 #include "chrome/browser/ui/webui/settings/ash/device_storage_util.h"
+#include "chrome/browser/ui/webui/settings/chromeos/constants/routes.mojom-forward.h"
 #include "chrome/common/channel_info.h"
+#include "chrome/grit/generated_resources.h"
 #include "chromeos/ash/components/string_matching/fuzzy_tokenized_string_match.h"
 #include "chromeos/ash/services/cros_healthd/public/cpp/service_connection.h"
 #include "chromeos/ash/services/cros_healthd/public/mojom/cros_healthd_probe.mojom-shared.h"
@@ -26,6 +33,8 @@
 #include "components/version_info/version_string.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/text/bytes_formatting.h"
+#include "ui/gfx/image/image_skia.h"
+#include "ui/gfx/paint_vector_icon.h"
 
 namespace app_list {
 namespace {
@@ -38,6 +47,7 @@ using ::ash::cros_healthd::mojom::PhysicalCpuInfoPtr;
 using ::ash::cros_healthd::mojom::TelemetryInfoPtr;
 using ::ash::string_matching::FuzzyTokenizedStringMatch;
 using ::ash::string_matching::TokenizedString;
+using ::chromeos::settings::mojom::kAboutChromeOsSectionPath;
 
 constexpr double kRelevanceThreshold = 0.64;
 
@@ -58,6 +68,15 @@ SystemInfoCardProvider::SystemInfoCardProvider(Profile* profile)
       base::BindOnce(&SystemInfoCardProvider::OnProbeServiceDisconnect,
                      weak_factory_.GetWeakPtr()));
   StartObservingCalculators();
+  chromeos::PowerManagerClient::Get()->AddObserver(this);
+
+  // TODO(b/261867385): We manually load the icon from the local codebase as
+  // the icon load from proxy is flaky. When the flakiness if solved, we can
+  // safely remove this and add the logic to load icons from proxy.
+  os_settings_icon_ = gfx::CreateVectorIcon(
+      app_list::kOsSettingsIcon, kAppIconDimension, SK_ColorTRANSPARENT);
+  diagnostics_icon_ = gfx::CreateVectorIcon(
+      app_list::kDiagnosticsIcon, kAppIconDimension, SK_ColorTRANSPARENT);
 }
 
 SystemInfoCardProvider::~SystemInfoCardProvider() {
@@ -71,7 +90,9 @@ void SystemInfoCardProvider::Start(const std::u16string& query) {
   std::vector<std::u16string> memory_keywords = {
       u"memory", u"memory usage", u"ram", u"ram usage", u"activity monitor"};
   for (const std::u16string& keyword : memory_keywords) {
-    if (CalculateRelevance(query, keyword) > kRelevanceThreshold) {
+    double relevance = CalculateRelevance(query, keyword);
+    if (relevance > kRelevanceThreshold) {
+      relevance_ = relevance;
       UpdateMemoryUsage();
       break;
     }
@@ -80,7 +101,9 @@ void SystemInfoCardProvider::Start(const std::u16string& query) {
   std::vector<std::u16string> cpu_keywords = {
       u"cpu", u"cpu usage", u"device slow", u"why is my device slow"};
   for (const std::u16string& keyword : cpu_keywords) {
-    if (CalculateRelevance(query, keyword) > kRelevanceThreshold) {
+    double relevance = CalculateRelevance(query, keyword);
+    if (relevance > kRelevanceThreshold) {
+      relevance_ = relevance;
       UpdateCpuUsage();
       break;
     }
@@ -89,10 +112,9 @@ void SystemInfoCardProvider::Start(const std::u16string& query) {
   std::vector<std::u16string> battery_keywords = {u"battery", u"battery life",
                                                   u"battery health"};
   for (const std::u16string& keyword : battery_keywords) {
-    if (CalculateRelevance(query, keyword) > kRelevanceThreshold) {
-      if (!chromeos::PowerManagerClient::Get()->HasObserver(this)) {
-        chromeos::PowerManagerClient::Get()->AddObserver(this);
-      }
+    double relevance = CalculateRelevance(query, keyword);
+    if (relevance > kRelevanceThreshold) {
+      relevance_ = relevance;
       UpdateBatteryInfo(absl::nullopt);
       break;
     }
@@ -101,7 +123,9 @@ void SystemInfoCardProvider::Start(const std::u16string& query) {
   std::vector<std::u16string> version_keywords = {u"version", u"my device",
                                                   u"about"};
   for (const std::u16string& keyword : version_keywords) {
-    if (CalculateRelevance(query, keyword) > kRelevanceThreshold) {
+    double relevance = CalculateRelevance(query, keyword);
+    if (relevance > kRelevanceThreshold) {
+      relevance_ = relevance;
       UpdateChromeOsVersion();
       break;
     }
@@ -110,9 +134,12 @@ void SystemInfoCardProvider::Start(const std::u16string& query) {
   std::vector<std::u16string> storage_keywords = {u"storage", u"storage use",
                                                   u"storage management"};
   for (const std::u16string& keyword : storage_keywords) {
-    if (CalculateRelevance(query, keyword) > kRelevanceThreshold) {
-      // Do not calculate the storage size again if already calculated recently.
+    double relevance = CalculateRelevance(query, keyword);
+    if (relevance > kRelevanceThreshold) {
+      // Do not calculate the storage size again if already calculated
+      // recently.
       // TODO(b/263994165): Add in a refresh period here.
+      relevance_ = relevance;
       if (!calculation_state_.all()) {
         UpdateStorageInfo();
       }
@@ -221,6 +248,23 @@ void SystemInfoCardProvider::OnCpuUsageUpdated(TelemetryInfoPtr info_ptr) {
 
   previous_cpu_usage_data_ = new_cpu_usage_data;
   cpu_usage_ = std::move(new_cpu_usage);
+  std::u16string title = l10n_util::GetStringFUTF16(
+      IDS_ASH_CPU_IN_LAUNCHER_TITLE, cpu_usage_->GetPercentUsageTotalString());
+  std::u16string description = l10n_util::GetStringFUTF16(
+      IDS_ASH_CPU_IN_LAUNCHER_DESCRIPTION,
+      base::NumberToString16(cpu_usage_->GetAverageCpuTempCelsius()),
+      // Provide the frequency in GHz and round the value to 2 decimal places.
+      base::NumberToString16(
+          static_cast<double>(
+              cpu_usage_->GetScalingAverageCurrentFrequencyKhz() / 10000) /
+          100));
+  SearchProvider::Results new_results;
+  new_results.emplace_back(std::make_unique<SystemInfoAnswerResult>(
+      profile_, last_query_, /*url_path=*/"", diagnostics_icon_, relevance_,
+      title, description,
+      SystemInfoAnswerResult::AnswerCardDisplayType::kTextCard,
+      SystemInfoAnswerResult::SystemInfoCategory::kDiagnostics));
+  SwapResults(&new_results);
 }
 
 void SystemInfoCardProvider::UpdateCpuUsage() {
@@ -281,18 +325,28 @@ void SystemInfoCardProvider::PowerChanged(
 }
 
 void SystemInfoCardProvider::UpdateChromeOsVersion() {
-  std::string version = version_info::GetVersionStringWithModifier("");
-  std::string official = l10n_util::GetStringUTF8(
+  std::u16string version =
+      base::UTF8ToUTF16(version_info::GetVersionStringWithModifier(""));
+  std::u16string is_official = l10n_util::GetStringUTF16(
       version_info::IsOfficialBuild() ? IDS_VERSION_UI_OFFICIAL
                                       : IDS_VERSION_UI_UNOFFICIAL);
-  std::string processorVariation = l10n_util::GetStringUTF8(
+  std::u16string processor_variation = l10n_util::GetStringUTF16(
       sizeof(void*) == 8 ? IDS_VERSION_UI_64BIT : IDS_VERSION_UI_32BIT);
 
-  // TODO(b/263994165): Replace this with the correct translation string.
-  chromeOS_version_ =
-      base::StrCat({"Version ", version, " (", official, ") ",
-                    chrome::GetChannelName(chrome::WithExtendedStable(true)),
-                    " ", processorVariation});
+  std::u16string version_string = l10n_util::GetStringFUTF16(
+      IDS_ASH_VERSION_IN_LAUNCHER_MESSAGE, version, is_official,
+      base::UTF8ToUTF16(
+          chrome::GetChannelName(chrome::WithExtendedStable(true))),
+      processor_variation);
+  std::u16string description =
+      l10n_util::GetStringUTF16(IDS_SETTINGS_ABOUT_PAGE_CHECK_FOR_UPDATES);
+  SearchProvider::Results new_results;
+  new_results.emplace_back(std::make_unique<SystemInfoAnswerResult>(
+      profile_, last_query_, kAboutChromeOsSectionPath, os_settings_icon_,
+      relevance_, version_string, description,
+      SystemInfoAnswerResult::AnswerCardDisplayType::kTextCard,
+      SystemInfoAnswerResult::SystemInfoCategory::kSettings));
+  SwapResults(&new_results);
 }
 
 void SystemInfoCardProvider::UpdateStorageInfo() {
@@ -359,8 +413,8 @@ void SystemInfoCardProvider::OnStorageInfoUpdated() {
   int64_t in_use_bytes = total_bytes - available_bytes;
 
   if (total_bytes <= 0 || available_bytes < 0) {
-    // We can't get useful information from the storage page if total_bytes <= 0
-    // or available_bytes is less than 0. This is not expected to happen.
+    // We can't get useful information from the storage page if total_bytes <=
+    // 0 or available_bytes is less than 0. This is not expected to happen.
     NOTREACHED() << "Unable to retrieve total or available disk space";
     return;
   }

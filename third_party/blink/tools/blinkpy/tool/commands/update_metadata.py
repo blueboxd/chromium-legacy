@@ -35,6 +35,7 @@ from blinkpy.common import path_finder
 from blinkpy.common.host import Host
 from blinkpy.common.net.git_cl import BuildStatuses, GitCL
 from blinkpy.common.net.rpc import Build, RPCError
+from blinkpy.common.system.user import User
 from blinkpy.tool import grammar
 from blinkpy.tool.commands.build_resolver import (
     BuildResolver,
@@ -395,7 +396,13 @@ class UpdateMetadata(Command):
 
         Raises:
             OSError: If a local wptreport is not readable.
+            UpdateAbortError: If one or more builds finished with
+                `INFRA_FAILURE` and the user chose not to continue.
         """
+        if GitCL.filter_infra_failed(build_statuses):
+            if not self._tool.user.confirm(default=User.DEFAULT_NO):
+                raise UpdateAbortError('Aborting update due to build(s) with '
+                                       'infrastructure failures.')
         # TODO(crbug.com/1299650): Filter by failed builds again after the FYI
         # builders are green and no longer experimental.
         build_ids = [
@@ -466,10 +473,6 @@ class UpdateMetadata(Command):
             for builder in self._tool.builders.all_builder_names()
             if self._tool.builders.uses_wptrunner(builder)
         }
-        # The version group matches anything like:
-        #   "<major>.<minor>.<patch><revision>"
-        version_pattern = re.compile(r'[a-z-_]*(?P<version>\d+(\.\d+){,2}\w*)')
-        cpu_pattern = re.compile(r'(?P<arch>x86|arm)[_-]?(?P<bits>\d+)?')
 
         for builder in wptrunner_builders:
             port_name = self._tool.builders.port_name_for_builder_name(builder)
@@ -479,19 +482,6 @@ class UpdateMetadata(Command):
                 port_name, optparse.Values({
                     'configuration': build_config,
                 }))
-            config = port.test_configuration()
-
-            version = config.version
-            version_match = version_pattern.match(config.version)
-            if version_match:
-                version = version_match['version']
-
-            processor = config.architecture
-            cpu_match = cpu_pattern.match(config.architecture)
-            if cpu_match['arch'] == 'arm':
-                # Coerce `arm64` to `arm` to match:
-                #   https://firefox-source-docs.mozilla.org/build/buildsystem/mozinfo.html
-                processor = 'arm'
 
             for step in self._tool.builders.step_names_for_builder(builder):
                 flag_specific = self._tool.builders.flag_specific_option(
@@ -500,13 +490,16 @@ class UpdateMetadata(Command):
                     builder, step)
                 configs.add(
                     metadata.RunInfo({
-                        'os': port.operating_system(),
-                        'version': version,
-                        'processor': processor,
-                        'bits': int(cpu_match['bits'] or 32),
-                        'debug': config.build_type != 'release',
-                        'product': product,
-                        'flag_specific': flag_specific or '',
+                        'product':
+                        product,
+                        'os':
+                        port.operating_system(),
+                        'port':
+                        port.version(),
+                        'debug':
+                        port.get_option('configuration') == 'Debug',
+                        'flag_specific':
+                        flag_specific or ''
                     }))
         return configs
 
@@ -540,14 +533,11 @@ class MetadataUpdater:
         self._default_expected = _default_expected_by_type()
         self._primary_properties = primary_properties or [
             'debug',
-            'os',
-            'processor',
             'product',
-            'flag_specific',
         ]
         self._dependent_properties = dependent_properties or {
-            'os': ['version'],
-            'processor': ['bits'],
+            'product': ['os'],
+            'os': ['port', 'flag_specific'],
         }
         self._overwrite_conditions = overwrite_conditions
         self._disable_intermittent = disable_intermittent

@@ -16,9 +16,9 @@
 #include "base/cxx17_backports.h"
 #include "base/functional/bind.h"
 #include "base/functional/callback_helpers.h"
+#include "base/task/bind_post_task.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/task/thread_pool.h"
-#include "media/base/bind_to_current_loop.h"
 #include "media/gpu/chromeos/fourcc.h"
 #include "media/gpu/chromeos/platform_video_frame_utils.h"
 #include "media/gpu/macros.h"
@@ -1585,6 +1585,10 @@ size_t V4L2JpegEncodeAccelerator::EncodedInstanceDmaBuf::FinalizeJpegImage(
           std::move(output_gmb_handle), output_gmb_buffer_size,
           gfx::BufferFormat::R_8, gfx::BufferUsage::SCANOUT_CAMERA_READ_WRITE,
           base::DoNothing());
+  if (!output_gmb_buffer) {
+    VLOGF(1) << "Failed to import gmb buffer";
+    return 0;
+  }
 
   bool isMapped = output_gmb_buffer->Map();
   if (!isMapped) {
@@ -1907,9 +1911,10 @@ void V4L2JpegEncodeAccelerator::InitializeAsync(
   DCHECK(encoder_task_runner_);
 
   encoder_task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(&V4L2JpegEncodeAccelerator::InitializeTask,
-                                weak_ptr_for_encoder_, client,
-                                BindToCurrentLoop(std::move(init_cb))));
+      FROM_HERE,
+      base::BindOnce(&V4L2JpegEncodeAccelerator::InitializeTask,
+                     weak_ptr_for_encoder_, client,
+                     base::BindPostTaskToCurrentDefault(std::move(init_cb))));
 }
 
 size_t V4L2JpegEncodeAccelerator::GetMaxCodedBufferSize(

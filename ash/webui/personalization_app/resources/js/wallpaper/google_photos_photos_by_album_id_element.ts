@@ -17,9 +17,9 @@ import {IronListElement} from 'chrome://resources/polymer/v3_0/iron-list/iron-li
 import {IronScrollThresholdElement} from 'chrome://resources/polymer/v3_0/iron-scroll-threshold/iron-scroll-threshold.js';
 import {afterNextRender} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
+import {CurrentWallpaper, GooglePhotosAlbum, GooglePhotosPhoto, WallpaperProviderInterface, WallpaperType} from '../../personalization_app.mojom-webui.js';
 import {isGooglePhotosSharedAlbumsEnabled} from '../load_time_booleans.js';
 import {dismissErrorAction, setErrorAction} from '../personalization_actions.js';
-import {CurrentWallpaper, GooglePhotosAlbum, GooglePhotosPhoto, WallpaperProviderInterface, WallpaperType} from '../personalization_app.mojom-webui.js';
 import {PersonalizationStateError} from '../personalization_state.js';
 import {WithPersonalizationStore} from '../personalization_store.js';
 
@@ -37,9 +37,12 @@ const PLACEHOLDER_ID = 'placeholder';
 /** Returns placeholders to show while Google Photos photos are loading. */
 function getPlaceholders(): GooglePhotosPhoto[] {
   return getLoadingPlaceholders(() => {
-    const photo = new GooglePhotosPhoto();
-    photo.id = PLACEHOLDER_ID;
-    return photo;
+    return {
+      id: PLACEHOLDER_ID,
+      name: '',
+      date: {data: []},
+      url: {url: ''},
+    };
   });
 }
 

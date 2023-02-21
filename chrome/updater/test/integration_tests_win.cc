@@ -186,6 +186,52 @@ HRESULT CreateLocalServer(GUID clsid,
               .HasValue(service_name.c_str());
 }
 
+// Runs `callback` for each run value in the registry that matches `prefix`.
+void ForEachRunValue(
+    const std::wstring& prefix,
+    base::RepeatingCallback<void(const std::wstring&)> callback) {
+  for (base::win::RegistryValueIterator it(HKEY_CURRENT_USER, REGSTR_PATH_RUN,
+                                           KEY_WOW64_32KEY);
+       it.Valid(); ++it) {
+    const std::wstring run_name = it.Name();
+    if (base::StartsWith(run_name, prefix)) {
+      callback.Run(run_name);
+    }
+  }
+}
+
+// Runs `callback` for each task that matches `scope` and `prefix`.
+void ForEachTask(UpdaterScope scope,
+                 const std::wstring& prefix,
+                 base::RepeatingCallback<void(const std::wstring&)> callback) {
+  std::unique_ptr<TaskScheduler> task_scheduler =
+      TaskScheduler::CreateInstance(scope);
+  ASSERT_TRUE(task_scheduler);
+  std::vector<std::wstring> task_names;
+  task_scheduler->GetTaskNameList(&task_names);
+
+  for (const std::wstring& task_name : task_names) {
+    if (base::StartsWith(task_name, prefix)) {
+      callback.Run(task_name);
+    }
+  }
+}
+
+// Runs `callback` for each system service that matches `prefix`.
+void ForEachService(
+    const std::wstring& prefix,
+    base::RepeatingCallback<void(const std::wstring&)> callback) {
+  for (base::win::RegistryKeyIterator it(HKEY_LOCAL_MACHINE,
+                                         L"SYSTEM\\CurrentControlSet\\Services",
+                                         KEY_WOW64_32KEY);
+       it.Valid(); ++it) {
+    const std::wstring service_name = it.Name();
+    if (base::StartsWith(service_name, prefix)) {
+      callback.Run(service_name);
+    }
+  }
+}
+
 // Checks the installation states (installed or uninstalled) and versions (SxS
 // only, or both active and SxS). The installation state includes
 // Client/ClientState registry, COM server registration, COM service
@@ -247,8 +293,11 @@ void CheckInstallation(UpdaterScope scope,
       EXPECT_FALSE(RegKeyExists(root, UPDATER_KEY));
 
       if (!IsSystemInstall(scope)) {
-        EXPECT_FALSE(base::win::RegKey(root, REGSTR_PATH_RUN, KEY_READ)
-                         .HasValue(GetTaskNamePrefix(scope).c_str()));
+        ForEachRunValue(base::ASCIIToWide(PRODUCT_FULLNAME_STRING),
+                        base::BindRepeating([](const std::wstring& run_name) {
+                          ADD_FAILURE()
+                              << "Unexpected Run key found: " << run_name;
+                        }));
       }
     }
   }
@@ -287,6 +336,20 @@ void CheckInstallation(UpdaterScope scope,
 
       EXPECT_EQ(is_installed,
                 !IsServiceGone(GetServiceName(is_internal_service)));
+
+// TODO(crbug.com/1378769) - this code can be enabled after the the new CIPD
+// build containing fix r1105318 is published.
+#if 0
+      if (!is_installed) {
+        ForEachService(
+            base::StrCat({base::ASCIIToWide(PRODUCT_FULLNAME_STRING),
+                          is_internal_service ? kWindowsInternalServiceName
+                                              : kWindowsServiceName}),
+            base::BindRepeating([](const std::wstring& service_name) {
+              ADD_FAILURE() << "Unexpected service found: " << service_name;
+            }));
+      }
+#endif  // 0
     }
   }
 
@@ -309,6 +372,13 @@ void CheckInstallation(UpdaterScope scope,
                       L"*/components/update_client/*=2,"
                       L"*/chrome/updater/*=2"})
             .c_str());
+  }
+
+  if (!is_installed) {
+    ForEachTask(scope, base::ASCIIToWide(PRODUCT_FULLNAME_STRING),
+                base::BindRepeating([](const std::wstring& task_name) {
+                  ADD_FAILURE() << "Unexpected task found: " << task_name;
+                }));
   }
 
   const absl::optional<base::FilePath> path =
@@ -576,24 +646,29 @@ void Clean(UpdaterScope scope) {
   }
 
   if (!IsSystemInstall(scope)) {
-    base::win::RegKey(root, REGSTR_PATH_RUN, KEY_WRITE)
-        .DeleteValue(GetTaskNamePrefix(scope).c_str());
+    ForEachRunValue(base::ASCIIToWide(PRODUCT_FULLNAME_STRING),
+                    base::BindRepeating([](const std::wstring& run_name) {
+                      base::win::RegKey(HKEY_CURRENT_USER, REGSTR_PATH_RUN,
+                                        KEY_WRITE)
+                          .DeleteValue(run_name.c_str());
+                    }));
   }
 
   if (IsSystemInstall(scope)) {
-    for (const bool is_internal_service : {true, false}) {
-      EXPECT_TRUE(DeleteService(GetServiceName(is_internal_service)));
-    }
+    ForEachService(base::ASCIIToWide(PRODUCT_FULLNAME_STRING),
+                   base::BindRepeating([](const std::wstring& service_name) {
+                     EXPECT_TRUE(DeleteService(service_name));
+                   }));
   }
 
-  std::unique_ptr<TaskScheduler> task_scheduler =
-      TaskScheduler::CreateInstance(scope);
-  const std::wstring task_name =
-      task_scheduler->FindFirstTaskName(GetTaskNamePrefix(scope));
-  if (!task_name.empty())
-    task_scheduler->DeleteTask(task_name.c_str());
-  EXPECT_TRUE(
-      task_scheduler->FindFirstTaskName(GetTaskNamePrefix(scope)).empty());
+  ForEachTask(
+      scope, base::ASCIIToWide(PRODUCT_FULLNAME_STRING),
+      base::BindLambdaForTesting([scope](const std::wstring& task_name) {
+        std::unique_ptr<TaskScheduler> task_scheduler =
+            TaskScheduler::CreateInstance(scope);
+        ASSERT_TRUE(task_scheduler);
+        task_scheduler->DeleteTask(task_name.c_str());
+      }));
 
   const absl::optional<base::FilePath> target_path =
       GetGoogleUpdateExePath(scope);

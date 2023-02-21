@@ -32,7 +32,6 @@
 <translation id="1254593899333212300">直接連線到互聯網</translation>
 <translation id="1272293450992660632">PIN 值不相符。</translation>
 <translation id="1280820357415527819">正在搜尋流動網絡</translation>
-<translation id="1291603679744561561">SIM 卡已鎖定</translation>
 <translation id="1293556467332435079">檔案</translation>
 <translation id="1297922636971898492">「Google 雲端硬碟」目前無法提供服務。一旦「Google 雲端硬碟」恢復正常，上載操作將會自動重新啟動。</translation>
 <translation id="1307931752636661898">無法查看 Linux 檔案</translation>
@@ -192,6 +191,7 @@
 <translation id="2574327434504608656">已與 Bruschetta 共用 1 個資料夾</translation>
 <translation id="2578394532502990878">泰米爾文 (拼音)</translation>
 <translation id="2579959351793446050">歐利亞文</translation>
+<translation id="2587195714949534472">正在準備同步「<ph name="FILE_NAME" />」…</translation>
 <translation id="2602810353103180630">第 <ph name="NETWORK_INDEX" /> 個網絡，一共有 <ph name="NETWORK_COUNT" /> 個網絡，<ph name="NETWORK_NAME" />，<ph name="CONNECTION_STATUS" />，訊號強度係 <ph name="SIGNAL_STRENGTH" />%，管理員封鎖咗呢個網絡，詳情</translation>
 <translation id="2614589611416690597"><ph name="VIDEO_TYPE" /> 影片</translation>
 <translation id="2620090360073999360">目前無法使用 Google 雲端硬碟。</translation>
@@ -293,6 +293,7 @@
 <translation id="3486821258960016770">蒙古文</translation>
 <translation id="3495304270784461826">發生 <ph name="COUNT" /> 個錯誤。</translation>
 <translation id="3509680540198371098">第 <ph name="NETWORK_INDEX" /> 個網絡，一共有 <ph name="NETWORK_COUNT" /> 個網絡，<ph name="NETWORK_NAME" />，<ph name="SECURITY_STATUS" />，<ph name="CONNECTION_STATUS" />，訊號強度係 <ph name="SIGNAL_STRENGTH" />%，詳情</translation>
+<translation id="3511705761158917664">正在準備同步 <ph name="NUMBER_OF_ITEMS" /> 個項目…</translation>
 <translation id="3522708245912499433">葡萄牙文</translation>
 <translation id="3524311639100184459">注意：系統可能會自動刪除這些暫存檔案，以釋放磁碟空間。<ph name="BEGIN_LINK" />瞭解詳情<ph name="END_LINK" /></translation>
 <translation id="3527085408025491307">資料夾</translation>
@@ -353,6 +354,7 @@
 <translation id="3971140002794351170">下載流動裝置設定檔，<ph name="NETWORK_COUNT" /> 個網絡之中嘅第 <ph name="NETWORK_INDEX" /> 個，<ph name="NETWORK_NAME" />，<ph name="NETWORK_PROVIDER_NAME" /></translation>
 <translation id="3973925058222872294">英文 (英國)</translation>
 <translation id="3975895378829046965">孟加拉文 (拼音)</translation>
+<translation id="3999574733850440202">最近開啟的 Microsoft 檔案已移動至 OneDrive</translation>
 <translation id="4002066346123236978">標題</translation>
 <translation id="4017788180641807848">英文 (美國)，Workman 鍵盤</translation>
 <translation id="4019998208269143058">固定至快速檔案</translation>
@@ -904,6 +906,7 @@
 <translation id="8300849813060516376">OTASP 失敗</translation>
 <translation id="8312871300878166382">貼入資料夾</translation>
 <translation id="8329978297633540474">純文字</translation>
+<translation id="8332007959299458842">最近開啟的 Microsoft 檔案已移動至 Google 雲端硬碟</translation>
 <translation id="8335587457941836791">從捷徑列中取消固定</translation>
 <translation id="8335837413233998004">白俄羅斯文</translation>
 <translation id="8336153091935557858">昨天<ph name="YESTERDAY_DAYTIME" /></translation>

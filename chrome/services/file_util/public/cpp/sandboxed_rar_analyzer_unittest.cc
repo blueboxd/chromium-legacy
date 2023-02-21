@@ -58,9 +58,10 @@ class SandboxedRarAnalyzerTest : public testing::Test {
     FileUtilService service(remote.InitWithNewPipeAndPassReceiver());
     base::RunLoop run_loop;
     ResultsGetter results_getter(run_loop.QuitClosure(), results);
-    analyzer_ = base::MakeRefCounted<SandboxedRarAnalyzer>(
-        path, results_getter.GetCallback(), std::move(remote));
-    analyzer_->Start();
+    std::unique_ptr<SandboxedRarAnalyzer, base::OnTaskRunnerDeleter> analyzer =
+        SandboxedRarAnalyzer::CreateAnalyzer(path, results_getter.GetCallback(),
+                                             std::move(remote));
+    analyzer->Start();
     run_loop.Run();
   }
 
@@ -124,10 +125,6 @@ class SandboxedRarAnalyzerTest : public testing::Test {
     base::RepeatingClosure next_closure_;
     raw_ptr<safe_browsing::ArchiveAnalyzerResults> results_;
   };
-  // |analzyer_| should be destroyed after task_environment, so that any other
-  // threads with objects holding references to it will be shut down first.
-  // This should make the final reference get released on the main thread.
-  scoped_refptr<SandboxedRarAnalyzer> analyzer_;
   content::BrowserTaskEnvironment task_environment_;
 };
 
@@ -386,10 +383,21 @@ TEST_F(SandboxedRarAnalyzerTest, CanDeleteDuringExecution) {
         std::move(callback).Run(safe_browsing::ArchiveAnalyzerResults());
         run_loop.Quit();
       });
-  scoped_refptr<SandboxedRarAnalyzer> analyzer(new SandboxedRarAnalyzer(
-      temp_path, base::DoNothing(), std::move(remote)));
+  std::unique_ptr<SandboxedRarAnalyzer, base::OnTaskRunnerDeleter> analyzer =
+      SandboxedRarAnalyzer::CreateAnalyzer(temp_path, base::DoNothing(),
+                                           std::move(remote));
   analyzer->Start();
   run_loop.Run();
+}
+
+TEST_F(SandboxedRarAnalyzerTest, InvalidPath) {
+  base::FilePath path;
+  ASSERT_NO_FATAL_FAILURE(path = GetFilePath("does_not_exist"));
+  safe_browsing::ArchiveAnalyzerResults results;
+  AnalyzeFile(path, &results);
+  EXPECT_FALSE(results.success);
+  EXPECT_EQ(results.analysis_result,
+            safe_browsing::ArchiveAnalysisResult::kFailedToOpen);
 }
 
 }  // namespace

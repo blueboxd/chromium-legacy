@@ -26,7 +26,6 @@ luci.bucket(
 
 defaults.bucket.set("goma")
 defaults.build_numbers.set(True)
-defaults.cores.set(8)
 defaults.cpu.set(cpu.X86_64)
 defaults.executable.set("recipe:chromium")
 defaults.execution_timeout.set(3 * time.hour)
@@ -873,8 +872,8 @@ goma_mac_builder(
         ),
     ),
     os = os.MAC_DEFAULT,
-    xcode = xcode.x14main,
     goma_backend = goma.backend.RBE_TOT,
+    xcode = xcode.x14main,
 )
 
 goma_mac_builder(

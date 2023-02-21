@@ -10,7 +10,7 @@ load("//lib/branches.star", "branches")
 load("//project.star", "settings")
 
 lucicfg.check_version(
-    min = "1.33.7",
+    min = "1.38.1",
     message = "Update depot_tools",
 )
 
@@ -25,6 +25,7 @@ lucicfg.config(
         "cq-builders.md",
         "cq-usage/default.cfg",
         "cq-usage/full.cfg",
+        "health-specs/health-specs.json",
         "luci/commit-queue.cfg",
         "luci/cr-buildbucket.cfg",
         "luci/luci-analysis.cfg",

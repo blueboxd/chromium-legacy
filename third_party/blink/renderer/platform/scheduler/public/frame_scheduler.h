@@ -12,8 +12,6 @@
 #include "base/unguessable_token.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
 #include "third_party/blink/public/mojom/loader/pause_subresource_loading_handle.mojom-blink.h"
-#include "third_party/blink/public/platform/scheduler/web_resource_loading_task_runner_handle.h"
-#include "third_party/blink/public/platform/scheduler/web_scoped_virtual_time_pauser.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/scheduler/public/frame_or_worker_scheduler.h"
@@ -106,35 +104,11 @@ class FrameScheduler : public FrameOrWorkerScheduler {
   virtual scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner(
       TaskType) = 0;
 
-  // Returns a WebResourceLoadingTaskRunnerHandle which is intended to be used
-  // by the loading stack to post resource loading tasks to the renderer's main
-  // thread and to notify the main thread of any change in the resource's fetch
-  // (net) priority.
-  virtual std::unique_ptr<scheduler::WebResourceLoadingTaskRunnerHandle>
-  CreateResourceLoadingTaskRunnerHandle() = 0;
-
-  // Returns a WebResourceLoadingTaskRunnerHandle which is intended to be used
-  // by the loading stack, same as CreateResourceLoadingTaskRunnerHandle(), but
-  // the task type of this runner is unfreezable if kLoadingTasksUnfreezable
-  // feature is on.
-  virtual std::unique_ptr<scheduler::WebResourceLoadingTaskRunnerHandle>
-  CreateResourceLoadingMaybeUnfreezableTaskRunnerHandle() = 0;
-
   // Returns the parent PageScheduler.
   virtual PageScheduler* GetPageScheduler() const = 0;
 
   // Returns the parent AgentGroupScheduler.
   virtual AgentGroupScheduler* GetAgentGroupScheduler() = 0;
-
-  // Returns a WebScopedVirtualTimePauser which can be used to vote for pausing
-  // virtual time. Virtual time will be paused if any WebScopedVirtualTimePauser
-  // votes to pause it, and only unpaused only if all
-  // WebScopedVirtualTimePausers are either destroyed or vote to unpause.  Note
-  // the WebScopedVirtualTimePauser returned by this method is initially
-  // unpaused.
-  virtual WebScopedVirtualTimePauser CreateWebScopedVirtualTimePauser(
-      const String& name,
-      WebScopedVirtualTimePauser::VirtualTaskDuration) = 0;
 
   // Tells the scheduler that a provisional load has started, the scheduler may
   // reset the task cost estimators and the UserModel. Must be called from the

@@ -158,15 +158,15 @@ extern const char kAppleCalendarExperienceKitDescription[] =
     "When enabled, long pressing on dates will trigger Experience Kit Apple "
     "Calendar event handling.";
 
-extern const char kEmailName[] = "Email enable";
+extern const char kEmailName[] = "Email experience enable";
 extern const char kEmailDescription[] =
-    "When enabled, long pressing on an email address will trigger the email "
-    "experience.";
+    "When enabled, one tapping or long pressing on an email address will "
+    "trigger the email experience.";
 
-extern const char kPhoneNumberName[] = "Phone number enable";
+extern const char kPhoneNumberName[] = "Phone number experience enable";
 extern const char kPhoneNumberDescription[] =
-    "When enabled, long pressing on a phone number will trigger the phone "
-    "number experience.";
+    "When enabled, one tapping or long pressing on a phone number will trigger "
+    "the phone number experience.";
 
 extern const char kEnableExpKitCalendarTextClassifierName[] =
     "Text Classifier in Experience Kit Calendar";
@@ -179,6 +179,10 @@ extern const char kEnableExpKitTextClassifierName[] =
 extern const char kEnableExpKitTextClassifierDescription[] =
     "When enabled, Experience Kit will use Text Classifier library in "
     "entity detection where possible.";
+
+extern const char kOneTapForMapsName[] = "Enable one Tap Experience for Maps";
+extern const char kOneTapForMapsDescription[] =
+    "Enables the one tap experience for maps experience kit.";
 
 const char kEnablePopoutOmniboxIpadName[] = "Popout omnibox (iPad)";
 const char kEnablePopoutOmniboxIpadDescription[] =
@@ -195,12 +199,6 @@ extern const char kLongPressSurroundingTextName[] =
     "Enable Long Press Surrounding Text";
 extern const char kLongPressSurroundingTextDescription[] =
     "When enabled, long pressing a text will analyze larger part of the text.";
-
-const char kCloseAllTabsConfirmationName[] =
-    "Close All Tabs Confirmation Dialog";
-const char kCloseAllTabsConfirmationDescription[] =
-    "When enabled, tapping the Close All Tabs now shows a confirmation dialog "
-    "(before deletion), instead of an Undo button (after deletion).";
 
 const char kContentSuggestionsUIModuleRefreshName[] =
     "Content Suggestions UI Module Refresh";
@@ -242,6 +240,11 @@ const char kEnableDiscoverFeedTopSyncPromoDescription[] =
     "When enabled, a sync promotion will be presented to eligible users on top "
     "of the feed cards.";
 
+const char kEnableFeedHeaderSettingsName[] =
+    "Enables the feed header settings.";
+const char kEnableFeedHeaderSettingsDescription[] =
+    "When enabled, some UI elements of the feed header can be modified.";
+
 const char kDmTokenDeletionName[] = "DMToken deletion";
 const char kDmTokenDeletionDescription[] =
     "Delete the corresponding DMToken when a managed browser is deleted in "
@@ -281,9 +284,9 @@ const char kEnableDiscoverFeedDiscoFeedEndpointName[] =
 const char kEnableDiscoverFeedDiscoFeedEndpointDescription[] =
     "Enable using the discofeed endpoint for the discover feed.";
 
-const char kHideMVTAndShortcutsForNewUsersName[] =
+const char kTileAblationMVTAndShortcutsForNewUsersName[] =
     "Enable hiding the Most Visited Tiles and Shortcuts";
-const char kHideMVTAndShortcutsForNewUsersDescription[] =
+const char kTileAblationMVTAndShortcutsForNewUsersDescription[] =
     "Enable hiding the Most Visited Tiles and Shortcuts for new users";
 
 const char kEnableFeedAblationName[] = "Enables Feed Ablation";
@@ -336,6 +339,11 @@ const char kEnablePasswordsAccountStorageDescription[] =
 const char kEnablePinnedTabsName[] = "Enable Pinned Tabs";
 const char kEnablePinnedTabsDescription[] = "Allows users to pin tabs.";
 
+const char kEnablePinnedTabsIpadName[] = "Enable Pinned Tabs on iPad";
+const char kEnablePinnedTabsIpadDescription[] =
+    "Allows users to pin tabs."
+    "#enable-pinned-tabs should also be enabled.";
+
 const char kEnableRefineDataSourceReloadReportingName[] =
     "Enable Refine Data Source Reload Reporting";
 const char kEnableRefineDataSourceReloadReportingDescription[] =
@@ -378,6 +386,10 @@ const char kFeedBackgroundRefreshName[] = "Enable feed background refresh";
 const char kFeedBackgroundRefreshDescription[] =
     "Schedules a feed background refresh after some minimum period of time has "
     "passed after the last refresh.";
+
+const char kFeedExperimentTaggingName[] = "Enable Feed experiment tagging";
+const char kFeedExperimentTaggingDescription[] =
+    "Makes server experiments visible as client-side experiments.";
 
 const char kFeedForegroundRefreshName[] = "Enable feed foreground refresh";
 const char kFeedForegroundRefreshDescription[] =
@@ -441,6 +453,16 @@ const char kIOS3PIntentsInIncognitoName[] = "Third-party intents in Incognito";
 const char kIOS3PIntentsInIncognitoDescription[] =
     "When enabled, an additional setting lets the user open links from other "
     "apps in Incognito.";
+
+const char kIOSCustomBrowserEditMenuName[] = "Custom browser edit menu";
+const char kIOSCustomBrowserEditMenuDescription[] =
+    "Use the new API for the WKWebView Edit menu.";
+
+const char kIOSEditMenuPartialTranslateName[] =
+    "Enable partial translate in edit menu";
+const char kIOSEditMenuPartialTranslateDescription[] =
+    "Replace the Apple translate entry in the web edit menu to use Google "
+    "Translate instead.";
 
 const char kIOSForceTranslateEnabledName[] = "Allow force translate on iOS.";
 const char kIOSForceTranslateEnabledDescription[] =
@@ -682,6 +704,12 @@ const char kOptimizationGuideDebugLogsDescription[] =
     "Enables the optimization guide to log and save debug messages that can be "
     "shown in the internals page.";
 
+const char kOptimizationGuidePushNotificationClientName[] =
+    "Enable optimization guide push notification client";
+const char kOptimizationGuidePushNotificationClientDescription[] =
+    "Enables the client that handles incoming push notifications on behalf of "
+    "the optimization guide.";
+
 const char kOptimizationGuideModelDownloadingName[] =
     "Allow optimization guide model downloads";
 const char kOptimizationGuideModelDownloadingDescription[] =
@@ -691,6 +719,10 @@ const char kOptimizationTargetPredictionDescription[] =
     "Enables prediction of optimization targets";
 const char kOptimizationTargetPredictionName[] =
     "Enables usage of optimization guide TFLite models.";
+
+const char kPasswordNotesWithBackupName[] = "Password notes in settings";
+const char kPasswordNotesWithBackupDescription[] =
+    "Enables a note section for each password in the settings page.";
 
 const char kPasswordReuseDetectionName[] =
     "PhishGuard password reuse detection";
@@ -766,6 +798,12 @@ const char kShowAutofillTypePredictionsName[] = "Show Autofill predictions";
 const char kShowAutofillTypePredictionsDescription[] =
     "Annotates web forms with Autofill field type predictions as placeholder "
     "text.";
+
+const char kShowInactiveTabsCountName[] =
+    "Show Inactive Tabs count in Tab Grid";
+const char kShowInactiveTabsCountDescription[] =
+    "When enabled, the count of Inactive Tabs is shown in the Inactive Tabs "
+    "button that appears in the Tab Grid.";
 
 const char kSmartSortingNewOverflowMenuName[] =
     "Smart Sorting the new Overflow Menu";
@@ -881,10 +919,6 @@ const char kEnableLensInOmniboxCopiedImageDescription[] =
 const char kTabGridRecencySortName[] = "Change TabGrid sorting";
 const char kTabGridRecencySortDescription[] =
     "When enabled, the tabs in the Tab Grid are sorted differently.";
-
-const char kTabStripContextMenuName[] = "Tab Strip Context Menu";
-const char kTabStripContextMenuDescription[] =
-    "Add context menu to tab strip items.";
 
 const char kTabInactivityThresholdName[] = "Change Tab inactivity threshold";
 const char kTabInactivityThresholdDescription[] =

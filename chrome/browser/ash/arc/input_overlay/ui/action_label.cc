@@ -62,7 +62,8 @@ constexpr int kCornerRadius = 4;
 constexpr int kFontSize = 14;
 constexpr int kSideInset = 4;
 // For ActionMove.
-constexpr int kCrossPadding = 8;  // 4 + 4(kCrossOutsideStrokeThickness)
+constexpr int kCrossPadding =
+    9;  // 4 + 4(kCrossOutsideStrokeThickness) + 1(kCrossInsideStrokeThickness)
 // About focus ring.
 // Gap between focus ring outer edge to label.
 constexpr float kHaloInset = -5;
@@ -525,19 +526,18 @@ void ActionLabel::SetDisplayMode(DisplayMode mode) {
   }
 }
 
-bool ActionLabel::ClearFocus() {
-  auto* focus_manager = GetFocusManager();
-  bool has_focus = false;
-  if (focus_manager) {
-    has_focus = HasFocus();
-    focus_manager->ClearFocus();
+void ActionLabel::ClearFocus() {
+  if (!HasFocus())
+    return;
 
-    // When it has to clear focus explicitly, set focused view back to its
-    // parent, so it can find the focused view when Tab traversal key is
-    // pressed.
-    focus_manager->SetFocusedView(static_cast<ActionView*>(parent()));
-  }
-  return has_focus;
+  auto* focus_manager = GetFocusManager();
+  if (!focus_manager)
+    return;
+
+  focus_manager->ClearFocus();
+  // When it has to clear focus explicitly, set focused view back to its parent,
+  // so it can find the focused view when Tab traversal key is pressed.
+  focus_manager->SetFocusedView(parent());
 }
 
 void ActionLabel::OnSiblingUpdateFocus(bool sibling_focused) {

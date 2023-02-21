@@ -66,7 +66,6 @@
 #include "third_party/blink/renderer/core/frame/frame_types.h"
 #include "third_party/blink/renderer/core/frame/policy_container.h"
 #include "third_party/blink/renderer/core/frame/use_counter_impl.h"
-#include "third_party/blink/renderer/core/html/fenced_frame/fenced_frame_reporting.h"
 #include "third_party/blink/renderer/core/html/parser/parser_synchronization_policy.h"
 #include "third_party/blink/renderer/core/loader/document_load_timing.h"
 #include "third_party/blink/renderer/core/loader/frame_loader_types.h"
@@ -376,6 +375,11 @@ class CORE_EXPORT DocumentLoader : public GarbageCollected<DocumentLoader>,
   // limit", so that we get a good LCP value. This returns the remaining time to
   // the LCP limit. See crbug.com/1065508 for details.
   base::TimeDelta RemainingTimeToLCPLimit() const;
+
+  // We are experimenting the idea of making preloaded fonts render-blocking up
+  // to a certain amount of time after navigation starts. This returns the
+  // remaining time to that time limit. See crbug.com/1412861 for details.
+  base::TimeDelta RemainingTimeToRenderBlockingFontMaxBlockingTime() const;
 
   mojom::blink::ContentSecurityNotifier& GetContentSecurityNotifier();
 

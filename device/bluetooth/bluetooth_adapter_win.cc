@@ -37,20 +37,12 @@ scoped_refptr<BluetoothAdapter> BluetoothAdapter::CreateAdapter() {
 
 // static
 scoped_refptr<BluetoothAdapter> BluetoothAdapterWin::CreateAdapter() {
-  if (UseNewBLEWinImplementation())
-    return base::WrapRefCounted(new BluetoothAdapterWinrt());
-
-  return BluetoothAdapterWin::CreateClassicAdapter();
+  return base::WrapRefCounted(new BluetoothAdapterWinrt());
 }
 
 // static
 scoped_refptr<BluetoothAdapter> BluetoothAdapterWin::CreateClassicAdapter() {
   return base::WrapRefCounted(new BluetoothAdapterWin());
-}
-
-// static
-bool BluetoothAdapterWin::UseNewBLEWinImplementation() {
-  return base::FeatureList::IsEnabled(kNewBLEWinImplementation);
 }
 
 BluetoothAdapterWin::BluetoothAdapterWin() = default;
@@ -316,7 +308,6 @@ void BluetoothAdapterWin::Initialize(base::OnceClosure init_callback) {
 void BluetoothAdapterWin::InitForTest(
     base::OnceClosure init_callback,
     std::unique_ptr<win::BluetoothClassicWrapper> classic_wrapper,
-    std::unique_ptr<win::BluetoothLowEnergyWrapper> le_wrapper,
     scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
     scoped_refptr<base::SequencedTaskRunner> bluetooth_task_runner) {
   init_callback_ = std::move(init_callback);
@@ -324,7 +315,7 @@ void BluetoothAdapterWin::InitForTest(
   if (!ui_task_runner_)
     ui_task_runner_ = base::SingleThreadTaskRunner::GetCurrentDefault();
   task_manager_ = BluetoothTaskManagerWin::CreateForTesting(
-      std::move(classic_wrapper), std::move(le_wrapper), ui_task_runner_);
+      std::move(classic_wrapper), ui_task_runner_);
   task_manager_->AddObserver(this);
   task_manager_->InitializeWithBluetoothTaskRunner(bluetooth_task_runner);
 }

@@ -14,6 +14,7 @@ import android.content.Intent;
 
 import com.google.common.collect.ImmutableMap;
 
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -72,6 +73,11 @@ public final class FeedActionDelegateImplTest {
                 BrowserUiUtils.HostSurface.NOT_SET);
     }
 
+    @After
+    public void tearDown() {
+        SyncConsentActivityLauncherImpl.setLauncherForTest(null);
+    }
+
     @Test
     public void testShowSignInActivity_shownWhenFlagEnabled() {
         FeatureList.setTestFeatures(
@@ -93,12 +99,13 @@ public final class FeedActionDelegateImplTest {
     @Test
     public void testOpenWebFeed_enabledWhenCormorantFlagEnabled() {
         FeatureList.setTestFeatures(ImmutableMap.of(ChromeFeatureList.CORMORANT, true));
+        String webFeedName = "SomeFeedName";
 
-        mFeedActionDelegateImpl.openWebFeed("SomeFeedName");
+        mFeedActionDelegateImpl.openWebFeed(webFeedName);
 
         verify(mActivityContext).startActivity(mIntentCaptor.capture());
-        Assert.assertEquals("Feed ID not passed correctly.", "SomeFeedName",
-                mIntentCaptor.getValue().getStringExtra("CREATOR_WEB_FEED_ID"));
+        Assert.assertArrayEquals("Feed ID not passed correctly.", webFeedName.getBytes(),
+                mIntentCaptor.getValue().getByteArrayExtra("CREATOR_WEB_FEED_ID"));
     }
 
     @Test

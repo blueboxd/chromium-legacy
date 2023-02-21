@@ -11,7 +11,6 @@
 #include <set>
 #include <utility>
 
-#include "ash/components/arc/arc_features.h"
 #include "base/command_line.h"
 #include "base/containers/contains.h"
 #include "base/feature_list.h"
@@ -121,6 +120,7 @@
 #include "components/guest_view/browser/guest_view_base.h"
 #include "components/language/core/browser/language_model_manager.h"
 #include "components/lens/lens_features.h"
+#include "components/lens/lens_metrics.h"
 #include "components/live_caption/caption_util.h"
 #include "components/media_router/browser/media_router_dialog_controller.h"
 #include "components/media_router/browser/media_router_metrics.h"
@@ -268,10 +268,10 @@
 #include "ash/constants/ash_features.h"
 #include "ash/public/cpp/clipboard_history_controller.h"
 #include "ash/public/cpp/new_window_delegate.h"
+#include "ash/webui/system_apps/public/system_web_app_type.h"
 #include "chrome/browser/ash/arc/arc_util.h"
 #include "chrome/browser/ash/arc/intent_helper/arc_intent_helper_mojo_ash.h"
 #include "chrome/browser/ash/system_web_apps/types/system_web_app_delegate.h"
-#include "chrome/browser/ash/system_web_apps/types/system_web_app_type.h"
 #include "chrome/browser/ui/ash/system_web_apps/system_web_app_ui_utils.h"
 #include "chromeos/crosapi/mojom/clipboard_history.mojom.h"
 #include "ui/aura/window.h"
@@ -1059,10 +1059,10 @@ void RenderViewContextMenu::InitMenu() {
 #if !BUILDFLAG(IS_CHROMEOS)
   if (base::FeatureList::IsEnabled(translate::kDesktopPartialTranslate) &&
       content_type_->SupportsGroup(
-          ContextMenuContentType::ITEM_GROUP_PARTIAL_TRANSLATE)) {
-    if (CanTranslate(/*menu_logging=*/false)) {
-      AppendPartialTranslateItem();
-    }
+          ContextMenuContentType::ITEM_GROUP_PARTIAL_TRANSLATE) &&
+      search::DefaultSearchProviderIsGoogle(GetProfile()) &&
+      CanTranslate(/*menu_logging=*/false)) {
+    AppendPartialTranslateItem();
   }
 #endif  // !BUILDFLAG(IS_CHROMEOS)
 
@@ -1953,6 +1953,7 @@ void RenderViewContextMenu::AppendMediaRouterItem() {
 void RenderViewContextMenu::AppendReadAnythingItem() {
   menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_OPEN_IN_READ_ANYTHING,
                                   IDS_CONTENT_CONTEXT_READ_ANYTHING);
+  menu_model_.SetIsNewFeatureAt(menu_model_.GetItemCount() - 1, true);
 }
 
 void RenderViewContextMenu::AppendPdfOcrItems() {
@@ -2905,6 +2906,8 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
       break;
 
     case IDC_CONTENT_CONTEXT_SEARCHWEBFOR: {
+      RecordAmbientSearchQuery(
+          lens::AmbientSearchEntryPoint::CONTEXT_MENU_SEARCH_WEB_FOR);
       if (side_search::IsSearchWebInSidePanelSupported(
               chrome::FindBrowserWithWebContents(embedder_web_contents_))) {
         ExecSearchWebInSidePanel(selection_navigation_url_);
@@ -3294,7 +3297,8 @@ bool RenderViewContextMenu::IsOpenLinkAllowedByDlp(const GURL& link_url) const {
       dlp_rules_manager->IsRestrictedDestination(
           params_.page_url, link_url,
           policy::DlpRulesManager::Restriction::kClipboard,
-          /*out_source_pattern=*/nullptr, /*out_destination_pattern=*/nullptr);
+          /*out_source_pattern=*/nullptr, /*out_destination_pattern=*/nullptr,
+          /*out_rule_metadata=*/nullptr);
   // TODO(crbug.com/1222057): show a warning if the level is kWarn
   return level != policy::DlpRulesManager::Level::kBlock;
 #else
@@ -3667,6 +3671,10 @@ void RenderViewContextMenu::ExecSearchLensForImage(bool is_image_translate) {
   RenderFrameHost* render_frame_host = GetRenderFrameHost();
   if (!render_frame_host)
     return;
+
+  lens::RecordAmbientSearchQuery(
+      lens::AmbientSearchEntryPoint::
+          CONTEXT_MENU_SEARCH_IMAGE_WITH_GOOGLE_LENS);
   core_tab_helper->SearchWithLens(
       render_frame_host, params().src_url,
       is_image_translate
@@ -3731,6 +3739,8 @@ void RenderViewContextMenu::ExecSearchWebForImage(bool is_image_translate) {
   RenderFrameHost* render_frame_host = GetRenderFrameHost();
   if (!render_frame_host)
     return;
+  lens::RecordAmbientSearchQuery(
+      lens::AmbientSearchEntryPoint::CONTEXT_MENU_SEARCH_IMAGE_WITH_WEB);
   core_tab_helper->SearchByImage(render_frame_host, params().src_url,
                                  is_image_translate);
 }

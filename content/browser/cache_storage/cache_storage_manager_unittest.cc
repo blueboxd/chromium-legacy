@@ -53,6 +53,7 @@
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "net/base/features.h"
+#include "net/base/schemeful_site.h"
 #include "net/disk_cache/disk_cache.h"
 #include "services/network/public/mojom/fetch_api.mojom.h"
 #include "storage/browser/blob/blob_storage_context.h"
@@ -251,10 +252,10 @@ class CacheStorageManagerTest : public testing::Test {
   CacheStorageManagerTest()
       : task_environment_(BrowserTaskEnvironment::IO_MAINLOOP),
         blob_storage_context_(nullptr),
-        storage_key1_(blink::StorageKey(
-            url::Origin::Create(GURL("http://example1.com")))),
-        storage_key2_(blink::StorageKey(
-            url::Origin::Create(GURL("http://example2.com")))) {}
+        storage_key1_(blink::StorageKey::CreateFromStringForTesting(
+            "http://example1.com")),
+        storage_key2_(blink::StorageKey::CreateFromStringForTesting(
+            "http://example2.com")) {}
 
   CacheStorageManagerTest(const CacheStorageManagerTest&) = delete;
   CacheStorageManagerTest& operator=(const CacheStorageManagerTest&) = delete;
@@ -917,9 +918,9 @@ class CacheStorageManagerStorageKeyAndBucketTestP
     // times `DestroyStorageManager()` and then `CreateStorageManager()`
     // are called.
     storage_key1_ =
-        blink::StorageKey(url::Origin::Create(GURL("http://example1.com")));
+        blink::StorageKey::CreateFromStringForTesting("http://example1.com");
     storage_key2_ =
-        blink::StorageKey(url::Origin::Create(GURL("http://example2.com")));
+        blink::StorageKey::CreateFromStringForTesting("http://example2.com");
 
     CacheStorageManagerTest::CreateStorageManager();
 
@@ -968,12 +969,14 @@ class CacheStorageManagerStorageKeyAndBucketTestP
       case (StorageKeyAndBucketTestCase::kThirdPartyDefault):
       case (StorageKeyAndBucketTestCase::kThirdPartyNamed):
         // Recreate storage keys and buckets.
-        storage_key1_ = blink::StorageKey::CreateForTesting(
+        storage_key1_ = blink::StorageKey::Create(
             url::Origin::Create(GURL("http://example1.com")),
-            url::Origin::Create(GURL("http://example3.com")));
-        storage_key2_ = blink::StorageKey::CreateForTesting(
+            net::SchemefulSite(GURL("http://example3.com")),
+            blink::mojom::AncestorChainBit::kCrossSite);
+        storage_key2_ = blink::StorageKey::Create(
             url::Origin::Create(GURL("http://example2.com")),
-            url::Origin::Create(GURL("http://example3.com")));
+            net::SchemefulSite(GURL("http://example3.com")),
+            blink::mojom::AncestorChainBit::kCrossSite);
 
         bucket_locator1_ = GetOrCreateBucket(storage_key1_, bucket_name);
         bucket_locator2_ = GetOrCreateBucket(storage_key2_, bucket_name);
@@ -1350,8 +1353,9 @@ TEST_F(CacheStorageManagerTest, BadCacheName) {
 TEST_F(CacheStorageManagerTest, BadKeyName) {
   // Since the implementation writes origin names to disk, ensure that we don't
   // escape the directory.
-  blink::StorageKey bad_key(url::Origin::Create(
-      GURL("http://../../../../../../../../../../../../../../foo")));
+  const blink::StorageKey bad_key =
+      blink::StorageKey::CreateFromStringForTesting(
+          "http://../../../../../../../../../../../../../../foo");
   storage::BucketLocator bad_bucket_locator =
       GetOrCreateBucket(bad_key, storage::kDefaultBucketName);
   EXPECT_TRUE(Open(bad_bucket_locator, "foo"));
@@ -2183,10 +2187,11 @@ TEST_P(CacheStorageManagerTestP, GetStorageKeysIgnoresKeysFromNamedBuckets) {
 
     url::Origin test_origin = url::Origin::Create(GURL("http://example4.com"));
 
-    auto storage_key3 = blink::StorageKey(test_origin);
+    auto storage_key3 = blink::StorageKey::CreateFirstParty(test_origin);
 
-    auto storage_key4 = blink::StorageKey::CreateForTesting(
-        test_origin, url::Origin::Create(GURL("http://example5.com")));
+    auto storage_key4 = blink::StorageKey::Create(
+        test_origin, net::SchemefulSite(GURL("http://example5.com")),
+        blink::mojom::AncestorChainBit::kCrossSite);
 
     const storage::BucketLocator bucket_locator3 =
         GetOrCreateBucket(storage_key3, "non-default");
@@ -2828,9 +2833,10 @@ TEST_P(CacheStorageManagerTestP, DeleteStorageKeyData) {
   const auto named_bucket_locator1 =
       GetOrCreateBucket(storage_key1_, "non-default");
 
-  const auto partitioned_storage_key1 = blink::StorageKey::CreateForTesting(
+  const auto partitioned_storage_key1 = blink::StorageKey::Create(
       url::Origin::Create(GURL("http://example1.com")),
-      url::Origin::Create(GURL("http://example3.com")));
+      net::SchemefulSite(GURL("http://example3.com")),
+      blink::mojom::AncestorChainBit::kCrossSite);
 
   const auto partitioned_default_bucket_locator1 =
       GetOrCreateBucket(partitioned_storage_key1, storage::kDefaultBucketName);

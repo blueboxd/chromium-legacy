@@ -68,9 +68,6 @@ export class Background extends ChromeVoxState {
   constructor() {
     super();
 
-    /** @private {CursorRange} */
-    this.currentRange_ = null;
-
     /** @private {!AbstractEarcons} */
     this.earcons_ = new Earcons();
 
@@ -128,7 +125,6 @@ export class Background extends ChromeVoxState {
     DownloadHandler.init();
     EventSource.init();
     FindHandler.init();
-    FocusAutomationHandler.init();
     GestureCommandHandler.init();
     JaPhoneticData.init(JaPhoneticMap.MAP);
     LiveRegions.init();
@@ -142,9 +138,11 @@ export class Background extends ChromeVoxState {
     // Async initialization.
     // Allow all async initializers to run simultaneously, but wait for them to
     // complete before continuing.
+    // The order that these are run in is not guaranteed.
     await Promise.all([
       DesktopAutomationHandler.init(),
       EventStreamLogger.init(),
+      FocusAutomationHandler.init(),
       MediaAutomationHandler.init(),
       PageLoadSoundHandler.init(),
       PermissionChecker.init(),
@@ -156,8 +154,8 @@ export class Background extends ChromeVoxState {
 
   /** @override */
   getCurrentRange() {
-    if (this.currentRange_ && this.currentRange_.isValid()) {
-      return this.currentRange_;
+    if (ChromeVoxRange.getCurrentRangeWithoutRecovery()?.isValid()) {
+      return ChromeVoxRange.getCurrentRangeWithoutRecovery();
     }
     return null;
   }
@@ -179,7 +177,7 @@ export class Background extends ChromeVoxState {
 
   /** @override */
   getCurrentRangeWithoutRecovery() {
-    return this.currentRange_;
+    return ChromeVoxRange.getCurrentRangeWithoutRecovery();
   }
 
   /**
@@ -187,8 +185,8 @@ export class Background extends ChromeVoxState {
    * @override
    */
   setCurrentRange(newRange) {
-    ChromeVoxRange.previous = this.currentRange_;
-    this.currentRange_ = newRange;
+    ChromeVoxRange.previous = ChromeVoxRange.getCurrentRangeWithoutRecovery();
+    ChromeVoxRange.instance.current_ = newRange;
   }
 
   /** @override */
@@ -211,10 +209,10 @@ export class Background extends ChromeVoxState {
    * @override
    */
   navigateToRange(range, opt_focus, opt_speechProps, opt_skipSettingSelection) {
-    opt_focus = opt_focus === undefined ? true : opt_focus;
-    opt_speechProps = opt_speechProps || new TtsSpeechProperties();
-    opt_skipSettingSelection = opt_skipSettingSelection || false;
-    const prevRange = this.currentRange_;
+    opt_focus = opt_focus ?? true;
+    opt_speechProps = opt_speechProps ?? new TtsSpeechProperties();
+    opt_skipSettingSelection = opt_skipSettingSelection ?? false;
+    const prevRange = ChromeVoxRange.getCurrentRangeWithoutRecovery();
 
     // Specialization for math output.
     let skipOutput = false;
@@ -233,7 +231,7 @@ export class Background extends ChromeVoxState {
     let selectedRange;
     let msg;
 
-    if (this.pageSel_ && this.pageSel_.isValid() && range.isValid()) {
+    if (this.pageSel_?.isValid() && range.isValid()) {
       // Suppress hints.
       o.withoutHints();
 
@@ -272,9 +270,7 @@ export class Background extends ChromeVoxState {
             dir === Dir.BACKWARD;
         this.pageSel_ = new CursorRange(
             this.pageSel_.start, wasBackwardSel ? range.start : range.end);
-        if (this.pageSel_) {
-          this.pageSel_.select();
-        }
+        this.pageSel_?.select();
       }
     } else if (!opt_skipSettingSelection) {
       // Ensure we don't select the editable when we first encounter it.
@@ -290,7 +286,7 @@ export class Background extends ChromeVoxState {
     }
 
     o.withRichSpeechAndBraille(
-         selectedRange || range, prevRange, OutputCustomEvent.NAVIGATE)
+         selectedRange ?? range, prevRange, OutputCustomEvent.NAVIGATE)
         .withInitialSpeechProperties(opt_speechProps);
 
     if (msg) {
@@ -315,7 +311,7 @@ export class Background extends ChromeVoxState {
       return;
     }
 
-    if (!this.currentRange_ || !this.currentRange_.isValid()) {
+    if (!ChromeVoxRange.getCurrentRangeWithoutRecovery()?.isValid()) {
       ChromeVoxRange.set(ChromeVoxRange.previous);
     }
   }
@@ -408,26 +404,6 @@ export class Background extends ChromeVoxState {
         Msgs.getMsg('chromevox_intro'), QueueMode.QUEUE,
         new TtsSpeechProperties({doNotInterrupt: true}));
     ChromeVox.braille.write(NavBraille.fromText(Msgs.getMsg('intro_brl')));
-  }
-
-  /**
-   * Converts a list of globs, as used in the extension manifest, to a regular
-   * expression that matches if and only if any of the globs in the list
-   * matches.
-   * @param {!Array<string>} globs
-   * @return {!RegExp}
-   * @private
-   */
-  static globsToRegExp_(globs) {
-    return new RegExp(
-        '^(' +
-        globs
-            .map(
-                glob => glob.replace(/[.+^$(){}|[\]\\]/g, '\\$&')
-                            .replace(/\*/g, '.*')
-                            .replace(/\?/g, '.'))
-            .join('|') +
-        ')$');
   }
 }
 

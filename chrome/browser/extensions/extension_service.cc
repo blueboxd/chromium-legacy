@@ -545,11 +545,10 @@ void ExtensionService::MaybeFinishShutdownDelayed() {
   TRACE_EVENT0("browser,startup",
                "ExtensionService::MaybeFinishShutdownDelayed");
 
-  std::unique_ptr<ExtensionPrefs::ExtensionsInfo> delayed_info(
-      extension_prefs_->GetAllDelayedInstallInfo());
-  for (size_t i = 0; i < delayed_info->size(); ++i) {
-    ExtensionInfo* info = delayed_info->at(i).get();
-    scoped_refptr<const Extension> extension(nullptr);
+  const ExtensionPrefs::ExtensionsInfo delayed_info =
+      extension_prefs_->GetAllDelayedInstallInfo();
+  for (const auto& info : delayed_info) {
+    scoped_refptr<const Extension> extension;
     if (info->extension_manifest) {
       std::string error;
       extension = Extension::Create(
@@ -557,8 +556,9 @@ void ExtensionService::MaybeFinishShutdownDelayed() {
           *info->extension_manifest,
           extension_prefs_->GetDelayedInstallCreationFlags(info->extension_id),
           info->extension_id, &error);
-      if (extension.get())
+      if (extension.get()) {
         delayed_installs_.Insert(extension);
+      }
     }
   }
   MaybeFinishDelayedInstallations();
@@ -1371,12 +1371,12 @@ void ExtensionService::OnAllExternalProvidersReady() {
   }
 
   // Uninstall all the unclaimed extensions.
-  std::unique_ptr<ExtensionPrefs::ExtensionsInfo> extensions_info(
-      extension_prefs_->GetInstalledExtensionsInfo());
-  for (size_t i = 0; i < extensions_info->size(); ++i) {
-    ExtensionInfo* info = extensions_info->at(i).get();
-    if (Manifest::IsExternalLocation(info->extension_location))
+  ExtensionPrefs::ExtensionsInfo extensions_info =
+      extension_prefs_->GetInstalledExtensionsInfo();
+  for (const auto& info : extensions_info) {
+    if (Manifest::IsExternalLocation(info->extension_location)) {
       CheckExternalUninstall(info->extension_id);
+    }
   }
 
   error_controller_->ShowErrorIfNeeded();
@@ -1713,11 +1713,15 @@ void ExtensionService::OnExtensionInstalled(
       UMA_HISTOGRAM_ENUMERATION("Extensions.InstallType.NonUser",
                                 extension->GetType(), 100);
     }
-    // TODO(crbug.com/1383740): Should split as well, but linked to suffix
-    // SideloadWipeout:
-    // //tools/metrics/histograms/metadata/histogram_suffixes_list.xml.
     UMA_HISTOGRAM_ENUMERATION("Extensions.InstallSource",
                               extension->location());
+    if (is_user_profile) {
+      UMA_HISTOGRAM_ENUMERATION("Extensions.InstallSource.User",
+                                extension->GetType(), 100);
+    } else {
+      UMA_HISTOGRAM_ENUMERATION("Extensions.InstallSource.NonUser",
+                                extension->GetType(), 100);
+    }
     // TODO(crbug.com/1383740): Address Install metrics below in a follow-up CL.
     RecordPermissionMessagesHistogram(extension, "Install", is_user_profile);
   }

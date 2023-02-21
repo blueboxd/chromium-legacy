@@ -37,7 +37,13 @@ by a child template that "extends" this file.
                  android:icon="@{{manifest_package|default('com.android.webview')}}:drawable/icon_webview"
                  android:name="{{ application_name|default('org.chromium.android_webview.nonembedded.WebViewApkApplication') }}"
                  android:multiArch="true"
+                 {% if force_32_bit is defined and force_32_bit == 'true' %}
+                 android:use32bitAbi="true"
+                 {% endif %}
+                 {# TODO(crbug.com/1411557): Remove #}
+                 {% if force_32_bit is not defined %}
                  {{ use32bitAbi|default('android:use32bitAbi="true"') }}
+                 {% endif %}
                  android:extractNativeLibs="false">
         {# This part is shared between stand-alone WebView and Monochrome #}
         {% macro common(manifest_package, webview_lib) %}
@@ -52,6 +58,9 @@ by a child template that "extends" this file.
               tools:ignore="ExportedService">
               <meta-data
                   android:name="STARTUP_FEATURE_SET_DATA_DIRECTORY_SUFFIX"
+                  android:value="true"/>
+              <meta-data
+                  android:name="STARTUP_FEATURE_SET_DIRECTORY_BASE_PATH:DEV"
                   android:value="true"/>
             </service>
             <!-- WebView Developer UI Activities. If you change these Activities, please update

@@ -80,9 +80,9 @@ class SandboxedSevenZipAnalyzerTest : public ::testing::Test {
     FileUtilService service(remote.InitWithNewPipeAndPassReceiver());
     base::RunLoop run_loop;
     ResultsGetter results_getter(run_loop.QuitClosure(), results);
-    scoped_refptr<SandboxedSevenZipAnalyzer> analyzer(
-        new SandboxedSevenZipAnalyzer(file_path, results_getter.GetCallback(),
-                                      std::move(remote)));
+    std::unique_ptr<SandboxedSevenZipAnalyzer, base::OnTaskRunnerDeleter>
+        analyzer = SandboxedSevenZipAnalyzer::CreateAnalyzer(
+            file_path, results_getter.GetCallback(), std::move(remote));
     analyzer->Start();
     run_loop.Run();
   }
@@ -237,11 +237,20 @@ TEST_F(SandboxedSevenZipAnalyzerTest, CanDeleteDuringExecution) {
             std::move(callback).Run(safe_browsing::ArchiveAnalyzerResults());
             run_loop.Quit();
           });
-  scoped_refptr<SandboxedSevenZipAnalyzer> analyzer(
-      new SandboxedSevenZipAnalyzer(temp_path, base::DoNothing(),
-                                    std::move(remote)));
+  std::unique_ptr<SandboxedSevenZipAnalyzer, base::OnTaskRunnerDeleter>
+      analyzer = SandboxedSevenZipAnalyzer::CreateAnalyzer(
+          temp_path, base::DoNothing(), std::move(remote));
   analyzer->Start();
   run_loop.Run();
+}
+
+TEST_F(SandboxedSevenZipAnalyzerTest, InvalidPath) {
+  safe_browsing::ArchiveAnalyzerResults results;
+  RunAnalyzer(dir_test_data_.Append(FILE_PATH_LITERAL("does_not_exit")),
+              &results);
+  EXPECT_FALSE(results.success);
+  EXPECT_EQ(results.analysis_result,
+            safe_browsing::ArchiveAnalysisResult::kFailedToOpen);
 }
 
 }  // namespace safe_browsing

@@ -8,9 +8,11 @@
 #include <memory>
 
 #include "base/compiler_specific.h"
+#include "base/functional/callback_forward.h"
 #include "base/memory/raw_ptr_exclusion.h"
 #include "base/memory/ref_counted.h"
 #include "base/observer_list_types.h"
+#include "base/run_loop.h"
 #include "base/task/lazy_thread_pool_task_runner.h"
 #include "base/task/sequence_manager/sequence_manager.h"
 #include "base/task/single_thread_task_runner.h"
@@ -50,7 +52,7 @@ namespace test {
 //
 // Tasks posted to the (SingleThread|Sequenced)TaskRunner::CurrentDefaultHandle
 // run synchronously when RunLoop::Run(UntilIdle) or
-// TaskEnvironment::RunUntilIdle is called on the main thread.
+// TaskEnvironment::RunUntil(Idle|Quit) is called on the main thread.
 //
 // The TaskEnvironment requires TestTimeouts::Initialize() to be called in order
 // to run posted tasks, so that it can watch for problematic long-running tasks.
@@ -59,7 +61,7 @@ namespace test {
 // manual control of RunLoop::Run() and TaskEnvironment::FastForward*() methods.
 //
 // If a TaskEnvironment's ThreadPoolExecutionMode is QUEUED, ThreadPool tasks
-// run when RunUntilIdle() or ~TaskEnvironment is called. If
+// run when RunUntilIdle(), RunUntilQuit(), or ~TaskEnvironment is called. If
 // ThreadPoolExecutionMode is ASYNC, they run as they are posted.
 //
 // All TaskEnvironment methods must be called from the main thread.
@@ -201,20 +203,9 @@ class TaskEnvironment {
                 trait_helpers::AreValidTraits<ValidTraits,
                                               TaskEnvironmentTraits...>::value>>
   NOINLINE explicit TaskEnvironment(TaskEnvironmentTraits... traits)
-      : TaskEnvironment(
-            trait_helpers::GetEnum<TimeSource, TimeSource::DEFAULT>(traits...),
-            trait_helpers::GetEnum<MainThreadType, MainThreadType::DEFAULT>(
-                traits...),
-            trait_helpers::GetEnum<ThreadPoolExecutionMode,
-                                   ThreadPoolExecutionMode::DEFAULT>(traits...),
-            trait_helpers::GetEnum<ThreadingMode, ThreadingMode::DEFAULT>(
-                traits...),
-            trait_helpers::GetEnum<ThreadPoolCOMEnvironment,
-                                   ThreadPoolCOMEnvironment::DEFAULT>(
-                traits...),
-            trait_helpers::HasTrait<SubclassCreatesDefaultTaskRunner,
-                                    TaskEnvironmentTraits...>(),
-            trait_helpers::NotATraitTag()) {}
+      : TaskEnvironment(sequence_manager::SequenceManager::PrioritySettings::
+                            CreateDefault(),
+                        traits...) {}
 
   TaskEnvironment(const TaskEnvironment&) = delete;
   TaskEnvironment& operator=(const TaskEnvironment&) = delete;
@@ -230,6 +221,18 @@ class TaskEnvironment {
   // Returns whether the main thread's TaskRunner has pending tasks. This will
   // always return true if called right after RunUntilIdle.
   bool MainThreadIsIdle() const;
+
+  // Returns a RepeatingClosure that ends the next call to RunUntilQuit(). The
+  // quit closures must be obtained from the thread owning the TaskEnvironment
+  // but may then be invoked from any thread. To avoid a potential race
+  // condition, do not call QuitClosure() while RunUntilQuit() is running.
+  RepeatingClosure QuitClosure();
+
+  // Runs tasks on both the main thread and the thread pool, until a quit
+  // closure is executed. When RunUntilQuit() returns, all previous quit
+  // closures are invalidated, and will have no effect on future calls. Be sure
+  // to create a new quit closure before calling RunUntilQuit() again.
+  void RunUntilQuit();
 
   // Runs tasks until both the
   // (SingleThread|Sequenced)TaskRunner::CurrentDefaultHandle and the
@@ -375,7 +378,42 @@ class TaskEnvironment {
   static constexpr int kNumForegroundThreadPoolThreads = 4;
 
  protected:
-  explicit TaskEnvironment(TaskEnvironment&& other);
+  template <typename... TaskEnvironmentTraits,
+            class CheckArgumentsAreValid = std::enable_if_t<
+                trait_helpers::AreValidTraits<ValidTraits,
+                                              TaskEnvironmentTraits...>::value>>
+  NOINLINE static TaskEnvironment CreateTaskEnvironmentWithPriorities(
+      sequence_manager::SequenceManager::PrioritySettings priority_settings,
+      TaskEnvironmentTraits... traits) {
+    return TaskEnvironment(std::move(priority_settings), traits...);
+  }
+
+  // Constructor accepts zero or more traits which customize the testing
+  // environment.
+  template <typename... TaskEnvironmentTraits,
+            class CheckArgumentsAreValid = std::enable_if_t<
+                trait_helpers::AreValidTraits<ValidTraits,
+                                              TaskEnvironmentTraits...>::value>>
+  NOINLINE explicit TaskEnvironment(
+      sequence_manager::SequenceManager::PrioritySettings priority_settings,
+      TaskEnvironmentTraits... traits)
+      : TaskEnvironment(
+            std::move(priority_settings),
+            trait_helpers::GetEnum<TimeSource, TimeSource::DEFAULT>(traits...),
+            trait_helpers::GetEnum<MainThreadType, MainThreadType::DEFAULT>(
+                traits...),
+            trait_helpers::GetEnum<ThreadPoolExecutionMode,
+                                   ThreadPoolExecutionMode::DEFAULT>(traits...),
+            trait_helpers::GetEnum<ThreadingMode, ThreadingMode::DEFAULT>(
+                traits...),
+            trait_helpers::GetEnum<ThreadPoolCOMEnvironment,
+                                   ThreadPoolCOMEnvironment::DEFAULT>(
+                traits...),
+            trait_helpers::HasTrait<SubclassCreatesDefaultTaskRunner,
+                                    TaskEnvironmentTraits...>(),
+            trait_helpers::NotATraitTag()) {}
+
+  TaskEnvironment(TaskEnvironment&& other);
 
   constexpr MainThreadType main_thread_type() const {
     return main_thread_type_;
@@ -409,13 +447,15 @@ class TaskEnvironment {
 
   // The template constructor has to be in the header but it delegates to this
   // constructor to initialize all other members out-of-line.
-  TaskEnvironment(TimeSource time_source,
-                  MainThreadType main_thread_type,
-                  ThreadPoolExecutionMode thread_pool_execution_mode,
-                  ThreadingMode threading_mode,
-                  ThreadPoolCOMEnvironment thread_pool_com_environment,
-                  bool subclass_creates_default_taskrunner,
-                  trait_helpers::NotATraitTag tag);
+  TaskEnvironment(
+      sequence_manager::SequenceManager::PrioritySettings priority_settings,
+      TimeSource time_source,
+      MainThreadType main_thread_type,
+      ThreadPoolExecutionMode thread_pool_execution_mode,
+      ThreadingMode threading_mode,
+      ThreadPoolCOMEnvironment thread_pool_com_environment,
+      bool subclass_creates_default_taskrunner,
+      trait_helpers::NotATraitTag tag);
 
   const MainThreadType main_thread_type_;
   const ThreadPoolExecutionMode thread_pool_execution_mode_;
@@ -460,6 +500,8 @@ class TaskEnvironment {
 
   // To support base::CurrentThread().
   std::unique_ptr<SimpleTaskExecutor> simple_task_executor_;
+
+  std::unique_ptr<RunLoop> run_until_quit_loop_;
 
   // Used to verify thread-affinity of operations that must occur on the main
   // thread. This is the case for anything that modifies or drives the

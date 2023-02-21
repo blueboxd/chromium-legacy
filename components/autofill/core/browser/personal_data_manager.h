@@ -552,6 +552,9 @@ class PersonalDataManager : public KeyedService,
   // updates. Does nothing if the strike database is not available.
   void RemoveStrikesToBlockProfileUpdate(const std::string& guid);
 
+  // Returns true if Sync is enabled for `model_type`.
+  bool IsSyncEnabledFor(syncer::ModelType model_type) const;
+
   // Used to automatically import addresses without a prompt. Should only be
   // set to true in tests.
   void set_auto_accept_address_imports_for_testing(bool auto_accept) {
@@ -702,9 +705,17 @@ class PersonalDataManager : public KeyedService,
   // credit cards. On subsequent calls, does nothing.
   void LogStoredCreditCardMetrics() const;
 
+  // The first time this is called, logs an UMA metric about the user's autofill
+  // IBANs. On subsequent calls, does nothing.
+  void LogStoredIbanMetrics() const;
+
   // The first time this is called, logs UMA metrics about the users's autofill
   // offer data. On subsequent calls, does nothing.
   void LogStoredOfferMetrics() const;
+
+  // The first time this is called, logs UMA metrics about the users's autofill
+  // virtual card usage data. On subsequent calls, does nothing.
+  void LogStoredVirtualCardUsageMetrics() const;
 
   // Whether the server cards are enabled and should be suggested to the user.
   virtual bool ShouldSuggestServerCards() const;
@@ -889,9 +900,6 @@ class PersonalDataManager : public KeyedService,
   // Returns if there are any pending queries to the web database.
   bool HasPendingQueries();
 
-  // Returns true if the sync is enabled for |model_type|.
-  bool IsSyncEnabledFor(syncer::ModelType model_type);
-
   // Returns the database that is used for storing local data.
   scoped_refptr<AutofillWebDataService> GetLocalDatabase();
 
@@ -964,8 +972,15 @@ class PersonalDataManager : public KeyedService,
   // Whether we have already logged the stored credit card metrics this session.
   mutable bool has_logged_stored_credit_card_metrics_ = false;
 
+  // Whether we have already logged the stored IBAN metrics this session.
+  mutable bool has_logged_stored_iban_metrics_ = false;
+
   // Whether we have already logged the stored offer metrics this session.
   mutable bool has_logged_stored_offer_metrics_ = false;
+
+  // Whether we have already logged the stored virtual card usage metrics this
+  // session.
+  mutable bool has_logged_stored_virtual_card_usage_metrics_ = false;
 
   // An observer to listen for changes to prefs::kAutofillCreditCardEnabled.
   std::unique_ptr<BooleanPrefMember> credit_card_enabled_pref_;

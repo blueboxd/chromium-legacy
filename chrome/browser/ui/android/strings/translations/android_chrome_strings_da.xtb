@@ -450,6 +450,7 @@ Private state tokens forbedrer beskyttelsen af personlige oplysninger på nettet
 <translation id="3421726884497337397">Vælg, hvornår tredjepartscookies skal blokeres</translation>
 <translation id="3428747202529429621">Beskytter dig i Chrome og kan bruges til at forbedre din sikkerhed i andre Google-apps, når du er logget ind</translation>
 <translation id="3429160811076349561">Prøvefunktioner er slået fra</translation>
+<translation id="3432973700170747422">Slet de seneste 15 minutter</translation>
 <translation id="3435465986463792564">Har du mange åbne vinduer? Du kan administrere dem herfra</translation>
 <translation id="3435738964857648380">Sikkerhed</translation>
 <translation id="3443221991560634068">Genindlæs den aktuelle side</translation>
@@ -516,7 +517,6 @@ Private state tokens forbedrer beskyttelsen af personlige oplysninger på nettet
 <translation id="3830886834687455630">Opdater Google Play-tjenester for at tjekke dine adgangskoder</translation>
 <translation id="3845098929839618392">Åbn i inkognitofane</translation>
 <translation id="3856096718352044181">Bekræft, at dette er en gyldig udbyder, eller prøv igen senere</translation>
-<translation id="3858127568696903256">Se indhold, du følger, her</translation>
 <translation id="3858860766373142691">Navn</translation>
 <translation id="3861633093716975811">Populære videoer</translation>
 <translation id="3874520961715512166">Websitet er fjernet</translation>
@@ -1242,6 +1242,7 @@ Nogle websites kan f.eks. reagere på denne anmodning ved at vise dig annoncer, 
 <translation id="7682724950699840886">Prøv følgende tips: Sørg for, at der er nok ledig plads på din enhed, og prøv at eksportere igen.</translation>
 <translation id="7686086654630106285">Mere om foreslåede annoncer fra websites</translation>
 <translation id="768618399695552958">Nogle af de sider, du besøger, forudindlæses. Nogle sider forudindlæses muligvis via Google-servere, når de er linket fra et Google-website.</translation>
+<translation id="7691043218961417207">Gennemse indhold, du vil følge</translation>
 <translation id="7698359219371678927">Opret mail i <ph name="APP_NAME" /></translation>
 <translation id="7707922173985738739">Brug mobildata</translation>
 <translation id="7709094866268987903">Interesser, du har fjernet, vises her</translation>

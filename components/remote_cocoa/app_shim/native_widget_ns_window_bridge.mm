@@ -772,9 +772,8 @@ void NativeWidgetNSWindowBridge::SetVisibilityState(
     [NSApp activateIgnoringOtherApps:YES];
   } else if (new_state == WindowVisibilityState::kShowInactive && !parent_ &&
              ![window_ isMiniaturized]) {
-    NSWindow* mainWindow = [NSApp mainWindow];
-    if (mainWindow && ([mainWindow screen] == [window_ screen] ||
-                       ![mainWindow isKeyWindow])) {
+    if ([[NSApp mainWindow] screen] == [window_ screen] ||
+        ![[NSApp mainWindow] isKeyWindow]) {
       // When the new window is on the same display as the main window or the
       // main window is inactive, order the window relative to the main window.
       // Avoid making it the front window (with e.g. orderFront:), which can
@@ -1656,11 +1655,22 @@ void NativeWidgetNSWindowBridge::UpdateWindowGeometry() {
 }
 
 void NativeWidgetNSWindowBridge::MoveChildrenTo(
-    NativeWidgetNSWindowBridge* target) {
+    NativeWidgetNSWindowBridge* target,
+    bool anchored_only) {
   // Make a copy of `child_windows_` because it will be updated during the loop.
   std::vector<NativeWidgetNSWindowBridge*> child_windows(child_windows_);
   for (NativeWidgetNSWindowBridge* child : child_windows) {
     if (child != target) {
+      // If anchored_only is true, skip windows that are not anchored to the
+      // target window.
+      if (anchored_only) {
+        bool contained = false;
+        child->host()->BubbleAnchorViewContainedInWidget(target->id_,
+                                                         &contained);
+        if (!contained) {
+          continue;
+        }
+      }
       child->SetParent(target->id_);
       child->host()->OnWindowParentChanged(target->id_);
     }

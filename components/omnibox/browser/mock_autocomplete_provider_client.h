@@ -27,6 +27,8 @@
 #include "services/network/test/test_url_loader_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
+class AutocompleteScoringModelService;
+
 struct AutocompleteMatch;
 
 class MockAutocompleteProviderClient
@@ -108,6 +110,11 @@ class MockAutocompleteProviderClient
 
   signin::IdentityManager* GetIdentityManager() const override {
     return identity_manager_;
+  }
+
+  AutocompleteScoringModelService* GetAutocompleteScoringModelService()
+      const override {
+    return nullptr;
   }
 
   MOCK_CONST_METHOD0(GetAcceptLanguages, std::string());

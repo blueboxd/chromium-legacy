@@ -7,6 +7,7 @@
 #include <memory>
 #include <string>
 
+#include "base/test/metrics/histogram_tester.h"
 #include "chrome/browser/ui/views/webid/account_selection_bubble_view.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/views/chrome_views_test_base.h"
@@ -108,7 +109,7 @@ class TestFedCmAccountSelectionView : public FedCmAccountSelectionView {
       const std::u16string& rp_etld_plus_one,
       const absl::optional<std::u16string>& idp_title,
       blink::mojom::RpContext rp_context,
-      bool show_auto_signin_checkbox) override {
+      bool show_auto_reauthn_checkbox) override {
     ++num_bubbles_;
     return widget_;
   }
@@ -177,7 +178,7 @@ class FedCmAccountSelectionViewDesktopTest : public ChromeViewsTestBase {
   std::unique_ptr<TestFedCmAccountSelectionView> CreateAndShow(
       const std::vector<content::IdentityRequestAccount>& accounts,
       SignInMode mode,
-      bool show_auto_signin_checkbox = false) {
+      bool show_auto_reauthn_checkbox = false) {
     auto controller = std::make_unique<TestFedCmAccountSelectionView>(
         delegate_.get(), widget_.get(), bubble_view_.get());
     Show(*controller, accounts, mode);
@@ -187,13 +188,13 @@ class FedCmAccountSelectionViewDesktopTest : public ChromeViewsTestBase {
   void Show(TestFedCmAccountSelectionView& controller,
             const std::vector<content::IdentityRequestAccount>& accounts,
             SignInMode mode,
-            bool show_auto_signin_checkbox = false) {
+            bool show_auto_reauthn_checkbox = false) {
     controller.Show(
         kRpEtldPlusOne,
         {{kIdpEtldPlusOne, accounts, content::IdentityProviderMetadata(),
           content::ClientMetadata(GURL(), GURL()),
           blink::mojom::RpContext::kSignIn}},
-        mode, show_auto_signin_checkbox);
+        mode, show_auto_reauthn_checkbox);
   }
 
   ui::MouseEvent CreateMouseEvent() {
@@ -211,6 +212,8 @@ class FedCmAccountSelectionViewDesktopTest : public ChromeViewsTestBase {
   views::ViewsTestBase::WidgetAutoclosePtr widget_;
   std::unique_ptr<TestBubbleView> bubble_view_;
   std::unique_ptr<AccountSelectionView::Delegate> delegate_;
+
+  base::HistogramTester histogram_tester_;
 };
 
 TEST_F(FedCmAccountSelectionViewDesktopTest, SingleAccountFlow) {
@@ -364,7 +367,7 @@ TEST_F(FedCmAccountSelectionViewDesktopTest,
   EXPECT_EQ(1u, controller->num_bubbles_);
 }
 
-TEST_F(FedCmAccountSelectionViewDesktopTest, AutoSigninSingleAccountFlow) {
+TEST_F(FedCmAccountSelectionViewDesktopTest, AutoReauthnSingleAccountFlow) {
   const char kAccountId[] = "account_id";
   IdentityProviderDisplayData idp_data =
       CreateIdentityProviderDisplayData({{kAccountId, LoginState::kSignIn}});
@@ -465,4 +468,23 @@ TEST_F(FedCmAccountSelectionViewDesktopTest, ClickProtection) {
   // Should show verifying sheet after first account selected.
   EXPECT_EQ(TestBubbleView::SheetType::kVerifying, bubble_view_->sheet_type_);
   EXPECT_THAT(bubble_view_->account_ids_, testing::ElementsAre(kAccountId));
+}
+
+// Tests that when the auth re-authn dialog is closed, the relevant metric is
+// recorded.
+TEST_F(FedCmAccountSelectionViewDesktopTest, CloseAutoReauthnSheetMetric) {
+  const char kAccountId[] = "account_id";
+  IdentityProviderDisplayData idp_data =
+      CreateIdentityProviderDisplayData({{kAccountId, LoginState::kSignIn}});
+  const std::vector<Account>& accounts = idp_data.accounts;
+  std::unique_ptr<TestFedCmAccountSelectionView> controller =
+      CreateAndShow(accounts, SignInMode::kAuto);
+  histogram_tester_.ExpectTotalCount("Blink.FedCm.ClosedSheetType.Desktop", 0);
+
+  AccountSelectionBubbleView::Observer* observer =
+      static_cast<AccountSelectionBubbleView::Observer*>(controller.get());
+  observer->OnCloseButtonClicked(CreateMouseEvent());
+  histogram_tester_.ExpectUniqueSample(
+      "Blink.FedCm.ClosedSheetType.Desktop",
+      static_cast<int>(FedCmAccountSelectionView::SheetType::AUTO_REAUTHN), 1);
 }

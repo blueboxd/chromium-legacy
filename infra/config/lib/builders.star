@@ -30,6 +30,7 @@ load("./args.star", "args")
 load("./branches.star", "branches")
 load("./bootstrap.star", "register_bootstrap")
 load("./builder_config.star", "register_builder_config")
+load("./builder_health_indicators.star", "register_health_spec")
 load("./recipe_experiments.star", "register_recipe_experiments_ref")
 load("./sheriff_rotations.star", "register_sheriffed_builder")
 
@@ -140,7 +141,10 @@ reclient = struct(
 )
 
 def _rotation(name):
-    return branches.value({branches.MAIN: [name]})
+    return branches.value(
+        branch_selector = branches.selector.MAIN,
+        value = [name],
+    )
 
 # Sheriff rotations that a builder can be added to (only takes effect on trunk)
 # Arbitrary elements can't be added, new rotations must be added in SoM code
@@ -180,7 +184,7 @@ xcode = struct(
     # A newer Xcode 14 RC  used on beta bots.
     x14betabots = xcode_enum("14c18"),
     # in use by ios-webkit-tot
-    x13wk = xcode_enum("13a1030dwk"),
+    x14wk = xcode_enum("14c18wk"),
 )
 
 # Free disk space in a machine reserved for build tasks.
@@ -410,6 +414,7 @@ defaults = args.defaults(
     reclient_cache_silo = None,
     reclient_ensure_verified = None,
     reclient_disable_bq_upload = None,
+    health_spec = None,
 
     # This is to enable luci.buildbucket.omit_python2 experiment.
     # TODO(crbug.com/1362440): remove this after enabling this in all builders.
@@ -426,7 +431,7 @@ defaults = args.defaults(
 def builder(
         *,
         name,
-        branch_selector = branches.MAIN,
+        branch_selector = branches.selector.MAIN,
         bucket = args.DEFAULT,
         executable = args.DEFAULT,
         notifies = None,
@@ -478,6 +483,7 @@ def builder(
         reclient_ensure_verified = None,
         reclient_disable_bq_upload = None,
         omit_python2 = args.DEFAULT,
+        health_spec = args.DEFAULT,
         **kwargs):
     """Define a builder.
 
@@ -842,9 +848,7 @@ def builder(
 
     # TODO: remove this after this experiment is removed from
     # cr-buildbucket/settings.cfg (http://shortn/_cz2s9ql61X).
-    if defaults.get_value("omit_python2", omit_python2):
-        experiments["luci.buildbucket.omit_python2"] = 100
-    elif "luci.buildbucket.omit_python2" not in experiments:
+    if not defaults.get_value("omit_python2", omit_python2):
         experiments["luci.buildbucket.omit_python2"] = 0
 
     builder = branches.builder(
@@ -873,6 +877,9 @@ def builder(
     register_builder_config(bucket, name, builder_group, builder_spec, mirrors, try_settings)
 
     register_bootstrap(bucket, name, bootstrap, executable)
+
+    health_spec = defaults.get_value("health_spec", health_spec)
+    register_health_spec(bucket, name, health_spec)
 
     builder_name = "{}/{}".format(bucket, name)
 

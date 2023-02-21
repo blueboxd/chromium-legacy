@@ -153,6 +153,8 @@ const char kChromeUIOmniboxURL[] = "chrome://omnibox/";
 const char kChromeUIPasswordManagerInternalsHost[] =
     "password-manager-internals";
 const char kChromeUIPasswordManagerURL[] = "chrome://password-manager";
+const char kChromeUIPasswordManagerCheckupURL[] =
+    "chrome://password-manager/checkup?start=true";
 const char kChromeUIPerformanceSettingsURL[] = "chrome://settings/performance";
 const char kChromeUIPolicyHost[] = "policy";
 const char kChromeUIPolicyURL[] = "chrome://policy/";
@@ -333,6 +335,8 @@ const char kChromeUIDeviceEmulatorHost[] = "device-emulator";
 const char kChromeUIDiagnosticsAppURL[] = "chrome://diagnostics";
 const char kChromeUIEnterpriseReportingHost[] = "enterprise-reporting";
 const char kChromeUIEnterpriseReportingURL[] = "chrome://enterprise-reporting";
+const char kChromeUIHealthdInternalsHost[] = "healthd-internals";
+const char kChromeUIHealthdInternalsURL[] = "chrome://healthd-internals";
 const char kChromeUIInternetConfigDialogURL[] =
     "chrome://internet-config-dialog/";
 const char kChromeUIInternetDetailDialogURL[] =

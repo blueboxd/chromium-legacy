@@ -22,7 +22,6 @@
 #include "base/values.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
-#include "chrome/browser/ash/system_web_apps/types/system_web_app_data.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/web_applications/commands/web_app_uninstall_command.h"
 #include "chrome/browser/web_applications/mojom/user_display_mode.mojom.h"
@@ -49,6 +48,10 @@
 #include "components/webapps/browser/uninstall_result_code.h"
 #include "content/public/browser/browser_thread.h"
 #include "third_party/skia/include/core/SkColor.h"
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "chrome/browser/ash/system_web_apps/types/system_web_app_data.h"
+#endif
 
 namespace web_app {
 namespace {
@@ -192,14 +195,15 @@ void WebAppInstallFinalizer::FinalizeInstall(
   }
 #endif
 
-  if (options.isolation_data.has_value()) {
-    web_app->SetIsolationData(*options.isolation_data);
+  if (options.isolated_web_app_location.has_value()) {
+    web_app->SetIsolationData(
+        WebApp::IsolationData(*options.isolated_web_app_location));
   }
 
+  web_app->SetParentAppId(web_app_info.parent_app_id);
   web_app->SetAdditionalSearchTerms(web_app_info.additional_search_terms);
   web_app->AddSource(options.source);
   web_app->SetIsFromSyncAndPendingInstallation(false);
-  web_app->SetParentAppId(options.parent_app_id);
   web_app->SetInstallSourceForMetrics(options.install_surface);
 
   WriteExternalConfigMapInfo(*web_app, options.source,

@@ -534,9 +534,6 @@ class WizardControllerFlowTest : public WizardControllerTest {
         base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
             &test_url_loader_factory_));
 
-    // Clear portal list (as it is by default in OOBE).
-    NetworkHandler::Get()->network_state_handler()->SetCheckPortalList("");
-
     // Set up the mocks for all screens.
     mock_welcome_screen_ =
         MockScreenExpectLifecycle(std::make_unique<MockWelcomeScreen>(
@@ -590,8 +587,8 @@ class WizardControllerFlowTest : public WizardControllerTest {
 
     mock_auto_enrollment_check_screen_view_ =
         std::make_unique<MockAutoEnrollmentCheckScreenView>();
-    mock_auto_enrollment_check_screen_ = MockScreenExpectLifecycle(
-        std::make_unique<MockAutoEnrollmentCheckScreen>(
+    mock_auto_enrollment_check_screen_ = MockScreen(
+        std::make_unique<testing::NiceMock<MockAutoEnrollmentCheckScreen>>(
             mock_auto_enrollment_check_screen_view_.get()->AsWeakPtr(),
             GetErrorScreen(),
             base::BindRepeating(
@@ -667,6 +664,19 @@ class WizardControllerFlowTest : public WizardControllerTest {
     device_disabled_screen_view_.reset();
     test_url_loader_factory_.ClearResponses();
     WizardControllerTest::TearDownOnMainThread();
+  }
+
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    WizardControllerTest::SetUpCommandLine(command_line);
+
+    // Default to now showing auto enrollment check screen. If you want to show
+    // this screen, you can override the flags.
+    command_line->AppendSwitchASCII(
+        switches::kEnterpriseEnableForcedReEnrollment,
+        policy::AutoEnrollmentTypeChecker::kForcedReEnrollmentNever);
+    command_line->AppendSwitchASCII(
+        switches::kEnterpriseEnableInitialEnrollment,
+        policy::AutoEnrollmentTypeChecker::kInitialEnrollmentNever);
   }
 
   void InitNetworkPortalDetector() {
@@ -752,9 +762,6 @@ class WizardControllerFlowTest : public WizardControllerTest {
     EXPECT_CALL(*mock_auto_enrollment_check_screen_, HideImpl()).Times(0);
 
     EXPECT_FALSE(ExistingUserController::current_controller() == nullptr);
-    EXPECT_EQ("ethernet,wifi,cellular", NetworkHandler::Get()
-                                            ->network_state_handler()
-                                            ->GetCheckPortalListForTest());
 
     WaitUntilTimezoneResolved();
     EXPECT_EQ(
@@ -776,7 +783,12 @@ class WizardControllerFlowTest : public WizardControllerTest {
   MockEnrollmentScreen* mock_enrollment_screen_ = nullptr;
   std::unique_ptr<MockEnrollmentScreenView> mock_enrollment_screen_view_;
 
-  MockAutoEnrollmentCheckScreen* mock_auto_enrollment_check_screen_ = nullptr;
+  // Auto enrollment check screen is a nice mock because it may or may not be
+  // shown depending on when asynchronous auto enrollment check finishes. Only
+  // add expectations for this if you are sure they are not affected by race
+  // conditions.
+  testing::NiceMock<MockAutoEnrollmentCheckScreen>*
+      mock_auto_enrollment_check_screen_ = nullptr;
   std::unique_ptr<MockAutoEnrollmentCheckScreenView>
       mock_auto_enrollment_check_screen_view_;
 
@@ -908,10 +920,6 @@ IN_PROC_BROWSER_TEST_F(WizardControllerFlowTest, ControlFlowSkipUpdateEnroll) {
   EXPECT_CALL(*mock_auto_enrollment_check_screen_, HideImpl()).Times(0);
   EXPECT_CALL(*mock_enrollment_screen_, HideImpl()).Times(0);
   content::RunAllPendingInMessageLoop();
-
-  EXPECT_EQ("ethernet,wifi,cellular", NetworkHandler::Get()
-                                          ->network_state_handler()
-                                          ->GetCheckPortalListForTest());
 }
 
 IN_PROC_BROWSER_TEST_F(WizardControllerFlowTest,
@@ -2537,9 +2545,6 @@ class WizardControllerOobeResumeTest : public WizardControllerTest {
         WizardController::default_controller();
     wizard_controller->SetCurrentScreen(nullptr);
 
-    // Clear portal list (as it is by default in OOBE).
-    NetworkHandler::Get()->network_state_handler()->SetCheckPortalList("");
-
     // Set up the mocks for all screens.
     mock_welcome_view_ = std::make_unique<MockWelcomeView>();
     mock_welcome_screen_ =
@@ -2663,13 +2668,6 @@ class WizardControllerOobeConfigurationTest : public WizardControllerTest {
     command_line->AppendSwitchPath(chromeos::switches::kFakeOobeConfiguration,
                                    configuration_file);
   }
-
-  // WizardControllerTest:
-  void SetUpOnMainThread() override {
-    WizardControllerTest::SetUpOnMainThread();
-    // Clear portal list (as it is by default in OOBE).
-    NetworkHandler::Get()->network_state_handler()->SetCheckPortalList("");
-  }
 };
 
 IN_PROC_BROWSER_TEST_F(WizardControllerOobeConfigurationTest,
@@ -2716,26 +2714,31 @@ class WizardControllerRollbackFlowTest : public WizardControllerFlowTest {
         &configuration_file));
     command_line->AppendSwitchPath(chromeos::switches::kFakeOobeConfiguration,
                                    configuration_file);
+
+    // Pass command line so that auto enrollment check screen is shown also on
+    // non-official test builds. Rollback doesn't really care about this screen,
+    // but wizard controller tests do not allow for "not caring" if a screen is
+    // shown or not. The mocks are not nice.
+    command_line->AppendSwitchASCII(
+        switches::kEnterpriseEnableForcedReEnrollment,
+        policy::AutoEnrollmentTypeChecker::kForcedReEnrollmentAlways);
   }
 
   FakeRollbackNetworkConfig* network_config_;
 };
 
-#if BUILDFLAG(IS_CHROMEOS)
-// Disabled due to crbug.com/1414116.
-#define MAYBE_AdvanceToEnrollmentAfterRollback \
-  DISABLED_AdvanceToEnrollmentAfterRollback
-#else
-#define MAYBE_AdvanceToEnrollmentAfterRollback AdvanceToEnrollmentAfterRollback
-#endif
+// Ensure that enrollment screen is triggered after auto enrollment check
+// screen.
 IN_PROC_BROWSER_TEST_F(WizardControllerRollbackFlowTest,
-                       MAYBE_AdvanceToEnrollmentAfterRollback) {
+                       AdvanceToEnrollmentAfterRollback) {
   CheckCurrentScreen(WelcomeView::kScreenId);
 
-  EXPECT_CALL(*mock_enrollment_screen_, ShowImpl()).Times(1);
-
+  EXPECT_CALL(*mock_auto_enrollment_check_screen_, ShowImpl()).Times(1);
   WizardController::default_controller()->AdvanceToScreen(
       AutoEnrollmentCheckScreenView::kScreenId);
+
+  EXPECT_CALL(*mock_enrollment_screen_, ShowImpl()).Times(1);
+  mock_auto_enrollment_check_screen_->ExitScreen();
   CheckCurrentScreen(EnrollmentScreenView::kScreenId);
 }
 

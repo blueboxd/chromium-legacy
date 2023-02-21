@@ -349,7 +349,7 @@ class RasterImplementation::PaintOpSerializer {
 
  private:
   const raw_ptr<RasterImplementation> ri_;
-  raw_ptr<char> buffer_;
+  raw_ptr<char, AllowPtrArithmetic> buffer_;
   const raw_ptr<cc::DecodeStashingImageProvider> stashing_image_provider_;
   const raw_ptr<TransferCacheSerializeHelperImpl> transfer_cache_helper_;
   raw_ptr<ClientFontManager> font_manager_;
@@ -1513,7 +1513,12 @@ void RasterImplementation::ReadbackImagePixelsINTERNAL(
     argb_request_queue_.push(std::move(request));
     SignalQuery(query,
                 base::BindOnce(&RasterImplementation::OnAsyncARGBReadbackDone,
-                               base::Unretained(this), request_ptr));
+                               // We know that at least one or both pointers
+                               // were dangling. Crash reports was not precise
+                               // enough to determine which was it was. Marking
+                               // the two so that the study can move forward.
+                               base::UnsafeDanglingUntriaged(this),
+                               base::UnsafeDanglingUntriaged(request_ptr)));
   } else {
     WaitForCmd();
 

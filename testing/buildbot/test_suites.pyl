@@ -612,7 +612,6 @@
         'mixins': [
           'has_native_resultdb_integration',
         ],
-        'experiment_percentage': 100,
       },
     },
 
@@ -970,6 +969,12 @@
     },
 
     'chromium_gtests_for_win_and_linux_only': {
+    },
+
+    'chromium_ios_scripts': {
+      'check_static_initializers': {
+        'script': 'check_static_initializers.py',
+      },
     },
 
     'chromium_junit_tests_no_swarming': {
@@ -2351,7 +2356,7 @@
             {
               "cipd_package": 'chromium/android_webview/tools/cts_archive',
               'location': 'android_webview/tools/cts_archive',
-              'revision': 'C4m9-gZKvvtS0-KQ9cMRi6wEfZH_TeWSiXEgsgtGtsMC',
+              'revision': 'APYMYksv9eNAkU6osFvNXN38pMO1Q1kScjeecePr7NgC',
             }
           ]
         },
@@ -2380,12 +2385,6 @@
         ],
         'test': 'components_browsertests',
       },
-      'content_browsertests_no_field_trial': {
-        'args': [
-          '--disable-field-trial-config',
-        ],
-        'test': 'content_browsertests',
-      },
       'interactive_ui_tests_no_field_trial': {
         'args': [
           '--disable-field-trial-config',
@@ -2397,12 +2396,6 @@
           '--disable-field-trial-config',
         ],
         'test': 'sync_integration_tests',
-      },
-      'xr_browser_tests_no_field_trial': {
-        'args': [
-          '--disable-field-trial-config',
-        ],
-        'test': 'xr_browser_tests',
       },
     },
 
@@ -3609,7 +3602,7 @@
           # it.
           '--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl2_conformance_tests_output.json',
           # On dual-GPU devices we want the high-performance GPU to be active
-          '--extra-browser-args=--use-gl=angle --use-angle=metal --use-cmd-decoder=passthrough --force_high_performance_gpu',
+          '--extra-browser-args=--use-gl=angle --use-angle=metal --use-cmd-decoder=passthrough --enable-features=EGLDualGPURendering,ForceHighPerformanceGPUForWebGL',
           '$$MAGIC_SUBSTITUTION_GPUParallelJobs',
         ],
         'mixins': [
@@ -3770,7 +3763,7 @@
         'telemetry_test_name': 'webgl1_conformance',
         'args': [
           # On dual-GPU devices we want the high-performance GPU to be active
-          '--extra-browser-args=--use-gl=angle --use-angle=metal --use-cmd-decoder=passthrough --force_high_performance_gpu',
+          '--extra-browser-args=--use-gl=angle --use-angle=metal --use-cmd-decoder=passthrough --enable-features=EGLDualGPURendering,ForceHighPerformanceGPUForWebGL',
           # The current working directory when run via isolate is
           # out/Debug or out/Release. Reference this file relatively to
           # it.
@@ -3913,6 +3906,11 @@
     'headless_browser_gtests': {
       'headless_browsertests': {},
       'headless_unittests': {},
+    },
+
+    'ios_blink_tests': {
+      'blink_unittests': {},
+      'content_unittests': {},
     },
 
     'ios_clang_tests': {
@@ -4589,17 +4587,6 @@
       },
     },
 
-    # TODO(petermcneeley) : Remove once OverlayPrioritization has landed on
-    # all ozone platforms.
-    'overlay_prioritization_gtests': {
-      'overlay_prioritization_viz_unittests': {
-        'args': [
-          '--enable-features=EnableOverlayPrioritization'
-        ],
-        'test': 'viz_unittests',
-      },
-    },
-
     'perfetto_gtests': {
       'base_unittests': {},
       'browser_tests': {
@@ -5193,6 +5180,21 @@
     },
 
     'webrtc_chromium_baremetal_gtests': {
+      # Run capture unittests on bots that have real webcams.
+      'capture_unittests': {
+        'args': ['--enable-logging', '--v=1', '--test-launcher-jobs=1',
+                 '--test-launcher-print-test-stdio=always'],
+        'swarming': {
+          'dimension_sets': [
+            {
+              'pool': 'WebRTC-chromium',
+            }
+          ],
+        },
+      },
+    },
+
+    'webrtc_chromium_gtests': {
       'browser_tests': {
         'args': [
           '--gtest_filter=WebRtcStatsPerfBrowserTest.*:'
@@ -5208,21 +5210,6 @@
           '--test-launcher-print-test-stdio=always',
         ],
       },
-      # Run capture unittests as well since our bots have real webcams.
-      'capture_unittests': {
-        'args': ['--enable-logging', '--v=1', '--test-launcher-jobs=1',
-                 '--test-launcher-print-test-stdio=always'],
-        'swarming': {
-          'dimension_sets': [
-            {
-              'pool': 'WebRTC-chromium',
-            }
-          ],
-        },
-      },
-    },
-
-    'webrtc_chromium_gtests': {
       # TODO(b/246519185) - Py3 incompatible, decide if to keep test.:
       #'browser_tests_apprtc': {
       #  'args': ['--gtest_filter=WebRtcApprtcBrowserTest.*',
@@ -5238,6 +5225,13 @@
         # Run all normal WebRTC content_browsertests. This is mostly so
         # the FYI bots can detect breakages.
         'args': ['--gtest_filter=WebRtc*'],
+      },
+      'content_browsertests_sequential': {
+        # These run a few tests on fake webcams. They need to run sequentially,
+        # otherwise tests may interfere with each other.
+        'args': ['--gtest_filter=UsingRealWebcam*', '--run-manual',
+                 '--test-launcher-jobs=1'],
+        'test': 'content_browsertests',
       },
       'content_browsertests_stress': {
         'args': ['--gtest_filter=WebRtc*MANUAL*:-UsingRealWebcam*',
@@ -5255,19 +5249,47 @@
       },
     },
 
-    'webrtc_chromium_simple_baremetal_gtests': {
+    'webrtc_chromium_simple_gtests': {
+      'content_browsertests': {
+        'args': ['--gtest_filter=WebRtc*'],
+      },
       'content_browsertests_sequential': {
-        # These run a few tests that require webcam access. They need to
-        # run sequentially, otherwise tests may interfere with each other.
+        # These run a few tests on fake webcams. They need to run sequentially,
+        # otherwise tests may interfere with each other.
         'args': ['--gtest_filter=UsingRealWebcam*', '--run-manual',
                  '--test-launcher-jobs=1'],
         'test': 'content_browsertests',
       },
     },
 
-    'webrtc_chromium_simple_gtests': {
-      'content_browsertests': {
-        'args': ['--gtest_filter=WebRtc*'],
+    'webrtc_chromium_wpt_tests': {
+      'blink_wpt_tests': {
+        # layout test failures are retried 3 times when '--test-list' is not
+        # passed, but 0 times when '--test-list' is passed. We want to always
+        # retry 3 times, so we explicitly specify it.
+        'args': [
+          '--num-retries=3',
+          '-t',
+          'Release',
+          'external/wpt/webrtc'
+        ],
+        'isolate_name': 'blink_wpt_tests',
+        'merge': {
+          'args': [
+            '--verbose',
+          ],
+          'script': '//third_party/blink/tools/merge_web_test_results.py',
+        },
+        'mixins': [
+          'blink_tests_write_run_histories',
+          # TODO(crbug.com/1327314): Enable for blink web tests.
+          'disable_check_flakiness_web_tests',
+          'skia_gold_test',
+        ],
+        'resultdb': {
+          'enable': True,
+        },
+        'results_handler': 'layout tests',
       },
     },
 
@@ -5279,7 +5301,7 @@
             {
               "cipd_package": 'chromium/android_webview/tools/cts_archive',
               'location': 'android_webview/tools/cts_archive',
-              'revision': 'C4m9-gZKvvtS0-KQ9cMRi6wEfZH_TeWSiXEgsgtGtsMC',
+              'revision': 'APYMYksv9eNAkU6osFvNXN38pMO1Q1kScjeecePr7NgC',
             }
           ]
         },
@@ -5316,7 +5338,7 @@
             {
               "cipd_package": 'chromium/android_webview/tools/cts_archive',
               'location': 'android_webview/tools/cts_archive',
-              'revision': 'C4m9-gZKvvtS0-KQ9cMRi6wEfZH_TeWSiXEgsgtGtsMC',
+              'revision': 'APYMYksv9eNAkU6osFvNXN38pMO1Q1kScjeecePr7NgC',
             }
           ]
         },
@@ -5334,7 +5356,7 @@
             {
               "cipd_package": 'chromium/android_webview/tools/cts_archive',
               'location': 'android_webview/tools/cts_archive',
-              'revision': 'C4m9-gZKvvtS0-KQ9cMRi6wEfZH_TeWSiXEgsgtGtsMC',
+              'revision': 'APYMYksv9eNAkU6osFvNXN38pMO1Q1kScjeecePr7NgC',
             }
           ]
         },
@@ -5350,7 +5372,7 @@
             {
               'cipd_package': 'chromium/android_webview/tools/cts_archive',
               'location': 'android_webview/tools/cts_archive',
-              'revision': 'C4m9-gZKvvtS0-KQ9cMRi6wEfZH_TeWSiXEgsgtGtsMC',
+              'revision': 'APYMYksv9eNAkU6osFvNXN38pMO1Q1kScjeecePr7NgC',
             }
           ]
         },
@@ -5368,7 +5390,7 @@
             {
               "cipd_package": 'chromium/android_webview/tools/cts_archive',
               'location': 'android_webview/tools/cts_archive',
-              'revision': 'C4m9-gZKvvtS0-KQ9cMRi6wEfZH_TeWSiXEgsgtGtsMC',
+              'revision': 'APYMYksv9eNAkU6osFvNXN38pMO1Q1kScjeecePr7NgC',
             }
           ]
         },
@@ -5383,7 +5405,7 @@
             {
               'cipd_package': 'chromium/android_webview/tools/cts_archive',
               'location': 'android_webview/tools/cts_archive',
-              'revision': 'C4m9-gZKvvtS0-KQ9cMRi6wEfZH_TeWSiXEgsgtGtsMC',
+              'revision': 'APYMYksv9eNAkU6osFvNXN38pMO1Q1kScjeecePr7NgC',
             }
           ]
         },
@@ -5479,6 +5501,26 @@
         # Experimental until we're sure these are stable.
         'experiment_percentage': 100,
       }
+    },
+
+    'wpt_tests_ios': {
+      'wpt_tests_ios': {
+        'args': [
+          '--log-wptreport',
+          '--use-upstream-wpt',
+        ],
+        'merge': {
+          'args': [
+            '--verbose',
+          ],
+          'script': '//third_party/blink/tools/merge_web_test_results.py',
+        },
+        'results_handler': 'layout tests',
+        'swarming': {
+          'shards': 15,
+        },
+        'experiment_percentage': 100,
+      },
     },
 
     'wpt_web_tests': {
@@ -5607,26 +5649,6 @@
         'results_handler': 'layout tests',
         'swarming': {
           'shards': 1,
-        },
-        'experiment_percentage': 100,
-      },
-    },
-
-    'wpt_web_tests_ios': {
-      'wpt_tests_suite': {
-        'args': [
-          '--log-wptreport'
-        ],
-        'merge': {
-          'args': [
-            '--verbose',
-          ],
-          'script': '//third_party/blink/tools/merge_web_test_results.py',
-        },
-        'isolate_name': 'wpt_tests_isolate',
-        'results_handler': 'layout tests',
-        'swarming': {
-          'shards': 15,
         },
         'experiment_percentage': 100,
       },
@@ -5836,7 +5858,6 @@
       'non_android_and_cast_and_chromeos_chromium_gtests',
       'non_android_chromium_gtests',
       'vr_platform_specific_chromium_gtests',
-      'overlay_prioritization_gtests',
     ],
 
     # This is meant to be a superset of 'chromium_linux_and_gl_gtests'. Any
@@ -5918,7 +5939,6 @@
       'non_android_and_cast_and_chromeos_chromium_gtests',
       'non_android_chromium_gtests',
       'vr_platform_specific_chromium_gtests',
-      'overlay_prioritization_gtests',
     ],
 
     'chromium_linux_rel_isolated_scripts': [
@@ -6551,16 +6571,9 @@
       'chromium_browser_tests',
     ],
 
-    'webrtc_android_tests_with_baremetal_tests': [
-      'webrtc_chromium_simple_baremetal_gtests',
-      'webrtc_chromium_simple_gtests',
-    ],
-
     'webrtc_chromium_tests_with_baremetal_tests': [
       'webrtc_chromium_baremetal_gtests',
       'webrtc_chromium_gtests',
-      'webrtc_chromium_simple_baremetal_gtests',
-      'webrtc_chromium_simple_gtests',
     ],
 
     'webview_bot_all_gtests': [
@@ -6928,6 +6941,15 @@
           'SIM_IPAD_AIR_2_15_5',
         ]
       }
+    },
+
+    'ios_blink_dbg_tests': {
+      'ios_blink_tests': {
+        'variants': [
+          'SIM_IPAD_PRO_3RD_GEN_16_2',
+          'SIM_IPHONE_X_16_2',
+        ]
+      },
     },
 
     'ios_clang_tot_device_tests': {

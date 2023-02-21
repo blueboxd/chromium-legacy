@@ -183,9 +183,8 @@
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/multi_display/multi_display_metrics_controller.h"
 #include "ash/wm/multi_display/persistent_window_controller.h"
-#include "ash/wm/multitask_menu_nudge_controller.h"
+#include "ash/wm/multitask_menu_nudge_delegate_ash.h"
 #include "ash/wm/native_cursor_manager_ash.h"
-#include "ash/wm/overlay_event_filter.h"
 #include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/resize_shadow_controller.h"
 #include "ash/wm/screen_pinning_controller.h"
@@ -199,7 +198,6 @@
 #include "ash/wm/video_detector.h"
 #include "ash/wm/window_animations.h"
 #include "ash/wm/window_cycle/window_cycle_controller.h"
-#include "ash/wm/window_positioner.h"
 #include "ash/wm/window_properties.h"
 #include "ash/wm/window_restore/window_restore_controller.h"
 #include "ash/wm/window_util.h"
@@ -716,9 +714,6 @@ Shell::~Shell() {
   RemovePreTargetHandler(speech_feedback_handler_.get());
   speech_feedback_handler_.reset();
 
-  RemovePreTargetHandler(overlay_filter_.get());
-  overlay_filter_.reset();
-
   RemovePreTargetHandler(control_v_histogram_recorder_.get());
   RemovePreTargetHandler(accelerator_tracker_.get());
   RemovePreTargetHandler(accelerator_filter_.get());
@@ -853,7 +848,7 @@ Shell::~Shell() {
   // destroyed first to remove the tablet mode observer.
   glanceables_controller_.reset();
 
-  multitask_menu_nudge_controller_.reset();
+  multitask_menu_nudge_delegate_.reset();
   tablet_mode_controller_.reset();
   login_screen_controller_.reset();
   system_notification_controller_.reset();
@@ -1180,8 +1175,6 @@ void Shell::Init(
         std::make_unique<KeyboardBacklightColorController>(local_state_);
   }
 
-  window_positioner_ = std::make_unique<WindowPositioner>();
-
   native_cursor_manager_ = new NativeCursorManagerAsh;
   cursor_manager_ =
       std::make_unique<CursorManager>(base::WrapUnique(native_cursor_manager_));
@@ -1260,11 +1253,6 @@ void Shell::Init(
   focus_controller_ = std::make_unique<::wm::FocusController>(focus_rules_);
   focus_controller_->AddObserver(this);
 
-  // Needs to be constructed after `focus_controller_` as it adds itself as an
-  // observer on construction.
-  multitask_menu_nudge_controller_ =
-      std::make_unique<MultitaskMenuNudgeController>();
-
   overview_controller_ = std::make_unique<OverviewController>();
 
   screen_position_controller_ = std::make_unique<ScreenPositionController>();
@@ -1334,9 +1322,6 @@ void Shell::Init(
   // ui::UserActivityDetector passes events to observers, so let them get
   // rewritten first.
   user_activity_detector_ = std::make_unique<ui::UserActivityDetector>();
-
-  overlay_filter_ = std::make_unique<OverlayEventFilter>();
-  AddPreTargetHandler(overlay_filter_.get());
 
   control_v_histogram_recorder_ = std::make_unique<ControlVHistogramRecorder>();
   AddPreTargetHandler(control_v_histogram_recorder_.get());
@@ -1534,7 +1519,7 @@ void Shell::Init(
   // WindowTreeHostManager to host the keyboard window.
   keyboard_controller_->CreateVirtualKeyboard(std::move(keyboard_ui_factory));
 
-  // Create window restore controller after WindowTreeHostManager::InitHosts()
+  // Create window restore controller after `WindowTreeHostManager::InitHosts()`
   // since it may need to add observers to root windows.
   window_restore_controller_ = std::make_unique<WindowRestoreController>();
 
@@ -1594,6 +1579,8 @@ void Shell::Init(
 
   if (chromeos::wm::features::IsWindowLayoutMenuEnabled()) {
     float_controller_ = std::make_unique<FloatController>();
+    multitask_menu_nudge_delegate_ =
+        std::make_unique<MultitaskMenuNudgeDelegateAsh>();
   }
 
   if (features::IsFederatedServiceEnabled()) {

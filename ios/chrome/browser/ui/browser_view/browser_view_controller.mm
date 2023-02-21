@@ -52,7 +52,6 @@
 #import "ios/chrome/browser/ui/bubble/bubble_presenter_delegate.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/commands/browser_coordinator_commands.h"
-#import "ios/chrome/browser/ui/commands/command_dispatcher.h"
 #import "ios/chrome/browser/ui/commands/find_in_page_commands.h"
 #import "ios/chrome/browser/ui/commands/help_commands.h"
 #import "ios/chrome/browser/ui/commands/reading_list_add_command.h"
@@ -135,6 +134,7 @@
 #import "ios/chrome/common/ui/util/ui_util.h"
 #import "ios/chrome/grit/ios_strings.h"
 #import "ios/components/webui/web_ui_url_constants.h"
+#import "ios/public/provider/chrome/browser/find_in_page/find_in_page_api.h"
 #import "ios/public/provider/chrome/browser/fullscreen/fullscreen_api.h"
 #import "ios/public/provider/chrome/browser/voice_search/voice_search_api.h"
 #import "ios/public/provider/chrome/browser/voice_search/voice_search_controller.h"
@@ -481,7 +481,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 - (instancetype)initWithBrowser:(Browser*)browser
     browserContainerViewController:
         (BrowserContainerViewController*)browserContainerViewController
-                        dispatcher:(CommandDispatcher*)dispatcher
                keyCommandsProvider:(KeyCommandsProvider*)keyCommandsProvider
                       dependencies:
                           (BrowserViewControllerDependencies)dependencies {
@@ -491,7 +490,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 
     self.browser = browser;
     _browserContainerViewController = browserContainerViewController;
-    _commandDispatcher = dispatcher;
     _keyCommandsProvider = keyCommandsProvider;
     // TODO(crbug.com/1328039): Remove all use of the prerender service from BVC
     _prerenderService = dependencies.prerenderService;
@@ -1014,7 +1012,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 
   _bubblePresenter = nil;
 
-  [self.commandDispatcher stopDispatchingToTarget:self];
   self.browser->GetWebStateList()->RemoveObserver(_webStateListObserver.get());
   self.browser = nullptr;
 
@@ -1285,7 +1282,9 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   // updateToobar];
   if (ShouldShowCompactToolbar(previousTraitCollection) !=
       ShouldShowCompactToolbar(self)) {
-    [self.findInPageCommandsHandler hideFindUI];
+    if (!ios::provider::IsNativeFindInPageWithSystemFindPanel()) {
+      [self.findInPageCommandsHandler hideFindUI];
+    }
     [self.textZoomHandler hideTextZoomUI];
   }
 
@@ -1949,8 +1948,11 @@ NSString* const kBrowserViewControllerSnackbarCategory =
     NewTabPageTabHelper* NTPHelper =
         NewTabPageTabHelper::FromWebState(webState);
     if (NTPHelper && NTPHelper->IsActive()) {
-      NewTabPageCoordinator* coordinator = self.ntpCoordinator;
-      UIViewController* viewController = coordinator.viewController;
+      NewTabPageCoordinator* NTPCoordinator = self.ntpCoordinator;
+      // TODO(crbug.com/1411808): The NTP should be started by the mediator or
+      // coordinator layer.
+      [NTPCoordinator start];
+      UIViewController* viewController = NTPCoordinator.viewController;
       viewController.view.frame = [self ntpFrameForWebState:webState];
       [viewController.view layoutIfNeeded];
       // TODO(crbug.com/873729): For a newly created WebState, the session will
@@ -1959,7 +1961,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
       self.browserContainerViewController.contentView = nil;
       self.browserContainerViewController.contentViewController =
           viewController;
-      [coordinator constrainDiscoverHeaderMenuButtonNamedGuide];
+      [NTPCoordinator constrainDiscoverHeaderMenuButtonNamedGuide];
     } else {
       self.browserContainerViewController.contentView =
           [self viewForWebState:webState];
@@ -3128,11 +3130,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   }
 
   if (oldWebState) {
-    // TODO(crbug.com/1272514): Move webstate lifecycle updates to a browser
-    // agent.
-    oldWebState->WasHidden();
-    oldWebState->SetKeepRenderProcessAlive(false);
-
     [self dismissPopups];
   }
   // NOTE: webStateSelected expects to always be called with a
@@ -3140,23 +3137,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   if (!newWebState)
     return;
 
-  // TODO(crbug.com/1272514): Move webstate lifecycle updates to a browser
-  // agent.
-  self.currentWebState->GetWebViewProxy().scrollViewProxy.clipsToBounds = NO;
-
   [self webStateSelected:newWebState notifyToolbar:YES];
-}
-
-// A WebState has been removed, remove its views from display if necessary.
-- (void)webStateList:(WebStateList*)webStateList
-    didDetachWebState:(web::WebState*)webState
-              atIndex:(int)atIndex {
-  // TODO(crbug.com/1272514): Move webstate lifecycle updates to a browser
-  // agent.
-  if (webState->IsRealized()) {
-    webState->WasHidden();
-    webState->SetKeepRenderProcessAlive(false);
-  }
 }
 
 - (void)webStateList:(WebStateList*)webStateList

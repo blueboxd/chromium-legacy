@@ -516,11 +516,9 @@ BrowserAutofillManager::FillingContext::FillingContext(
 
 BrowserAutofillManager::FillingContext::~FillingContext() = default;
 
-BrowserAutofillManager::BrowserAutofillManager(
-    AutofillDriver* driver,
-    AutofillClient* client,
-    const std::string& app_locale,
-    EnableDownloadManager enable_download_manager)
+BrowserAutofillManager::BrowserAutofillManager(AutofillDriver* driver,
+                                               AutofillClient* client,
+                                               const std::string& app_locale)
     : AutofillManager(driver, client),
       external_delegate_(
           std::make_unique<AutofillExternalDelegate>(this, driver)),
@@ -562,6 +560,9 @@ BrowserAutofillManager::~BrowserAutofillManager() {
 
   single_field_form_fill_router_->CancelPendingQueries(this);
 
+  address_form_event_logger_->OnDestroyed();
+  credit_card_form_event_logger_->OnDestroyed();
+
   // We don't flush the `queued_vote_uploads_` here because that would trigger
   // network requests in the AutofillDownloadManager, which are managed with
   // by SimpleURLLoaders owned by the AutofillDownloadManager. Destroying the
@@ -583,9 +584,8 @@ CreditCardAccessManager* BrowserAutofillManager::GetCreditCardAccessManager() {
   return credit_card_access_manager_.get();
 }
 
-void BrowserAutofillManager::ShowAutofillSettings(
-    bool show_credit_card_settings) {
-  client()->ShowAutofillSettings(show_credit_card_settings);
+void BrowserAutofillManager::ShowAutofillSettings(PopupType popup_type) {
+  client()->ShowAutofillSettings(popup_type);
 }
 
 bool BrowserAutofillManager::ShouldShowScanCreditCard(
@@ -771,6 +771,8 @@ void BrowserAutofillManager::OnFormSubmittedImpl(const FormData& form,
         form, submitted_form.get(), client()->IsAutocompleteEnabled());
     return;
   }
+
+  form_submitted_timestamp_ = AutofillTickClock::NowTicks();
 
   // Log metrics about the autocomplete attribute usage in the submitted form.
   LogAutocompletePredictionCollisionTypeMetrics(*submitted_form);
@@ -1176,6 +1178,8 @@ void BrowserAutofillManager::OnAskForValuesToFillImpl(
     // due to an unrecognized autocomplete attribute. Note that in the context
     // of Autofill, the popup for credit card related fields is not getting
     // suppressed due to an unrecognized autocomplete attribute.
+    // TODO(crbug.com/1344590): Revisit here to see whether we should offer IBAN
+    // filling for fields with unrecognized autocomplete attribute
     if (context.suppress_reason == SuppressReason::kAutocompleteUnrecognized) {
       return false;
     }
@@ -1966,8 +1970,7 @@ void BrowserAutofillManager::UploadVotesAndLogQuality(
     submitted_form->LogQualityMetrics(
         submitted_form->form_parsed_timestamp(), interaction_time,
         submission_time, form_interactions_ukm_logger(), did_show_suggestions_,
-        observed_submission, form_interaction_counts,
-        autofill_suggestion_method_);
+        observed_submission, form_interaction_counts);
 
     if (observed_submission) {
       // Ensure that callbacks for blur votes get sent as well here because
@@ -2029,7 +2032,9 @@ void BrowserAutofillManager::Reset() {
   // is needed for constructing the new *form_event_logger_ instances which is
   // why calling AutofillManager::Reset() after constructing *form_event_logger_
   // instances is not an option.
+  address_form_event_logger_->OnDestroyed();
   address_form_event_logger_.reset();
+  credit_card_form_event_logger_->OnDestroyed();
   credit_card_form_event_logger_.reset();
   AutofillManager::Reset();
   address_form_event_logger_ = std::make_unique<AddressFormEventLogger>(
@@ -2054,10 +2059,10 @@ void BrowserAutofillManager::Reset() {
   last_unlocked_credit_card_cvc_.clear();
   credit_card_action_ = mojom::RendererFormDataAction::kPreview;
   initial_interaction_timestamp_ = TimeTicks();
-  autofill_suggestion_method_ = AutofillSuggestionMethod::kUnknown;
   external_delegate_->Reset();
   touch_to_fill_delegate_->Reset();
   filling_context_.clear();
+  form_submitted_timestamp_ = TimeTicks();
 }
 
 void BrowserAutofillManager::OnContextMenuShownInField(
@@ -2955,6 +2960,10 @@ bool BrowserAutofillManager::FillFieldWithValue(
     // Mark the cached field as autofilled, so that we can detect when a
     // user edits an autofilled field (for metrics).
     autofill_field->is_autofilled = true;
+    if (const AutofillProfile** profile =
+            absl::get_if<const AutofillProfile*>(&profile_or_credit_card)) {
+      autofill_field->set_autofill_source_profile_guid((*profile)->guid());
+    }
 
     // Mark the field as autofilled when a non-empty value is assigned to
     // it. This allows the renderer to distinguish autofilled fields from
@@ -3379,16 +3388,50 @@ void BrowserAutofillManager::OnSeePromoCodeOfferDetailsSelected(
   OnSingleFieldSuggestionSelected(value, frontend_id, form, field);
 }
 
-void BrowserAutofillManager::SetAutofillSuggestionMethod(
-    AutofillSuggestionMethod method) {
-  autofill_suggestion_method_ = method;
-  credit_card_form_event_logger_->set_autofill_suggestion_method(method);
-}
-
 void BrowserAutofillManager::ProcessFieldLogEventsInForm(
     const FormStructure& form_structure) {
   // TODO(crbug.com/1325851): Log metrics if at least one field in the form was
   // classified as a certain type.
+
+  if (base::FeatureList::IsEnabled(
+          features::kAutofillLogUKMEventsWithSampleRate) ||
+      base::FeatureList::IsEnabled(features::kAutofillFeedback)) {
+    LogEventCountsUMAMetric(form_structure);
+  }
+
+  // Log FieldInfo UKM event.
+  for (const auto& autofill_field : form_structure) {
+    // This reduces the UKM load by ignoring e.g. search boxes at best effort.
+    if (base::FeatureList::IsEnabled(
+            features::kAutofillLogUKMEventsWithSampleRate) &&
+        form_structure.ShouldBeParsed()) {
+      form_interactions_ukm_logger()->LogAutofillFieldInfoAtFormRemove(
+          form_structure, *autofill_field);
+    }
+
+    // Clear log events.
+    // Not conditions on kAutofillLogUKMEventsWithSampleRate because there may
+    // be other reasons to log events.
+    autofill_field->ClearLogEvents();
+  }
+
+  // Log FormSummary UKM event.
+  if (base::FeatureList::IsEnabled(
+          features::kAutofillLogUKMEventsWithSampleRate)) {
+    AutofillMetrics::FormEventSet form_events;
+    form_events.insert_all(
+        address_form_event_logger_->GetFormEvents(form_structure.global_id()));
+    form_events.insert_all(credit_card_form_event_logger_->GetFormEvents(
+        form_structure.global_id()));
+    bool is_in_any_main_frame = driver()->IsInAnyMainFrame();
+    form_interactions_ukm_logger()->LogAutofillFormSummaryAtFormRemove(
+        form_structure, form_events, is_in_any_main_frame,
+        initial_interaction_timestamp_, form_submitted_timestamp_);
+  }
+}
+
+void BrowserAutofillManager::LogEventCountsUMAMetric(
+    const FormStructure& form_structure) {
   size_t num_ask_for_values_to_fill_event = 0;
   size_t num_trigger_fill_event = 0;
   size_t num_fill_event = 0;
@@ -3399,45 +3442,35 @@ void BrowserAutofillManager::ProcessFieldLogEventsInForm(
   size_t num_rationalization_event = 0;
 
   for (const auto& autofill_field : form_structure) {
-    if (base::FeatureList::IsEnabled(
-            features::kAutofillLogUKMEventsWithSampleRate)) {
-      form_interactions_ukm_logger()->LogAutofillFieldInfoAtFormRemove(
-          form_structure, *autofill_field);
-      for (const auto& log_event : autofill_field->field_log_events()) {
-        static_assert(
-            absl::variant_size<AutofillField::FieldLogEventType>() == 9,
-            "When adding new variants check that this function does not "
-            "need to be updated.");
-        if (absl::holds_alternative<AskForValuesToFillFieldLogEvent>(
-                log_event)) {
-          ++num_ask_for_values_to_fill_event;
-        } else if (absl::holds_alternative<TriggerFillFieldLogEvent>(
-                       log_event)) {
-          ++num_trigger_fill_event;
-        } else if (absl::holds_alternative<FillFieldLogEvent>(log_event)) {
-          ++num_fill_event;
-        } else if (absl::holds_alternative<TypingFieldLogEvent>(log_event)) {
-          ++num_typing_event;
-        } else if (absl::holds_alternative<HeuristicPredictionFieldLogEvent>(
-                       log_event)) {
-          ++num_heuristic_prediction_event;
-        } else if (absl::holds_alternative<AutocompleteAttributeFieldLogEvent>(
-                       log_event)) {
-          ++num_autocomplete_attribute_event;
-        } else if (absl::holds_alternative<ServerPredictionFieldLogEvent>(
-                       log_event)) {
-          ++num_server_prediction_event;
-        } else if (absl::holds_alternative<RationalizationFieldLogEvent>(
-                       log_event)) {
-          ++num_rationalization_event;
-        } else {
-          NOTREACHED();
-        }
+    for (const auto& log_event : autofill_field->field_log_events()) {
+      static_assert(
+          absl::variant_size<AutofillField::FieldLogEventType>() == 9,
+          "When adding new variants check that this function does not "
+          "need to be updated.");
+      if (absl::holds_alternative<AskForValuesToFillFieldLogEvent>(log_event)) {
+        ++num_ask_for_values_to_fill_event;
+      } else if (absl::holds_alternative<TriggerFillFieldLogEvent>(log_event)) {
+        ++num_trigger_fill_event;
+      } else if (absl::holds_alternative<FillFieldLogEvent>(log_event)) {
+        ++num_fill_event;
+      } else if (absl::holds_alternative<TypingFieldLogEvent>(log_event)) {
+        ++num_typing_event;
+      } else if (absl::holds_alternative<HeuristicPredictionFieldLogEvent>(
+                     log_event)) {
+        ++num_heuristic_prediction_event;
+      } else if (absl::holds_alternative<AutocompleteAttributeFieldLogEvent>(
+                     log_event)) {
+        ++num_autocomplete_attribute_event;
+      } else if (absl::holds_alternative<ServerPredictionFieldLogEvent>(
+                     log_event)) {
+        ++num_server_prediction_event;
+      } else if (absl::holds_alternative<RationalizationFieldLogEvent>(
+                     log_event)) {
+        ++num_rationalization_event;
+      } else {
+        NOTREACHED();
       }
     }
-
-    // Clear log events.
-    autofill_field->ClearLogEvents();
   }
 
   size_t total_num_log_events =
@@ -3462,6 +3495,12 @@ void BrowserAutofillManager::ProcessFieldLogEventsInForm(
   UMA_HISTOGRAM_COUNTS_10000("Autofill.LogEvent.RationalizationEvent",
                              num_rationalization_event);
   UMA_HISTOGRAM_COUNTS_10000("Autofill.LogEvent.All", total_num_log_events);
+}
+
+void BrowserAutofillManager::SetFastCheckoutRunId(
+    FieldTypeGroup field_type_group,
+    int64_t run_id) {
+  GetEventFormLogger(field_type_group)->SetFastCheckoutRunId(run_id);
 }
 
 }  // namespace autofill

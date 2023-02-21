@@ -30,6 +30,19 @@ class FedCmAccountSelectionView : public AccountSelectionView,
   // https://www.w3.org/TR/appmanifest/#icon-masks
   static constexpr float kMaskableWebIconSafeZoneRatio = 0.8f;
 
+  // This enum is used for histograms. Do not remove or modify existing values,
+  // but you may add new values at the end and increase COUNT. This enum should
+  // be kept in sync with SheetType in
+  // chrome/browser/ui/android/webid/AccountSelectionMediator.java as well as
+  // with FedCmSheetType in tools/metrics/histograms/enums.xml.
+  enum SheetType {
+    ACCOUNT_SELECTION = 0,
+    VERIFYING = 1,
+    AUTO_REAUTHN = 2,
+    SIGN_IN_TO_IDP_STATIC = 3,
+    COUNT = 4
+  };
+
   explicit FedCmAccountSelectionView(AccountSelectionView::Delegate* delegate);
   ~FedCmAccountSelectionView() override;
 
@@ -38,7 +51,7 @@ class FedCmAccountSelectionView : public AccountSelectionView,
       const std::string& rp_etld_plus_one,
       const std::vector<content::IdentityProviderData>& identity_provider_data,
       Account::SignInMode sign_in_mode,
-      bool show_auto_signin_checkbox) override;
+      bool show_auto_reauthn_checkbox) override;
   void ShowFailureDialog(const std::string& rp_etld_plus_one,
                          const std::string& idp_etld_plus_one) override;
 
@@ -64,7 +77,7 @@ class FedCmAccountSelectionView : public AccountSelectionView,
       const std::u16string& rp_etld_plus_one,
       const absl::optional<std::u16string>& idp_title,
       blink::mojom::RpContext rp_context,
-      bool show_auto_signin_checkbox);
+      bool show_auto_reauthn_checkbox);
 
   // Returns AccountSelectionBubbleViewInterface for bubble views::Widget.
   virtual AccountSelectionBubbleViewInterface* GetBubbleView();
@@ -85,7 +98,11 @@ class FedCmAccountSelectionView : public AccountSelectionView,
 
     // Shown after the user has granted permission while the id token is being
     // fetched.
-    VERIFYING
+    VERIFYING,
+
+    // Shown when the user is being shown a dialog that auto re-authn is
+    // happening.
+    AUTO_REAUTHN
   };
 
   // views::WidgetObserver:
@@ -102,8 +119,10 @@ class FedCmAccountSelectionView : public AccountSelectionView,
   void OnCloseButtonClicked(const ui::Event& event) override;
 
   void ShowVerifyingSheet(const Account& account,
-                          const IdentityProviderDisplayData& idp_display_data,
-                          bool auto_signin);
+                          const IdentityProviderDisplayData& idp_display_data);
+
+  // Returns the SheetType to be used for metrics reporting.
+  SheetType GetSheetType();
 
   // Closes the widget and notifies the delegate.
   void Close();

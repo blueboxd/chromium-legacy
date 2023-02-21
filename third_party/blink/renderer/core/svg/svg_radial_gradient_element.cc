@@ -132,13 +132,14 @@ static void SetGradientAttributes(const SVGGradientElement& element,
     attributes.SetFr(radial.fr()->CurrentValue());
 }
 
-void SVGRadialGradientElement::CollectGradientAttributes(
-    RadialGradientAttributes& attributes) const {
+RadialGradientAttributes SVGRadialGradientElement::CollectGradientAttributes()
+    const {
   DCHECK(GetLayoutObject());
 
   VisitedSet visited;
   const SVGGradientElement* current = this;
 
+  RadialGradientAttributes attributes;
   while (true) {
     SetGradientAttributes(*current, attributes,
                           IsA<SVGRadialGradientElement>(*current));
@@ -153,12 +154,36 @@ void SVGRadialGradientElement::CollectGradientAttributes(
       break;
   }
 
-  // Handle default values for fx/fy
-  if (!attributes.HasFx())
-    attributes.SetFx(attributes.Cx());
+  // Fill out any ("complex") empty fields with values from this element (where
+  // these values should equal the initial values).
+  if (!attributes.HasCx()) {
+    attributes.SetCx(cx()->CurrentValue());
+  }
+  if (!attributes.HasCy()) {
+    attributes.SetCy(cy()->CurrentValue());
+  }
+  if (!attributes.HasR()) {
+    attributes.SetR(r()->CurrentValue());
+  }
+  DCHECK(attributes.Cx());
+  DCHECK(attributes.Cy());
+  DCHECK(attributes.R());
 
-  if (!attributes.HasFy())
+  // Handle default values for fx/fy (after applying any default values for
+  // cx/cy).
+  if (!attributes.HasFx()) {
+    attributes.SetFx(attributes.Cx());
+  }
+  if (!attributes.HasFy()) {
     attributes.SetFy(attributes.Cy());
+  }
+  if (!attributes.HasFr()) {
+    attributes.SetFr(fr()->CurrentValue());
+  }
+  DCHECK(attributes.Fx());
+  DCHECK(attributes.Fy());
+  DCHECK(attributes.Fr());
+  return attributes;
 }
 
 bool SVGRadialGradientElement::SelfHasRelativeLengths() const {

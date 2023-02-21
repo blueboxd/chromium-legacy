@@ -72,6 +72,7 @@
 #include "third_party/blink/renderer/core/inspector/inspector_page_agent.h"
 #include "third_party/blink/renderer/core/inspector/inspector_performance_agent.h"
 #include "third_party/blink/renderer/core/inspector/inspector_performance_timeline_agent.h"
+#include "third_party/blink/renderer/core/inspector/inspector_preload_agent.h"
 #include "third_party/blink/renderer/core/inspector/inspector_resource_container.h"
 #include "third_party/blink/renderer/core/inspector/inspector_resource_content_loader.h"
 #include "third_party/blink/renderer/core/inspector/inspector_task_runner.h"
@@ -319,13 +320,18 @@ void WebDevToolsAgentImpl::AttachSession(DevToolsSession* session,
   session->CreateAndAppend<InspectorMediaAgent>(
       inspected_frames, /*worker_global_scope=*/nullptr);
 
+  auto* virtual_time_controller =
+      web_local_frame_impl_->View()->Scheduler()->GetVirtualTimeController();
+  DCHECK(virtual_time_controller);
   // TODO(dgozman): we should actually pass the view instead of frame, but
   // during remote->local transition we cannot access mainFrameImpl() yet, so
   // we have to store the frame which will become the main frame later.
-  session->CreateAndAppend<InspectorEmulationAgent>(
-      web_local_frame_impl_.Get());
+  session->CreateAndAppend<InspectorEmulationAgent>(web_local_frame_impl_.Get(),
+                                                    *virtual_time_controller);
 
   session->CreateAndAppend<InspectorPerformanceTimelineAgent>(inspected_frames);
+
+  session->CreateAndAppend<InspectorPreloadAgent>();
 
   // Call session init callbacks registered from higher layers.
   CoreInitializer::GetInstance().InitInspectorAgentSession(

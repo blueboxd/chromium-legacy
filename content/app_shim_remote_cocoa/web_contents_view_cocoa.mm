@@ -222,7 +222,8 @@ STATIC_ASSERT_ENUM(NSDragOperationMove, ui::DragDropTypes::DRAG_MOVE);
 - (void)startDragWithDropData:(const DropData&)dropData
             dragOperationMask:(NSDragOperation)operationMask
                         image:(NSImage*)image
-                       offset:(NSPoint)offset {
+                       offset:(NSPoint)offset
+                 isPrivileged:(BOOL)isPrivileged {
   if (!_host)
     return;
 

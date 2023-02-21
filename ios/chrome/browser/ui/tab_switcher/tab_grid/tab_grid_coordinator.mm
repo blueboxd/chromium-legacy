@@ -22,6 +22,7 @@
 #import "ios/chrome/browser/search_engines/template_url_service_factory.h"
 #import "ios/chrome/browser/sessions/ios_chrome_tab_restore_service_factory.h"
 #import "ios/chrome/browser/tabs/features.h"
+#import "ios/chrome/browser/tabs/inactive_tabs/features.h"
 #import "ios/chrome/browser/ui/alert_coordinator/action_sheet_coordinator.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmarks_coordinator.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
@@ -54,6 +55,7 @@
 #import "ios/chrome/browser/ui/sharing/sharing_params.h"
 #import "ios/chrome/browser/ui/snackbar/snackbar_coordinator.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/grid_commands.h"
+#import "ios/chrome/browser/ui/tab_switcher/tab_grid/inactive_tabs/inactive_tabs_coordinator.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/pinned_tabs/pinned_tabs_mediator.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/tab_context_menu/tab_context_menu_helper.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/tab_context_menu/tab_item.h"
@@ -82,6 +84,7 @@
 
 @interface TabGridCoordinator () <RecentTabsPresentationDelegate,
                                   HistoryPresentationDelegate,
+                                  InactiveTabsCoordinatorDelegate,
                                   SceneStateObserver,
                                   SnackbarCoordinatorDelegate,
                                   TabContextMenuDelegate,
@@ -135,6 +138,8 @@
 @property(nonatomic, strong) SnackbarCoordinator* snackbarCoordinator;
 // Coordinator for snackbar presentation on `_incognitoBrowser`.
 @property(nonatomic, strong) SnackbarCoordinator* incognitoSnackbarCoordinator;
+// Coordinator for inactive tabs.
+@property(nonatomic, strong) InactiveTabsCoordinator* inactiveTabsCoordinator;
 // The timestamp of the user entering the tab grid.
 @property(nonatomic, assign) base::TimeTicks tabGridEnterTime;
 // The timestamp of the user exiting the tab grid.
@@ -1039,6 +1044,29 @@
       UrlLoadStrategy::ALWAYS_NEW_FOREGROUND_TAB;
   self.historyCoordinator.presentationDelegate = self;
   [self.historyCoordinator start];
+}
+
+- (void)showInactiveTabs {
+  DCHECK(IsInactiveTabsEnabled());
+  if (self.inactiveTabsCoordinator) {
+    return;
+  }
+
+  // TODO(crbug.com/1414536): Pass the inactive tabs browser instead.
+  self.inactiveTabsCoordinator = [[InactiveTabsCoordinator alloc]
+      initWithBaseViewController:self.baseViewController
+                         browser:self.regularBrowser];
+  self.inactiveTabsCoordinator.delegate = self;
+  [self.inactiveTabsCoordinator start];
+}
+
+#pragma mark - InactiveTabsCoordinatorDelegate
+
+- (void)inactiveTabsCoordinatorDidFinish:
+    (InactiveTabsCoordinator*)inactiveTabsCoordinator {
+  DCHECK(IsInactiveTabsEnabled());
+  [self.inactiveTabsCoordinator stop];
+  self.inactiveTabsCoordinator = nil;
 }
 
 #pragma mark - RecentTabsPresentationDelegate

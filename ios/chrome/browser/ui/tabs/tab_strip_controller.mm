@@ -12,6 +12,7 @@
 #import "base/i18n/rtl.h"
 #import "base/mac/bundle_locations.h"
 #import "base/mac/foundation_util.h"
+#import "base/metrics/histogram_functions.h"
 #import "base/metrics/user_metrics.h"
 #import "base/metrics/user_metrics_action.h"
 #import "base/numerics/safe_conversions.h"
@@ -25,6 +26,7 @@
 #import "ios/chrome/browser/flags/system_flags.h"
 #import "ios/chrome/browser/main/browser.h"
 #import "ios/chrome/browser/snapshots/snapshot_tab_helper.h"
+#import "ios/chrome/browser/tabs/features.h"
 #import "ios/chrome/browser/tabs/tab_title_util.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmarks_coordinator.h"
 #import "ios/chrome/browser/ui/bubble/bubble_util.h"
@@ -84,6 +86,12 @@ using base::UserMetricsAction;
 
 namespace {
 
+// Keys of the UMA IOS.TabStrip histograms.
+const char kUMATabStripDragInteractionHistogram[] =
+    "IOS.TabStrip.DragInteraction";
+const char kUMATabStripTapInteractionHistogram[] =
+    "IOS.TabStrip.TapInteraction";
+
 // Animation duration for tab animations.
 const NSTimeInterval kTabAnimationDuration = 0.25;
 
@@ -91,7 +99,7 @@ const NSTimeInterval kTabAnimationDuration = 0.25;
 const NSTimeInterval kTabStripFadeAnimationDuration = 0.15;
 
 // Amount of time needed to trigger drag and drop mode when long pressing.
-const NSTimeInterval kDragAndDropLongPressDuration = 0.1;
+const NSTimeInterval kDragAndDropLongPressDuration = 0.08;
 const NSTimeInterval kDragAndDropLongPressLegacyDuration = 0.4;
 
 // Tab dimensions.
@@ -130,6 +138,9 @@ const CGFloat kNewTabButtonBottomImageInset = -2.0;
 // The minimum number of visible pinned tabs.
 const NSUInteger kMinimumVisiblePinnedTabs = 4;
 
+// Identifier of the action that displays the UIMenu.
+NSString* const kMenuActionIdentifier = @"kMenuActionIdentifier";
+
 // Returns the background color.
 UIColor* BackgroundColor() {
   if (base::FeatureList::IsEnabled(kExpandedTabStrip)) {
@@ -143,12 +154,6 @@ UIColor* BackgroundColor() {
                : UIColor.clearColor;
   }
   return UIColor.blackColor;
-}
-
-// Convenience method for determining if the TabStripContextMenu feature is
-// enabled.
-bool IsTabStripContextMenuEnabled() {
-  return base::FeatureList::IsEnabled(kTabStripContextMenu);
 }
 
 const CGFloat kSymbolSize = 18;
@@ -196,7 +201,6 @@ const CGFloat kSymbolSize = 18;
                                   ViewRevealingAnimatee,
                                   WebStateFaviconDriverObserver,
                                   WebStateListObserving,
-                                  UIContextMenuInteractionDelegate,
                                   UIGestureRecognizerDelegate,
                                   UIScrollViewDelegate,
                                   URLDropDelegate> {
@@ -507,13 +511,14 @@ const CGFloat kSymbolSize = 18;
     _tabStripView.autoresizingMask =
         (UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight);
     _tabStripView.backgroundColor = _view.backgroundColor;
+    _tabStripView.delegate = self;
     _tabStripView.layoutDelegate = self;
     _tabStripView.accessibilityIdentifier =
         style == INCOGNITO ? kIncognitoTabStripId : kRegularTabStripId;
     [_view addSubview:_tabStripView];
     _view.tabStripView = _tabStripView;
 
-    if (IsTabStripContextMenuEnabled()) {
+    if (IsPinnedTabsEnabled()) {
       _contextMenuProvider =
           [[TabStripContextMenuHelper alloc] initWithBrowser:_browser
                                  tabStripContextMenuDelegate:self];
@@ -680,11 +685,26 @@ const CGFloat kSymbolSize = 18;
           initWithTarget:self
                   action:@selector(handleLongPress:)];
 
-  if (IsTabStripContextMenuEnabled()) {
-    [view addInteraction:[[UIContextMenuInteraction alloc]
-                             initWithDelegate:self]];
-    [longPress setMinimumPressDuration:kDragAndDropLongPressDuration];
+  if (IsPinnedTabsEnabled()) {
+    // Adds an empty menu so the event triggers the first time.
+    view.menu = [UIMenu menuWithChildren:@[]];
+    [view removeActionForIdentifier:kMenuActionIdentifier
+                   forControlEvents:UIControlEventMenuActionTriggered];
 
+    // Configure an action that should be executed on each tap.
+    __weak UIButton* weakButton = view;
+    __weak __typeof(self) weakSelf = self;
+    UIAction* displayMenu = [UIAction
+        actionWithTitle:@""
+                  image:nil
+             identifier:kMenuActionIdentifier
+                handler:^(UIAction* uiAction) {
+                  weakButton.menu = [weakSelf menuForWebstate:webState];
+                }];
+    [view addAction:displayMenu
+        forControlEvents:UIControlEventMenuActionTriggered];
+
+    [longPress setMinimumPressDuration:kDragAndDropLongPressDuration];
   } else {
     [longPress setMinimumPressDuration:kDragAndDropLongPressLegacyDuration];
   }
@@ -704,7 +724,21 @@ const CGFloat kSymbolSize = 18;
   return view;
 }
 
+// Returns an UIMenu for the given `webState`.
+- (UIMenu*)menuForWebstate:(web::WebState*)webState {
+  int webStateIndex = _webStateList->GetIndexOfWebState(webState);
+  NSString* identifier = webState->GetStableIdentifier();
+  BOOL pinnedState = _webStateList->IsWebStatePinnedAt(webStateIndex);
+
+  return [self.contextMenuProvider menuForWebStateIdentifier:identifier
+                                                 pinnedState:pinnedState];
+}
+
 - (void)setHighlightsSelectedTab:(BOOL)highlightsSelectedTab {
+  if (IsPinnedTabsEnabled()) {
+    return;
+  }
+
   if (highlightsSelectedTab)
     [self installDimmingViewWithAnimation:YES];
   else
@@ -890,35 +924,6 @@ const CGFloat kSymbolSize = 18;
   UrlLoadingBrowserAgent::FromBrowser(_browser)->Load(params);
 }
 
-#pragma mark - UIContextMenuInteractionDelegate
-
-- (UIContextMenuConfiguration*)contextMenuInteraction:
-                                   (UIContextMenuInteraction*)interaction
-                       configurationForMenuAtLocation:(CGPoint)location {
-  DCHECK(IsTabStripContextMenuEnabled());
-
-  int webStateIndex = [self webStateListIndexForTabView:interaction.view];
-  NSString* identifier =
-      _webStateList->GetWebStateAt(webStateIndex)->GetStableIdentifier();
-  BOOL pinnedState = _webStateList->IsWebStatePinnedAt(webStateIndex);
-
-  return [self.contextMenuProvider
-      contextMenuConfigurationForWebStateIdentifier:identifier
-                                        pinnedState:pinnedState];
-}
-
-- (UITargetedPreview*)contextMenuInteraction:
-                          (UIContextMenuInteraction*)interaction
-                               configuration:
-                                   (UIContextMenuConfiguration*)configuration
-       highlightPreviewForItemWithIdentifier:(id<NSCopying>)identifier {
-  // TODO(crbug.com/1409893): Update the targeted preview.
-  UIPreviewParameters* previewParameters = [[UIPreviewParameters alloc] init];
-  previewParameters.backgroundColor = UIColor.clearColor;
-  return [[UITargetedPreview alloc] initWithView:interaction.view
-                                      parameters:previewParameters];
-}
-
 #pragma mark - TabStripContextMenuDelegate
 
 - (void)addToReadingListURL:(const GURL&)URL title:(NSString*)title {
@@ -965,6 +970,13 @@ const CGFloat kSymbolSize = 18;
       return;
     }
   }
+}
+
+#pragma mark - UIScrollViewDelegate
+
+- (void)scrollViewDidEndDragging:(UIScrollView*)scrollView
+                  willDecelerate:(BOOL)decelerate {
+  base::RecordAction(UserMetricsAction("MobileTabStripScrollDidEnd"));
 }
 
 #pragma mark - Tab Drag and Drop methods
@@ -1047,6 +1059,8 @@ const CGFloat kSymbolSize = 18;
   int toIndex = _placeholderGapWebStateListIndex;
   DCHECK_NE(WebStateList::kInvalidIndex, toIndex);
   DCHECK_LT(toIndex, _webStateList->count());
+  base::UmaHistogramBoolean(kUMATabStripDragInteractionHistogram,
+                            fromIndex != toIndex);
 
   // Reset drag state variables before notifying the model that the tab moved.
   [self resetDragState];
@@ -1930,6 +1944,9 @@ const CGFloat kSymbolSize = 18;
   DCHECK_NE(WebStateList::kInvalidIndex, index);
   if (index == WebStateList::kInvalidIndex)
     return;
+
+  base::UmaHistogramBoolean(kUMATabStripTapInteractionHistogram,
+                            index != _webStateList->active_index());
 
   if ((ui::GetDeviceFormFactor() == ui::DEVICE_FORM_FACTOR_TABLET) &&
       (_webStateList->active_index() != static_cast<int>(index))) {

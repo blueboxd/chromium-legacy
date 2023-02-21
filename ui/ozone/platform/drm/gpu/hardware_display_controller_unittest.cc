@@ -10,7 +10,6 @@
 #include <string>
 #include <utility>
 
-#include "base/containers/contains.h"
 #include "base/files/file_util.h"
 #include "base/ranges/algorithm.h"
 #include "base/strings/string_number_conversions.h"
@@ -172,6 +171,8 @@ void HardwareDisplayControllerTest::InitializeDrmDevice(bool use_atomic,
 
   auto drm_state = MockDrmDevice::MockDrmState::CreateStateWithDefaultObjects(
       /*crtc_count=*/2, /*planes_per_crtc*/ 2, movable_planes);
+  drm_state.crtc_properties[0].properties.push_back(
+      {.id = kVrrEnabledPropId, .value = 0});
   drm_->InitializeState(drm_state, use_atomic);
   primary_crtc_ = drm_->crtc_property(0).id;
   secondary_crtc_ = drm_->crtc_property(1).id;
@@ -187,7 +188,8 @@ void HardwareDisplayControllerTest::InitializeDrmDevice(bool use_atomic,
 bool HardwareDisplayControllerTest::ModesetWithPlanes(
     const DrmOverlayPlaneList& modeset_planes) {
   CommitRequest commit_request;
-  controller_->GetModesetProps(&commit_request, modeset_planes, kDefaultMode);
+  controller_->GetModesetProps(&commit_request, modeset_planes, kDefaultMode,
+                               /*enable_vrr=*/false);
   CommitRequest request_for_update = commit_request;
   bool status = drm_->plane_manager()->Commit(std::move(commit_request),
                                               DRM_MODE_ATOMIC_ALLOW_MODESET);
@@ -235,7 +237,7 @@ void HardwareDisplayControllerTest::OnPresentation(
 uint64_t HardwareDisplayControllerTest::GetPlanePropertyValue(
     uint32_t plane,
     const std::string& property_name) {
-  DrmDevice::Property p{};
+  DrmWrapper::Property p{};
   ScopedDrmObjectPropertyPtr properties(
       drm_->GetObjectProperties(plane, DRM_MODE_OBJECT_PLANE));
   EXPECT_TRUE(
@@ -260,16 +262,22 @@ TEST_F(HardwareDisplayControllerTest, CrtcPropsAfterModeset) {
   ScopedDrmObjectPropertyPtr crtc_props =
       drm_->GetObjectProperties(primary_crtc_, DRM_MODE_OBJECT_CRTC);
   {
-    DrmDevice::Property prop = {};
+    DrmWrapper::Property prop = {};
     GetDrmPropertyForName(drm_.get(), crtc_props.get(), "ACTIVE", &prop);
     EXPECT_EQ(kActivePropId, prop.id);
     EXPECT_EQ(1U, prop.value);
   }
   {
-    DrmDevice::Property prop = {};
+    DrmWrapper::Property prop = {};
     GetDrmPropertyForName(drm_.get(), crtc_props.get(), "MODE_ID", &prop);
     EXPECT_EQ(kModePropId, prop.id);
     EXPECT_GT(prop.value, 0U);
+  }
+  {
+    DrmWrapper::Property prop = {};
+    GetDrmPropertyForName(drm_.get(), crtc_props.get(), "VRR_ENABLED", &prop);
+    EXPECT_EQ(kVrrEnabledPropId, prop.id);
+    EXPECT_EQ(0U, prop.value);
   }
 }
 
@@ -282,13 +290,13 @@ TEST_F(HardwareDisplayControllerTest, ConnectorPropsAfterModeset) {
       drm_->GetObjectProperties(kConnectorIdBase, DRM_MODE_OBJECT_CONNECTOR);
 
   {
-    DrmDevice::Property prop = {};
+    DrmWrapper::Property prop = {};
     GetDrmPropertyForName(drm_.get(), connector_props.get(), "CRTC_ID", &prop);
     EXPECT_EQ(kCrtcIdPropId, prop.id);
     EXPECT_EQ(kCrtcIdBase, prop.value);
   }
   {
-    DrmDevice::Property prop = {};
+    DrmWrapper::Property prop = {};
     GetDrmPropertyForName(drm_.get(), connector_props.get(), "link-status",
                           &prop);
     EXPECT_EQ(kLinkStatusPropId, prop.id);
@@ -308,37 +316,37 @@ TEST_F(HardwareDisplayControllerTest, PlanePropsAfterModeset) {
       DrmOverlayPlane::GetPrimaryPlane(modeset_planes);
 
   {
-    DrmDevice::Property prop = {};
+    DrmWrapper::Property prop = {};
     GetDrmPropertyForName(drm_.get(), plane_props.get(), "CRTC_ID", &prop);
     EXPECT_EQ(kPlaneCrtcId, prop.id);
     EXPECT_EQ(kCrtcIdBase, prop.value);
   }
   {
-    DrmDevice::Property prop = {};
+    DrmWrapper::Property prop = {};
     GetDrmPropertyForName(drm_.get(), plane_props.get(), "CRTC_X", &prop);
     EXPECT_EQ(kCrtcX, prop.id);
     EXPECT_EQ(primary_plane->display_bounds.x(), static_cast<int>(prop.value));
   }
   {
-    DrmDevice::Property prop = {};
+    DrmWrapper::Property prop = {};
     GetDrmPropertyForName(drm_.get(), plane_props.get(), "CRTC_Y", &prop);
     EXPECT_EQ(kCrtcY, prop.id);
     EXPECT_EQ(primary_plane->display_bounds.y(), static_cast<int>(prop.value));
   }
   {
-    DrmDevice::Property prop = {};
+    DrmWrapper::Property prop = {};
     GetDrmPropertyForName(drm_.get(), plane_props.get(), "CRTC_W", &prop);
     EXPECT_EQ(kCrtcW, prop.id);
     EXPECT_EQ(kDefaultModeSize.width(), static_cast<int>(prop.value));
   }
   {
-    DrmDevice::Property prop = {};
+    DrmWrapper::Property prop = {};
     GetDrmPropertyForName(drm_.get(), plane_props.get(), "CRTC_H", &prop);
     EXPECT_EQ(kCrtcH, prop.id);
     EXPECT_EQ(kDefaultModeSize.height(), static_cast<int>(prop.value));
   }
   {
-    DrmDevice::Property prop = {};
+    DrmWrapper::Property prop = {};
     GetDrmPropertyForName(drm_.get(), plane_props.get(), "FB_ID", &prop);
     EXPECT_EQ(kPlaneFbId, prop.id);
     EXPECT_EQ(primary_plane->buffer->opaque_framebuffer_id(),
@@ -353,31 +361,31 @@ TEST_F(HardwareDisplayControllerTest, PlanePropsAfterModeset) {
       gfx::Rect(crop_rect.x() << 16, crop_rect.y() << 16,
                 crop_rect.width() << 16, crop_rect.height() << 16);
   {
-    DrmDevice::Property prop = {};
+    DrmWrapper::Property prop = {};
     GetDrmPropertyForName(drm_.get(), plane_props.get(), "SRC_X", &prop);
     EXPECT_EQ(kSrcX, prop.id);
     EXPECT_EQ(fixed_point_rect.x(), static_cast<float>(prop.value));
   }
   {
-    DrmDevice::Property prop = {};
+    DrmWrapper::Property prop = {};
     GetDrmPropertyForName(drm_.get(), plane_props.get(), "SRC_Y", &prop);
     EXPECT_EQ(kSrcY, prop.id);
     EXPECT_EQ(fixed_point_rect.y(), static_cast<float>(prop.value));
   }
   {
-    DrmDevice::Property prop = {};
+    DrmWrapper::Property prop = {};
     GetDrmPropertyForName(drm_.get(), plane_props.get(), "SRC_W", &prop);
     EXPECT_EQ(kSrcW, prop.id);
     EXPECT_EQ(fixed_point_rect.width(), static_cast<int>(prop.value));
   }
   {
-    DrmDevice::Property prop = {};
+    DrmWrapper::Property prop = {};
     GetDrmPropertyForName(drm_.get(), plane_props.get(), "SRC_H", &prop);
     EXPECT_EQ(kSrcH, prop.id);
     EXPECT_EQ(fixed_point_rect.height(), static_cast<int>(prop.value));
   }
   {
-    DrmDevice::Property prop = {};
+    DrmWrapper::Property prop = {};
     GetDrmPropertyForName(drm_.get(), plane_props.get(), "IN_FENCE_FD", &prop);
     EXPECT_EQ(kInFencePropId, prop.id);
     EXPECT_GT(static_cast<int>(prop.value), base::kInvalidPlatformFile);
@@ -392,7 +400,7 @@ TEST_F(HardwareDisplayControllerTest, FenceFdValueChange) {
 
   // Test invalid fence fd
   {
-    DrmDevice::Property fence_fd_prop = {};
+    DrmWrapper::Property fence_fd_prop = {};
     ScopedDrmObjectPropertyPtr plane_props =
         drm_->GetObjectProperties(kPlaneOffset, DRM_MODE_OBJECT_PLANE);
     GetDrmPropertyForName(drm_.get(), plane_props.get(), "IN_FENCE_FD",
@@ -410,7 +418,7 @@ TEST_F(HardwareDisplayControllerTest, FenceFdValueChange) {
 
   // Verify fence FD after a GPU Fence is added to the plane.
   {
-    DrmDevice::Property fence_fd_prop = {};
+    DrmWrapper::Property fence_fd_prop = {};
     ScopedDrmObjectPropertyPtr plane_props =
         drm_->GetObjectProperties(kPlaneOffset, DRM_MODE_OBJECT_PLANE);
     GetDrmPropertyForName(drm_.get(), plane_props.get(), "IN_FENCE_FD",
@@ -427,7 +435,7 @@ TEST_F(HardwareDisplayControllerTest, FenceFdValueChange) {
 
   // Test an invalid FD again after the fence is removed.
   {
-    DrmDevice::Property fence_fd_prop = {};
+    DrmWrapper::Property fence_fd_prop = {};
     ScopedDrmObjectPropertyPtr plane_props =
         drm_->GetObjectProperties(kPlaneOffset, DRM_MODE_OBJECT_PLANE);
     GetDrmPropertyForName(drm_.get(), plane_props.get(), "IN_FENCE_FD",
@@ -449,22 +457,28 @@ TEST_F(HardwareDisplayControllerTest, CheckDisableResetsProps) {
   ScopedDrmObjectPropertyPtr crtc_props =
       drm_->GetObjectProperties(primary_crtc_, DRM_MODE_OBJECT_CRTC);
   {
-    DrmDevice::Property prop = {};
+    DrmWrapper::Property prop = {};
     GetDrmPropertyForName(drm_.get(), crtc_props.get(), "ACTIVE", &prop);
     EXPECT_EQ(kActivePropId, prop.id);
     EXPECT_EQ(0U, prop.value);
   }
   {
-    DrmDevice::Property prop = {};
+    DrmWrapper::Property prop = {};
     GetDrmPropertyForName(drm_.get(), crtc_props.get(), "MODE_ID", &prop);
     EXPECT_EQ(kModePropId, prop.id);
+    EXPECT_EQ(0U, prop.value);
+  }
+  {
+    DrmWrapper::Property prop = {};
+    GetDrmPropertyForName(drm_.get(), crtc_props.get(), "VRR_ENABLED", &prop);
+    EXPECT_EQ(kVrrEnabledPropId, prop.id);
     EXPECT_EQ(0U, prop.value);
   }
 
   ScopedDrmObjectPropertyPtr connector_props =
       drm_->GetObjectProperties(kConnectorIdBase, DRM_MODE_OBJECT_CONNECTOR);
   {
-    DrmDevice::Property prop = {};
+    DrmWrapper::Property prop = {};
     GetDrmPropertyForName(drm_.get(), connector_props.get(), "CRTC_ID", &prop);
     EXPECT_EQ(kCrtcIdPropId, prop.id);
     EXPECT_EQ(0U, prop.value);
@@ -473,67 +487,67 @@ TEST_F(HardwareDisplayControllerTest, CheckDisableResetsProps) {
   ScopedDrmObjectPropertyPtr plane_props =
       drm_->GetObjectProperties(kPlaneOffset, DRM_MODE_OBJECT_PLANE);
   {
-    DrmDevice::Property prop = {};
+    DrmWrapper::Property prop = {};
     GetDrmPropertyForName(drm_.get(), plane_props.get(), "CRTC_ID", &prop);
     EXPECT_EQ(kPlaneCrtcId, prop.id);
     EXPECT_EQ(0U, prop.value);
   }
   {
-    DrmDevice::Property prop = {};
+    DrmWrapper::Property prop = {};
     GetDrmPropertyForName(drm_.get(), plane_props.get(), "CRTC_X", &prop);
     EXPECT_EQ(kCrtcX, prop.id);
     EXPECT_EQ(0U, prop.value);
   }
   {
-    DrmDevice::Property prop = {};
+    DrmWrapper::Property prop = {};
     GetDrmPropertyForName(drm_.get(), plane_props.get(), "CRTC_Y", &prop);
     EXPECT_EQ(kCrtcY, prop.id);
     EXPECT_EQ(0U, prop.value);
   }
   {
-    DrmDevice::Property prop = {};
+    DrmWrapper::Property prop = {};
     GetDrmPropertyForName(drm_.get(), plane_props.get(), "CRTC_W", &prop);
     EXPECT_EQ(kCrtcW, prop.id);
     EXPECT_EQ(0U, prop.value);
   }
   {
-    DrmDevice::Property prop = {};
+    DrmWrapper::Property prop = {};
     GetDrmPropertyForName(drm_.get(), plane_props.get(), "CRTC_H", &prop);
     EXPECT_EQ(kCrtcH, prop.id);
     EXPECT_EQ(0U, prop.value);
   }
   {
-    DrmDevice::Property prop = {};
+    DrmWrapper::Property prop = {};
     GetDrmPropertyForName(drm_.get(), plane_props.get(), "FB_ID", &prop);
     EXPECT_EQ(kPlaneFbId, prop.id);
     EXPECT_EQ(0U, prop.value);
   }
   {
-    DrmDevice::Property prop = {};
+    DrmWrapper::Property prop = {};
     GetDrmPropertyForName(drm_.get(), plane_props.get(), "SRC_X", &prop);
     EXPECT_EQ(kSrcX, prop.id);
     EXPECT_EQ(0U, prop.value);
   }
   {
-    DrmDevice::Property prop = {};
+    DrmWrapper::Property prop = {};
     GetDrmPropertyForName(drm_.get(), plane_props.get(), "SRC_Y", &prop);
     EXPECT_EQ(kSrcY, prop.id);
     EXPECT_EQ(0U, prop.value);
   }
   {
-    DrmDevice::Property prop = {};
+    DrmWrapper::Property prop = {};
     GetDrmPropertyForName(drm_.get(), plane_props.get(), "SRC_W", &prop);
     EXPECT_EQ(kSrcW, prop.id);
     EXPECT_EQ(0U, prop.value);
   }
   {
-    DrmDevice::Property prop = {};
+    DrmWrapper::Property prop = {};
     GetDrmPropertyForName(drm_.get(), plane_props.get(), "SRC_H", &prop);
     EXPECT_EQ(kSrcH, prop.id);
     EXPECT_EQ(0U, prop.value);
   }
   {
-    DrmDevice::Property prop = {};
+    DrmWrapper::Property prop = {};
     GetDrmPropertyForName(drm_.get(), plane_props.get(), "IN_FENCE_FD", &prop);
     EXPECT_EQ(kInFencePropId, prop.id);
     EXPECT_EQ(base::kInvalidPlatformFile, static_cast<int>(prop.value));

@@ -451,6 +451,7 @@
 <translation id="3421726884497337397">選擇要在何時封鎖第三方 Cookie</translation>
 <translation id="3428747202529429621">在已登入帳戶的狀態下，能確保你持續享有安全無虞的 Chrome 使用體驗，也有助於提升其他 Google 應用程式的安全機制</translation>
 <translation id="3429160811076349561">試用功能已關閉</translation>
+<translation id="3432973700170747422">刪除過去 15 分鐘的瀏覽資料</translation>
 <translation id="3435465986463792564">開啟了多個視窗嗎？你可以在這裡進行管理</translation>
 <translation id="3435738964857648380">安全性</translation>
 <translation id="3443221991560634068">重新載入目前網頁</translation>
@@ -517,7 +518,6 @@
 <translation id="3830886834687455630">必須更新 Google Play 服務才能檢查密碼</translation>
 <translation id="3845098929839618392">在無痕分頁中開啟</translation>
 <translation id="3856096718352044181">請驗證供應商是否有效，或稍後再試</translation>
-<translation id="3858127568696903256">這裡會顯示你追蹤的內容</translation>
 <translation id="3858860766373142691">名稱</translation>
 <translation id="3861633093716975811">熱門影片</translation>
 <translation id="3874520961715512166">網站已移除</translation>
@@ -1241,6 +1241,7 @@
 <translation id="7682724950699840886">請嘗試按照下列提示操作：確認你的裝置上有足夠空間，然後嘗試重新匯出。</translation>
 <translation id="7686086654630106285">進一步瞭解網站建議廣告</translation>
 <translation id="768618399695552958">系統會預先載入你要造訪的部分網頁。當你從 Google 網站連到這些網頁時，系統可能會透過 Google 伺服器預先載入網頁內容。</translation>
+<translation id="7691043218961417207">探索值得追蹤的內容</translation>
 <translation id="7698359219371678927">在「<ph name="APP_NAME" />」中建立電子郵件</translation>
 <translation id="7707922173985738739">使用行動數據</translation>
 <translation id="7709094866268987903">你移除的興趣喜好會顯示在這裡</translation>

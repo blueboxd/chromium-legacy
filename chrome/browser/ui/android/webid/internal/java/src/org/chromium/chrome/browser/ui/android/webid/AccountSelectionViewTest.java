@@ -131,10 +131,10 @@ public class AccountSelectionViewTest {
     }
 
     @Test
-    public void testVerifyingTitleDisplayedAutoSignin() {
+    public void testVerifyingTitleDisplayedAutoReauthn() {
         mModel.set(ItemProperties.HEADER,
                 new PropertyModel.Builder(HeaderProperties.ALL_KEYS)
-                        .with(HeaderProperties.TYPE, HeaderType.VERIFY_AUTO_SIGNIN)
+                        .with(HeaderProperties.TYPE, HeaderType.VERIFY_AUTO_REAUTHN)
                         .with(HeaderProperties.RP_FOR_DISPLAY, "example.org")
                         .with(HeaderProperties.IDP_FOR_DISPLAY, "idp.org")
                         .build());
@@ -142,7 +142,7 @@ public class AccountSelectionViewTest {
         TextView title = mContentView.findViewById(R.id.header_title);
 
         assertEquals("Incorrect title",
-                mResources.getString(R.string.verify_sheet_title_auto_signin), title.getText());
+                mResources.getString(R.string.verify_sheet_title_auto_reauthn), title.getText());
     }
 
     @Test

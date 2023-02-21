@@ -6,6 +6,7 @@
 
 #include "ash/constants/ash_features.h"
 #include "base/test/bind.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "chromeos/ash/components/audio/audio_devices_pref_handler.h"
@@ -39,6 +40,12 @@ constexpr uint64_t kUsbMicId = 10030;
 constexpr uint64_t kInternalMicFrontId = 10040;
 constexpr uint64_t kInternalMicRearId = 10050;
 constexpr uint64_t kInternalMicId = 10060;
+
+// Histogram names.
+constexpr char kOutputMuteChangeHistogramName[] =
+    "ChromeOS.Settings.Device.Audio.OutputMuteStateChange";
+constexpr char kInputMuteChangeHistogramName[] =
+    "ChromeOS.Settings.Device.Audio.InputMuteStateChange";
 
 struct AudioNodeInfo {
   bool is_input;
@@ -288,6 +295,8 @@ class CrosAudioConfigImplTest : public testing::Test {
     cras_audio_handler_->SetNoiseCancellationState(noise_cancellation_on);
     base::RunLoop().RunUntilIdle();
   }
+
+  base::HistogramTester histogram_tester_;
 
  private:
   AudioNode GenerateAudioNode(const AudioNodeInfo* node_info) {
@@ -578,8 +587,9 @@ TEST_F(CrosAudioConfigImplTest, GetOutputAudioDevices) {
   // Test default audio node list, which includes one input and one output node.
   SetAudioNodes({kInternalSpeaker, kMicJack});
   // Multiple calls to observer triggered by setting active nodes triggered by
-  // AudioObserver events volume, active output, and nodes changed.
-  expected_observer_calls += 4u;
+  // AudioObserver events volume, gain, active output, active input, and nodes
+  // changed
+  expected_observer_calls += 5u;
 
   ASSERT_EQ(expected_observer_calls,
             fake_observer->num_properties_updated_calls_);
@@ -625,7 +635,8 @@ TEST_F(CrosAudioConfigImplTest, GetInputAudioDevices) {
   // Consfigure initial node set for test.
   SetAudioNodes({kInternalSpeaker});
   // Multiple calls to observer triggered by setting active nodes triggered by
-  // AudioObserver events volume, active output, and nodes changed.
+  // AudioObserver events volume, active input(observer is still called if
+  // there's no input device), active output, and nodes changed.
   expected_observer_calls += 4u;
 
   ASSERT_EQ(expected_observer_calls,
@@ -636,8 +647,8 @@ TEST_F(CrosAudioConfigImplTest, GetInputAudioDevices) {
 
   InsertAudioNode(kMicJack);
   // Multiple calls to observer triggered by setting active nodes triggered by
-  // AudioObserver events active input and nodes changed.
-  expected_observer_calls += 2;
+  // AudioObserver events gain, active input and nodes changed.
+  expected_observer_calls += 3;
 
   ASSERT_EQ(expected_observer_calls,
             fake_observer->num_properties_updated_calls_);
@@ -817,6 +828,10 @@ TEST_F(CrosAudioConfigImplTest, SetOutputMuted) {
       fake_observer->last_audio_system_properties_.value()->output_mute_state);
   EXPECT_TRUE(GetDeviceMuted(kInternalSpeakerId));
   EXPECT_FALSE(GetDeviceMuted(kHDMIOutputId));
+  histogram_tester_.ExpectBucketCount(kOutputMuteChangeHistogramName,
+                                      AudioMuteButtonAction::kMuted, 1);
+  histogram_tester_.ExpectBucketCount(kOutputMuteChangeHistogramName,
+                                      AudioMuteButtonAction::kUnmuted, 0);
 
   SimulateSetOutputMuted(/*muted=*/false);
   EXPECT_EQ(
@@ -824,6 +839,10 @@ TEST_F(CrosAudioConfigImplTest, SetOutputMuted) {
       fake_observer->last_audio_system_properties_.value()->output_mute_state);
   EXPECT_FALSE(GetDeviceMuted(kInternalSpeakerId));
   EXPECT_FALSE(GetDeviceMuted(kHDMIOutputId));
+  histogram_tester_.ExpectBucketCount(kOutputMuteChangeHistogramName,
+                                      AudioMuteButtonAction::kMuted, 1);
+  histogram_tester_.ExpectBucketCount(kOutputMuteChangeHistogramName,
+                                      AudioMuteButtonAction::kUnmuted, 1);
 }
 
 TEST_F(CrosAudioConfigImplTest, SetInputMuted) {
@@ -837,11 +856,19 @@ TEST_F(CrosAudioConfigImplTest, SetInputMuted) {
   ASSERT_EQ(
       mojom::MuteState::kMutedByUser,
       fake_observer->last_audio_system_properties_.value()->input_mute_state);
+  histogram_tester_.ExpectBucketCount(kInputMuteChangeHistogramName,
+                                      AudioMuteButtonAction::kMuted, 1);
+  histogram_tester_.ExpectBucketCount(kInputMuteChangeHistogramName,
+                                      AudioMuteButtonAction::kUnmuted, 0);
 
   SimulateSetInputMuted(/*muted=*/false);
   ASSERT_EQ(
       mojom::MuteState::kNotMuted,
       fake_observer->last_audio_system_properties_.value()->input_mute_state);
+  histogram_tester_.ExpectBucketCount(kInputMuteChangeHistogramName,
+                                      AudioMuteButtonAction::kMuted, 1);
+  histogram_tester_.ExpectBucketCount(kInputMuteChangeHistogramName,
+                                      AudioMuteButtonAction::kUnmuted, 1);
 
   // Simulate turning physical switch on.
   SetInputMuteState(mojom::MuteState::kMutedExternally, /*switch_on=*/true);
@@ -851,11 +878,19 @@ TEST_F(CrosAudioConfigImplTest, SetInputMuted) {
   ASSERT_EQ(
       mojom::MuteState::kMutedExternally,
       fake_observer->last_audio_system_properties_.value()->input_mute_state);
+  histogram_tester_.ExpectBucketCount(kInputMuteChangeHistogramName,
+                                      AudioMuteButtonAction::kMuted, 1);
+  histogram_tester_.ExpectBucketCount(kInputMuteChangeHistogramName,
+                                      AudioMuteButtonAction::kUnmuted, 1);
 
   SimulateSetInputMuted(/*muted=*/false);
   ASSERT_EQ(
       mojom::MuteState::kMutedExternally,
       fake_observer->last_audio_system_properties_.value()->input_mute_state);
+  histogram_tester_.ExpectBucketCount(kInputMuteChangeHistogramName,
+                                      AudioMuteButtonAction::kMuted, 1);
+  histogram_tester_.ExpectBucketCount(kInputMuteChangeHistogramName,
+                                      AudioMuteButtonAction::kUnmuted, 1);
 }
 
 // Verify merging front and rear mic into a single device returns expected

@@ -368,8 +368,8 @@ void FastPairRepositoryImpl::WriteAccountAssociationToFootprints(
       base::BindOnce(&FastPairRepositoryImpl::
                          WriteAccountAssociationToFootprintsWithMetadata,
                      weak_ptr_factory_.GetWeakPtr(), device->metadata_id(),
-                     device->classic_address().value(), account_key,
-                     device->protocol()));
+                     device->classic_address().value(), device->display_name(),
+                     account_key, device->protocol()));
 }
 
 bool FastPairRepositoryImpl::WriteAccountAssociationToLocalRegistry(
@@ -400,6 +400,7 @@ bool FastPairRepositoryImpl::WriteAccountAssociationToLocalRegistry(
 void FastPairRepositoryImpl::WriteAccountAssociationToFootprintsWithMetadata(
     const std::string& hex_model_id,
     const std::string& mac_address,
+    const absl::optional<std::string>& display_name,
     const std::vector<uint8_t>& account_key,
     absl::optional<Protocol> device_protocol,
     DeviceMetadata* metadata,
@@ -409,8 +410,8 @@ void FastPairRepositoryImpl::WriteAccountAssociationToFootprintsWithMetadata(
     return;
   }
 
-  const nearby::fastpair::FastPairInfo fast_pair_info =
-      BuildFastPairInfo(hex_model_id, account_key, mac_address, metadata);
+  const nearby::fastpair::FastPairInfo fast_pair_info = BuildFastPairInfo(
+      hex_model_id, account_key, mac_address, display_name, metadata);
 
   pending_write_store_->WritePairedDevice(mac_address, fast_pair_info);
   footprints_fetcher_->AddUserFastPairInfo(
@@ -772,6 +773,11 @@ void FastPairRepositoryImpl::FetchDeviceImages(scoped_refptr<Device> device) {
   // Save a record of the mac address -> model ID for this device so that we can
   // display images for device objects that lack a model ID, such as
   // device::BluetoothDevice.
+  // TODO(b/235117226): The mac address to model ID mapping will always fail
+  // when this function is called the first time during device discovery; this
+  // is because the classic address is not known yet. We should split the mac
+  // address to model ID mapping into it's own function (or PersistDeviceImages)
+  // to reflect this.
   if (!device_address_map_->SaveModelIdForDevice(device)) {
     QP_LOG(WARNING) << __func__
                     << ": Unable to save mac address -> model ID"
@@ -837,6 +843,7 @@ bool FastPairRepositoryImpl::PersistDeviceImages(scoped_refptr<Device> device) {
                     << ": Unable to persist address -> model ID"
                        " mapping for model ID "
                     << device->metadata_id();
+    return false;
   }
   return device_image_store_->PersistDeviceImages(device->metadata_id());
 }

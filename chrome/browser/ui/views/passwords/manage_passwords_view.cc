@@ -105,8 +105,9 @@ std::unique_ptr<views::View> CreateDetailsRow(
 
   detail_view->SetProperty(
       views::kFlexBehaviorKey,
-      views::FlexSpecification(views::MinimumFlexSizeRule::kPreferred,
-                               views::MaximumFlexSizeRule::kUnbounded));
+      views::FlexSpecification(views::MinimumFlexSizeRule::kScaleToZero,
+                               views::MaximumFlexSizeRule::kUnbounded)
+          .WithWeight(1));
   row->AddChildView(std::move(detail_view));
 
   std::unique_ptr<views::ImageButton> action_button =
@@ -181,6 +182,7 @@ std::unique_ptr<views::Label> CreateNoteLabel(
                           gfx::Insets::VH(vertical_margin, 0));
   note_label->SetVerticalAlignment(gfx::VerticalAlignment::ALIGN_TOP);
   note_label->SetHorizontalAlignment(gfx::HorizontalAlignment::ALIGN_LEFT);
+  note_label->SetSelectable(true);
   return note_label;
 }
 
@@ -219,9 +221,7 @@ std::unique_ptr<views::View> CreateEditNoteRow(
                              views::DISTANCE_RELATED_CONTROL_HORIZONTAL)));
   row->SetCrossAxisAlignment(views::LayoutAlignment::kStart);
 
-  // TODO(crbug.com/1408790): Use a different icon for the notes to match the
-  // mocks.
-  row->AddChildView(CreateWrappedView(CreateIconView(kAccountCircleIcon)));
+  row->AddChildView(CreateWrappedView(CreateIconView(kNotesIcon)));
 
   *textarea = row->AddChildView(std::make_unique<views::Textarea>());
   (*textarea)->SetText(
@@ -268,7 +268,7 @@ ManagePasswordsView::ManagePasswordsView(content::WebContents* web_contents,
   page_container_ = AddChildView(
       std::make_unique<PageSwitcherView>(CreatePasswordListView()));
 
-  if (!controller_.local_credentials().empty()) {
+  if (!controller_.GetCredentials().empty()) {
     // The request is cancelled when the |controller_| is destroyed.
     // |controller_| has the same lifetime as |this| and hence it's safe to use
     // base::Unretained(this).
@@ -307,16 +307,17 @@ bool ManagePasswordsView::Accept() {
   // selected.
   DCHECK(currently_selected_password_.has_value());
   DCHECK(note_textarea_);
+  password_manager::PasswordForm updated_form =
+      currently_selected_password_.value();
   // If the username isn't empty, the details view doesn't allow editing the
   // username, and the user textfield is never created.
   if (username_textfield_) {
-    currently_selected_password_->username_value =
-        username_textfield_->GetText();
+    updated_form.username_value = username_textfield_->GetText();
   }
-  currently_selected_password_->SetNoteWithEmptyUniqueDisplayName(
-      note_textarea_->GetText());
-  // TODO(crbug.com/1408790): invoke the controller to update the note in the
-  // storage.
+  updated_form.SetNoteWithEmptyUniqueDisplayName(note_textarea_->GetText());
+  controller_.UpdateStoredCredential(currently_selected_password_.value(),
+                                     updated_form);
+  currently_selected_password_ = std::move(updated_form);
   SwitchToDisplayMode();
   // Return false such that the bubble doesn't get closed upon clicking the
   // button.
@@ -387,8 +388,19 @@ ManagePasswordsView::CreatePasswordDetailsTitleView() {
 std::unique_ptr<views::View> ManagePasswordsView::CreatePasswordListView() {
   auto container_view = std::make_unique<views::BoxLayoutView>();
   container_view->SetOrientation(views::BoxLayout::Orientation::kVertical);
-  for (const password_manager::PasswordForm& password_form :
-       controller_.local_credentials()) {
+  for (const std::unique_ptr<password_manager::PasswordForm>& password_form :
+       controller_.GetCredentials()) {
+    absl::optional<ui::ImageModel> store_icon = absl::nullopt;
+    if (password_form->IsUsingAccountStore()) {
+      store_icon = ui::ImageModel::FromVectorIcon(
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
+          vector_icons::kGoogleGLogoIcon,
+#else
+          vector_icons::kSyncIcon,
+#endif  // !BUILDFLAG(GOOGLE_CHROME_BRANDING)
+          gfx::kPlaceholderColor, gfx::kFaviconSize);
+    }
+
     // TODO(crbug.com/1382017): Make sure the alignment works for different use
     // cases. (e.g. long username, federated credentials)
     container_view->AddChildView(std::make_unique<RichHoverButton>(
@@ -398,16 +410,16 @@ std::unique_ptr<views::View> ManagePasswordsView::CreatePasswordListView() {
               view->currently_selected_password_ = password_form;
               view->RecreateLayout();
             },
-            base::Unretained(this), password_form),
+            base::Unretained(this), *password_form),
         /*main_image_icon=*/GetFaviconImageModel(),
-        /*title_text=*/GetDisplayUsername(password_form),
+        /*title_text=*/GetDisplayUsername(*password_form),
         /*secondary_text=*/std::u16string(),
         /*tooltip_text=*/std::u16string(),
         /*subtitle_text=*/std::u16string(),
         /*action_image_icon=*/
         ui::ImageModel::FromVectorIcon(vector_icons::kSubmenuArrowIcon,
                                        ui::kColorIcon),
-        /*state_icon=*/absl::nullopt));
+        /*state_icon=*/store_icon));
   }
 
   container_view->AddChildView(std::make_unique<views::Separator>());
@@ -481,15 +493,13 @@ std::unique_ptr<views::View> ManagePasswordsView::CreatePasswordDetailsView() {
       base::BindRepeating(&WriteToClipboard,
                           currently_selected_password_->password_value)));
 
-  // TODO(crbug.com/1408790): Use a different icon for the notes to match the
-  // mocks.
   // TODO(crbug.com/1408790): use internationalized string for the note action
   // button tooltip text.
   // Add two rows: one for displaying the note which is visible by default, and
   // another to edit the note, which is hidden by default. Clicking the Edit
   // icon next to the note row will hide the display row, and show the edit row.
   display_note_row_ = container_view->AddChildView(CreateDetailsRow(
-      kAccountCircleIcon, CreateNoteLabel(*currently_selected_password_),
+      kNotesIcon, CreateNoteLabel(*currently_selected_password_),
       vector_icons::kEditIcon, u"Edit Note",
       base::BindRepeating(&ManagePasswordsView::SwitchToEditNoteMode,
                           base::Unretained(this))));

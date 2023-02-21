@@ -21,10 +21,10 @@ void FidoAuthenticator::ExcludeAppIdCredentialsBeforeMakeCredential(
   std::move(callback).Run(CtapDeviceResponseCode::kSuccess, absl::nullopt);
 }
 
-void FidoAuthenticator::GetCredentialInformationForRequest(
+void FidoAuthenticator::GetPlatformCredentialInfoForRequest(
     const CtapGetAssertionRequest& request,
     const CtapGetAssertionOptions& options,
-    GetCredentialInformationForRequestCallback callback) {
+    GetPlatformCredentialInfoForRequestCallback callback) {
   NOTREACHED();
 }
 
@@ -196,10 +196,6 @@ std::string FidoAuthenticator::GetDisplayName() const {
 
 ProtocolVersion FidoAuthenticator::SupportedProtocol() const {
   return ProtocolVersion::kUnknown;
-}
-
-bool FidoAuthenticator::SupportsLargeBlobs() const {
-  return false;
 }
 
 }  // namespace device

@@ -30,6 +30,10 @@ if (is_android) {
   import("//build/config/android/rules.gni")  # For generate_jni().
 }
 
+if (is_ios) {
+  import("//build/config/ios/bundle_data_from_filelist.gni")
+}
+
 # Use a static library here because many test binaries depend on this but don't
 # require many files from it. This makes linking more efficient.
 static_library("test_support") {
@@ -138,8 +142,6 @@ static_library("test_support") {
     "../public/test/browser_test.h",
     "../public/test/browser_test_base.cc",
     "../public/test/browser_test_base.h",
-    "../public/test/browser_test_switches.cc",
-    "../public/test/browser_test_switches.h",
     "../public/test/browser_test_utils.cc",
     "../public/test/browser_test_utils.h",
     "../public/test/browsing_data_remover_test_util.cc",
@@ -292,6 +294,7 @@ static_library("test_support") {
     "../public/test/test_navigation_ui_data.h",
     "../public/test/test_renderer_host.cc",
     "../public/test/test_renderer_host.h",
+    "../public/test/test_select_url_fenced_frame_config_observer.h",
     "../public/test/test_storage_partition.cc",
     "../public/test/test_storage_partition.h",
     "../public/test/test_utils.cc",
@@ -430,6 +433,8 @@ static_library("test_support") {
     "test_render_widget_host.h",
     "test_render_widget_host_factory.cc",
     "test_render_widget_host_factory.h",
+    "test_select_url_fenced_frame_config_observer_impl.cc",
+    "test_select_url_fenced_frame_config_observer_impl.h",
     "test_web_contents.cc",
     "test_web_contents.h",
     "test_web_contents_factory.cc",
@@ -491,6 +496,7 @@ static_library("test_support") {
     "//content/browser:for_content_tests",
     "//content/browser/attribution_reporting:attribution_reporting_proto",
     "//content/browser/attribution_reporting:mojo_bindings",
+    "//content/browser/attribution_reporting:store_source_result_mojom",
     "//content/child:for_content_tests",
     "//content/common:for_content_tests",
     "//content/gpu",
@@ -669,6 +675,13 @@ static_library("test_support") {
     deps += [
       "//ui/base/mojom",
       "//ui/views:test_support",
+    ]
+  }
+
+  if (is_ios) {
+    sources += [
+      "../browser/renderer_host/test_render_widget_host_view_ios_factory.h",
+      "../browser/renderer_host/test_render_widget_host_view_ios_factory.mm",
     ]
   }
 
@@ -1249,7 +1262,6 @@ test("content_browsertests") {
     "../browser/browsing_data/browsing_data_remover_impl_browsertest.cc",
     "../browser/browsing_data/clear_site_data_handler_browsertest.cc",
     "../browser/browsing_data/conditional_cache_deletion_helper_browsertest.cc",
-    "../browser/browsing_data/same_site_data_remover_impl_browsertest.cc",
     "../browser/browsing_topics/browsing_topics_browsertest.cc",
     "../browser/child_process_launcher_browsertest.cc",
     "../browser/child_process_security_policy_browsertest.cc",
@@ -1857,7 +1869,6 @@ test("content_browsertests") {
       "../shell/android/browsertests_apk/content_browser_tests_jni_onload.cc",
     ]
     sources -= [
-      "../browser/keyboard_lock_browsertest.cc",
       "../browser/media/session/audio_focus_delegate_default_browsertest.cc",
       "../browser/pointer_lock_browsertest.cc",
       "../browser/pointer_lock_browsertest.h",
@@ -2056,6 +2067,13 @@ test("content_browsertests") {
     ]
   }
 
+  # KeyboardLock is currently not supported in Android, Fuchsia and
+  # Chromecast builds. TODO(crbug.com/1414160): Re-enable on Fuchsia
+  # once its platform support is available.
+  if (is_android || is_fuchsia || is_castos) {
+    sources -= [ "../browser/keyboard_lock_browsertest.cc" ]
+  }
+
   if (use_ozone) {
     deps += [ "//ui/ozone" ]
   }
@@ -2143,6 +2161,7 @@ test("content_unittests") {
     "../browser/attribution_reporting/attribution_interop_unittest.cc",
     "../browser/attribution_reporting/attribution_manager_impl_unittest.cc",
     "../browser/attribution_reporting/attribution_report_network_sender_unittest.cc",
+    "../browser/attribution_reporting/attribution_report_unittest.cc",
     "../browser/attribution_reporting/attribution_storage_delegate_impl_unittest.cc",
     "../browser/attribution_reporting/attribution_storage_sql_migrations_unittest.cc",
     "../browser/attribution_reporting/attribution_storage_sql_unittest.cc",
@@ -2187,7 +2206,6 @@ test("content_unittests") {
     "../browser/browsing_data/browsing_data_filter_builder_impl_unittest.cc",
     "../browser/browsing_data/browsing_data_remover_impl_unittest.cc",
     "../browser/browsing_data/clear_site_data_handler_unittest.cc",
-    "../browser/browsing_data/same_site_data_remover_impl_unittest.cc",
     "../browser/browsing_topics/browsing_topics_site_data_manager_impl_unittest.cc",
     "../browser/browsing_topics/browsing_topics_site_data_storage_unittest.cc",
     "../browser/browsing_topics/browsing_topics_url_loader_service_unittest.cc",
@@ -2296,6 +2314,8 @@ test("content_unittests") {
     "../browser/interest_group/subresource_url_builder_unittest.cc",
     "../browser/interest_group/test_interest_group_manager_impl.cc",
     "../browser/interest_group/test_interest_group_manager_impl.h",
+    "../browser/interest_group/test_interest_group_private_aggregation_manager.cc",
+    "../browser/interest_group/test_interest_group_private_aggregation_manager.h",
     "../browser/loader/cors_origin_pattern_setter_unittest.cc",
     "../browser/loader/file_url_loader_factory_unittest.cc",
     "../browser/loader/merkle_integrity_source_stream_unittest.cc",
@@ -2369,6 +2389,7 @@ test("content_unittests") {
     "../browser/preloading/prefetch/proxy_lookup_client_impl_unittest.cc",
     "../browser/preloading/prefetcher_unittest.cc",
     "../browser/preloading/preloading_attempt_impl_unittest.cc",
+    "../browser/preloading/preloading_config_unittest.cc",
     "../browser/preloading/preloading_decider_unittest.cc",
     "../browser/preloading/prerender/prerender_host_registry_unittest.cc",
     "../browser/preloading/prerender/prerender_host_unittest.cc",
@@ -2530,7 +2551,6 @@ test("content_unittests") {
     "../browser/web_package/signed_exchange_envelope_unittest.cc",
     "../browser/web_package/signed_exchange_handler_unittest.cc",
     "../browser/web_package/signed_exchange_loader_unittest.cc",
-    "../browser/web_package/signed_exchange_prefetch_metric_recorder_unittest.cc",
     "../browser/web_package/signed_exchange_prologue_unittest.cc",
     "../browser/web_package/signed_exchange_signature_header_field_unittest.cc",
     "../browser/web_package/signed_exchange_signature_verifier_unittest.cc",
@@ -2547,8 +2567,8 @@ test("content_unittests") {
     "../browser/webid/test/federated_auth_request_request_token_callback_helper.h",
     "../browser/webid/test/mock_api_permission_delegate.cc",
     "../browser/webid/test/mock_api_permission_delegate.h",
-    "../browser/webid/test/mock_auto_signin_permission_delegate.cc",
-    "../browser/webid/test/mock_auto_signin_permission_delegate.h",
+    "../browser/webid/test/mock_auto_reauthn_permission_delegate.cc",
+    "../browser/webid/test/mock_auto_reauthn_permission_delegate.h",
     "../browser/webid/test/mock_identity_request_dialog_controller.cc",
     "../browser/webid/test/mock_identity_request_dialog_controller.h",
     "../browser/webid/test/mock_idp_network_request_manager.cc",
@@ -2694,6 +2714,12 @@ test("content_unittests") {
       "//media/test/data/",
       "//content/test/data/attribution_reporting/databases/",
       "//content/test/data/browsing_topics/",
+    ]
+  }
+  if (is_ios) {
+    bundle_deps = [
+      ":content_unittests_bundle_data",
+      ":content_unittests_pak_bundle_data",
     ]
   }
 
@@ -3146,6 +3172,20 @@ test("content_unittests") {
   # TODO(crbug.com/1293538): Update to check is_cast_audio_only
   if (is_castos || is_cast_android) {
     deps += [ "//chromecast:chromecast_buildflags" ]
+  }
+}
+
+if (is_ios) {
+  bundle_data("content_unittests_pak_bundle_data") {
+    testonly = true
+    public_deps = [ "//content/shell:pak" ]
+    sources = [ "$root_out_dir/content_shell.pak" ]
+    outputs = [ "{{bundle_resources_dir}}/content_shell.pak" ]
+  }
+
+  bundle_data_from_filelist("content_unittests_bundle_data") {
+    testonly = true
+    filelist_name = "content_unittests_bundle_data.filelist"
   }
 }
 

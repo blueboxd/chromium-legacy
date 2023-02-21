@@ -45,7 +45,6 @@
 #include "chrome/browser/ash/crostini/crostini_test_helper.h"
 #include "chrome/browser/ash/guest_os/guest_os_registry_service.h"
 #include "chrome/browser/ash/guest_os/guest_os_registry_service_factory.h"
-#include "chrome/browser/ash/login/demo_mode/demo_setup_controller.h"
 #include "chrome/browser/ash/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/ash/ownership/fake_owner_settings_service.h"
 #include "chrome/browser/ash/policy/core/device_local_account.h"
@@ -79,6 +78,7 @@
 #include "chromeos/ash/components/disks/mock_disk_mount_manager.h"
 #include "chromeos/ash/components/install_attributes/stub_install_attributes.h"
 #include "chromeos/ash/components/login/login_state/login_state.h"
+#include "chromeos/ash/components/mojo_service_manager/fake_mojo_service_manager.h"
 #include "chromeos/ash/components/network/network_handler.h"
 #include "chromeos/ash/components/network/network_handler_test_helper.h"
 #include "chromeos/ash/components/network/network_state.h"
@@ -840,6 +840,8 @@ class DeviceStatusCollectorTest : public testing::Test {
     // Ensure mojo is started, otherwise browser context keyed services that
     // rely on mojo will explode.
     mojo::core::Init();
+    fake_service_manager_ =
+        std::make_unique<::ash::mojo_service_manager::FakeMojoServiceManager>();
 
     // Although this is really a unit test which runs in the browser_tests
     // binary, it doesn't get the unit setup which normally happens in the unit
@@ -880,13 +882,6 @@ class DeviceStatusCollectorTest : public testing::Test {
     TestingDeviceStatusCollector::RegisterPrefs(local_state->registry());
     TestingDeviceStatusCollector::RegisterProfilePrefs(
         profile_pref_service_.registry());
-
-    // This pref registration is temporarily added because crrev/c/4076557 makes
-    // SystemWebAppManager (which is instantiated during creation of a
-    // TestProfile) dependent on the kDemoModeConfig pref.
-    // TODO(b/260117078): Delete this line after the DemoModeConfig pref is
-    // deprecated.
-    ash::DemoSetupController::RegisterLocalStatePrefs(local_state->registry());
 
     // Set up a fake local state for KioskAppManager and KioskCryptohomeRemover.
     TestingBrowserProcess::GetGlobal()->SetLocalState(local_state);
@@ -1226,6 +1221,8 @@ class DeviceStatusCollectorTest : public testing::Test {
   // This property is required to instantiate the session manager, a singleton
   // which is used by the device status collector.
   session_manager::SessionManager session_manager_;
+  std::unique_ptr<::ash::mojo_service_manager::FakeMojoServiceManager>
+      fake_service_manager_;
 };
 
 TEST_F(DeviceStatusCollectorTest, AllIdle) {

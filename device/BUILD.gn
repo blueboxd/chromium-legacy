@@ -199,6 +199,7 @@ test("device_unittests") {
 
   if (is_mac) {
     sources += [
+      "fido/mac/authenticator_unittest.mm",
       "fido/mac/browsing_data_deletion_unittest.mm",
       "fido/mac/credential_metadata_unittest.cc",
       "fido/mac/credential_store_unittest.mm",
@@ -346,8 +347,6 @@ test("device_unittests") {
     sources += [
       "bluetooth/bluetooth_classic_win_fake.cc",
       "bluetooth/bluetooth_classic_win_fake.h",
-      "bluetooth/bluetooth_low_energy_win_fake.cc",
-      "bluetooth/bluetooth_low_energy_win_fake.h",
       "bluetooth/test/fake_bluetooth_adapter_winrt.cc",
       "bluetooth/test/fake_bluetooth_adapter_winrt.h",
       "bluetooth/test/fake_bluetooth_le_advertisement_data_section_winrt.cc",

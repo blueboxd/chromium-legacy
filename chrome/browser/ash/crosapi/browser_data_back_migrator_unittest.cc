@@ -4,10 +4,13 @@
 
 #include "chrome/browser/ash/crosapi/browser_data_back_migrator.h"
 
+#include <errno.h>
+
 #include "ash/constants/ash_features.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/ash/crosapi/browser_data_migrator_util.h"
 #include "chrome/browser/ash/crosapi/browser_util.h"
@@ -66,7 +69,8 @@ void CreateDirectoryAndFile(const base::FilePath& directory_path,
 }
 
 void SetUpExtensions(const base::FilePath& ash_profile_dir,
-                     const base::FilePath& lacros_profile_dir) {
+                     const base::FilePath& lacros_profile_dir,
+                     FilesSetup setup) {
   // The extension test data should have the following structure:
   // |- user
   //   |- Extensions
@@ -87,21 +91,25 @@ void SetUpExtensions(const base::FilePath& ash_profile_dir,
   base::FilePath lacros_extensions_path = lacros_profile_dir.Append(
       browser_data_migrator_util::kExtensionsFilePath);
 
-  // Generate data for a Lacros-only extension.
-  CreateDirectoryAndFile(lacros_extensions_path.Append(kLacrosOnlyExtensionId),
-                         kLacrosDataFilePath, kLacrosDataContent,
-                         kLacrosDataSize);
+  if (setup != FilesSetup::kAshOnly) {
+    // Generate data for a Lacros-only extension.
+    CreateDirectoryAndFile(
+        lacros_extensions_path.Append(kLacrosOnlyExtensionId),
+        kLacrosDataFilePath, kLacrosDataContent, kLacrosDataSize);
+    // Generate Lacros data for an extension existing in both Chromes.
+    CreateDirectoryAndFile(lacros_extensions_path.Append(kBothExtensionId),
+                           kLacrosDataFilePath, kLacrosDataContent,
+                           kLacrosDataSize);
+  }
 
-  // Generate data for an Ash-only extension.
-  CreateDirectoryAndFile(ash_extensions_path.Append(kAshOnlyExtensionId),
-                         kAshDataFilePath, kAshDataContent, kAshDataSize);
-
-  // Generate data for an extension existing in both Chromes.
-  CreateDirectoryAndFile(ash_extensions_path.Append(kBothExtensionId),
-                         kAshDataFilePath, kAshDataContent, kAshDataSize);
-  CreateDirectoryAndFile(lacros_extensions_path.Append(kBothExtensionId),
-                         kLacrosDataFilePath, kLacrosDataContent,
-                         kLacrosDataSize);
+  if (setup != FilesSetup::kLacrosOnly) {
+    // Generate data for an Ash-only extension.
+    CreateDirectoryAndFile(ash_extensions_path.Append(kAshOnlyExtensionId),
+                           kAshDataFilePath, kAshDataContent, kAshDataSize);
+    // Generate Ash data for an extension existing in both Chromes.
+    CreateDirectoryAndFile(ash_extensions_path.Append(kBothExtensionId),
+                           kAshDataFilePath, kAshDataContent, kAshDataSize);
+  }
 }
 
 void SetUpIndexedDB(const base::FilePath& ash_profile_dir,
@@ -392,7 +400,8 @@ TEST_F(BrowserDataBackMigratorTest, PreMigrationCleanUp) {
 }
 
 TEST_F(BrowserDataBackMigratorTest, MergeCommonExtensionsDataFiles) {
-  SetUpExtensions(ash_profile_dir_, lacros_profile_dir_);
+  SetUpExtensions(ash_profile_dir_, lacros_profile_dir_,
+                  FilesSetup::kBothChromes);
 
   ASSERT_TRUE(BrowserDataBackMigrator::MergeCommonExtensionsDataFiles(
       ash_profile_dir_, lacros_profile_dir_, tmp_profile_dir_,
@@ -600,6 +609,42 @@ TEST_P(BrowserDataBackMigratorFilesSetupTest, MergeStateStoreLevelDB) {
   }
 }
 
+TEST_P(BrowserDataBackMigratorFilesSetupTest,
+       DeletesLacrosItemsFromAshDirCorrectly) {
+  auto files_setup = GetParam();
+  SetUpExtensions(ash_profile_dir_, lacros_profile_dir_, files_setup);
+  SetupLocalStorageLevelDBFiles(ash_profile_dir_, lacros_profile_dir_,
+                                files_setup);
+  EXPECT_TRUE(base::WriteFile(ash_profile_dir_.Append("README"), ""));
+
+  auto result = BrowserDataBackMigrator::DeleteAshItems(ash_profile_dir_);
+
+  ASSERT_EQ(result.status, BrowserDataBackMigrator::TaskStatus::kSucceeded);
+  EXPECT_FALSE(base::PathExists(ash_profile_dir_.Append(
+      browser_data_migrator_util::kExtensionsFilePath)));
+  EXPECT_FALSE(base::PathExists(ash_profile_dir_.Append(
+      browser_data_migrator_util::kLocalStorageFilePath)));
+  EXPECT_TRUE(base::PathExists(ash_profile_dir_.Append("README")));
+}
+
+TEST_F(BrowserDataBackMigratorFilesSetupTest,
+       MovesLacrosItemsToAshDirCorrectly) {
+  SetUpExtensions(ash_profile_dir_, lacros_profile_dir_,
+                  FilesSetup::kLacrosOnly);
+
+  auto result =
+      BrowserDataBackMigrator::MoveLacrosItemsToAshDir(ash_profile_dir_);
+
+  ASSERT_EQ(result.status, BrowserDataBackMigrator::TaskStatus::kSucceeded);
+  EXPECT_TRUE(base::PathExists(ash_profile_dir_.Append(
+      browser_data_migrator_util::kExtensionsFilePath)));
+  EXPECT_TRUE(base::PathExists(
+      ash_profile_dir_.Append(browser_data_migrator_util::kExtensionsFilePath)
+          .Append(kLacrosOnlyExtensionId)));
+  EXPECT_FALSE(base::PathExists(lacros_profile_dir_.Append(
+      browser_data_migrator_util::kExtensionsFilePath)));
+}
+
 namespace {
 
 // This implementation of RAII for LacrosDataBackwardMigrationMode is intended
@@ -709,6 +754,55 @@ TEST_F(BrowserDataBackMigratorTriggeringTest, PolicyEnabledAfterInit) {
 
   EXPECT_TRUE(BrowserDataBackMigrator::IsBackMigrationEnabled(
       crosapi::browser_util::PolicyInitState::kAfterInit));
+}
+
+TEST(BrowserDataBackMigratorUMATest, RecordFinalStatus) {
+  base::HistogramTester histogram_tester;
+
+  BrowserDataBackMigrator::TaskResult success = {
+      BrowserDataBackMigrator::TaskStatus::kSucceeded};
+  BrowserDataBackMigrator::RecordFinalStatus(success);
+
+  histogram_tester.ExpectUniqueSample(
+      kFinalStatusUMA,
+      static_cast<base::HistogramBase::Sample>(
+          BrowserDataBackMigrator::TaskStatus::kSucceeded),
+      1);
+  histogram_tester.ExpectTotalCount(kFinalStatusUMA, 1);
+
+  BrowserDataBackMigrator::TaskResult failure = {
+      BrowserDataBackMigrator::TaskStatus::kDeleteTmpDirDeleteFailed, EPERM};
+  BrowserDataBackMigrator::RecordFinalStatus(failure);
+
+  histogram_tester.ExpectBucketCount(
+      kFinalStatusUMA,
+      static_cast<base::HistogramBase::Sample>(
+          BrowserDataBackMigrator::TaskStatus::kDeleteTmpDirDeleteFailed),
+      1);
+  histogram_tester.ExpectTotalCount(kFinalStatusUMA, 2);
+}
+
+TEST(BrowserDataBackMigratorUMATest, RecordPosixErrnoIfAvailable) {
+  base::HistogramTester histogram_tester;
+  auto task_status =
+      BrowserDataBackMigrator::TaskStatus::kDeleteTmpDirDeleteFailed;
+  std::string uma_name =
+      kPosixErrnoUMA + BrowserDataBackMigrator::TaskStatusToString(task_status);
+
+  BrowserDataBackMigrator::TaskResult failure_without_errno = {task_status};
+  BrowserDataBackMigrator::RecordPosixErrnoIfAvailable(failure_without_errno);
+  histogram_tester.ExpectTotalCount(uma_name, 0);
+
+  BrowserDataBackMigrator::TaskResult failure_with_errno = {task_status, EPERM};
+  BrowserDataBackMigrator::RecordPosixErrnoIfAvailable(failure_with_errno);
+  histogram_tester.ExpectTotalCount(uma_name, 1);
+  histogram_tester.ExpectUniqueSample(uma_name, EPERM, 1);
+}
+
+TEST(BrowserDataBackMigratorUMATest, TaskStatusToString) {
+  EXPECT_EQ(BrowserDataBackMigrator::TaskStatusToString(
+                BrowserDataBackMigrator::TaskStatus::kSucceeded),
+            "Succeeded");
 }
 
 }  // namespace ash

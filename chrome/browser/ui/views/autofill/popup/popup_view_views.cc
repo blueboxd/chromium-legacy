@@ -12,12 +12,14 @@
 
 #include "base/containers/contains.h"
 #include "base/memory/raw_ptr.h"
+#include "base/time/time.h"
 #include "build/build_config.h"
 #include "chrome/browser/autofill/autofill_popup_controller_utils.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/ui/autofill/autofill_popup_controller.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/passwords/ui_utils.h"
+#include "chrome/browser/ui/views/autofill/popup/popup_base_view.h"
 #include "chrome/browser/ui/views/autofill/popup/popup_row_view.h"
 #include "chrome/browser/ui/views/autofill/popup/popup_separator_view.h"
 #include "chrome/browser/ui/views/autofill/popup/popup_view_utils.h"
@@ -35,10 +37,12 @@
 #include "components/strings/grit/components_strings.h"
 #include "components/user_education/common/feature_promo_controller.h"
 #include "third_party/abseil-cpp/absl/types/variant.h"
+#include "third_party/blink/public/common/input/web_input_event.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/color/color_id.h"
+#include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/background.h"
@@ -58,8 +62,8 @@ namespace autofill {
 namespace {
 
 // By spec, dropdowns should always have a width which is a multiple of 12.
-// TODO(crbug.com/1411172): Deduplicate this between here and `PopupRowView`.
 constexpr int kAutofillPopupWidthMultiple = 12;
+
 constexpr int kAutofillPopupMinWidth = 0;
 // TODO(crbug.com/831603): move handling the max width to the base class.
 constexpr int kAutofillPopupMaxWidth = kAutofillPopupWidthMultiple * 38;
@@ -76,28 +80,12 @@ bool IsFooterItem(const std::vector<Suggestion>& suggestions,
     return false;
   }
 
-  switch (suggestions[line_number].frontend_id) {
-    case PopupItemId::POPUP_ITEM_ID_SCAN_CREDIT_CARD:
-    case PopupItemId::POPUP_ITEM_ID_CREDIT_CARD_SIGNIN_PROMO:
-    case PopupItemId::POPUP_ITEM_ID_PASSWORD_ACCOUNT_STORAGE_EMPTY:
-    case PopupItemId::POPUP_ITEM_ID_PASSWORD_ACCOUNT_STORAGE_OPT_IN:
-    case PopupItemId::POPUP_ITEM_ID_PASSWORD_ACCOUNT_STORAGE_RE_SIGNIN:
-    case PopupItemId::
-        POPUP_ITEM_ID_PASSWORD_ACCOUNT_STORAGE_OPT_IN_AND_GENERATE:
-    case PopupItemId::POPUP_ITEM_ID_SHOW_ACCOUNT_CARDS:
-    case PopupItemId::POPUP_ITEM_ID_USE_VIRTUAL_CARD:
-    case PopupItemId::POPUP_ITEM_ID_ALL_SAVED_PASSWORDS_ENTRY:
-    case PopupItemId::POPUP_ITEM_ID_CLEAR_FORM:
-    case PopupItemId::POPUP_ITEM_ID_AUTOFILL_OPTIONS:
-    case PopupItemId::POPUP_ITEM_ID_SEE_PROMO_CODE_DETAILS:
-      return true;
-    // If the next item is a footer item, the separator also belongs to the
-    // footer.
-    case PopupItemId::POPUP_ITEM_ID_SEPARATOR:
-      return IsFooterItem(suggestions, line_number + 1);
-    default:
-      return false;
-  }
+  // Separators are a special case: They belong into the footer iff the next
+  // item exists and is a footer item.
+  int frontend_id = suggestions[line_number].frontend_id;
+  return frontend_id == PopupItemId::POPUP_ITEM_ID_SEPARATOR
+             ? IsFooterItem(suggestions, line_number + 1)
+             : IsFooterFrontendId(frontend_id);
 }
 
 }  // namespace
@@ -129,9 +117,12 @@ void PopupViewViews::GetAccessibleNodeData(ui::AXNodeData* node_data) {
       l10n_util::GetStringUTF16(IDS_AUTOFILL_POPUP_ACCESSIBLE_NODE_DATA));
 }
 
-void PopupViewViews::Show() {
+void PopupViewViews::Show(
+    AutoselectFirstSuggestion autoselect_first_suggestion) {
   NotifyAccessibilityEvent(ax::mojom::Event::kExpandedChanged, true);
-  DoShow();
+  if (DoShow() && autoselect_first_suggestion) {
+    SetSelectedCell(CellIndex{0u, PopupRowView::CellType::kContent});
+  }
 }
 
 void PopupViewViews::Hide() {
@@ -141,20 +132,158 @@ void PopupViewViews::Hide() {
   DoHide();
 }
 
-void PopupViewViews::OnSelectedRowChanged(
-    absl::optional<int> previous_row_selection,
-    absl::optional<int> current_row_selection) {
-  if (previous_row_selection) {
-    GetPopupRowViewAt(*previous_row_selection).SetSelected(false);
+absl::optional<PopupViewViews::CellIndex> PopupViewViews::GetSelectedCell()
+    const {
+  // If the suggestions were updated, the cell index may no longer be
+  // up-to-date, but it cannot simply be reset, because we would lose the
+  // current selection. Therefore some validity checks need to be performed
+  // here.
+  if (!row_with_selected_cell_ ||
+      !HasPopupRowViewAt(*row_with_selected_cell_)) {
+    return absl::nullopt;
   }
 
-  if (current_row_selection) {
-    PopupRowView& current_row = GetPopupRowViewAt(*current_row_selection);
-    current_row.SetSelected(true);
-    current_row.ScrollViewToVisible();
+  if (absl::optional<PopupRowView::CellType> cell_type =
+          GetPopupRowViewAt(*row_with_selected_cell_).GetSelectedCell()) {
+    return CellIndex{*row_with_selected_cell_, *cell_type};
+  }
+  return absl::nullopt;
+}
+
+void PopupViewViews::SetSelectedCell(absl::optional<CellIndex> cell_index) {
+  absl::optional<CellIndex> old_index = GetSelectedCell();
+  if (old_index == cell_index) {
+    return;
   }
 
+  if (old_index) {
+    GetPopupRowViewAt(old_index->first).SetSelectedCell(absl::nullopt);
+  }
+
+  if (cell_index && HasPopupRowViewAt(cell_index->first)) {
+    row_with_selected_cell_ = cell_index->first;
+    PopupRowView& new_row = GetPopupRowViewAt(cell_index->first);
+    new_row.SetSelectedCell(cell_index->second);
+    new_row.ScrollViewToVisible();
+  } else {
+    row_with_selected_cell_ = absl::nullopt;
+  }
   NotifyAccessibilityEvent(ax::mojom::Event::kSelectedChildrenChanged, true);
+}
+
+bool PopupViewViews::HandleKeyPressEvent(
+    const content::NativeWebKeyboardEvent& event) {
+  const bool kHasShiftModifier =
+      (event.GetModifiers() & blink::WebInputEvent::kShiftKey);
+  const bool kHasNonShiftModifier =
+      (event.GetModifiers() & blink::WebInputEvent::kKeyModifiers &
+       ~blink::WebInputEvent::kShiftKey);
+
+  switch (event.windows_key_code) {
+    case ui::VKEY_UP:
+      SelectPreviousRow();
+      return true;
+    case ui::VKEY_DOWN:
+      SelectNextRow();
+      return true;
+    case ui::VKEY_PRIOR:  // Page up.
+      // Set no line and then select the next line in case the first line is not
+      // selectable.
+      SetSelectedCell(absl::nullopt);
+      SelectNextRow();
+      return true;
+    case ui::VKEY_NEXT:  // Page down.
+      SetSelectedCell(absl::nullopt);
+      SelectPreviousRow();
+      return true;
+    case ui::VKEY_RETURN:
+      return AcceptSelectedCell(/*tab_key_pressed=*/false);
+    case ui::VKEY_DELETE:
+      return kHasShiftModifier && RemoveSelectedCell();
+    case ui::VKEY_TAB:
+      // We want TAB or Shift+TAB press to cause the selected line to be
+      // accepted, but still return false so the tab key press propagates and
+      // change the cursor location.
+      // We do not want to handle Mod+TAB for other modifiers because this may
+      // have other purposes (e.g., change the tab).
+      if (!kHasNonShiftModifier) {
+        AcceptSelectedCell(/*tab_key_pressed=*/true);
+      }
+      return false;
+    default:
+      return false;
+  }
+}
+
+void PopupViewViews::SelectPreviousRow() {
+  DCHECK(!rows_.empty());
+  absl::optional<CellIndex> old_index = GetSelectedCell();
+  const PopupRowView::CellType kNewCellType =
+      old_index ? old_index->second : PopupRowView::CellType::kContent;
+
+  // Temporarily use an int to avoid underflows.
+  int new_row = old_index ? static_cast<int>(old_index->first) - 1 : -1;
+  while (new_row >= 0 && !HasPopupRowViewAt(new_row)) {
+    --new_row;
+  }
+
+  if (new_row < 0) {
+    new_row = static_cast<int>(rows_.size()) - 1;
+  }
+  SetSelectedCell(CellIndex{new_row, kNewCellType});
+}
+
+void PopupViewViews::SelectNextRow() {
+  DCHECK(!rows_.empty());
+  absl::optional<CellIndex> old_index = GetSelectedCell();
+  const PopupRowView::CellType kNewCellType =
+      old_index ? old_index->second : PopupRowView::CellType::kContent;
+
+  size_t new_row = old_index ? old_index->first + 1u : 0u;
+  while (new_row < rows_.size() && !HasPopupRowViewAt(new_row)) {
+    ++new_row;
+  }
+
+  if (new_row >= rows_.size()) {
+    new_row = 0u;
+  }
+  SetSelectedCell(CellIndex{new_row, kNewCellType});
+}
+
+bool PopupViewViews::AcceptSelectedCell(bool tab_key_pressed) {
+  absl::optional<CellIndex> index = GetSelectedCell();
+  if (!controller_ || !index) {
+    return false;
+  }
+
+  // If the tab key is pressed, only content cells that contain fillable items
+  // or scanning a credit card may be accepted.
+  if (tab_key_pressed) {
+    if (index->second != PopupRowView::CellType::kContent) {
+      return false;
+    }
+    int frontend_id = controller_->GetSuggestionAt(index->first).frontend_id;
+    if (frontend_id <= 0 &&
+        !base::Contains(kItemsTriggeringFieldFilling, frontend_id) &&
+        frontend_id != POPUP_ITEM_ID_SCAN_CREDIT_CARD) {
+      return false;
+    }
+  }
+
+  // TODO(crbug.com/1411172): Use different actions depending on which cell is
+  // selected.
+  // No show threshold is used for key pressed - they can be accepted
+  // immediately after the popup is shown.
+  controller_->AcceptSuggestion(index->first, base::TimeDelta());
+  return true;
+}
+
+bool PopupViewViews::RemoveSelectedCell() {
+  absl::optional<CellIndex> index = GetSelectedCell();
+
+  // Only content cells can be removed.
+  return index && index->second == PopupRowView::CellType::kContent &&
+         controller_ && controller_->RemoveSuggestion(index->first);
 }
 
 void PopupViewViews::OnSuggestionsChanged() {
@@ -189,6 +318,11 @@ void PopupViewViews::OnWidgetVisibilityChanged(views::Widget* widget,
       }
     }
   }
+}
+
+bool PopupViewViews::HasPopupRowViewAt(size_t index) const {
+  return index < rows_.size() &&
+         absl::holds_alternative<PopupRowView*>(rows_[index]);
 }
 
 void PopupViewViews::CreateChildViews() {
@@ -244,22 +378,11 @@ void PopupViewViews::CreateChildViews() {
                   kSuggestions[current_line_number])));
           break;
 
-        case PopupItemId::POPUP_ITEM_ID_USERNAME_ENTRY:
-        case PopupItemId::POPUP_ITEM_ID_PASSWORD_ENTRY:
-        case PopupItemId::POPUP_ITEM_ID_ACCOUNT_STORAGE_USERNAME_ENTRY:
-        case PopupItemId::POPUP_ITEM_ID_ACCOUNT_STORAGE_PASSWORD_ENTRY:
-          rows_.push_back(
-              body_container->AddChildView(PopupPasswordSuggestionView::Create(
-                  *this, current_line_number, frontend_id)));
-          break;
-
-        // The default section contains most of the suggestions including
-        // addresses and credit cards.
+        // The default section contains most all selectable rows and includes
+        // autocomplete, address, credit cards and passwords.
         default:
-          rows_.push_back(
-              body_container->AddChildView(PopupSuggestionView::Create(
-                  *this, current_line_number, frontend_id,
-                  controller_->GetPopupType())));
+          rows_.push_back(body_container->AddChildView(
+              PopupRowView::Create(*this, current_line_number)));
       }
     }
 
@@ -299,9 +422,8 @@ void PopupViewViews::CreateChildViews() {
       rows_.push_back(footer_container->AddChildView(
           std::make_unique<PopupSeparatorView>()));
     } else {
-      rows_.push_back(footer_container->AddChildView(PopupFooterView::Create(
-          *this, current_line_number,
-          kSuggestions[current_line_number].frontend_id)));
+      rows_.push_back(footer_container->AddChildView(
+          PopupRowView::Create(*this, current_line_number)));
     }
   }
 
@@ -426,6 +548,7 @@ bool PopupViewViews::DoUpdateBoundsAndRedrawPopup() {
 }
 
 BEGIN_METADATA(PopupViewViews, PopupBaseView)
+ADD_PROPERTY_METADATA(absl::optional<PopupViewViews::CellIndex>, SelectedCell)
 END_METADATA
 
 // static

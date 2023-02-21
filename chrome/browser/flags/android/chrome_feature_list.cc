@@ -103,7 +103,6 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &blink::features::kForceWebContentsDarkMode,
     &blink::features::kOSKResizesVisualViewportByDefault,
     &blink::features::kPrerender2,
-    &blink::features::kStylusRichGestures,
     &commerce::kCommerceMerchantViewer,
     &commerce::kCommercePriceTracking,
     &commerce::kShoppingList,
@@ -180,6 +179,7 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &kCriticalPersistedTabData,
     &kCommerceCoupons,
     &kCCTBackgroundTab,
+    &kCCTBottomBarSwipeUpGesture,
     &kCCTBrandTransparency,
     &kCCTClientDataHeader,
     &kCCTFeatureUsage,
@@ -381,6 +381,7 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &share::kScreenshotsForAndroidV2,
     &share::kUpcomingSharingFeatures,
     &supervised_user::kLocalWebApprovals,
+    &supervised_user::kSynchronousSignInChecking,
     &supervised_user::kWebFilterInterstitialRefresh,
     &switches::kForceStartupSigninPromo,
     &switches::kIdentityStatusConsistency,
@@ -511,6 +512,10 @@ BASE_FEATURE(kCriticalPersistedTabData,
 BASE_FEATURE(kCommerceCoupons,
              "CommerceCoupons",
              base::FEATURE_DISABLED_BY_DEFAULT);
+
+BASE_FEATURE(kCCTBottomBarSwipeUpGesture,
+             "CCTBottomBarSwipeUpGesture",
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kCCTBackgroundTab,
              "CCTBackgroundTab",

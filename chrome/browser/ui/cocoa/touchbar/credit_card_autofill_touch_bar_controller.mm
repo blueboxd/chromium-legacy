@@ -6,6 +6,7 @@
 
 #import "base/mac/scoped_nsobject.h"
 #include "base/strings/sys_string_conversions.h"
+#include "base/time/time.h"
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/autofill/autofill_popup_controller_utils.h"
 #include "chrome/browser/ui/autofill/autofill_popup_controller.h"
@@ -178,7 +179,8 @@ NSImage* GetCreditCardTouchBarImage(int iconId) {
 }
 
 - (void)acceptCreditCard:(id)sender {
-  _controller->AcceptSuggestion([sender tag]);
+  _controller->AcceptSuggestion([sender tag],
+                                /*show_threshold=*/base::TimeDelta());
 }
 
 - (void)setIsCreditCardPopup:(bool)is_credit_card_popup {

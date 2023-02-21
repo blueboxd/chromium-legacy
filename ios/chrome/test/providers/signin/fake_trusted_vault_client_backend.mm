@@ -72,6 +72,11 @@ void FakeTrustedVaultClientBackend::RemoveObserver(Observer* observer) {
   // Do nothing.
 }
 
+void FakeTrustedVaultClientBackend::
+    SetDeviceRegistrationPublicKeyVerifierForUMA(VerifierCallback verifier) {
+  // Do nothing.
+}
+
 void FakeTrustedVaultClientBackend::FetchKeys(id<SystemIdentity> identity,
                                               KeyFetchedCallback callback) {
   // Do nothing.
@@ -115,6 +120,18 @@ void FakeTrustedVaultClientBackend::CancelDialog(BOOL animated,
       dismissViewControllerAnimated:animated
                          completion:callback];
   view_controller_ = nil;
+}
+
+void FakeTrustedVaultClientBackend::ClearLocalData(
+    id<SystemIdentity> identity,
+    base::OnceCallback<void(bool)> callback) {
+  // Do nothing.
+}
+
+void FakeTrustedVaultClientBackend::GetPublicKeyForIdentity(
+    id<SystemIdentity> identity,
+    GetPublicKeyCallback callback) {
+  // Do nothing.
 }
 
 void FakeTrustedVaultClientBackend::SimulateUserCancel() {

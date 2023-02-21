@@ -52,6 +52,7 @@
 <translation id="1100782917270858593">Botón Reanudar exploración, presiona Intro para reanudar tu exploración y ver actividad pertinente en tu historial de Chrome</translation>
 <translation id="1101672080107056897">Acción con error</translation>
 <translation id="1103523840287552314">Siempre traducir <ph name="LANGUAGE" /></translation>
+<translation id="1104409666019087579">Algunos campos obligatorios están vacíos. Llénalos antes de guardar.</translation>
 <translation id="1108464073729874771">A3x4</translation>
 <translation id="1110994991967754504">Selecciona el permiso para <ph name="PERMISSION_NAME" /></translation>
 <translation id="1112828774174131240">Antigüedades y coleccionables</translation>
@@ -893,7 +894,6 @@ De lo contrario, la configuración de privacidad bloqueará esta acción. Esto p
 <translation id="3218181027817787318">Relativo</translation>
 <translation id="3223287115535306850">Ícono de carga para el inicio de la app</translation>
 <translation id="3223425961342298674">No se permite la ubicación</translation>
-<translation id="3225347164936328585">Aplausos</translation>
 <translation id="3225919329040284222">El servidor mostró un certificado que no coincide con lo esperado. Estas expectativas se incluyen en determinados sitios web con un alto nivel de seguridad para garantizar tu protección.</translation>
 <translation id="3226128629678568754">Presiona el botón para volver a cargar y, de ese modo, enviar nuevamente los datos necesarios para cargar la página.</translation>
 <translation id="3226387218769101247">Miniaturas</translation>
@@ -910,7 +910,6 @@ De lo contrario, la configuración de privacidad bloqueará esta acción. Esto p
 <translation id="3249151924975132674">Préstamos para estudiantes y financiación universitaria</translation>
 <translation id="3249845759089040423">Groovy</translation>
 <translation id="3250640885957938546">Publicidad y marketing</translation>
-<translation id="3251133337102041130">Legal de gobierno</translation>
 <translation id="3252266817569339921">Francés</translation>
 <translation id="3254301855501243548">45.7 × 55.9 cm (18 × 22 in)</translation>
 <translation id="3256863843508922226">Jubilación y pensiones</translation>
@@ -951,7 +950,6 @@ De lo contrario, la configuración de privacidad bloqueará esta acción. Esto p
 <translation id="3340978935015468852">configuración</translation>
 <translation id="3342018947887487892">Luego, un sitio que visites puede solicitar esta información, ya sea sobre los temas de anuncios o sobre los anuncios sugeridos por los sitios que visitaste.</translation>
 <translation id="3342366525167526994">Arte corporal</translation>
-<translation id="3345782426586609320">Ojos</translation>
 <translation id="3349952286488694786">SRA2</translation>
 <translation id="3355823806454867987">Cambiar la configuración del proxy...</translation>
 <translation id="3359565626472459400">Matrimonio</translation>
@@ -1319,6 +1317,7 @@ De lo contrario, la configuración de privacidad bloqueará esta acción. Esto p
 <translation id="4223404254440398437">No se permite el micrófono</translation>
 <translation id="4226937834893929579"><ph name="BEGIN_LINK" />Intenta ejecutar el Diagnóstico de red<ph name="END_LINK" />.</translation>
 <translation id="4230204356098880324">Puede solicitar permiso para usar y mover la cámara</translation>
+<translation id="4231448684371260244">20.3 × 33 cm (8 × 13 in)</translation>
 <translation id="4235360514405112390">Válido</translation>
 <translation id="4250431568374086873">Tu conexión con este sitio no es completamente segura</translation>
 <translation id="4250680216510889253">No</translation>
@@ -1391,7 +1390,6 @@ De lo contrario, la configuración de privacidad bloqueará esta acción. Esto p
 <translation id="4393632246160856858">Productos para el cuidado de las uñas</translation>
 <translation id="4406883609789734330">Subtitulado instantáneo</translation>
 <translation id="4406896451731180161">resultados de búsqueda</translation>
-<translation id="4407755609041463909">Fuego</translation>
 <translation id="4408413947728134509">Cookies <ph name="NUM_COOKIES" /></translation>
 <translation id="4411435778612100394">Electrónica de consumo</translation>
 <translation id="4412074349188076601">Esta configuración está marcada como instalable, pero no se proporciona ninguna imagen para esta arquitectura, por lo que no se puede instalar.</translation>
@@ -1777,7 +1775,6 @@ De lo contrario, la configuración de privacidad bloqueará esta acción. Esto p
 <translation id="5333022057423422993">Chrome encontró la contraseña que acabas de usar en una violación de la seguridad de los datos. Para proteger tus cuentas, te recomendamos revisar las contraseñas guardadas.</translation>
 <translation id="5334013548165032829">Registros detallados del sistema</translation>
 <translation id="5334145288572353250">¿Deseas guardar la dirección?</translation>
-<translation id="5335920952954443287">Corazón latiendo</translation>
 <translation id="5337569431717511221">Establece Chrome como el botón de navegador predeterminado, presiona Intro para establecer Chrome como el navegador predeterminado del sistema</translation>
 <translation id="5340250774223869109">Se bloqueó la app</translation>
 <translation id="534295439873310000">Dispositivos NFC</translation>
@@ -1785,7 +1782,6 @@ De lo contrario, la configuración de privacidad bloqueará esta acción. Esto p
 <translation id="5344579389779391559">Es posible que esta página intente cobrarte dinero</translation>
 <translation id="5347645913823149105">Botón Personalizar fuentes en Chrome, presiona Intro para personalizar el tamaño de las fuentes y los tipos de letra en Chrome</translation>
 <translation id="5355557959165512791">No puedes visitar <ph name="SITE" /> ahora porque este certificado se revocó. Los ataques y errores de red suelen ser temporales, por lo que es posible que esta página funcione más tarde.</translation>
-<translation id="5356837363448394805">Sonrojo</translation>
 <translation id="5357848622083956825">Artes visuales y diseño</translation>
 <translation id="536296301121032821">Error al almacenar la configuración de la política</translation>
 <translation id="5363309033720083897">Puerto en serie que permite tu administrador</translation>
@@ -2023,6 +2019,7 @@ De lo contrario, la configuración de privacidad bloqueará esta acción. Esto p
 <translation id="5992691462791905444">Plegado en Z para ingeniería</translation>
 <translation id="5992805036496113940">Ver la información que se usa para mostrarte anuncios</translation>
 <translation id="5995727681868049093">Administrar la información, privacidad y seguridad de tu Cuenta de Google</translation>
+<translation id="5996887213716993070">El campo <ph name="FIELD" /> no puede estar vacío</translation>
 <translation id="5997247540087773573">La contraseña que acabas de usar se encontró en una violación de la seguridad de los datos. A fin de proteger tus cuentas, el Administrador de contraseñas de Google te recomienda cambiarla ahora y revisar las contraseñas guardadas.</translation>
 <translation id="6000758707621254961"><ph name="RESULT_COUNT" /> resultados para "<ph name="SEARCH_TEXT" />"</translation>
 <translation id="6005765687956866568">Se borró la información autocompletada del formulario</translation>
@@ -2116,7 +2113,6 @@ De lo contrario, la configuración de privacidad bloqueará esta acción. Esto p
 <translation id="6226163402662242066"><ph name="MANAGE_CHROME_ACCESSIBILITY_FOCUSED_FRIENDLY_MATCH_TEXT" />, presiona Tab y, luego, Intro para personalizar tus herramientas de accesibilidad en la configuración de Chrome</translation>
 <translation id="6229649258872345286">Viajes familiares</translation>
 <translation id="6232271601416750929">Belleza ecológica</translation>
-<translation id="6233160458685643793">Sonrisa burlona</translation>
 <translation id="6234122620015464377">Cortar después de cada documento</translation>
 <translation id="6236290670123303279">Administrar Configuración</translation>
 <translation id="6240447795304464094">Logotipo de Google Pay</translation>
@@ -2184,7 +2180,6 @@ De lo contrario, la configuración de privacidad bloqueará esta acción. Esto p
 <translation id="6391700400718590966">Se cerró la hoja inferior que indicaba que las credenciales de pago seguro no coinciden</translation>
 <translation id="6393956493820063117">Una política del administrador no permite pegar contenido de <ph name="ORIGIN_NAME" /> en esta ubicación</translation>
 <translation id="6394852772105848029">Este sitio quiere abrir la app de <ph name="APP_NAME" /></translation>
-<translation id="6398277657359595425">Llanto desconsolado</translation>
 <translation id="6398765197997659313">Salir de pantalla completa</translation>
 <translation id="6401136357288658127">Esta política es obsoleta. En su lugar, debes usar la política <ph name="NEW_POLICY" />.</translation>
 <translation id="6404511346730675251">Editar marcador</translation>
@@ -2284,7 +2279,6 @@ De lo contrario, la configuración de privacidad bloqueará esta acción. Esto p
 <translation id="6660413144148052430">ubicación</translation>
 <translation id="6662457027866368246">Primer rollo</translation>
 <translation id="666259744093848177">(x86_64 translated)</translation>
-<translation id="6663846344464066639">Manos juntas</translation>
 <translation id="6665553082534466207">Perforación triple a la derecha</translation>
 <translation id="6668389483194953109">Se encontró el nombre del tamaño de papel "custom", pero la propiedad "custom_size" está vacía o no es válida.</translation>
 <translation id="6671697161687535275">¿Confirmas que quieres quitar la sugerencia de formulario de Chromium?</translation>
@@ -2385,7 +2379,6 @@ De lo contrario, la configuración de privacidad bloqueará esta acción. Esto p
 <translation id="6939469646605424232">Dramas de televisión</translation>
 <translation id="6944692733090228304">Ingresaste tu contraseña en un sitio que no está administrado por <ph name="BEGIN_BOLD" /><ph name="ORG_NAME" /><ph name="END_BOLD" />. Para proteger tu cuenta, no vuelvas a usar la contraseña en otras apps y sitios.</translation>
 <translation id="6945221475159498467">Seleccionar</translation>
-<translation id="6946722113367118030">Pensando</translation>
 <translation id="6948051842255602737">Terminó el juego, tu puntuación es <ph name="SCORE" />.</translation>
 <translation id="6948701128805548767">Para ver los requisitos y métodos de retiro, selecciona una dirección</translation>
 <translation id="6948874830249067134">A1x3</translation>
@@ -2577,6 +2570,7 @@ Detalles adicionales:
 <translation id="7388594495505979117">{0,plural, =1{El dispositivo se reiniciará dentro de 1 minuto}other{El dispositivo se reiniciará dentro de # minutos}}</translation>
 <translation id="7390545607259442187">Confirmar tarjeta</translation>
 <translation id="7392089738299859607">Actualizar dirección</translation>
+<translation id="739728382607845710">Ícono del controlador de pagos</translation>
 <translation id="7399802613464275309">Verificación de seguridad</translation>
 <translation id="7400418766976504921">URL</translation>
 <translation id="7403392780200267761">Compartir esta pestaña con el vínculo, creando un código QR, transmitiendo la pestaña y más</translation>
@@ -2708,7 +2702,6 @@ Detalles adicionales:
 <translation id="765676359832457558">Ocultar configuración avanzada...</translation>
 <translation id="7658239707568436148">Cancelar</translation>
 <translation id="7659327900411729175">Sobre Kaku n.º 8</translation>
-<translation id="7659878911471462949">Lágrimas de felicidad</translation>
 <translation id="766014026101194726">{0,plural, =1{La política del administrador no permite subir este archivo}other{La política del administrador no permite subir # archivos}}</translation>
 <translation id="7662298039739062396">Configuración controlada por una extensión</translation>
 <translation id="7663736086183791259">Certificado <ph name="CERTIFICATE_VALIDITY" /></translation>
@@ -2766,6 +2759,7 @@ Detalles adicionales:
 <translation id="7766518757692125295">Contorno</translation>
 <translation id="7773005668374414287">Mismo orden hacia arriba</translation>
 <translation id="7785790577395078482">esta tablet</translation>
+<translation id="7786368602962652765">Un campo obligatorio está vacío. Llénalo antes de guardar.</translation>
 <translation id="7790488044432570133">Los sitios que visitas pueden solicitarle información a Chrome para facilitar la medición del rendimiento de sus anuncios. Chrome permite que los sitios recopilen algunos tipos de datos, como el momento del día en que se te mostró un anuncio.</translation>
 <translation id="7791011319128895129">No publicada</translation>
 <translation id="7791196057686275387">Embalaje</translation>
@@ -2912,7 +2906,6 @@ Detalles adicionales:
 <translation id="8150722005171944719">El archivo de <ph name="URL" /> no se puede leer. Es posible que se haya eliminado o movido o que se impida el acceso a los permisos del archivo.</translation>
 <translation id="8153865548451212769">{0,plural, =1{La política del administrador no recomienda descargar este archivo en <ph name="DESTINATION_NAME" />}other{La política del administrador no recomienda descargar estos archivos en <ph name="DESTINATION_NAME" />}}</translation>
 <translation id="8163866351304776260">Perforación cuádruple a la izquierda</translation>
-<translation id="8175330382720204696">Carta de gobierno</translation>
 <translation id="8175796834047840627">Como accediste a tu cuenta, Chrome te ofrece guardar tus tarjetas en tu Cuenta de Google. Puedes modificar este comportamiento en la configuración.</translation>
 <translation id="8176440868214972690">El administrador de este dispositivo envió parte de la información, como la configuración o las políticas, a los siguientes sitios web.</translation>
 <translation id="8184538546369750125">Usar configuración global predeterminada (Permitir)</translation>
@@ -3199,6 +3192,7 @@ Detalles adicionales:
 <translation id="8899807382908246773">Anuncios intrusivos</translation>
 <translation id="8903921497873541725">Acercar</translation>
 <translation id="890493561996401738">Botón Quitar sugerencia; presiona Intro para quitarla, <ph name="REMOVE_BUTTON_FOCUSED_FRIENDLY_MATCH_TEXT" /></translation>
+<translation id="8910898109640902752">20.3 × 25.4 cm (8 × 10 in)</translation>
 <translation id="8912362522468806198">Cuenta de Google</translation>
 <translation id="8913778647360618320">Botón Administrar formas de pago: presiona Intro para administrar tus datos de pago y de tarjetas de crédito en la configuración de Chrome</translation>
 <translation id="8922013791253848639">Permite mostrar anuncios en este sitio</translation>

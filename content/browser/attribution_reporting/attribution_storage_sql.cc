@@ -858,7 +858,7 @@ CreateReportResult AttributionStorageSql::MaybeCreateAndStoreReport(
   const bool top_level_filters_match =
       source_to_attribute->source.common_info().filter_data().Matches(
           source_to_attribute->source.common_info().source_type(),
-          trigger_registration.filters, trigger_registration.not_filters);
+          trigger_registration.filters);
 
   attribution_info.emplace(std::move(source_to_attribute->source), trigger_time,
                            trigger_registration.debug_key,
@@ -1085,8 +1085,8 @@ EventLevelResult AttributionStorageSql::MaybeCreateEventLevelReport(
   auto event_trigger = base::ranges::find_if(
       trigger.registration().event_triggers.vec(),
       [&](const attribution_reporting::EventTriggerData& event_trigger) {
-        return common_info.filter_data().Matches(
-            source_type, event_trigger.filters, event_trigger.not_filters);
+        return common_info.filter_data().Matches(source_type,
+                                                 event_trigger.filters);
       });
 
   if (event_trigger == trigger.registration().event_triggers.vec().end()) {
@@ -1684,8 +1684,9 @@ void AttributionStorageSql::ClearData(
   std::vector<StoredSource::Id> source_ids_to_delete;
   int num_event_reports_deleted = 0;
   while (statement.Step()) {
-    if (filter.is_null() || filter.Run(blink::StorageKey(DeserializeOrigin(
-                                statement.ColumnString(0))))) {
+    if (filter.is_null() ||
+        filter.Run(blink::StorageKey::CreateFirstParty(
+            DeserializeOrigin(statement.ColumnString(0))))) {
       source_ids_to_delete.emplace_back(statement.ColumnInt64(1));
       if (statement.GetColumnType(2) != sql::ColumnType::kNull) {
         if (!DeleteReportInternal(AttributionReport::EventLevelData::Id(
@@ -2462,8 +2463,9 @@ int AttributionStorageSql::ClearAggregatableAttributionsForOriginsInRange(
 
   int num_aggregate_reports_deleted = 0;
   while (statement.Step()) {
-    if (filter.is_null() || filter.Run(blink::StorageKey(DeserializeOrigin(
-                                statement.ColumnString(0))))) {
+    if (filter.is_null() ||
+        filter.Run(blink::StorageKey::CreateFirstParty(
+            DeserializeOrigin(statement.ColumnString(0))))) {
       source_ids_to_delete.emplace_back(statement.ColumnInt64(1));
       if (statement.GetColumnType(2) != sql::ColumnType::kNull) {
         if (!DeleteReportInternal(
@@ -2683,23 +2685,12 @@ AttributionStorageSql::MaybeCreateAggregatableAttributionReport(
 
   const AttributionSourceType source_type = common_info.source_type();
 
-  std::vector<AggregatableHistogramContribution> contributions =
-      CreateAggregatableHistogram(
-          common_info.filter_data(), source_type,
-          common_info.aggregation_keys(),
-          trigger_registration.aggregatable_trigger_data,
-          trigger_registration.aggregatable_values);
-  if (contributions.empty()) {
-    return AggregatableResult::kNoHistograms;
-  }
-
   auto matched_dedup_key = base::ranges::find_if(
       trigger.registration().aggregatable_dedup_keys.vec(),
       [&](const attribution_reporting::AggregatableDedupKey&
               aggregatable_dedup_key) {
         return common_info.filter_data().Matches(
-            source_type, aggregatable_dedup_key.filters,
-            aggregatable_dedup_key.not_filters);
+            source_type, aggregatable_dedup_key.filters);
       });
 
   if (matched_dedup_key !=
@@ -2716,6 +2707,16 @@ AttributionStorageSql::MaybeCreateAggregatableAttributionReport(
       return AggregatableResult::kDeduplicated;
     case ReportAlreadyStoredStatus::kError:
       return AggregatableResult::kInternalError;
+  }
+
+  std::vector<AggregatableHistogramContribution> contributions =
+      CreateAggregatableHistogram(
+          common_info.filter_data(), source_type,
+          common_info.aggregation_keys(),
+          trigger_registration.aggregatable_trigger_data,
+          trigger_registration.aggregatable_values);
+  if (contributions.empty()) {
+    return AggregatableResult::kNoHistograms;
   }
 
   switch (CapacityForStoringReport(
@@ -2983,8 +2984,9 @@ AttributionStorageSql::GetAllDataKeys() {
 void AttributionStorageSql::DeleteByDataKey(
     const AttributionDataModel::DataKey& key) {
   ClearData(base::Time::Min(), base::Time::Max(),
-            base::BindRepeating(std::equal_to<blink::StorageKey>(),
-                                blink::StorageKey(key.reporting_origin())),
+            base::BindRepeating(
+                std::equal_to<blink::StorageKey>(),
+                blink::StorageKey::CreateFirstParty(key.reporting_origin())),
             /*delete_rate_limit_data=*/true);
 }
 

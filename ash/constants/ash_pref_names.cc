@@ -556,6 +556,11 @@ const char kContextualTooltips[] = "settings.contextual_tooltip.shown_info";
 // name will appear in this list as an empty string. The desk names are stored
 // as UTF8 strings.
 const char kDesksNamesList[] = "ash.desks.desks_names_list";
+// A list containing the stored virtual desks guids in the same order of the
+// desks in the overview desks bar. This list will be used to restore desk guids
+// for the primary user on first sign-in. The guids are stored as lowercase
+// strings.
+const char kDesksGuidsList[] = "ash.desks.desks_guids_list";
 // This list stores the metrics of virtual desks. Like |kDesksNamesList|, this
 // list stores entries in the same order of the desks in the overview desks bar.
 // Values are stored as dictionaries.
@@ -596,6 +601,22 @@ const char kDictationAcceleratorDialogHasBeenAccepted[] =
 // has ever been shown.
 const char kDictationDlcSuccessNotificationHasBeenShown[] =
     "settings.a11y.dictation_dlc_success_notification_has_been_shown";
+// A boolean pref which indicates whether the Dictation DLC only Pumpkin
+// downloaded notification has ever been shown.
+const char kDictationDlcOnlyPumpkinDownloadedNotificationHasBeenShown[] =
+    "settings.a11y.dictation_dlc_only_pumpkin_downloaded_notification_has_been_"
+    "shown";
+// A boolean pref which indicates whether the Dictation DLC only SODA
+// downloaded notification has ever been shown.
+const char kDictationDlcOnlySodaDownloadedNotificationHasBeenShown[] =
+    "settings.a11y.dictation_dlc_only_soda_downloaded_notification_has_been_"
+    "shown";
+// A boolean pref which indicates whether the Dictation No DLCs downloaded
+// notification has ever been shown.
+const char kDictationNoDlcsDownloadedNotificationHasBeenShown[] =
+    "settings.a11y.dictation_dlc_no_dlcs_downloaded_notification_has_been_"
+    "shown";
+
 // A boolean pref which indicates whether the display rotation confirmation
 // dialog has ever been shown.
 // Renamed 10/2019 to force reset the pref to false.

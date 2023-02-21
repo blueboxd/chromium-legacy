@@ -81,8 +81,6 @@
 #include "third_party/blink/public/platform/web_cache.h"
 #include "third_party/blink/public/platform/web_security_origin.h"
 #include "third_party/blink/public/platform/web_url.h"
-#include "third_party/blink/public/platform/web_url_loader_client.h"
-#include "third_party/blink/public/platform/web_url_loader_mock_factory.h"
 #include "third_party/blink/public/platform/web_url_response.h"
 #include "third_party/blink/public/test/test_web_frame_content_dumper.h"
 #include "third_party/blink/public/web/web_console_message.h"
@@ -198,6 +196,7 @@
 #include "third_party/blink/renderer/platform/loader/fetch/raw_resource.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher_properties.h"
+#include "third_party/blink/renderer/platform/loader/fetch/url_loader/url_loader_client.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/runtime_feature_state/runtime_feature_state_override_context.h"
 #include "third_party/blink/renderer/platform/scheduler/public/event_loop.h"
@@ -207,6 +206,7 @@
 #include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 #include "third_party/blink/renderer/platform/testing/testing_platform_support.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
+#include "third_party/blink/renderer/platform/testing/url_loader_mock_factory.h"
 #include "third_party/blink/renderer/platform/testing/url_test_helpers.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl_hash.h"
 #include "third_party/blink/renderer/platform/weborigin/scheme_registry.h"
@@ -558,8 +558,8 @@ class ScriptExecutionCallbackHelper final {
   bool DidComplete() const { return did_complete_; }
 
   WebScriptExecutionCallback Callback() {
-    return base::BindOnce(&ScriptExecutionCallbackHelper::Completed,
-                          base::Unretained(this));
+    return WTF::BindOnce(&ScriptExecutionCallbackHelper::Completed,
+                         WTF::Unretained(this));
   }
 
   // Returns true if any results (even if they were empty) were passed to the
@@ -7256,9 +7256,9 @@ class TestAccessInitialDocumentLocalFrameHost
   void Init(blink::AssociatedInterfaceProvider* provider) {
     provider->OverrideBinderForTesting(
         mojom::blink::LocalMainFrameHost::Name_,
-        base::BindRepeating(
+        WTF::BindRepeating(
             &TestAccessInitialDocumentLocalFrameHost::BindFrameHostReceiver,
-            base::Unretained(this)));
+            WTF::Unretained(this)));
   }
 
   // LocalMainFrameHost:
@@ -8051,7 +8051,7 @@ TEST_F(WebFrameTest,
   frame_test_helpers::WebViewHelper web_view_helper;
   web_view_helper.InitializeAndLoad("data:text/html,<iframe></iframe>");
 
-  StorageKey storage_key = StorageKey::CreateWithNonceForTesting(
+  StorageKey storage_key = StorageKey::CreateWithNonce(
       url::Origin(), base::UnguessableToken::Create());
 
   auto* child_frame =
@@ -11219,13 +11219,12 @@ TEST_F(WebFrameTest, ImageDocumentLoadResponseEnd) {
   ImageResourceContent* image_content = img_document->CachedImage();
 
   EXPECT_TRUE(image_content);
-  EXPECT_NE(base::TimeTicks(), image_content->LoadResponseEnd());
+  EXPECT_NE(base::TimeTicks(), image_content->LoadEnd());
 
   DocumentLoader* loader = document->Loader();
 
   EXPECT_TRUE(loader);
-  EXPECT_EQ(loader->GetTiming().ResponseEnd(),
-            image_content->LoadResponseEnd());
+  EXPECT_EQ(loader->GetTiming().ResponseEnd(), image_content->LoadEnd());
 }
 
 TEST_F(WebFrameTest, CopyImageDocument) {
@@ -11966,13 +11965,13 @@ TEST_F(WebFrameTest, ScriptPriority) {
   client.VerifyAllRequests();
 }
 
-class MultipleDataChunkDelegate : public WebURLLoaderTestDelegate {
+class MultipleDataChunkDelegate : public URLLoaderTestDelegate {
  public:
   MultipleDataChunkDelegate() = default;
   ~MultipleDataChunkDelegate() override = default;
 
-  // WebURLLoaderTestDelegate:
-  void DidReceiveData(WebURLLoaderClient* original_client,
+  // URLLoaderTestDelegate:
+  void DidReceiveData(URLLoaderClient* original_client,
                       const char* data,
                       size_t data_length) override {
     EXPECT_GT(data_length, 16u);

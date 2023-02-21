@@ -3159,6 +3159,22 @@ void NavigationControllerImpl::NavigateToExistingPendingEntry(
     }
   }
 
+  // If it is possible that this traverse may involve a same-document navigation
+  // in the initiator and there is a Navigation API key involved, then we may
+  // need to notify the initiator if it fails. (The early returns above either
+  // do not involve these cases or already notify the initiator.)
+  // The event only needs to fire for the initiator, and only if the initiator
+  // itself is performing a same-document navigation (because the event will not
+  // fire if it navigates cross-document).
+  if (navigation_api_key) {
+    for (auto& item : same_document_loads) {
+      if (item->frame_tree_node() == initiator_rfh->frame_tree_node()) {
+        item->set_pending_navigation_api_key(*navigation_api_key);
+        break;
+      }
+    }
+  }
+
   // BackForwardCache:
   // Navigate immediately if the document is in the BackForwardCache.
   if (back_forward_cache_.GetEntry(nav_entry_id)) {
@@ -3236,6 +3252,32 @@ void NavigationControllerImpl::NavigateToExistingPendingEntry(
   // to it. Grab a reference to delay potential deletion until the end of this
   // function.
   std::unique_ptr<PendingEntryRef> pending_entry_ref = ReferencePendingEntry();
+
+  // If there is a main-frame same-document history navigation, we may defer
+  // the subframe history navigations in order to give JS in the main frame the
+  // opportunity to cancel the entire traverse via the navigate event. In that
+  // case, we need to stash the main frame request's navigation token on the
+  // subframes, so they can look up the main frame request and defer themselves
+  // until it completes.
+  if (!same_document_loads.empty() &&
+      same_document_loads.at(0)->frame_tree_node()->IsMainFrame()) {
+    NavigationRequest* main_frame_request = same_document_loads.at(0).get();
+    // The token will only be returned in cases where deferring the navigation
+    // is necessary.
+    if (auto main_frame_same_document_token =
+            main_frame_request->GetNavigationTokenForDeferringSubframes()) {
+      for (auto& item : same_document_loads) {
+        if (item.get() != main_frame_request) {
+          item->set_main_frame_same_document_history_token(
+              main_frame_same_document_token);
+        }
+      }
+      for (auto& item : different_document_loads) {
+        item->set_main_frame_same_document_history_token(
+            main_frame_same_document_token);
+      }
+    }
+  }
 
   // Send all the same document frame loads before the different document loads.
   for (auto& item : same_document_loads) {

@@ -200,13 +200,12 @@ constexpr WebSchedulerTrackedFeatures kDisallowedFeatures(
     WebSchedulerTrackedFeature::kRequestedMIDIPermission,
     WebSchedulerTrackedFeature::kRequestedVideoCapturePermission,
     WebSchedulerTrackedFeature::kSharedWorker,
-    WebSchedulerTrackedFeature::kWebDatabase,
-    WebSchedulerTrackedFeature::kWebOTPService,
     WebSchedulerTrackedFeature::kSpeechRecognizer,
     WebSchedulerTrackedFeature::kSpeechSynthesis,
     WebSchedulerTrackedFeature::kWebDatabase,
     WebSchedulerTrackedFeature::kWebHID,
     WebSchedulerTrackedFeature::kWebLocks,
+    WebSchedulerTrackedFeature::kWebOTPService,
     WebSchedulerTrackedFeature::kWebRTC,
     WebSchedulerTrackedFeature::kWebShare,
     WebSchedulerTrackedFeature::kWebSocket,
@@ -941,8 +940,11 @@ void BackForwardCacheImpl::NotRestoredReasonBuilder::
         RenderFrameHostImpl* rfh,
         RequestedFeatures requested_features) {
   DCHECK_NE(requested_features, RequestedFeatures::kOnlySticky);
-  if (!rfh->IsDOMContentLoaded())
+  // The DOM content must have finished loading, except when there is
+  // no DOM content to load when the RFH has not committed any navigation.
+  if (!rfh->IsDOMContentLoaded() && rfh->has_committed_any_navigation()) {
     result.No(BackForwardCacheMetrics::NotRestoredReason::kLoading);
+  }
 
   // Check for non-sticky features that are present at the moment.
   WebSchedulerTrackedFeatures banned_features =
@@ -1029,10 +1031,7 @@ BackForwardCacheImpl::NotRestoredReasonBuilder::NotRestoredReasonBuilder(
       tree_result_ = std::move(rfh_result);
     } else {
       RenderFrameHostImpl* parent = rfh->GetParentOrOuterDocumentOrEmbedder();
-      // TODO(https://crbug.com/1257276): parent can return null for unattached
-      // guests.
-      if (!parent)
-        parent = root_rfh_;
+      DCHECK(parent);
       parent_map[parent]->AppendChild(std::move(rfh_result));
     }
   });

@@ -3,15 +3,14 @@
 # found in the LICENSE file.
 
 import("//chrome/common/features.gni")
-import("//third_party/closure_compiler/compile_js.gni")
 import("//tools/grit/grit_rule.gni")
 import("//tools/grit/preprocess_if_expr.gni")
 import("//tools/polymer/css_to_wrapper.gni")
 import("//tools/polymer/html_to_wrapper.gni")
 import("//tools/typescript/ts_library.gni")
 import("//ui/webui/resources/tools/generate_grd.gni")
+import("//ui/webui/resources/tools/optimize_webui.gni")
 import("//ui/webui/webui_features.gni")
-import("../../tools/optimize_webui.gni")
 import("./os_settings.gni")
 
 assert(is_chromeos_ash, "ChromeOS Settings is ChromeOS only")
@@ -63,6 +62,7 @@ if (optimize_webui) {
 
 # TypeScript Build Configuration
 ts_library("build_ts") {
+  allow_js = true
   tsconfig_base = "tsconfig_base.json"
   deps = [
     "//third_party/polymer/v3_0:library",
@@ -274,54 +274,4 @@ generate_grd("build_oobe_grdp") {
   out_grd = "$target_gen_dir/os_settings_oobe_resources.grdp"
   input_files_base_dir = rebase_path(".", "//")
   input_files = [ "images/smart_privacy.svg" ]
-}
-
-# TODO(crbug/1315757) Gradually remove closure compilation for subfolders/pages
-# that are migrated to TypeScript
-group("closure_compile_module") {
-  deps = [ ":closure_compile_local_module" ]
-}
-
-js_type_check("closure_compile_local_module") {
-  is_polymer3 = true
-  closure_flags = os_settings_closure_flags
-
-  deps = [
-    ":lazy_load",
-    ":os_route",
-    ":os_settings",
-    ":os_settings_routes",
-    ":router",
-  ]
-}
-
-js_library("router") {
-  deps = [
-    "//ash/webui/common/resources:assert",
-    "//ash/webui/common/resources:load_time_data.m",
-  ]
-  externs_list = [ "$externs_path/metrics_private.js" ]
-}
-
-js_library("os_settings") {
-}
-
-js_library("lazy_load") {
-}
-
-js_library("os_route") {
-  deps = [
-    ":os_settings_routes",
-    ":router",
-    "//ash/webui/common/resources:cr.m",
-    "//ash/webui/common/resources:load_time_data.m",
-    "//chrome/browser/ui/webui/settings/chromeos/constants:mojom_webui_js",
-  ]
-}
-
-js_library("os_settings_routes") {
-  deps = [
-    ":router",
-    "//ash/webui/common/resources:load_time_data.m",
-  ]
 }

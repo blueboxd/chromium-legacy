@@ -11,8 +11,8 @@
 #include "base/strings/strcat.h"
 #include "base/strings/stringprintf.h"
 #include "base/types/expected.h"
+#include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_location.h"
 #include "chrome/browser/web_applications/isolated_web_apps/signed_web_bundle_reader.h"
-#include "chrome/browser/web_applications/isolation_data.h"
 #include "chrome/browser/web_applications/web_app_helpers.h"
 #include "chrome/common/url_constants.h"
 #include "components/web_package/signed_web_bundles/signed_web_bundle_id.h"
@@ -125,27 +125,27 @@ IsolatedWebAppUrlInfo IsolatedWebAppUrlInfo::CreateFromSignedWebBundleId(
 }
 
 // static
-void IsolatedWebAppUrlInfo::CreateFromIsolationData(
-    const IsolationData& isolation_data,
+void IsolatedWebAppUrlInfo::CreateFromIsolatedWebAppLocation(
+    const IsolatedWebAppLocation& location,
     base::OnceCallback<void(base::expected<IsolatedWebAppUrlInfo, std::string>)>
         callback) {
   absl::visit(base::Overloaded{
-                  [&](const IsolationData::InstalledBundle&) {
+                  [&](const InstalledBundle&) {
                     std::move(callback).Run(base::unexpected(
                         "Getting IsolationInfo from |InstalledBundle| is not "
                         "implemented"));
                   },
-                  [&](const IsolationData::DevModeBundle& dev_mode_bundle) {
+                  [&](const DevModeBundle& dev_mode_bundle) {
                     GetSignedWebBundleIdByPath(dev_mode_bundle.path,
                                                std::move(callback));
                   },
-                  [&](const IsolationData::DevModeProxy&) {
+                  [&](const DevModeProxy&) {
                     std::move(callback).Run(
                         IsolatedWebAppUrlInfo::CreateFromSignedWebBundleId(
                             web_package::SignedWebBundleId::
                                 CreateRandomForDevelopment()));
                   }},
-              isolation_data.content);
+              location);
 }
 
 IsolatedWebAppUrlInfo::IsolatedWebAppUrlInfo(
@@ -177,15 +177,28 @@ const web_package::SignedWebBundleId& IsolatedWebAppUrlInfo::web_bundle_id()
 content::StoragePartitionConfig IsolatedWebAppUrlInfo::storage_partition_config(
     content::BrowserContext* browser_context) const {
   DCHECK(browser_context != nullptr);
+  return content::StoragePartitionConfig::Create(browser_context,
+                                                 partition_domain(),
+                                                 /*partition_name=*/"",
+                                                 /*in_memory=*/false);
+}
 
+content::StoragePartitionConfig
+IsolatedWebAppUrlInfo::GetStoragePartitionConfigForControlledFrame(
+    content::BrowserContext* browser_context,
+    const std::string& partition_name,
+    bool in_memory) const {
+  DCHECK(browser_context);
+  DCHECK(!partition_name.empty() || in_memory);
+  return content::StoragePartitionConfig::Create(
+      browser_context, partition_domain(), partition_name, in_memory);
+}
+
+std::string IsolatedWebAppUrlInfo::partition_domain() const {
   constexpr char kIsolatedWebAppPartitionPrefix[] = "iwa-";
   // We add a prefix to `partition_domain` to avoid potential name conflicts
   // with Chrome Apps, which use their id/hostname as `partition_domain`.
-  return content::StoragePartitionConfig::Create(
-      browser_context,
-      /*partition_domain=*/kIsolatedWebAppPartitionPrefix + origin().host(),
-      /*partition_name=*/"",
-      /*in_memory=*/false);
+  return kIsolatedWebAppPartitionPrefix + origin().host();
 }
 
 }  // namespace web_app

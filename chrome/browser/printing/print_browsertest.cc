@@ -838,6 +838,8 @@ class TestPrintViewManagerForContentAnalysis : public TestPrintViewManager {
     ASSERT_TRUE(web_contents());
     ASSERT_TRUE(params);
     EXPECT_TRUE(params->content->metafile_data_region.IsValid());
+    EXPECT_EQ(data.url,
+              web_contents()->GetOutermostWebContents()->GetLastCommittedURL());
 
     PrintViewManager::OnGotSnapshotCallback(
         std::move(callback), std::move(data), rfh_id, std::move(params));
@@ -861,6 +863,8 @@ class TestPrintViewManagerForContentAnalysis : public TestPrintViewManager {
     EXPECT_EQ(data.settings.block_until_verdict,
               enterprise_connectors::BlockUntilVerdict::kBlock);
     EXPECT_TRUE(data.settings.block_large_files);
+    EXPECT_EQ(data.url,
+              web_contents()->GetOutermostWebContents()->GetLastCommittedURL());
 
     // The snapshot should be valid and populated.
     EXPECT_TRUE(LooksLikePdf(page_region.Map().GetMemoryAsSpan<char>()));
@@ -2415,11 +2419,13 @@ class TestPrintJobWorkerOop : public PrintJobWorkerOop {
       std::unique_ptr<PrintingContext::Delegate> printing_context_delegate,
       std::unique_ptr<PrintingContext> printing_context,
       PrintJob* print_job,
+      mojom::PrintTargetType print_target_type,
       bool simulate_spooling_memory_errors,
       TestPrintJobWorkerOop::PrintCallbacks* callbacks)
       : PrintJobWorkerOop(std::move(printing_context_delegate),
                           std::move(printing_context),
                           print_job,
+                          print_target_type,
                           simulate_spooling_memory_errors),
         callbacks_(callbacks) {}
   TestPrintJobWorkerOop(const TestPrintJobWorkerOop&) = delete;
@@ -2507,11 +2513,12 @@ class TestPrinterQueryOop : public PrinterQueryOop {
   }
 #endif  // BUILDFLAG(ENABLE_OOP_BASIC_PRINT_DIALOG)
 
-  std::unique_ptr<PrintJobWorker> TransferContextToNewWorker(
+  std::unique_ptr<PrintJobWorkerOop> CreatePrintJobWorker(
       PrintJob* print_job) override {
     return std::make_unique<TestPrintJobWorkerOop>(
         std::move(printing_context_delegate_), std::move(printing_context_),
-        print_job, simulate_spooling_memory_errors_, callbacks_);
+        print_job, print_target_type(), simulate_spooling_memory_errors_,
+        callbacks_);
   }
 
   bool simulate_spooling_memory_errors_;

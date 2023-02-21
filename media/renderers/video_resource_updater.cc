@@ -79,7 +79,8 @@ VideoFrameResourceType ExternalResourceTypeForHardwarePlanes(
   const VideoPixelFormat format = frame.format();
   const size_t num_textures = frame.NumTextures();
 
-  if (frame.RequiresExternalSampler()) {
+  if (frame.RequiresExternalSampler() &&
+      frame.shared_image_format_type() == SharedImageFormatType::kLegacy) {
     // The texture |target| can be 0 for Fuchsia.
     DCHECK(target == 0 || target == GL_TEXTURE_EXTERNAL_OES)
         << "Unsupported target " << gl::GLEnums::GetStringEnum(target);
@@ -135,11 +136,17 @@ VideoFrameResourceType ExternalResourceTypeForHardwarePlanes(
                           : viz::SinglePlaneFormat::kRGBA_1010102;
       return VideoFrameResourceType::RGB;
     case PIXEL_FORMAT_I420:
-      DCHECK_EQ(num_textures, 3u);
-      si_formats[0] = viz::SinglePlaneFormat::kR_8;
-      si_formats[1] = viz::SinglePlaneFormat::kR_8;
-      si_formats[2] = viz::SinglePlaneFormat::kR_8;
-      return VideoFrameResourceType::YUV;
+      if (frame.shared_image_format_type() == SharedImageFormatType::kLegacy) {
+        DCHECK_EQ(num_textures, 3u);
+        si_formats[0] = viz::SinglePlaneFormat::kR_8;
+        si_formats[1] = viz::SinglePlaneFormat::kR_8;
+        si_formats[2] = viz::SinglePlaneFormat::kR_8;
+        return VideoFrameResourceType::YUV;
+      } else {
+        DCHECK_EQ(num_textures, 1u);
+        si_formats[0] = viz::MultiPlaneFormat::kYVU_420;
+        return VideoFrameResourceType::RGB;
+      }
 
     case PIXEL_FORMAT_NV12:
       // |target| is set to 0 for Vulkan textures.
@@ -154,30 +161,48 @@ VideoFrameResourceType ExternalResourceTypeForHardwarePlanes(
       DCHECK(target == 0 || target == GL_TEXTURE_EXTERNAL_OES ||
              target == GL_TEXTURE_2D || target == GL_TEXTURE_RECTANGLE_ARB)
           << "Unsupported target " << gl::GLEnums::GetStringEnum(target);
-      DCHECK_EQ(num_textures, 2u);
-      si_formats[0] = viz::SinglePlaneFormat::kR_8;
-      si_formats[1] = viz::SinglePlaneFormat::kRG_88;
-      return VideoFrameResourceType::YUV;
+      if (frame.shared_image_format_type() == SharedImageFormatType::kLegacy) {
+        DCHECK_EQ(num_textures, 2u);
+        si_formats[0] = viz::SinglePlaneFormat::kR_8;
+        si_formats[1] = viz::SinglePlaneFormat::kRG_88;
+        return VideoFrameResourceType::YUV;
+      } else {
+        DCHECK_EQ(num_textures, 1u);
+        si_formats[0] = viz::MultiPlaneFormat::kYUV_420_BIPLANAR;
+        return VideoFrameResourceType::RGB;
+      }
 
     case PIXEL_FORMAT_NV12A:
-      DCHECK_EQ(num_textures, 3u);
-      si_formats[0] = viz::SinglePlaneFormat::kR_8;
-      si_formats[1] = viz::SinglePlaneFormat::kRG_88;
-      si_formats[2] = viz::SinglePlaneFormat::kR_8;
-      return VideoFrameResourceType::YUVA;
+      if (frame.shared_image_format_type() == SharedImageFormatType::kLegacy) {
+        DCHECK_EQ(num_textures, 3u);
+        si_formats[0] = viz::SinglePlaneFormat::kR_8;
+        si_formats[1] = viz::SinglePlaneFormat::kRG_88;
+        si_formats[2] = viz::SinglePlaneFormat::kR_8;
+        return VideoFrameResourceType::YUVA;
+      } else {
+        DCHECK_EQ(num_textures, 1u);
+        si_formats[0] = viz::MultiPlaneFormat::kYUVA_420_TRIPLANAR;
+        return VideoFrameResourceType::RGBA;
+      }
 
     case PIXEL_FORMAT_P016LE:
-      DCHECK_EQ(num_textures, 2u);
-      // TODO(mcasas): Support other formats such as e.g. P012.
-      si_formats[0] = viz::SinglePlaneFormat::kR_16;
-      // TODO(https://crbug.com/1233228): This needs to be
-      // gfx::BufferFormat::RG_1616.
+      if (frame.shared_image_format_type() == SharedImageFormatType::kLegacy) {
+        DCHECK_EQ(num_textures, 2u);
+        // TODO(mcasas): Support other formats such as e.g. P012.
+        si_formats[0] = viz::SinglePlaneFormat::kR_16;
+        // TODO(https://crbug.com/1233228): This needs to be
+        // gfx::BufferFormat::RG_1616.
 #if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN)
-      si_formats[1] = viz::SinglePlaneFormat::kRG_1616;
+        si_formats[1] = viz::SinglePlaneFormat::kRG_1616;
 #else
-      si_formats[1] = viz::SinglePlaneFormat::kRG_88;
+        si_formats[1] = viz::SinglePlaneFormat::kRG_88;
 #endif
-      return VideoFrameResourceType::YUV;
+        return VideoFrameResourceType::YUV;
+      } else {
+        DCHECK_EQ(num_textures, 1u);
+        si_formats[0] = viz::MultiPlaneFormat::kP010;
+        return VideoFrameResourceType::RGB;
+      }
 
     case PIXEL_FORMAT_RGBAF16:
       DCHECK_EQ(num_textures, 1u);
@@ -289,8 +314,7 @@ gfx::Size SoftwarePlaneDimension(VideoFrame* input_frame,
 viz::SharedImageFormat GetRGBSharedImageFormat(VideoPixelFormat format) {
 #if BUILDFLAG(IS_MAC)
   // macOS IOSurfaces are always BGRA_8888.
-  return viz::SharedImageFormat::SinglePlane(
-      PaintCanvasVideoRenderer::GetRGBPixelsOutputFormat());
+  return PaintCanvasVideoRenderer::GetRGBPixelsOutputFormat();
 #else
   // viz::SinglePlaneFormat::kRGBX_8888 and viz::SinglePlaneFormat::kBGRX_8888
   // require upload as GL_RGB (3 bytes), while VideoFrame is always four bytes,
@@ -512,7 +536,7 @@ class VideoResourceUpdater::HardwarePlaneResource
     }
     auto* sii = SharedImageInterface();
     mailbox_ = sii->CreateSharedImage(
-        format.resource_format(), size, color_space, kTopLeft_GrSurfaceOrigin,
+        format, size, color_space, kTopLeft_GrSurfaceOrigin,
         kPremul_SkAlphaType, shared_image_usage, gpu::kNullSurfaceHandle);
     ContextGL()->WaitSyncTokenCHROMIUM(
         sii->GenUnverifiedSyncToken().GetConstData());
@@ -785,8 +809,7 @@ viz::SharedImageFormat VideoResourceUpdater::YuvSharedImageFormat(
                          ? raster_context_provider_->ContextCapabilities()
                          : context_provider_->ContextCapabilities();
   if (caps.disable_one_component_textures)
-    return viz::SharedImageFormat::SinglePlane(
-        PaintCanvasVideoRenderer::GetRGBPixelsOutputFormat());
+    return PaintCanvasVideoRenderer::GetRGBPixelsOutputFormat();
   if (bits_per_channel <= 8)
     return caps.texture_rg ? viz::SinglePlaneFormat::kR_8
                            : viz::SinglePlaneFormat::kLUMINANCE_8;
@@ -969,6 +992,10 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForHardwarePlanes(
   }
 
   const size_t num_textures = video_frame->NumTextures();
+  if (video_frame->shared_image_format_type() !=
+      SharedImageFormatType::kLegacy) {
+    DCHECK_EQ(num_textures, 1u);
+  }
   for (size_t i = 0; i < num_textures; ++i) {
     const gpu::MailboxHolder& mailbox_holder = video_frame->mailbox_holder(i);
     if (mailbox_holder.mailbox.IsZero())
@@ -1000,7 +1027,7 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForHardwarePlanes(
 #if BUILDFLAG(ENABLE_VULKAN)
       // Ensure that `ycbcr_info` is provided when necessary.
       // TODO(crbug.com/1399429): Avoid duplicating this logic.
-      if ((transfer_resource.format.IsLegacyMultiplanar()) &&
+      if (transfer_resource.format.IsLegacyMultiplanar() &&
           !transfer_resource.ycbcr_info) {
         VkSamplerYcbcrModelConversion ycbcr_conversion =
             (resource_color_space.GetMatrixID() ==
@@ -1105,8 +1132,7 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForSoftwarePlanes(
     output_si_format =
         software_compositor()
             ? viz::SinglePlaneFormat::kRGBA_8888
-            : viz::SharedImageFormat::SinglePlane(
-                  PaintCanvasVideoRenderer::GetRGBPixelsOutputFormat());
+            : PaintCanvasVideoRenderer::GetRGBPixelsOutputFormat();
     output_plane_count = 1;
     bits_per_channel = 8;
 

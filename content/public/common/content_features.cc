@@ -401,7 +401,11 @@ BASE_FEATURE(kFedCm, "FedCm", base::FEATURE_ENABLED_BY_DEFAULT);
 // is enabled.
 const char kFedCmIdpSignoutFieldTrialParamName[] = "IdpSignout";
 
-// Enables usage of the FedCM API with auto re-authentication.
+// Enables usage of the FedCM API with auto re-authentication. Note that actual
+// exposure of FedCM's auto re-authentication feature to web content is
+// controlled by the flag in RuntimeEnabledFeatures on the blink side. See also
+// the use of kSetOnlyIfOverridden in content/child/runtime_features.cc.
+// We enable it here by default to support use in origin trials.
 BASE_FEATURE(kFedCmAutoReauthn,
              "FedCmAutoReauthn",
              base::FEATURE_ENABLED_BY_DEFAULT);
@@ -1475,7 +1479,7 @@ BASE_FEATURE(kRequestDesktopSiteAdditions,
 // Refer to the launch bug (https://crbug.com/1244979) for more information.
 BASE_FEATURE(kRequestDesktopSiteExceptions,
              "RequestDesktopSiteExceptions",
-             base::FEATURE_ENABLED_BY_DEFAULT);
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Request Desktop Site zoom for Android. Apply a pre-defined page zoom level
 // when desktop user agent is used.

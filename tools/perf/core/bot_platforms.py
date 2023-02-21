@@ -375,7 +375,11 @@ for board, pb_name in _PB_IMAGE_PATHS.items():
                               path='bin/run_sync_performance_tests',
                               additional_flags=FUCHSIA_EXEC_ARGS[board]),
   ])
-
+_LACROS_EVE_PERF_BENCHMARK_CONFIGS = PerfSuite([
+    _GetBenchmarkConfig('jetstream2'),
+    _GetBenchmarkConfig('speedometer2'),
+    _GetBenchmarkConfig('rendering.desktop.notracing'),
+])
 _LINUX_BENCHMARK_CONFIGS = PerfSuite(OFFICIAL_BENCHMARK_CONFIGS).Remove([
     'blink_perf.display_locking',
     'v8.runtime_stats.top_25',
@@ -737,8 +741,22 @@ ANDROID_PIXEL6 = PerfPlatform('android-pixel6-perf',
                               28,
                               'android',
                               executables=_ANDROID_PIXEL6_EXECUTABLE_CONFIGS)
+ANDROID_PIXEL6_PGO = PerfPlatform(
+    'android-pixel6-perf-pgo',
+    'Android T',
+    _ANDROID_PIXEL6_BENCHMARK_CONFIGS,
+    28,
+    'android',
+    executables=_ANDROID_PIXEL6_EXECUTABLE_CONFIGS)
 ANDROID_PIXEL6_PRO = PerfPlatform(
     'android-pixel6-pro-perf',
+    'Android T',
+    _ANDROID_PIXEL6_PRO_BENCHMARK_CONFIGS,
+    16,
+    'android',
+    executables=_ANDROID_PIXEL6_PRO_EXECUTABLE_CONFIGS)
+ANDROID_PIXEL6_PRO_PGO = PerfPlatform(
+    'android-pixel6-pro-perf-pgo',
     'Android T',
     _ANDROID_PIXEL6_PRO_BENCHMARK_CONFIGS,
     16,
@@ -774,8 +792,9 @@ ANDROID_NEW_PIXEL_PRO_PGO = PerfPlatform('android-new-pixel-pro-perf-pgo',
                                          pinpoint_only=True)
 
 # Cros/Lacros
-LACROS_EVE_PERF = PerfPlatform('lacros-eve-perf', '', _LACROS_BENCHMARK_CONFIGS,
-                               4, 'chromeos')
+LACROS_EVE_PERF = PerfPlatform('lacros-eve-perf', '',
+                               _LACROS_EVE_PERF_BENCHMARK_CONFIGS, 4,
+                               'chromeos')
 LACROS_X86_PERF = PerfPlatform('lacros-x86-perf', '', _LACROS_BENCHMARK_CONFIGS,
                                10, 'chromeos')
 # Fuchsia

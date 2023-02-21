@@ -45,9 +45,9 @@
 #include "third_party/blink/renderer/core/style/filter_operation.h"
 #include "third_party/blink/renderer/core/style/style_crossfade_image.h"
 #include "third_party/blink/renderer/core/style/style_fetched_image.h"
-#include "third_party/blink/renderer/core/style/style_fetched_image_set.h"
 #include "third_party/blink/renderer/core/style/style_generated_image.h"
 #include "third_party/blink/renderer/core/style/style_image.h"
+#include "third_party/blink/renderer/core/style/style_image_set.h"
 #include "third_party/blink/renderer/core/style/style_pending_image.h"
 #include "third_party/blink/renderer/core/svg/svg_resource.h"
 #include "third_party/blink/renderer/core/svg/svg_tree_scope_resources.h"
@@ -131,7 +131,8 @@ StyleImage* StyleImageLoader::Load(
 
   if (auto* image_set_value = DynamicTo<CSSImageSetValue>(value)) {
     return image_set_value->CacheImage(document_, device_scale_factor_,
-                                       image_request_behavior, cross_origin);
+                                       image_request_behavior, cross_origin,
+                                       container_sizes);
   }
 
   NOTREACHED();

@@ -30,7 +30,6 @@
 #include "base/trace_event/trace_event.h"
 #include "chromeos/components/sensors/sensor_util.h"
 #include "components/device_event_log/device_event_log.h"
-#include "media/base/bind_to_current_loop.h"
 #include "media/capture/video/chromeos/mojom/camera_common.mojom.h"
 #include "media/capture/video/chromeos/mojom/cros_camera_client.mojom.h"
 #include "media/capture/video/chromeos/mojom/cros_camera_service.mojom.h"
@@ -367,8 +366,18 @@ void CameraHalDispatcherImpl::RemoveCameraPrivacySwitchObserver(
 }
 
 void CameraHalDispatcherImpl::AddCameraEffectObserver(
-    CameraEffectObserver* observer) {
+    CameraEffectObserver* observer,
+    CameraEffectObserverCallback camera_effect_observer_callback) {
   camera_effect_observers_->AddObserver(observer);
+
+  if (proxy_thread_.IsRunning() && !camera_effect_observer_callback.is_null()) {
+    proxy_task_runner_->PostTask(
+        FROM_HERE,
+        base::BindOnce(
+            &CameraHalDispatcherImpl::OnCameraEffectsObserverAddOnProxyThread,
+            base::Unretained(this),
+            std::move(camera_effect_observer_callback)));
+  }
 }
 
 void CameraHalDispatcherImpl::RemoveCameraEffectObserver(
@@ -510,11 +519,7 @@ void CameraHalDispatcherImpl::RegisterServerWithToken(
     // initial_effects_.reset();
     // current_effects_.reset();
 
-    camera_hal_server_->SetCameraEffect(
-        config.Clone(),
-        base::BindOnce(
-            &CameraHalDispatcherImpl::OnSetCameraEffectsCompleteOnProxyThread,
-            base::Unretained(this), config.Clone()));
+    SetCameraEffectsOnProxyThread(config.Clone(), /*is_from_register=*/true);
   }
 
   CAMERA_LOG(EVENT) << "Camera HAL server registered";
@@ -547,7 +552,7 @@ void CameraHalDispatcherImpl::RegisterClientWithToken(
           &CameraHalDispatcherImpl::RegisterClientWithTokenOnProxyThread,
           base::Unretained(this), std::move(client), type,
           std::move(client_auth_token),
-          media::BindToCurrentLoop(std::move(callback))));
+          base::BindPostTaskToCurrentDefault(std::move(callback))));
 }
 
 void CameraHalDispatcherImpl::GetMjpegDecodeAccelerator(
@@ -578,7 +583,7 @@ void CameraHalDispatcherImpl::RegisterSensorClientWithToken(
       base::BindOnce(
           &CameraHalDispatcherImpl::RegisterSensorClientWithTokenOnUIThread,
           weak_factory_.GetWeakPtr(), std::move(client), auth_token,
-          BindToCurrentLoop(std::move(callback))));
+          base::BindPostTaskToCurrentDefault(std::move(callback))));
 }
 
 void CameraHalDispatcherImpl::CameraDeviceActivityChange(
@@ -1081,45 +1086,24 @@ void CameraHalDispatcherImpl::SetCameraEffects(
     // The camera hal dispatcher is not running, ignore the request.
     camera_effects_controller_callback_.Run(
         current_effects_.Clone(), cros::mojom::SetEffectResult::kError);
+    // Notify with nullopt as the proxy thread is not running and camera effects
+    // cannot be set in this case.
+    camera_effect_observers_->Notify(
+        FROM_HERE, &CameraEffectObserver::OnCameraEffectChanged,
+        cros::mojom::EffectsConfigPtr());
     return;
   }
 
   proxy_task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(&CameraHalDispatcherImpl::SetCameraEffectsOnProxyThread,
-                     base::Unretained(this), std::move(config)));
-}
-
-void CameraHalDispatcherImpl::GetCameraEffects(
-    VideoCaptureDevice::GetPhotoStateCallback callback,
-    media::mojom::PhotoStatePtr photo_state) {
-  // All calls must be on the `proxy_task_runner`, so re-post the call if
-  // needed.
-  if (!proxy_task_runner_->BelongsToCurrentThread()) {
-    proxy_task_runner_->PostTask(
-        FROM_HERE, base::BindOnce(&CameraHalDispatcherImpl::GetCameraEffects,
-                                  base::Unretained(this),
-                                  media::BindToCurrentLoop(std::move(callback)),
-                                  std::move(photo_state)));
-    return;
-  }
-
-  DCHECK(proxy_task_runner_->BelongsToCurrentThread());
-
-  if (!current_effects_.is_null()) {
-    photo_state->supported_background_blur_modes = {
-        mojom::BackgroundBlurMode::BLUR, mojom::BackgroundBlurMode::OFF};
-
-    photo_state->background_blur_mode = current_effects_->blur_enabled
-                                            ? mojom::BackgroundBlurMode::BLUR
-                                            : mojom::BackgroundBlurMode::OFF;
-  }
-
-  std::move(callback).Run(std::move(photo_state));
+                     base::Unretained(this), std::move(config),
+                     /*is_from_register=*/false));
 }
 
 void CameraHalDispatcherImpl::SetCameraEffectsOnProxyThread(
-    cros::mojom::EffectsConfigPtr config) {
+    cros::mojom::EffectsConfigPtr config,
+    bool is_from_register) {
   DCHECK(proxy_task_runner_->BelongsToCurrentThread());
 
   if (camera_hal_server_) {
@@ -1127,19 +1111,54 @@ void CameraHalDispatcherImpl::SetCameraEffectsOnProxyThread(
         config.Clone(),
         base::BindOnce(
             &CameraHalDispatcherImpl::OnSetCameraEffectsCompleteOnProxyThread,
-            base::Unretained(this), config.Clone()));
+            base::Unretained(this), config.Clone(), is_from_register));
 
   } else {
     LOG(ERROR) << "Cannot change camera effects, no camera server registered.";
     OnSetCameraEffectsCompleteOnProxyThread(
-        std::move(config), cros::mojom::SetEffectResult::kError);
+        std::move(config), is_from_register,
+        cros::mojom::SetEffectResult::kError);
+    // Notify with nullopt as no camera server has been registered and camera
+    // effects cannot be set in this case.
+    camera_effect_observers_->Notify(
+        FROM_HERE, &CameraEffectObserver::OnCameraEffectChanged,
+        cros::mojom::EffectsConfigPtr());
   }
 }
 
 void CameraHalDispatcherImpl::OnSetCameraEffectsCompleteOnProxyThread(
     cros::mojom::EffectsConfigPtr config,
+    bool is_from_register,
     cros::mojom::SetEffectResult result) {
   DCHECK(proxy_task_runner_->BelongsToCurrentThread());
+
+  cros::mojom::EffectsConfigPtr new_effects;
+  // The new config is applied if set effects succeed. If the set effects fail,
+  // no effects have been applied if the set is called from register and
+  // the current effects do not change otherwise.
+  //
+  // The new config is applied if set effects succeed.
+  if (result == cros::mojom::SetEffectResult::kOk) {
+    new_effects = config.Clone();
+  }
+  // New config is not applied if set effects failed.
+  else {
+    // If setting from register and failed, the new effects should be the
+    // default effects.
+    if (is_from_register) {
+      new_effects = cros::mojom::EffectsConfig::New();
+    }
+    // If not setting from register, the new effects should still be the current
+    // effects.
+    else {
+      new_effects = current_effects_.Clone();
+    }
+  }
+
+  // Notify the camera effect configuration changes with the new effect.
+  camera_effect_observers_->Notify(FROM_HERE,
+                                   &CameraEffectObserver::OnCameraEffectChanged,
+                                   std::move(new_effects));
 
   // Directly return if SetCameraEffect failed.
   if (result == cros::mojom::SetEffectResult::kError) {
@@ -1149,30 +1168,17 @@ void CameraHalDispatcherImpl::OnSetCameraEffectsCompleteOnProxyThread(
     return;
   }
 
-  // Notify the camera effect configuration changes.
-  if (!current_effects_.is_null()) {
-    if (current_effects_->blur_enabled != config->blur_enabled) {
-      camera_effect_observers_->Notify(
-          FROM_HERE, &CameraEffectObserver::OnCameraEffectChanged,
-          cros::mojom::CameraEffect::kBackgroundBlur);
-    }
-    if (current_effects_->relight_enabled != config->relight_enabled) {
-      camera_effect_observers_->Notify(
-          FROM_HERE, &CameraEffectObserver::OnCameraEffectChanged,
-          cros::mojom::CameraEffect::kPortraitRelight);
-    }
-    if (current_effects_->replace_enabled != config->replace_enabled) {
-      camera_effect_observers_->Notify(
-          FROM_HERE, &CameraEffectObserver::OnCameraEffectChanged,
-          cros::mojom::CameraEffect::kBackgroundReplace);
-    }
-  }
-
   // Record latest successful camera effects.
   current_effects_ = std::move(config);
 
   camera_effects_controller_callback_.Run(current_effects_.Clone(),
                                           cros::mojom::SetEffectResult::kOk);
+}
+
+void CameraHalDispatcherImpl::OnCameraEffectsObserverAddOnProxyThread(
+    CameraEffectObserverCallback camera_effect_observer_callback) {
+  DCHECK(proxy_task_runner_->BelongsToCurrentThread());
+  std::move(camera_effect_observer_callback).Run(current_effects_.Clone());
 }
 
 std::string CameraHalDispatcherImpl::GetDeviceIdFromCameraId(

@@ -10,6 +10,8 @@
 
 #include "base/check_op.h"
 #include "base/containers/contains.h"
+#include "base/functional/overloaded.h"
+#include "base/json/values_util.h"
 #include "base/notreached.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
@@ -141,8 +143,9 @@ base::Value OsStatesDebugValue(
                 syncer::ProtoTimeToTime(icon_data_monochrome.timestamp())));
       }
       base::Value::Dict shortcut_menu_dict;
-      shortcut_menu_dict.Set("app_title", shortcut_menu.app_title());
-      shortcut_menu_dict.Set("app_launch_url", shortcut_menu.app_launch_url());
+      shortcut_menu_dict.Set("shortcut_name", shortcut_menu.shortcut_name());
+      shortcut_menu_dict.Set("shortcut_launch_url",
+                             shortcut_menu.shortcut_launch_url());
       shortcut_menu_dict.Set("icon_data_any",
                              base::Value(std::move(icon_data_any_dict)));
       shortcut_menu_dict.Set("icon_data_maskable",
@@ -470,6 +473,11 @@ void WebApp::SetUrlHandlers(apps::UrlHandlers url_handlers) {
   url_handlers_ = std::move(url_handlers);
 }
 
+void WebApp::SetScopeExtensions(
+    std::vector<ScopeExtensionInfo> scope_extensions) {
+  scope_extensions_ = std::move(scope_extensions);
+}
+
 void WebApp::SetLockScreenStartUrl(const GURL& lock_screen_start_url) {
   DCHECK(lock_screen_start_url.is_empty() || lock_screen_start_url.is_valid());
   lock_screen_start_url_ = lock_screen_start_url;
@@ -686,6 +694,32 @@ base::Value::Dict WebApp::ExternalManagementConfig::AsDebugValue() const {
   return root;
 }
 
+WebApp::IsolationData::IsolationData(IsolatedWebAppLocation location)
+    : location(location) {}
+WebApp::IsolationData::~IsolationData() = default;
+WebApp::IsolationData::IsolationData(const WebApp::IsolationData&) = default;
+WebApp::IsolationData& WebApp::IsolationData::operator=(
+    const WebApp::IsolationData&) = default;
+WebApp::IsolationData::IsolationData(WebApp::IsolationData&&) = default;
+WebApp::IsolationData& WebApp::IsolationData::operator=(
+    WebApp::IsolationData&&) = default;
+
+bool WebApp::IsolationData::operator==(
+    const WebApp::IsolationData& other) const {
+  return location == other.location;
+}
+bool WebApp::IsolationData::operator!=(
+    const WebApp::IsolationData& other) const {
+  return !(*this == other);
+}
+
+base::Value WebApp::IsolationData::AsDebugValue() const {
+  base::Value::Dict value;
+  value.Set("isolated_web_app_location",
+            IsolatedWebAppLocationAsDebugValue(location));
+  return base::Value(std::move(value));
+}
+
 bool WebApp::operator==(const WebApp& other) const {
   auto AsTuple = [](const WebApp& app) {
     // Keep in order declared in web_app.h.
@@ -726,6 +760,7 @@ bool WebApp::operator==(const WebApp& other) const {
         app.allowed_launch_protocols_,
         app.disallowed_launch_protocols_,
         app.url_handlers_,
+        app.scope_extensions_,
         app.lock_screen_start_url_,
         app.note_taking_new_note_url_,
         app.last_badging_time_,
@@ -988,6 +1023,8 @@ base::Value WebApp::AsDebugValueWithOnlyPlatformAgnosticFields() const {
   root.Set("unhashed_app_id", GenerateAppIdUnhashed(manifest_id_, start_url_));
 
   root.Set("url_handlers", ConvertDebugValueList(url_handlers_));
+
+  root.Set("scope_extensions", ConvertDebugValueList(scope_extensions_));
 
   root.Set("user_display_mode",
            user_display_mode_.has_value()

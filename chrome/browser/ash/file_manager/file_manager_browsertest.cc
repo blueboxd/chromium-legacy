@@ -316,7 +316,7 @@ struct TestCase {
       case kChild:
         full_name += "_AccountTypeChild";
         break;
-      case kNonManged:
+      case kNonManaged:
         full_name += "_AccountTypeNonManaged";
         break;
       case kNonManagedNonOwner:
@@ -402,7 +402,7 @@ class LoggedInUserFilesAppBrowserTest : public FilesAppBrowserTest {
         case kTestAccountTypeNotSet:
         case kEnterprise:
         case kChild:
-        case kNonManged:
+        case kNonManaged:
           owner_email = logged_in_user_mixin_->GetAccountId().GetUserEmail();
           break;
         case kNonManagedNonOwner:
@@ -436,45 +436,6 @@ class LoggedInUserFilesAppBrowserTest : public FilesAppBrowserTest {
         return ash::DeviceStateMixin::State::OOBE_COMPLETED_CONSUMER_OWNED;
       case kEnrolled:
         return ash::DeviceStateMixin::State::OOBE_COMPLETED_CLOUD_ENROLLED;
-    }
-  }
-
-  ash::LoggedInUserMixin::LogInType LogInTypeFor(
-      TestAccountType test_account_type) {
-    switch (test_account_type) {
-      case kTestAccountTypeNotSet:
-        CHECK(false) << "test_account_type option must be set for "
-                        "LoggedInUserFilesAppBrowserTest";
-        // TODO(crbug.com/1061742): `base::ImmediateCrash` is necessary.
-        base::ImmediateCrash();
-      case kEnterprise:
-        return ash::LoggedInUserMixin::LogInType::kRegular;
-      case kChild:
-        return ash::LoggedInUserMixin::LogInType::kChild;
-      case kNonManged:
-      case kNonManagedNonOwner:
-        return ash::LoggedInUserMixin::LogInType::kRegular;
-    }
-  }
-
-  absl::optional<AccountId> AccountIdFor(TestAccountType test_account_type) {
-    switch (test_account_type) {
-      case kTestAccountTypeNotSet:
-        CHECK(false) << "test_account_type option must be set for "
-                        "LoggedInUserFilesAppBrowserTest";
-        // `base::ImmediateCrash` is necessary for https://crbug.com/1061742.
-        base::ImmediateCrash();
-      case kEnterprise:
-        return AccountId::FromUserEmailGaiaId(
-            FakeGaiaMixin::kEnterpriseUser1,
-            FakeGaiaMixin::kEnterpriseUser1GaiaId);
-      case kChild:
-        // Use the default account provided by `LoggedInUserMixin`.
-        return absl::nullopt;
-      case kNonManged:
-      case kNonManagedNonOwner:
-        // Use the default account provided by `LoggedInUserMixin`.
-        return absl::nullopt;
     }
   }
 
@@ -579,14 +540,14 @@ class DlpFilesAppBrowserTest : public FilesAppBrowserTest {
           *mock_rules_manager_,
           IsRestrictedDestination(GURL(kBlockedSourceUrl), testing::_,
                                   policy::DlpRulesManager::Restriction::kFiles,
-                                  testing::_, testing::_))
+                                  testing::_, testing::_, testing::_))
           .WillRepeatedly(
               testing::Return(policy::DlpRulesManager::Level::kBlock));
       EXPECT_CALL(
           *mock_rules_manager_,
           IsRestrictedDestination(GURL(kNotBlockedSourceUrl), testing::_,
                                   policy::DlpRulesManager::Restriction::kFiles,
-                                  testing::_, testing::_))
+                                  testing::_, testing::_, testing::_))
           .WillRepeatedly(
               ::testing::Return(policy::DlpRulesManager::Level::kAllow));
       return true;
@@ -604,31 +565,35 @@ class DlpFilesAppBrowserTest : public FilesAppBrowserTest {
       return true;
     }
     if (name == "setIsRestrictedByAnyRuleRestrictions") {
-      EXPECT_CALL(*mock_rules_manager_,
-                  IsRestrictedByAnyRule(
-                      GURL(kNotBlockedSourceUrl),
-                      policy::DlpRulesManager::Restriction::kFiles, testing::_))
+      EXPECT_CALL(
+          *mock_rules_manager_,
+          IsRestrictedByAnyRule(GURL(kNotBlockedSourceUrl),
+                                policy::DlpRulesManager::Restriction::kFiles,
+                                testing::_, testing::_))
           .WillRepeatedly(
               testing::Return(policy::DlpRulesManager::Level::kAllow));
 
-      EXPECT_CALL(*mock_rules_manager_,
-                  IsRestrictedByAnyRule(
-                      GURL(kBlockedSourceUrl),
-                      policy::DlpRulesManager::Restriction::kFiles, testing::_))
+      EXPECT_CALL(
+          *mock_rules_manager_,
+          IsRestrictedByAnyRule(GURL(kBlockedSourceUrl),
+                                policy::DlpRulesManager::Restriction::kFiles,
+                                testing::_, testing::_))
           .WillRepeatedly(
               testing::Return(policy::DlpRulesManager::Level::kBlock));
 
-      EXPECT_CALL(*mock_rules_manager_,
-                  IsRestrictedByAnyRule(
-                      GURL(kNotSetSourceUrl),
-                      policy::DlpRulesManager::Restriction::kFiles, testing::_))
+      EXPECT_CALL(
+          *mock_rules_manager_,
+          IsRestrictedByAnyRule(GURL(kNotSetSourceUrl),
+                                policy::DlpRulesManager::Restriction::kFiles,
+                                testing::_, testing::_))
           .WillRepeatedly(
               testing::Return(policy::DlpRulesManager::Level::kNotSet));
 
-      EXPECT_CALL(*mock_rules_manager_,
-                  IsRestrictedByAnyRule(
-                      GURL(kWarnSourceUrl),
-                      policy::DlpRulesManager::Restriction::kFiles, testing::_))
+      EXPECT_CALL(
+          *mock_rules_manager_,
+          IsRestrictedByAnyRule(GURL(kWarnSourceUrl),
+                                policy::DlpRulesManager::Restriction::kFiles,
+                                testing::_, testing::_))
           .WillRepeatedly(
               testing::Return(policy::DlpRulesManager::Level::kWarn));
       return true;
@@ -1714,15 +1679,15 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
         // `FilesAppBrowserTest`.
         TestCase("driveGoogleOneOfferBannerEnabled")
             .SetDeviceMode(DeviceMode::kConsumerOwned)
-            .SetTestAccountType(TestAccountType::kNonManged)
+            .SetTestAccountType(TestAccountType::kNonManaged)
             .EnableGoogleOneOfferFilesBanner(),
         // Google One offer banner is disabled by default.
         TestCase("driveGoogleOneOfferBannerDisabled")
             .SetDeviceMode(DeviceMode::kConsumerOwned)
-            .SetTestAccountType(TestAccountType::kNonManged),
+            .SetTestAccountType(TestAccountType::kNonManaged),
         TestCase("driveGoogleOneOfferBannerDismiss")
             .SetDeviceMode(DeviceMode::kConsumerOwned)
-            .SetTestAccountType(TestAccountType::kNonManged)
+            .SetTestAccountType(TestAccountType::kNonManaged)
             .EnableGoogleOneOfferFilesBanner(),
         TestCase("driveGoogleOneOfferBannerDisabled")
             .EnableGoogleOneOfferFilesBanner()
@@ -1737,7 +1702,7 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
         TestCase("driveGoogleOneOfferBannerDisabled")
             .EnableGoogleOneOfferFilesBanner()
             .SetDeviceMode(DeviceMode::kEnrolled)
-            .SetTestAccountType(TestAccountType::kNonManged),
+            .SetTestAccountType(TestAccountType::kNonManaged),
         // We do not show a banner if a profile is not an owner profile.
         TestCase("driveGoogleOneOfferBannerDisabled")
             .EnableGoogleOneOfferFilesBanner()
@@ -2204,7 +2169,8 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
         TestCase("searchWithLocationOptions").EnableSearchV2(),
         TestCase("searchLocalWithTypeOptions").EnableSearchV2(),
         TestCase("searchDriveWithTypeOptions").EnableSearchV2(),
-        TestCase("searchWithRecencyOptions").EnableSearchV2()
+        TestCase("searchWithRecencyOptions").EnableSearchV2(),
+        TestCase("searchRemovableDevice").EnableSearchV2()
         // TODO(b/189173190): Enable
         // TestCase("searchQueryLaunchParam")
         ));
@@ -2333,7 +2299,8 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
             .Offline(),
         TestCase("openOfficeWordFromDriveOffline")
             .EnableUploadOfficeToCloud()
-            .Offline()));
+            .Offline(),
+        TestCase("officeShowNudgeGoogleDrive")));
 
 WRAPPED_INSTANTIATE_TEST_SUITE_P(
     GuestOs, /* guest_os.js */

@@ -314,10 +314,8 @@ ui::MenuModel* ExtensionActionViewController::GetContextMenu(
   if (!ExtensionIsValid())
     return nullptr;
 
-  ToolbarActionViewController* const action =
-      extensions_container_->GetActionForId(GetId());
   extensions::ExtensionContextMenuModel::ButtonVisibility visibility =
-      extensions_container_->GetActionVisibility(action);
+      extensions_container_->GetActionVisibility(GetId());
 
   // Reconstruct the menu every time because the menu's contents are dynamic.
   context_menu_model_ = std::make_unique<extensions::ExtensionContextMenuModel>(
@@ -327,11 +325,11 @@ ui::MenuModel* ExtensionActionViewController::GetContextMenu(
 }
 
 void ExtensionActionViewController::OnContextMenuShown() {
-  extensions_container_->OnContextMenuShown(this);
+  extensions_container_->OnContextMenuShown(GetId());
 }
 
 void ExtensionActionViewController::OnContextMenuClosed() {
-  extensions_container_->OnContextMenuClosed(this);
+  extensions_container_->OnContextMenuClosed();
 }
 
 void ExtensionActionViewController::ExecuteUserAction(InvocationSource source) {

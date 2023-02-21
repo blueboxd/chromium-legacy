@@ -38,6 +38,7 @@
 <translation id="103279545524624934">Libera espacio en el disco para ejecutar apps de Android.</translation>
 <translation id="1033780634303702874">Acceder a tus dispositivos en serie</translation>
 <translation id="1034484273907870301">Barra de pestañas con miniaturas para el modo tablet</translation>
+<translation id="1035875743511577452">Haz clic en "Cambiar tema" para explorar temas inspirados en artistas, la naturaleza y más</translation>
 <translation id="1036348656032585052">Desactivar</translation>
 <translation id="1036511912703768636">Acceder a cualquiera de estos dispositivos USB</translation>
 <translation id="1038168778161626396">Sólo cifrar</translation>
@@ -52,6 +53,7 @@
 <translation id="104710386808485638">¿Quieres reiniciar Linux?</translation>
 <translation id="1047431265488717055">Copiar texto del vínculo</translation>
 <translation id="1048286738600630630">Pantallas</translation>
+<translation id="1048770690598418849">Puedes omitir este paso por ahora; volveremos a intentarlo automáticamente cuando finalices la configuración</translation>
 <translation id="1048986595386481879">Asignación dinámica</translation>
 <translation id="1049324577536766607">{COUNT,plural, =1{Recibiendo <ph name="ATTACHMENTS" /> de <ph name="DEVICE_NAME" />}other{Recibiendo <ph name="ATTACHMENTS" /> de <ph name="DEVICE_NAME" />}}</translation>
 <translation id="1049743911850919806">Incógnito</translation>
@@ -994,7 +996,6 @@ Es posible que se apliquen a esta cuenta los permisos que otorgaste a apps. Pued
 <translation id="1869433484041798909">Botón de favoritos</translation>
 <translation id="1871098866036088250">Abrir en el navegador Chrome</translation>
 <translation id="187145082678092583">Menos apps</translation>
-<translation id="1871463148436682760">¡Bien hecho!</translation>
 <translation id="1871534214638631766">Muestra información relacionada cuando haces clic con el botón derecho o cuando mantienes presionado el contenido</translation>
 <translation id="1871615898038944731">Tu <ph name="DEVICE_TYPE" /> está actualizado</translation>
 <translation id="1873920700418191231">Volver a otorgar permisos para <ph name="WEBSITE" /></translation>
@@ -1373,6 +1374,7 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="2203088913459920044">El nombre puede incluir letras, números y caracteres especiales.</translation>
 <translation id="220321590587754225">No se pudo establecer la conexión. Vuelve a intentarlo.</translation>
 <translation id="2203903197029773650"><ph name="BRAND" /> puede revisar las contraseñas cuando accedes con tu Cuenta de Google</translation>
+<translation id="2204020417499639567">Se completó el correo electrónico.</translation>
 <translation id="2204034823255629767">Leer y cambiar todo lo que escribas</translation>
 <translation id="2204387456724731099">No se pudo traducir esta selección.</translation>
 <translation id="2210462644007531147">No se pudo completar la instalación</translation>
@@ -1425,6 +1427,7 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="2251809247798634662">Nueva ventana de Incógnito</translation>
 <translation id="2252017960592955005">Protección de visualización (beta)</translation>
 <translation id="225240747099314620">Permitir identificadores para el contenido protegido (es posible que sea necesario reiniciar la computadora)</translation>
+<translation id="2253318212986772520">No se pudo recuperar el PPD de <ph name="PRINTER_NAME" />.</translation>
 <translation id="2255077166240162850">Se bloqueó este dispositivo para otros dominios o modos.</translation>
 <translation id="2255317897038918278">Impresión de fecha de Microsoft</translation>
 <translation id="2256115617011615191">Reiniciar ahora</translation>
@@ -1564,13 +1567,13 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="2352662711729498748">Menos de 1 MB</translation>
 <translation id="2352810082280059586">Las notas de la pantalla bloqueada se guardan automáticamente en <ph name="LOCK_SCREEN_APP_NAME" />. La nota más reciente permanecerá en la pantalla bloqueada.</translation>
 <translation id="2353297238722298836">Cámara y micrófono permitidos</translation>
+<translation id="2353910600995338714">Exportación correcta</translation>
 <translation id="2355314311311231464">No es posible completar el aprovisionamiento porque no se pudieron recuperar los detalles de tu cuenta. Vuelve a intentarlo. Código de error: <ph name="ERROR_CODE" />.</translation>
 <translation id="2355477091455974894">Opciones de ahorro de energía</translation>
 <translation id="2355604387869345912">Activar la Conexión instantánea mediante dispositivo móvil</translation>
 <translation id="2356070529366658676">Preguntar</translation>
 <translation id="2357330829548294574">Quitar <ph name="USER_NAME" /></translation>
 <translation id="2358561147588818967">Los sitios pueden usar JavaScript.</translation>
-<translation id="2358703245148663432">Otro dispositivo</translation>
 <translation id="2358777858338503863">Haz clic para permitir en <ph name="ORIGIN" />:</translation>
 <translation id="2359071692152028734">Es posible que las apps de Linux no respondan.</translation>
 <translation id="2359345697448000899">Para administrar tus extensiones, haz clic en la opción Extensiones en el menú Herramientas.</translation>
@@ -1620,6 +1623,7 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="2410754283952462441">Elegir una cuenta</translation>
 <translation id="241082044617551207">Complemento desconocido</translation>
 <translation id="2410940059315936967">Un sitio que estés visitando puede incorporar contenido de otros sitios, como imágenes, anuncios y texto. Las cookies que establecen estos otros sitios se denominan cookies de terceros.</translation>
+<translation id="2411666601450687801">No se permiten máquinas virtuales en este dispositivo</translation>
 <translation id="2412753904894530585">Kerberos</translation>
 <translation id="2416435988630956212">Teclas de función del teclado</translation>
 <translation id="2418307627282545839">Mantén los elementos luminosos y brillantes</translation>
@@ -1826,6 +1830,7 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="2603355571917519942">Voice Match está listo</translation>
 <translation id="2604129989323098489">Por lo general, los sitios solicitan información sobre tus pantallas para abrir y ubicar ventanas de manera inteligente, como mostrar documentos o contenido en pantalla completa en paralelo.</translation>
 <translation id="2604255671529671813">Error de conexión de red</translation>
+<translation id="2604805099836652105">Se completó el formulario de dirección <ph name="ADDRESS_LABEL" />.</translation>
 <translation id="2605668923777146443">Para ver tus opciones de Better Together, accede a la <ph name="LINK_BEGIN" />Configuración<ph name="LINK_END" />.</translation>
 <translation id="2606246518223360146">Vincular datos</translation>
 <translation id="2606454609872547359">No, continuar sin ChromeVox</translation>
@@ -1881,6 +1886,7 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="2653659639078652383">Enviar</translation>
 <translation id="265390580714150011">Valor de campo</translation>
 <translation id="2654553774144920065">Solicitud de impresión</translation>
+<translation id="265748523151262387">No pierdas la conexión con tu teléfono</translation>
 <translation id="2657612187216250073">Configuración de accesibilidad del puntero</translation>
 <translation id="2658941648214598230">¿Deseas mostrar el contenido original?</translation>
 <translation id="2659381484350128933"><ph name="FOOTNOTE_POINTER" />Las funciones varían según el dispositivo</translation>
@@ -2416,6 +2422,7 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="3122464029669770682">CPU</translation>
 <translation id="3122496702278727796">Se ha producido un error al crear el directorio de datos.</translation>
 <translation id="3124111068741548686">A cargo del USUARIO</translation>
+<translation id="3124332159330678621">Personaliza Chrome para darle un nuevo aspecto a tu navegador</translation>
 <translation id="3126026824346185272">Ctrl</translation>
 <translation id="3127860049873093642">Para evitar problemas de carga y rendimiento, usa un adaptador de alimentación compatible de Dell o con conexión USB tipo C.</translation>
 <translation id="3127862849166875294">Cambiar el tamaño de la partición del disco para Crostini</translation>
@@ -2888,6 +2895,7 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="3582057310199111521">Se ingresó en un sitio engañoso y se encontró en una violación de la seguridad de los datos</translation>
 <translation id="3582299299336701326">Oscurece las pantallas claras y aclara las oscuras. Presiona Búsqueda + Ctrl + H para activar y desactivar la inversión de colores.</translation>
 <translation id="3584169441612580296">Leer y cambiar fotos, música y otro contenido multimedia desde tu computadora</translation>
+<translation id="3584527007414070635">Reanuda tu exploración a <ph name="MODULE_TITLE" /></translation>
 <translation id="3586787825263265024">La aplicación <ph name="APPLICATION_NAME" /> requiere que OneDrive esté disponible.</translation>
 <translation id="3586806079541226322">No se puede abrir este archivo.</translation>
 <translation id="3587438013689771191">Más información sobre <ph name="SUBPAGE_TITLE" /></translation>
@@ -3041,6 +3049,7 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="3713091615825314967">Las actualizaciones automáticas están activadas.</translation>
 <translation id="371370241367527062">Micrófono delantero</translation>
 <translation id="3714195043138862580">Se estableció el estado de desaprovisionamiento para este dispositivo de demostración.</translation>
+<translation id="3719310907809321183">Se completó <ph name="CARD_IDENTIFIER" />.</translation>
 <translation id="3719826155360621982">Página principal</translation>
 <translation id="372062398998492895">CUPS</translation>
 <translation id="3721119614952978349">Tú y Google</translation>
@@ -3186,7 +3195,6 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="3828953470056652895">Leí y acepté las <ph name="BEGIN_LINK1" />Condiciones del Servicio de Google<ph name="END_LINK1" />, las <ph name="BEGIN_LINK2" />Condiciones del Servicio Adicionales de Chrome y Chrome OS<ph name="END_LINK2" /> y las <ph name="BEGIN_LINK3" />Condiciones del Servicio de Play<ph name="END_LINK3" />.</translation>
 <translation id="3829765597456725595">Archivos compartidos SMB</translation>
 <translation id="3830654885961023588">{NUM_EXTENSIONS,plural, =1{El administrador volvió a activar 1 extensión potencialmente dañina}other{El administrador volvió a activar {NUM_EXTENSIONS} extensiones potencialmente dañinas}}</translation>
-<translation id="3831436149286513437">Sugerencias de búsqueda de Google Drive</translation>
 <translation id="3834728400518755610">Es necesario que cierres Linux para aplicar los cambios de la configuración del micrófono. Cierra Linux para continuar.</translation>
 <translation id="3834775135533257713">No se pudo agregar la aplicación "<ph name="TO_INSTALL_APP_NAME" />" debido a un conflicto con "<ph name="INSTALLED_APP_NAME" />".</translation>
 <translation id="3835904559946595746">No se pudo restablecer la copia de seguridad de Linux</translation>
@@ -3648,6 +3656,7 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="426652736638196239">Este IBAN solo se guardará en este dispositivo</translation>
 <translation id="4266679478228765574">Si quitas carpetas, se detendrá el uso compartido, pero no se borrarán los archivos.</translation>
 <translation id="4267455501101322486">Pídele permiso a tu madre o padre para agregar una cuenta que te permita acceder a recursos educativos</translation>
+<translation id="4267792239557443927">{COUNT,plural, =0{No se encontraron contraseñas}=1{Se encontró 1 resultado}other{Se encontraron {COUNT} resultados}}</translation>
 <translation id="4267924571297947682">Pídele permiso a tu madre o padre</translation>
 <translation id="4267953847983678297">Conectar a la red celular de forma automática</translation>
 <translation id="4268025649754414643">Cifrado de clave</translation>
@@ -3845,6 +3854,7 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="4443536555189480885">&amp;Ayuda</translation>
 <translation id="4444304522807523469">Acceder a los escáneres de documentos conectados vía USB o en la red local</translation>
 <translation id="4444512841222467874">Si no liberas espacio, es posible que se quiten usuarios y datos de forma automática.</translation>
+<translation id="4445446646109808714">Contrato de licencia para el usuario final: <ph name="EULA_LINK" /></translation>
 <translation id="4446933390699670756">Duplicado</translation>
 <translation id="4448914100439890108">Ocultar contraseña de <ph name="USERNAME" /> en <ph name="DOMAIN" /></translation>
 <translation id="4449948729197510913">Tu nombre de usuario pertenece a la cuenta empresarial de tu organización. Si deseas inscribir dispositivos en la cuenta, primero debes revisar la propiedad del dominio en la Consola del administrador. Deberás tener privilegios administrativos de la cuenta que deseas verificar.</translation>
@@ -3916,7 +3926,6 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="4513872120116766993">Escritura predictiva</translation>
 <translation id="4513946894732546136">Comentario</translation>
 <translation id="451407183922382411">Con la tecnología de <ph name="COMPANY_NAME" /></translation>
-<translation id="451515744433878153">Quitar</translation>
 <translation id="4515872537870654449">Comunícate con Dell para obtener asistencia. El conector se apagará si el ventilador no funciona.</translation>
 <translation id="4518840066030486079">Cambiar el estilo del modo de la tecla</translation>
 <translation id="4519331665958994620">Permitir que los sitios soliciten permiso para usar la cámara</translation>
@@ -3928,6 +3937,7 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="4522890784888918985">Las cuentas secundarias no son compatibles</translation>
 <translation id="4523876148417776526">Aún no se recuperaron las listas de sitios en formato XML.</translation>
 <translation id="4524832533047962394">El modo de inscripción proporcionado no es compatible con esta versión del sistema operativo. Asegúrate de que estás ejecutando la versión más reciente.</translation>
+<translation id="4526853756266614740">Elige una imagen para aplicar el tema de forma instantánea</translation>
 <translation id="452750746583162491">Revisa tus datos sincronizados</translation>
 <translation id="4527929807707405172">Habilita el desplazamiento inverso. <ph name="LINK_BEGIN" />Más información<ph name="LINK_END" /></translation>
 <translation id="4528494169189661126">Sugerencia de traducción</translation>
@@ -4227,6 +4237,7 @@ Usa Ctrl + Alt + Disminuir brillo para alejarte.</translation>
 <translation id="4800839971935185386">Revisar la actualización de íconos y nombres</translation>
 <translation id="4801448226354548035">Ocultar cuentas</translation>
 <translation id="4801512016965057443">Permitir itinerancia de datos móviles</translation>
+<translation id="4804311503028830356">Haz clic en la flecha hacia atrás para explorar otras opciones</translation>
 <translation id="4804818685124855865">Desconectar</translation>
 <translation id="4804827417948292437">Aguacate</translation>
 <translation id="4806457879608775995">Revisa estas condiciones y controla tus datos</translation>
@@ -5296,6 +5307,7 @@ Puedes asignar varios interruptores a esta acción.</translation>
 <translation id="5801051031414037185">Configurar el teléfono</translation>
 <translation id="5801568494490449797">Preferencias</translation>
 <translation id="5804241973901381774">Permisos</translation>
+<translation id="5804259315582798390">No se pudo habilitar la recuperación de datos locales</translation>
 <translation id="5805268472388605531">Mantén presionadas las teclas para ver acentos y caracteres especiales</translation>
 <translation id="5805697420284793859">Administrador de ventanas</translation>
 <translation id="5806447147478173900">Almacenamiento total que usan los sitios que se muestran: <ph name="TOTAL_USAGE" /></translation>
@@ -5382,6 +5394,7 @@ Puedes asignar varios interruptores a esta acción.</translation>
 <translation id="5877064549588274448">Se cambió el canal. Reinicia el dispositivo para aplicar los cambios.</translation>
 <translation id="5877584842898320529">La impresora seleccionada no está disponible o no se instaló correctamente. <ph name="BR" /> Comprueba tu impresora o selecciona otra.</translation>
 <translation id="5878945009165002849">Bloquear los mensajes de acceso de servicios de identidad</translation>
+<translation id="5881710783061958569">En ese caso, edita la contraseña guardada en <ph name="BRAND" /> para que coincida con la nueva.</translation>
 <translation id="5882449899683447569">Se produjo un error y no se importaron tus contraseñas</translation>
 <translation id="5882919346125742463">Redes conocidas</translation>
 <translation id="5883356647197510494">Permisos bloqueados automáticamente: <ph name="PERMISSION_1" /> y <ph name="PERMISSION_2" /></translation>
@@ -5837,7 +5850,6 @@ Puedes asignar varios interruptores a esta acción.</translation>
 <translation id="6295158916970320988">Todos los sitios</translation>
 <translation id="6295855836753816081">Guardando…</translation>
 <translation id="6298962879096096191">Usar Google Play para instalar apps de Android</translation>
-<translation id="6300125580697461004">Enviar comentarios sobre el ahorro de energía</translation>
 <translation id="6300177430812514606">No puede completar el envío ni la recepción de datos</translation>
 <translation id="630065524203833229">&amp;Salir</translation>
 <translation id="6300718114348072351">No se pudo configurar <ph name="PRINTER_NAME" /> automáticamente. Especifica los detalles avanzados de la impresora. <ph name="LINK_BEGIN" />Más información<ph name="LINK_END" /></translation>
@@ -6042,7 +6054,6 @@ Puedes asignar varios interruptores a esta acción.</translation>
 <translation id="6491376743066338510">Se produjo un error en la autorización</translation>
 <translation id="6494327278868541139">Mostrar detalles de la protección mejorada</translation>
 <translation id="6494445798847293442">No es una entidad de certificación</translation>
-<translation id="6497548114956205206">Más información sobre el ahorro de energía</translation>
 <translation id="6497784818439587832">Cambia el tamaño de la pantalla para agrandar o achicar los elementos que aparecen en pantalla.</translation>
 <translation id="6497789971060331894">Desplazamiento invertido del mouse</translation>
 <translation id="6498249116389603658">&amp;Todos tus idiomas</translation>
@@ -6679,6 +6690,7 @@ Tienes # contraseñas hackeadas más. El Administrador de contraseñas de Go
 <translation id="7047059339731138197">Elige un fondo de pantalla</translation>
 <translation id="7049293980323620022">¿Deseas conservar el archivo?</translation>
 <translation id="7050037487872780845">La configuración del hotspot no es válida</translation>
+<translation id="7051551856857948729">Ocultar el valor del IBAN</translation>
 <translation id="7052237160939977163">Enviar datos de seguimiento de rendimiento</translation>
 <translation id="7053983685419859001">Bloquear</translation>
 <translation id="7055152154916055070">Se bloqueó el redireccionamiento:</translation>
@@ -6965,6 +6977,7 @@ Tienes # contraseñas hackeadas más. El Administrador de contraseñas de Go
 <translation id="7352651011704765696">Se produjo un error</translation>
 <translation id="7353261921908507769">Tus contactos pueden compartir contenido contigo cuando están cerca. Las transferencias no comenzarán hasta que las aceptes.</translation>
 <translation id="735361434055555355">Instalando Linux…</translation>
+<translation id="7354120289251608189">Ahora puedes darle un nuevo aspecto a tu navegador en cualquier momento.</translation>
 <translation id="7356908624372060336">Registros de red</translation>
 <translation id="735745346212279324">VPN desconectada</translation>
 <translation id="7358324924540718595">Se ocultaron los recuerdos para hoy.</translation>
@@ -7659,7 +7672,6 @@ Presiona un interruptor o tecla que ya esté asignado para quitar la asignación
 <translation id="7955177647836564772">Si la función Smart Lock está activada y tu teléfono está desbloqueado, no tendrás que ingresar un PIN ni una contraseña.</translation>
 <translation id="7956373551960864128">Tus impresoras guardadas</translation>
 <translation id="7957074856830851026">Ver información del dispositivo, como el número de serie o la ID del activo</translation>
-<translation id="7957186326898555886">Enviar comentarios sobre el ahorro de memoria</translation>
 <translation id="7959074893852789871">El archivo contenía múltiples certificados. Algunos fueron importados:</translation>
 <translation id="7959665254555683862">Nueva pestaña de incógnito</translation>
 <translation id="7961015016161918242">Nunca</translation>
@@ -8089,7 +8101,6 @@ Mantén el archivo de clave en un lugar seguro. Debes crear las nuevas versiones
 <translation id="8340547030807793004">Más acciones para <ph name="DEVICE" /></translation>
 <translation id="8341557223534936723">{NUM_SITES,plural, =1{Revisa <ph name="BEGIN_BOLD" />1 sitio<ph name="END_BOLD" /> que envió muchas notificaciones recientemente}other{Revisa <ph name="BEGIN_BOLD" />{NUM_SITES} sitios<ph name="END_BOLD" /> que enviaron muchas notificaciones recientemente}}</translation>
 <translation id="8342221978608739536">No lo intenté</translation>
-<translation id="8342399870062010251">Más información sobre el ahorro de memoria</translation>
 <translation id="8342861492835240085">Seleccionar una colección</translation>
 <translation id="8345848587667658367">Ahora puedes ver las apps, las notificaciones, el contenido multimedia y las fotos recientes de tu teléfono</translation>
 <translation id="8347227221149377169">Trabajos de impresión</translation>
@@ -8109,6 +8120,7 @@ Mantén el archivo de clave en un lugar seguro. Debes crear las nuevas versiones
 <translation id="8358912028636606457">La transmisión de audio de la pestaña no es compatible con este dispositivo.</translation>
 <translation id="835951711479681002">Guardar en tu Cuenta de Google</translation>
 <translation id="8360140320636871023">Personaliza el tema de la pantalla</translation>
+<translation id="8360267485906769442">Botón para enviar comentarios</translation>
 <translation id="8363095875018065315">estable</translation>
 <translation id="8363142353806532503">Micrófono bloqueado</translation>
 <translation id="8366396658833131068">Se restauró la conexión de red. Selecciona una red distinta o presiona el botón "Continuar" para iniciar la aplicación de kiosco.</translation>
@@ -8255,6 +8267,7 @@ Mantén el archivo de clave en un lugar seguro. Debes crear las nuevas versiones
 <translation id="8498214519255567734">Te permite ver o leer mejor en lugares con luz tenue</translation>
 <translation id="8498395510292172881">Seguir leyendo en Chrome</translation>
 <translation id="8499083585497694743">Dejar de silenciar el micrófono</translation>
+<translation id="8499526927826495298">Enviar <ph name="BEGIN_LINK1" />los metadatos de Autocompletar<ph name="END_LINK1" /></translation>
 <translation id="8502536196501630039">Para usar apps de Google Play, primero debes restablecer tus apps. Es posible que se pierdan algunos datos.</translation>
 <translation id="8503813439785031346">Nombre de usuario</translation>
 <translation id="850382998924680137">Hoy</translation>
@@ -8386,6 +8399,7 @@ Mantén el archivo de clave en un lugar seguro. Debes crear las nuevas versiones
 <translation id="8634348081024879304">Ya no podrás usar tu tarjeta virtual con Google Pay. <ph name="BEGIN_LINK" />Más información sobre las tarjetas virtuales<ph name="END_LINK" /></translation>
 <translation id="8635628933471165173">Cargando de nuevo…</translation>
 <translation id="8636284842992792762">Inicializando extensiones…</translation>
+<translation id="8636323803535540285">Para acceder aquí más rápido, agrega un acceso directo a <ph name="BRAND" /></translation>
 <translation id="8636500887554457830">No permitir que los sitios envíen ventanas emergentes ni utilicen redireccionamientos</translation>
 <translation id="8637688295594795546">Actualización del sistema disponible. Preparando para descargar...</translation>
 <translation id="8639047128869322042">Buscando software dañino…</translation>
@@ -8400,7 +8414,6 @@ Mantén el archivo de clave en un lugar seguro. Debes crear las nuevas versiones
 <translation id="8645354835496065562">Seguir permitiendo el acceso a los sensores</translation>
 <translation id="8645920082661222035">Predice y te advierte sobre eventos peligrosos antes de que ocurran.</translation>
 <translation id="8646209145740351125">Inhabilitar sincronización</translation>
-<translation id="8646340610303779673">No se puede recuperar el PPD.</translation>
 <translation id="864637694230589560">Los sitios por lo general envían notificaciones sobre noticias de último momento o mensajes de chat.</translation>
 <translation id="8646467750715887511">Las páginas se cargan una vez que las abres.</translation>
 <translation id="8647385344110255847">Con tu permiso, tu hijo puede usar Google Play para instalar apps.</translation>
@@ -8545,6 +8558,7 @@ Mantén el archivo de clave en un lugar seguro. Debes crear las nuevas versiones
 <translation id="8767621466733104912">Actualizar Chrome automáticamente para todos los usuarios</translation>
 <translation id="8770406935328356739">Directorio de raíz de la extensión</translation>
 <translation id="8771300903067484968">El fondo de pantalla de la página de inicio se restableció al fondo de pantalla predeterminado.</translation>
+<translation id="8773280816776735812">Mostrar el valor del IBAN</translation>
 <translation id="8773302562181397928">Ahorra <ph name="PRINTER_NAME" /></translation>
 <translation id="8774379074441005279">Confirma que quieres restablecer</translation>
 <translation id="8774934320277480003">Margen superior</translation>

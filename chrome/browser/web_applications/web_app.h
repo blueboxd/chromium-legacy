@@ -12,7 +12,7 @@
 #include "base/time/time.h"
 #include "base/values.h"
 #include "build/chromeos_buildflags.h"
-#include "chrome/browser/web_applications/isolation_data.h"
+#include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_location.h"
 #include "chrome/browser/web_applications/mojom/user_display_mode.mojom.h"
 #include "chrome/browser/web_applications/proto/web_app_os_integration_state.pb.h"
 #include "chrome/browser/web_applications/web_app_chromeos_data.h"
@@ -198,6 +198,10 @@ class WebApp {
 
   const apps::UrlHandlers& url_handlers() const { return url_handlers_; }
 
+  const std::vector<ScopeExtensionInfo>& scope_extensions() const {
+    return scope_extensions_;
+  }
+
   RunOnOsLoginMode run_on_os_login_mode() const {
     return run_on_os_login_mode_;
   }
@@ -313,6 +317,20 @@ class WebApp {
 
   // If present, signals that this app is an Isolated Web App, and contains
   // IWA-specific information like bundle location.
+  struct IsolationData {
+    explicit IsolationData(IsolatedWebAppLocation location);
+    ~IsolationData();
+    IsolationData(const IsolationData&);
+    IsolationData& operator=(const IsolationData&);
+    IsolationData(IsolationData&&);
+    IsolationData& operator=(IsolationData&&);
+
+    bool operator==(const IsolationData&) const;
+    bool operator!=(const IsolationData&) const;
+    base::Value AsDebugValue() const;
+
+    IsolatedWebAppLocation location;
+  };
   const absl::optional<IsolationData>& isolation_data() const {
     return isolation_data_;
   }
@@ -378,6 +396,7 @@ class WebApp {
   void SetDisallowedLaunchProtocols(
       base::flat_set<std::string> disallowed_launch_protocols);
   void SetUrlHandlers(apps::UrlHandlers url_handlers);
+  void SetScopeExtensions(std::vector<ScopeExtensionInfo> scope_extensions);
   void SetLockScreenStartUrl(const GURL& lock_screen_start_url);
   void SetNoteTakingNewNoteUrl(const GURL& note_taking_new_note_url);
   void SetLastBadgingTime(const base::Time& time);
@@ -481,6 +500,7 @@ class WebApp {
   base::flat_set<std::string> disallowed_launch_protocols_;
   // TODO(crbug.com/1072058): No longer aiming to ship, remove.
   apps::UrlHandlers url_handlers_;
+  std::vector<ScopeExtensionInfo> scope_extensions_;
   GURL lock_screen_start_url_;
   GURL note_taking_new_note_url_;
   base::Time last_badging_time_;

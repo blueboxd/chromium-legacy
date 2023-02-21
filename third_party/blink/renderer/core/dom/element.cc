@@ -2998,6 +2998,7 @@ void Element::DetachLayoutTree(bool performing_reattach) {
 
   if (!performing_reattach) {
     UpdateCallbackSelectors(GetComputedStyle(), nullptr);
+    NotifyIfMatchedDocumentRulesSelectorsChanged(GetComputedStyle(), nullptr);
     SetComputedStyle(nullptr);
   }
 
@@ -3068,6 +3069,8 @@ scoped_refptr<const ComputedStyle> Element::StyleForLayoutObject(
     const StyleRecalcContext& style_recalc_context) {
   DCHECK(GetDocument().InStyleRecalc());
 
+  StyleRecalcContext new_style_recalc_context(style_recalc_context);
+
   if (ElementAnimations* element_animations = GetElementAnimations()) {
     // For multiple style recalc passes for the same element in the same
     // lifecycle, which can happen for container queries, we may end up having
@@ -3077,21 +3080,31 @@ scoped_refptr<const ComputedStyle> Element::StyleForLayoutObject(
     // necessary if the animated property flipped back to the old style with no
     // change as the result.
     DCHECK(GetDocument().GetStyleEngine().InContainerQueryStyleRecalc() ||
-           GetDocument().PendingTopLayerUpdate() ||
            element_animations->CssAnimations().PendingUpdate().IsEmpty());
     element_animations->CssAnimations().ClearPendingUpdate();
   }
 
+  new_style_recalc_context.old_style = PostStyleUpdateScope::GetOldStyle(*this);
   scoped_refptr<const ComputedStyle> style =
       HasCustomStyleCallbacks()
-          ? CustomStyleForLayoutObject(style_recalc_context)
-          : OriginalStyleForLayoutObject(style_recalc_context);
+          ? CustomStyleForLayoutObject(new_style_recalc_context)
+          : OriginalStyleForLayoutObject(new_style_recalc_context);
   if (!style) {
     DCHECK(IsPseudoElement());
     return nullptr;
   }
+  if (style->IsPseudoInitialStyle()) {
+    // :initial pseudo styles matched. We need to compute the style a second
+    // time to compute the actual style and trigger transitions using the
+    // starting from the :initial style.
+    new_style_recalc_context.old_style =
+        style->Display() == EDisplay::kNone ? nullptr : style.get();
+    style = HasCustomStyleCallbacks()
+                ? CustomStyleForLayoutObject(new_style_recalc_context)
+                : OriginalStyleForLayoutObject(new_style_recalc_context);
+  }
 
-  auto* context = GetDisplayLockContext();
+  DisplayLockContext* context = GetDisplayLockContext();
   // The common case for most elements is that we don't have a context and have
   // the default (visible) content-visibility value.
   if (UNLIKELY(context || !style->IsContentVisibilityVisible())) {
@@ -3179,7 +3192,7 @@ bool Element::SkipStyleRecalcForContainer(
   // preceding sibling of the originating element's box which means we will not
   // reach the box for ::backdrop during layout. Don't skip style recalc for
   // children of containers in the top layer for this reason.
-  if (IsInTopLayer()) {
+  if (style.IsInTopLayer(*this)) {
     return false;
   }
 
@@ -3257,9 +3270,14 @@ StyleRecalcChange Element::RecalcStyle(
     WillRecalcStyle(change);
   }
 
+  StyleScopeFrame style_scope_frame(
+      *this, /* parent */ style_recalc_context.style_scope_frame);
+  StyleRecalcContext local_style_recalc_context = style_recalc_context;
+  local_style_recalc_context.style_scope_frame = &style_scope_frame;
+
   StyleRecalcChange child_change = change.ForChildren(*this);
   if (change.ShouldRecalcStyleFor(*this)) {
-    child_change = RecalcOwnStyle(change, style_recalc_context);
+    child_change = RecalcOwnStyle(change, local_style_recalc_context);
     if (GetStyleChangeType() == kSubtreeStyleChange) {
       child_change =
           child_change.EnsureAtLeast(StyleRecalcChange::kRecalcDescendants);
@@ -3319,7 +3337,7 @@ StyleRecalcChange Element::RecalcStyle(
     }
   }
 
-  StyleRecalcContext child_recalc_context = style_recalc_context;
+  StyleRecalcContext child_recalc_context = local_style_recalc_context;
 
   if (const ComputedStyle* style = GetComputedStyle()) {
     if (style->CanMatchSizeContainerQueries(*this)) {
@@ -3429,7 +3447,7 @@ scoped_refptr<const ComputedStyle> Element::PropagateInheritedProperties() {
     // of whether the property was inherited or not.
     return nullptr;
   }
-  if (style->TextDecorationsInEffect() != TextDecorationLine::kNone) {
+  if (style->HasAppliedTextDecorations()) {
     // If we have text decorations, they can depend on currentColor,
     // and are normally updated by the StyleAdjuster. We can, however,
     // reach this path when color is modified, leading to the decoration
@@ -4037,6 +4055,21 @@ void Element::NotifyIfMatchedDocumentRulesSelectorsChanged(
       !(HasTagName(html_names::kATag) || HasTagName(html_names::kAreaTag))) {
     return;
   }
+
+  HTMLAnchorElement* link = HasTagName(html_names::kATag)
+                                ? To<HTMLAnchorElement>(this)
+                                : To<HTMLAreaElement>(this);
+  auto* document_rules = DocumentSpeculationRules::FromIfExists(GetDocument());
+  if (!document_rules) {
+    return;
+  }
+
+  if (ComputedStyle::IsNullOrEnsured(old_style) !=
+      ComputedStyle::IsNullOrEnsured(new_style)) {
+    document_rules->LinkGainedOrLostComputedStyle(link);
+    return;
+  }
+
   auto get_selectors_from_computed_style = [](const ComputedStyle* style) {
     HeapHashSet<WeakMember<StyleRule>> empty_set;
     if (!style || !style->DocumentRulesSelectors()) {
@@ -4054,11 +4087,7 @@ void Element::NotifyIfMatchedDocumentRulesSelectorsChanged(
     return;
   }
   if (old_document_rules_selectors != new_document_rules_selectors) {
-    HTMLAnchorElement* link = HasTagName(html_names::kATag)
-                                  ? To<HTMLAnchorElement>(this)
-                                  : To<HTMLAreaElement>(this);
-    DocumentSpeculationRules::From(GetDocument())
-        .LinkMatchedSelectorsUpdated(link);
+    document_rules->LinkMatchedSelectorsUpdated(link);
   }
 }
 
@@ -4479,13 +4508,17 @@ ShadowRoot* Element::attachShadow(const ShadowRootInit* shadow_root_init_dict,
   return &shadow_root;
 }
 
+// TODO(crbug.com/1396384) Remove this entire function when the older version
+// of declarative shadow DOM is removed.
 bool Element::AttachDeclarativeShadowRoot(HTMLTemplateElement* template_element,
                                           ShadowRootType type,
                                           FocusDelegation focus_delegation,
                                           SlotAssignmentMode slot_assignment) {
   DCHECK(template_element);
   DCHECK(type == ShadowRootType::kOpen || type == ShadowRootType::kClosed);
-  UseCounter::Count(GetDocument(), WebFeature::kDeclarativeShadowRoot);
+  Deprecation::CountDeprecation(
+      GetDocument().GetExecutionContext(),
+      mojom::blink::WebFeature::kDeclarativeShadowRoot);
 
   // 12. Run attach a shadow root with shadow host equal to declarative shadow
   // host element, mode equal to declarative shadow mode, and delegates focus
@@ -6481,7 +6514,7 @@ bool Element::ShouldStoreComputedStyle(const ComputedStyle& style) const {
   // force-updating style on the locked subtree and reach this node. Note that
   // we already detached layout when this element was added to top-layer, so we
   // simply maintain the fact that it doesn't have a layout object/subtree.
-  if (IsInTopLayer() &&
+  if (style.IsInTopLayer(*this) &&
       DisplayLockUtilities::LockedAncestorPreventingPaint(*this)) {
     return false;
   }
@@ -6996,9 +7029,6 @@ bool Element::CanGeneratePseudoElement(PseudoId pseudo_id) const {
     DCHECK_EQ(this, GetDocument().documentElement());
     return !GetDocument().GetStyleEngine().ViewTransitionTags().empty();
   }
-  if (pseudo_id == kPseudoIdBackdrop && !IsInTopLayer()) {
-    return false;
-  }
   if (pseudo_id == kPseudoIdFirstLetter && IsSVGElement()) {
     return false;
   }
@@ -7218,11 +7248,22 @@ void Element::SetIsInTopLayer(bool in_top_layer) {
   if (!isConnected()) {
     return;
   }
+
   if (!GetDocument().InStyleRecalc()) {
-    SetForceReattachLayoutTree();
-    // Needs a style recalc to update the ForcesStackingContext flag.
-    SetNeedsStyleRecalc(kLocalStyleChange, StyleChangeReasonForTracing::Create(
-                                               style_change_reason::kTopLayer));
+    if (in_top_layer) {
+      // Need to force re-attachment in case the element was removed and re-
+      // added between two lifecycle updates since the top-layer computed value
+      // would not change, but the layout object order may have.
+      SetForceReattachLayoutTree();
+    }
+
+    if (!RuntimeEnabledFeatures::CSSTopLayerForTransitionsEnabled()) {
+      // Needs a style recalc to update the top-layer property in
+      // StyleAdjuster.
+      SetNeedsStyleRecalc(
+          kLocalStyleChange,
+          StyleChangeReasonForTracing::Create(style_change_reason::kTopLayer));
+    }
   }
 }
 

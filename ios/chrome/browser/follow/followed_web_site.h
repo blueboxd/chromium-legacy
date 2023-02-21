@@ -7,15 +7,10 @@
 
 #import <Foundation/Foundation.h>
 
+#import "ios/chrome/browser/follow/followed_web_site_state.h"
+
 // Represents a followed website.
 @interface FollowedWebSite : NSObject
-
-// Convenience initializer that initializes all properties.
-- (instancetype)initWithTitle:(NSString*)title
-                   webPageURL:(NSURL*)webPageURL
-                   faviconURL:(NSURL*)faviconURL
-                       RSSURL:(NSURL*)RSSURL
-                    available:(BOOL)available;
 
 // Title of the website.
 @property(nonatomic, copy) NSString* title;
@@ -29,8 +24,8 @@
 // URL of the website rss link.
 @property(nonatomic, strong) NSURL* RSSURL;
 
-// YES if the website is available.
-@property(nonatomic, assign) BOOL available;
+// State of the website.
+@property(nonatomic, assign) FollowedWebSiteState state;
 
 @end
 

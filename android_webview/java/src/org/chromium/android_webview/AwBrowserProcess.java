@@ -98,12 +98,31 @@ public final class AwBrowserProcess {
      *                             process; null to use no suffix.
      */
     public static void loadLibrary(String processDataDirSuffix) {
+        loadLibrary(null, null, processDataDirSuffix);
+    }
+
+    /**
+     * Loads the native library, and performs basic static construction of objects needed
+     * to run webview in this process. Does not create threads; safe to call from zygote.
+     * Note: it is up to the caller to ensure this is only called once.
+     *
+     * @param processDataDirBasePath The base path to use when setting the data directory for this
+     *                             process; null to use default base path.
+     * @param processCacheDirBasePath The base path to use when setting the cache directory for this
+     *                             process; null to use default base path.
+     * @param processDataDirSuffix The suffix to use when setting the data directory for this
+     *                             process; null to use no suffix.
+     */
+    public static void loadLibrary(String processDataDirBasePath, String processCacheDirBasePath,
+            String processDataDirSuffix) {
         LibraryLoader.getInstance().setLibraryProcessType(LibraryProcessType.PROCESS_WEBVIEW);
         if (processDataDirSuffix == null) {
-            PathUtils.setPrivateDataDirectorySuffix(WEBVIEW_DIR_BASENAME, "WebView");
+            PathUtils.setPrivateDirectoryPath(processDataDirBasePath, processCacheDirBasePath,
+                    WEBVIEW_DIR_BASENAME, "WebView");
         } else {
             String processDataDirName = WEBVIEW_DIR_BASENAME + "_" + processDataDirSuffix;
-            PathUtils.setPrivateDataDirectorySuffix(processDataDirName, processDataDirName);
+            PathUtils.setPrivateDirectoryPath(processDataDirBasePath, processCacheDirBasePath,
+                    processDataDirName, processDataDirName);
         }
         StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskReads();
         try {
@@ -494,18 +513,20 @@ public final class AwBrowserProcess {
      * Initialize the metrics uploader.
      */
     public static void initializeMetricsLogUploader() {
+        boolean useDefaultUploadQos = AwFeatureList.isEnabled(
+                AwFeatures.WEBVIEW_UMA_UPLOAD_QUALITY_OF_SERVICE_SET_TO_DEFAULT);
+
         if (AwFeatureList.isEnabled(AwFeatures.WEBVIEW_USE_METRICS_UPLOAD_SERVICE)) {
             boolean waitForResults = AwFeatureList.isEnabled(
                     AndroidMetricsFeatures.ANDROID_METRICS_ASYNC_METRIC_LOGGING);
-            AwMetricsLogUploader uploader = new AwMetricsLogUploader(waitForResults);
+            AwMetricsLogUploader uploader =
+                    new AwMetricsLogUploader(waitForResults, useDefaultUploadQos);
             // Open a connection during startup while connecting to other services such as
             // ComponentsProviderService and VariationSeedServer to try to avoid spinning the
             // nonembedded ":webview_service" twice.
             uploader.initialize();
             AndroidMetricsLogUploader.setConsumer(uploader);
         } else {
-            boolean useDefaultUploadQos = AwFeatureList.isEnabled(
-                    AwFeatures.WEBVIEW_UMA_UPLOAD_QUALITY_OF_SERVICE_SET_TO_DEFAULT);
             AndroidMetricsLogUploader.setConsumer((byte[] data) -> {
                 PlatformServiceBridge.getInstance().logMetrics(data, useDefaultUploadQos);
                 return HttpURLConnection.HTTP_OK;

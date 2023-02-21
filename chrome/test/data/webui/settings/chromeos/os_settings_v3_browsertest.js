@@ -53,17 +53,8 @@ var OSSettingsDevicePageV3Test = class extends OSSettingsV3BrowserTest {
   }
 };
 
-// TODO(https://crbug.com/1411677): Re-enable in debug builds once test suite
-// does not time out anymore.
-TEST_F_WITH_PREAMBLE(
-    `
-#if !defined(NDEBUG)
-#define MAYBE_All DISABLED_All
-#else
-#define MAYBE_All All
-#endif
-    `,
-    'OSSettingsDevicePageV3Test', 'MAYBE_All',
+TEST_F(
+    'OSSettingsDevicePageV3Test', 'All',
     () => mocha.grep('/^((?!arrow_key_arrangement_disabled).)*$/').run());
 
 // TODO(crbug.com/1347746): move this to the generic test lists below after the
@@ -507,8 +498,19 @@ TEST_F('OSSettingsCrostiniExtraContainerPageV3Test', 'AllJsTests', () => {
  ['ParentalControlsPage', 'parental_controls_page_test.js'],
  ['PeoplePage', 'os_people_page_test.js'],
  ['PeoplePageQuickUnlock', 'quick_unlock_authenticate_browsertest_chromeos.js'],
- ['PerDeviceKeyboard', 'per_device_keyboard_test.js'],
- ['PerDeviceKeyboardSubsection', 'per_device_keyboard_subsection_test.js'],
+ [
+   'PerDeviceKeyboard', 'per_device_keyboard_test.js',
+   {enabled: ['ash::features::kInputDeviceSettingsSplit']}
+ ],
+ [
+   'PerDeviceKeyboardRemapKeys', 'per_device_keyboard_remap_keys_test.js',
+   {enabled: ['ash::features::kInputDeviceSettingsSplit']}
+ ],
+ [
+   'PerDeviceKeyboardSubsection',
+   'per_device_keyboard_subsection_test.js',
+   {enabled: ['ash::features::kInputDeviceSettingsSplit']},
+ ],
  ['PerDeviceMouseSubsection', 'per_device_mouse_subsection_test.js'],
  [
    'PerDevicePointingStickSubsection',
@@ -607,6 +609,11 @@ function registerTest(testName, module, featureList) {
     TEST_F(className, 'OfficialBuild' || 'All', () => {
       mocha.grep('SearchFeedback_OfficialBuild').run();
     });
+    GEN('#endif');
+  } else if (testName === 'OsSettingsPage') {
+    // TODO(crbug.com/1411677): times out (flaky) debug builds
+    GEN('#if defined(NDEBUG)');
+    TEST_F(className, 'All', () => mocha.run());
     GEN('#endif');
   } else {
     TEST_F(className, 'All', () => mocha.run());

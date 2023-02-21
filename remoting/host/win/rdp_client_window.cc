@@ -92,6 +92,33 @@ HWND FindWindowRecursively(HWND parent, const std::wstring& class_name) {
   return nullptr;
 }
 
+// Returns a scale factor based on the DPI provided.  The client can send
+// non-standard DPIs but Windows only supports a specific set of scale factors
+// so this function just maps the DPI to a supported scale factor.
+// TODO(joedow): Move to //remoting/base if this is needed on other platforms.
+ULONG GetScaleFactorFromDpi(UINT dpi) {
+  // The set of supported scale factors is listed here:
+  // https://learn.microsoft.com/en-us/windows-server/remote/remote-desktop-services/clients/rdp-files
+  if (dpi <= 96) {
+    return 100;
+  } else if (dpi <= 120) {
+    return 125;
+  } else if (dpi <= 144) {
+    return 150;
+  } else if (dpi <= 168) {
+    return 175;
+  } else if (dpi <= 192) {
+    return 200;
+  } else if (dpi <= 240) {
+    return 250;
+  } else if (dpi <= 288) {
+    return 300;
+  } else if (dpi <= 384) {
+    return 400;
+  }
+  return 500;
+}
+
 }  // namespace
 
 // Used to close any windows activated on a particular thread. It installs
@@ -131,16 +158,15 @@ RdpClientWindow::~RdpClientWindow() {
   }
 
   DCHECK(!client_.Get());
-  DCHECK(!client_9_.Get());
   DCHECK(!client_settings_.Get());
 }
 
 bool RdpClientWindow::Connect(const ScreenResolution& resolution) {
   DCHECK(!m_hWnd);
 
-  screen_resolution_ = resolution;
-  RECT rect = {0, 0, screen_resolution_.dimensions().width(),
-               screen_resolution_.dimensions().height()};
+  display_settings_ = resolution;
+  RECT rect = {0, 0, display_settings_.dimensions().width(),
+               display_settings_.dimensions().height()};
   bool result = Create(nullptr, rect, nullptr) != nullptr;
 
   // Hide the window since this class is about establishing a connection, not
@@ -224,7 +250,7 @@ void RdpClientWindow::InjectSas() {
 void RdpClientWindow::ChangeResolution(const ScreenResolution& resolution) {
   // Stop any pending resolution changes.
   apply_resolution_timer_.Stop();
-  screen_resolution_ = resolution;
+  display_settings_ = resolution;
   HRESULT result = UpdateDesktopResolution();
   if (FAILED(result)) {
     LOG(WARNING) << "UpdateSessionDisplaySettings() failed: 0x" << std::hex
@@ -268,8 +294,8 @@ LRESULT RdpClientWindow::OnCreate(CREATESTRUCT* create_struct) {
   base::win::ScopedBstr terminal_id(base::UTF8ToWide(terminal_id_));
 
   // Create the child window that actually hosts the ActiveX control.
-  RECT rect = {0, 0, screen_resolution_.dimensions().width(),
-               screen_resolution_.dimensions().height()};
+  RECT rect = {0, 0, display_settings_.dimensions().width(),
+               display_settings_.dimensions().height()};
   activex_window.Create(m_hWnd, rect, nullptr,
                         WS_CHILD | WS_VISIBLE | WS_BORDER);
   if (activex_window.m_hWnd == nullptr) {
@@ -297,18 +323,12 @@ LRESULT RdpClientWindow::OnCreate(CREATESTRUCT* create_struct) {
   }
 
   // Set dimensions of the remote desktop.
-  result = client_->put_DesktopWidth(screen_resolution_.dimensions().width());
+  result = client_->put_DesktopWidth(display_settings_.dimensions().width());
   if (FAILED(result)) {
     return LogOnCreateError(result);
   }
-  result = client_->put_DesktopHeight(screen_resolution_.dimensions().height());
+  result = client_->put_DesktopHeight(display_settings_.dimensions().height());
   if (FAILED(result)) {
-    return LogOnCreateError(result);
-  }
-
-  // Check to see if the platform exposes the interface used for resizing.
-  result = client_.As(&client_9_);
-  if (FAILED(result) && result != E_NOINTERFACE) {
     return LogOnCreateError(result);
   }
 
@@ -419,7 +439,6 @@ LRESULT RdpClientWindow::OnCreate(CREATESTRUCT* create_struct) {
 
 void RdpClientWindow::OnDestroy() {
   client_.Reset();
-  client_9_.Reset();
   client_settings_.Reset();
   apply_resolution_timer_.Stop();
 }
@@ -458,13 +477,11 @@ STDMETHODIMP RdpClientWindow::OnLoginComplete() {
   // Set up a timer to periodically apply pending screen size changes to the
   // desktop.  Attempting to set the resolution now seems to fail consistently,
   // but succeeds after a brief timeout.
-  if (client_9_) {
-    apply_resolution_attempts_ = 0;
-    apply_resolution_timer_.Start(
-        FROM_HERE, kReapplyResolutionPeriod,
-        base::BindRepeating(&RdpClientWindow::ReapplyDesktopResolution,
-                            Microsoft::WRL::ComPtr<RdpClientWindow>(this)));
-  }
+  apply_resolution_attempts_ = 0;
+  apply_resolution_timer_.Start(
+      FROM_HERE, kReapplyResolutionPeriod,
+      base::BindRepeating(&RdpClientWindow::ReapplyDesktopResolution,
+                          Microsoft::WRL::ComPtr<RdpClientWindow>(this)));
 
   return S_OK;
 }
@@ -525,7 +542,6 @@ int RdpClientWindow::LogOnCreateError(HRESULT error) {
   LOG(ERROR) << "RDP: failed to initiate a connection to "
              << server_endpoint_.ToString() << ": error=" << std::hex << error;
   client_.Reset();
-  client_9_.Reset();
   client_settings_.Reset();
   return -1;
 }
@@ -545,22 +561,59 @@ void RdpClientWindow::NotifyDisconnected() {
 }
 
 HRESULT RdpClientWindow::UpdateDesktopResolution() {
-  if (!client_9_ || !user_logged_in_) {
+  if (!user_logged_in_) {
     return S_FALSE;
   }
+
+  DCHECK_EQ(display_settings_.dpi().x(), display_settings_.dpi().y());
+  UINT dpi = display_settings_.dpi().x();
+  // We choose to scale the desktop rather than scale the device pixels as it
+  // makes the math easier to keep one scale factor constant.
+  const ULONG device_scale_factor = 100;
+  ULONG desktop_scale_factor = GetScaleFactorFromDpi(dpi);
+
+  if (session_display_settings_.dimensions().equals(
+          display_settings_.dimensions()) &&
+      GetScaleFactorFromDpi(session_display_settings_.dpi().x()) ==
+          desktop_scale_factor) {
+    // Don't call UpdateSessionDisplaySettings() if nothing has changed as it
+    // can cause DXGI to stop producing frames. Technically calling this API
+    // always has a chance to cause a hang but we detect the resolution/dpi
+    // change in WebRTC and restart the capturer there. If no settings have
+    // changed then the WebRTC logic won't kick in and the video stream could
+    // stop until the user makes another resolution or dpi change.
+    VLOG(0) << "No changes detected, skipping display settings update.";
+    return S_OK;
+  }
+
+  ULONG width = display_settings_.dimensions().width();
+  ULONG height = display_settings_.dimensions().height();
+  VLOG(0) << "Setting desktop resolution to " << width << "x" << height << " @ "
+          << desktop_scale_factor << "% scale (" << dpi << " dpi)";
 
   // UpdateSessionDisplaySettings() is poorly documented in MSDN and has a few
   // quirks that should be noted.
   // 1.) This method will only work when the user is logged into their session.
   // 2.) The method may return E_UNEXPECTED until some amount of time (seconds)
   //     have elapsed after logging in to the user's session.
-  return client_9_->UpdateSessionDisplaySettings(
-      screen_resolution_.dimensions().width(),
-      screen_resolution_.dimensions().height(),
-      screen_resolution_.dimensions().width(),
-      screen_resolution_.dimensions().height(),
-      /*ulOrientation=*/0, screen_resolution_.dpi().x(),
-      screen_resolution_.dpi().y());
+  // 3.) Calling this method will probably cause DXGI-based capturers to fail.
+  //     The WebRTC desktop capturer looks for resolution and DPI changes but if
+  //     the method is called with the same params then the video stream can
+  //     stall.
+  HRESULT hr = client_->UpdateSessionDisplaySettings(
+      /*ulDesktopWidth=*/width,
+      /*ulDesktopHeight*/ height,
+      /*ulPhysicalWidth=*/width,
+      /*ulPhysicalHeight=*/height,
+      /*ulOrientation=*/0,
+      /*ulDesktopScaleFactor=*/desktop_scale_factor,
+      /*ulDeviceScaleFactor=*/device_scale_factor);
+
+  if (SUCCEEDED(hr)) {
+    session_display_settings_ = display_settings_;
+  }
+
+  return hr;
 }
 
 void RdpClientWindow::ReapplyDesktopResolution() {

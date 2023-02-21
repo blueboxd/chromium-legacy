@@ -27,8 +27,10 @@
 #include "device/fido/fido_authenticator.h"
 #include "device/fido/fido_discovery_factory.h"
 #include "device/fido/fido_parsing_utils.h"
+#include "device/fido/fido_transport_protocol.h"
 #include "device/fido/filter.h"
 #include "device/fido/pin.h"
+#include "device/fido/public_key_credential_descriptor.h"
 
 #if BUILDFLAG(IS_MAC)
 #include "device/fido/mac/authenticator.h"
@@ -53,7 +55,8 @@ const std::set<pin::Permissions> GetPinTokenPermissionsFor(
     const FidoAuthenticator& authenticator,
     const CtapGetAssertionOptions& options) {
   std::set<pin::Permissions> permissions = {pin::Permissions::kGetAssertion};
-  if (options.large_blob_write && authenticator.SupportsLargeBlobs()) {
+  if (options.large_blob_write &&
+      authenticator.Options().large_blob_type == LargeBlobSupportType::kKey) {
     permissions.emplace(pin::Permissions::kLargeBlobWrite);
   }
   return permissions;
@@ -301,14 +304,14 @@ CtapGetAssertionOptions SpecializeOptionsForAuthenticator(
     const CtapGetAssertionOptions& options,
     const FidoAuthenticator& authenticator) {
   CtapGetAssertionOptions specialized_options(options);
+  const AuthenticatorSupportedOptions& auth_options = authenticator.Options();
 
   if (!options.prf_inputs.empty() &&
-      (!authenticator.Options().supports_hmac_secret ||
-       authenticator.Options().supports_prf)) {
+      (!auth_options.supports_hmac_secret || auth_options.supports_prf)) {
     specialized_options.prf_inputs.clear();
   }
 
-  if (!authenticator.SupportsLargeBlobs()) {
+  if (!auth_options.large_blob_type) {
     specialized_options.large_blob_read = false;
     specialized_options.large_blob_write = absl::nullopt;
   }
@@ -323,6 +326,21 @@ CtapGetAssertionRequest SetUVForDiscoverableRequests(
     request.user_verification = UserVerificationRequirement::kRequired;
   }
   return request;
+}
+
+bool IsOnlyHybridOrInternal(const PublicKeyCredentialDescriptor& credential) {
+  if (credential.transports.empty()) {
+    return false;
+  }
+  return base::ranges::all_of(credential.transports, [](const auto& transport) {
+    return transport == FidoTransportProtocol::kHybrid ||
+           transport == FidoTransportProtocol::kInternal;
+  });
+}
+
+bool AllowListOnlyHybridOrInternal(const CtapGetAssertionRequest& request) {
+  return !request.allow_list.empty() &&
+         base::ranges::all_of(request.allow_list, &IsOnlyHybridOrInternal);
 }
 
 }  // namespace
@@ -346,6 +364,8 @@ GetAssertionRequestHandler::GetAssertionRequestHandler(
   transport_availability_info().request_type = FidoRequestType::kGetAssertion;
   transport_availability_info().has_empty_allow_list =
       request_.allow_list.empty();
+  transport_availability_info().is_only_hybrid_or_internal =
+      AllowListOnlyHybridOrInternal(request_);
   transport_availability_info().is_off_the_record_context =
       options_.is_off_the_record_context;
   transport_availability_info().transport_list_did_include_internal =
@@ -496,7 +516,7 @@ void GetAssertionRequestHandler::AuthenticatorRemoved(
 void GetAssertionRequestHandler::GetPlatformCredentialStatus(
     FidoAuthenticator* platform_authenticator) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(my_sequence_checker_);
-  platform_authenticator->GetCredentialInformationForRequest(
+  platform_authenticator->GetPlatformCredentialInfoForRequest(
       request_, options_,
       base::BindOnce(
           &GetAssertionRequestHandler::OnHavePlatformCredentialStatus,

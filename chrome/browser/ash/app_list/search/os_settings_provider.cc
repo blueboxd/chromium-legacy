@@ -13,6 +13,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/ash/app_list/search/common/icon_constants.h"
+#include "chrome/browser/ash/app_list/vector_icons/vector_icons.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/settings_window_manager_chromeos.h"
 #include "chrome/browser/ui/webui/settings/ash/hierarchy.h"
@@ -21,6 +22,7 @@
 #include "components/services/app_service/public/cpp/app_registry_cache.h"
 #include "components/services/app_service/public/cpp/app_types.h"
 #include "ui/gfx/image/image_skia.h"
+#include "ui/gfx/paint_vector_icon.h"
 
 namespace app_list {
 namespace {
@@ -215,17 +217,19 @@ OsSettingsProvider::OsSettingsProvider(
   search_handler_->Observe(
       search_results_observer_receiver_.BindNewPipeAndPassRemote());
 
+  // TODO(b/261867385): We manually load the icon from the local codebase as
+  // the icon load from proxy is flaky. When the flakiness if solved, we can
+  // safely remove this.
+  icon_ = gfx::CreateVectorIcon(app_list::kOsSettingsIcon, kAppIconDimension,
+                                SK_ColorTRANSPARENT);
+
   if (app_service_proxy_) {
     Observe(&app_service_proxy_->AppRegistryCache());
 
-    app_service_proxy_->LoadIcon(
-        app_service_proxy_->AppRegistryCache().GetAppType(
-            web_app::kOsSettingsAppId),
-        web_app::kOsSettingsAppId, apps::IconType::kStandard, kAppIconDimension,
-        /*allow_placeholder_icon=*/false,
-        base::BindOnce(&OsSettingsProvider::OnLoadIcon,
-                       weak_factory_.GetWeakPtr(),
-                       /*is_from_constructor=*/true));
+    // TODO(b/261867385): `LoadIcon()` from constructor is removed as it never
+    // succeeds and the icon is only updated from "OnAppUpdate()" according to
+    // the UMA metrics. We can either remove this comments if this issue is
+    // confirmed, or revert the remove if this issue is solved.
     LogIconLoadStatus(IconLoadStatus::kBindOnLoadIconFromConstructor);
   } else {
     LogStatus(Status::kNoAppServiceProxy);

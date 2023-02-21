@@ -687,6 +687,9 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kWebRtcLocalIpsAllowedUrls,
     prefs::kWebRtcLocalIpsAllowedUrls,
     base::Value::Type::LIST },
+  { key::kWebRtcTextLogCollectionAllowed,
+    prefs::kWebRtcTextLogCollectionAllowed,
+    base::Value::Type::BOOLEAN },
   { key::kWindowCaptureAllowedByOrigins,
     prefs::kWindowCaptureAllowedByOrigins,
     base::Value::Type::LIST },
@@ -1707,6 +1710,13 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
     base::Value::Type::BOOLEAN },
 #endif  // BUILDFLAG(CHROME_ROOT_STORE_POLICY_SUPPORTED)
 
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX) || \
+    BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_ANDROID)
+  { key::kEnforceLocalAnchorConstraintsEnabled,
+    prefs::kEnforceLocalAnchorConstraintsEnabled,
+    base::Value::Type::BOOLEAN },
+#endif
+
   { key::kScrollToTextFragmentEnabled,
     prefs::kScrollToTextFragmentEnabled,
     base::Value::Type::BOOLEAN },
@@ -2161,12 +2171,6 @@ std::unique_ptr<ConfigurationPolicyHandlerList> BuildHandlerList(
 #if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN)
   handlers->AddHandler(std::make_unique<LocalSyncPolicyHandler>());
   handlers->AddHandler(std::make_unique<ThemeColorPolicyHandler>());
-  handlers->AddHandler(
-      std::make_unique<
-          enterprise_connectors::EnterpriseConnectorsPolicyHandler>(
-          key::kAutomatedKeyRotationEnabled,
-          enterprise_connectors::kAutomatedKeyRotationEnabledPref,
-          chrome_schema));
 #endif  // BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN)
 
 #if BUILDFLAG(IS_CHROMEOS)
@@ -2539,7 +2543,7 @@ std::unique_ptr<ConfigurationPolicyHandlerList> BuildHandlerList(
   handlers->AddHandler(std::make_unique<IntRangePolicyHandler>(
       key::kExtensionUnpublishedAvailability,
       extensions::pref_names::kExtensionUnpublishedAvailability,
-      /*min=*/0, /*max=*/2, /*clamp=*/false));
+      /*min=*/0, /*max=*/1, /*clamp=*/false));
 #endif  // !BUILDFLAG(IS_FUCHSIA)
   handlers->AddHandler(std::make_unique<IntRangePolicyHandler>(
       key::kExtensionManifestV2Availability,

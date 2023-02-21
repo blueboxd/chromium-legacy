@@ -23,6 +23,7 @@
 #include "ash/public/cpp/test/shell_test_api.h"
 #include "ash/style/dark_light_mode_controller_impl.h"
 #include "ash/webui/file_manager/url_constants.h"
+#include "ash/webui/system_apps/public/system_web_app_type.h"
 #include "base/containers/circular_deque.h"
 #include "base/containers/contains.h"
 #include "base/files/file_path.h"
@@ -83,7 +84,6 @@
 #include "chrome/browser/ash/smb_client/smb_service_factory.h"
 #include "chrome/browser/ash/system/timezone_util.h"
 #include "chrome/browser/ash/system_web_apps/system_web_app_manager.h"
-#include "chrome/browser/ash/system_web_apps/types/system_web_app_type.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/enterprise/connectors/connectors_service.h"
@@ -821,6 +821,45 @@ struct GetLocalPathMessage {
 };
 
 }  // anonymous namespace
+
+ash::LoggedInUserMixin::LogInType LogInTypeFor(
+    TestAccountType test_account_type) {
+  switch (test_account_type) {
+    case kTestAccountTypeNotSet:
+      CHECK(false) << "test_account_type option must be set for "
+                      "LoggedInUserFilesAppBrowserTest";
+      // TODO(crbug.com/1061742): `base::ImmediateCrash` is necessary.
+      base::ImmediateCrash();
+    case kEnterprise:
+      return ash::LoggedInUserMixin::LogInType::kRegular;
+    case kChild:
+      return ash::LoggedInUserMixin::LogInType::kChild;
+    case kNonManaged:
+    case kNonManagedNonOwner:
+      return ash::LoggedInUserMixin::LogInType::kRegular;
+  }
+}
+
+absl::optional<AccountId> AccountIdFor(TestAccountType test_account_type) {
+  switch (test_account_type) {
+    case kTestAccountTypeNotSet:
+      CHECK(false) << "test_account_type option must be set for "
+                      "LoggedInUserFilesAppBrowserTest";
+      // `base::ImmediateCrash` is necessary for https://crbug.com/1061742.
+      base::ImmediateCrash();
+    case kEnterprise:
+      return AccountId::FromUserEmailGaiaId(
+          FakeGaiaMixin::kEnterpriseUser1,
+          FakeGaiaMixin::kEnterpriseUser1GaiaId);
+    case kChild:
+      // Use the default account provided by `LoggedInUserMixin`.
+      return absl::nullopt;
+    case kNonManaged:
+    case kNonManagedNonOwner:
+      // Use the default account provided by `LoggedInUserMixin`.
+      return absl::nullopt;
+  }
+}
 
 std::ostream& operator<<(std::ostream& out, const GuestMode mode) {
   switch (mode) {
@@ -2944,6 +2983,14 @@ void FileManagerBrowserTestBase::OnCommand(const std::string& name,
     ASSERT_TRUE(enabled.has_value());
     profile()->GetPrefs()->SetBoolean(prefs::kPluginsAlwaysOpenPdfExternally,
                                       !enabled.value());
+    return;
+  }
+
+  if (name == "setPrefOfficeFileMovedToGoogleDrive") {
+    absl::optional<int64_t> timestamp = value.FindDouble("timestamp");
+    ASSERT_TRUE(timestamp.has_value());
+    profile()->GetPrefs()->SetTime(prefs::kOfficeFileMovedToGoogleDrive,
+                                   base::Time::FromJsTime(timestamp.value()));
     return;
   }
 

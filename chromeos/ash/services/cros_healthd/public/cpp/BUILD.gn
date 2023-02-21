@@ -4,7 +4,7 @@
 
 import("//build/config/chromeos/args.gni")
 import("//build/config/chromeos/ui_mode.gni")
-import("//chromeos/dbus/config/use_real_dbus_clients.gni")
+import("//chromeos/features.gni")
 
 assert(is_chromeos_ash)
 
@@ -27,17 +27,20 @@ source_set("cpp") {
   deps = [
     "//ash/constants",
     "//base",
-    "//chromeos/ash/components/dbus/cros_healthd",
     "//chromeos/ash/components/mojo_service_manager",
     "//chromeos/ash/services/cros_healthd/public/mojom",
     "//ui/events/ozone/evdev:event_device_info",
   ]
-  if (use_real_dbus_clients) {
-    defines += [ "USE_REAL_DBUS_CLIENTS" ]
-  } else {
+  if (!use_real_chromeos_services) {
     sources += [
+      "fake_ash_event_reporter.cc",
+      "fake_ash_event_reporter.h",
       "fake_cros_healthd.cc",
       "fake_cros_healthd.h",
+    ]
+    public_deps += [
+      "//ash/system/diagnostics/mojom",
+      "//chromeos/ash/services/cros_healthd/public/mojom:event_reporter",
     ]
   }
 }
@@ -48,9 +51,8 @@ source_set("unit_tests") {
   deps = [
     ":cpp",
     "//base/test:test_support",
+    "//chromeos/ash/components/mojo_service_manager",
     "//chromeos/ash/services/cros_healthd/public/mojom",
-    "//chromeos/services/network_health/public/mojom",
-    "//chromeos/services/network_health/public/mojom:types",
     "//mojo/core/embedder",
     "//mojo/public/cpp/bindings",
     "//testing/gmock",

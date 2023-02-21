@@ -74,10 +74,7 @@ constexpr char kCvc[] = "123";
 class TestAutofillManager : public BrowserAutofillManager {
  public:
   TestAutofillManager(ContentAutofillDriver* driver, AutofillClient* client)
-      : BrowserAutofillManager(driver,
-                               client,
-                               "en-US",
-                               EnableDownloadManager(false)) {}
+      : BrowserAutofillManager(driver, client, "en-US") {}
 
   static TestAutofillManager* GetForRenderFrameHost(
       content::RenderFrameHost* rfh) {
@@ -112,10 +109,10 @@ class TestAutofillManager : public BrowserAutofillManager {
  private:
   TestAutofillManagerWaiter did_autofill_{
       *this,
-      {&AutofillManager::Observer::OnAfterDidFillAutofillFormData}};
+      {AutofillManagerEvent::kDidFillAutofillFormData}};
   TestAutofillManagerWaiter form_submitted_{
       *this,
-      {&AutofillManager::Observer::OnAfterFormSubmitted}};
+      {AutofillManagerEvent::kFormSubmitted}};
   absl::optional<FormData> submitted_form_;
 };
 

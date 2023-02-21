@@ -775,17 +775,17 @@ const base::FeatureParam<bool>
     kAutocompleteStabilityPreserveDefaultExcludeKeywordInputs(
         &omnibox::kPreserveDefault,
         "AutocompleteStabilityPreserveDefaultExcludeKeywordInputs",
-        false);
+        true);
 const base::FeatureParam<bool>
     kAutocompleteStabilityPreserveDefaultAfterTransfer(
         &omnibox::kPreserveDefault,
         "AutocompleteStabilityPreserveDefaultAfterTransfer",
-        false);
+        true);
 const base::FeatureParam<int>
     kAutocompleteStabilityPreserveDefaultForSyncUpdatesMinInputLength(
         &omnibox::kPreserveDefault,
         "AutocompleteStabilityPreserveDefaultForSyncUpdatesMinInputLength",
-        -1);
+        3);
 const base::FeatureParam<bool>
     kAutocompleteStabilityPreserveDefaultForAsyncUpdates(
         &omnibox::kPreserveDefault,
@@ -795,15 +795,7 @@ const base::FeatureParam<bool>
     kAutocompleteStabilityPreventDefaultPreviousMatches(
         &omnibox::kPreserveDefault,
         "AutocompleteStabilityPreventDefaultPreviousMatches",
-        false);
-const base::FeatureParam<bool> kAutocompleteStabilityDontCopyDoneProviders(
-    &omnibox::kAutocompleteStability,
-    "AutocompleteStabilityDontCopyDoneProviders",
-    true);
-const base::FeatureParam<bool> kAutocompleteStabilityAsyncProvidersFirst(
-    &omnibox::kAutocompleteStability,
-    "AutocompleteStabilityAsyncProvidersFirst",
-    true);
+        true);
 const base::FeatureParam<bool>
     kAutocompleteStabilityUpdateResultDebounceFromLastRun(
         &omnibox::kUpdateResultDebounce,

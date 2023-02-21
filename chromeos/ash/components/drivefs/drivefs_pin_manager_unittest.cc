@@ -56,6 +56,8 @@ using testing::UnorderedElementsAre;
 using Id = PinManager::Id;
 using Path = base::FilePath;
 
+const FileError kFileOk = FileError::FILE_ERROR_OK;
+
 // Shorthand way to represent drive files with the information that is relevant
 // for the pinning manager.
 struct DriveItem {
@@ -326,26 +328,54 @@ TEST_F(DriveFsPinManagerTest, Add) {
     EXPECT_EQ(progress.skipped_files, 0);
   }
 
-  const Id id1 = Id(549);
-  const Path path1 = Path("Path 1");
+  const Id id1 = Id(101);
+  const Path path1 = Path("/root/Path 1");
   const int64_t size1 = 698248964;
 
-  const Id id2 = Id(17);
-  const Path path2 = Path("Path 2");
+  const Id id2 = Id(102);
+  const Path path2 = Path("/root/Path 2");
   const int64_t size2 = 78964533;
+
+  const Id id3 = Id(103);
+  const Path path3 = Path("/root/Path 3");
+  const int64_t size3 = 896545;
+
+  const Id id4 = Id(104);
+  const Path path4 = Path("/root/Path 4");
+  const int64_t size4 = 8645;
 
   DCHECK_CALLED_ON_VALID_SEQUENCE(manager.sequence_checker_);
   EXPECT_THAT(manager.files_to_pin_, IsEmpty());
   EXPECT_THAT(manager.files_to_track_, IsEmpty());
 
   // Add an item.
-  EXPECT_TRUE(manager.Add(id1, path1, size1, false));
+  {
+    FileMetadata md;
+    md.stable_id = static_cast<int64_t>(id1);
+    md.type = FileMetadata::Type::kFile;
+    md.size = size1;
+    md.can_pin = FileMetadata::CanPinStatus::kOk;
+    md.pinned = false;
+    md.available_offline = false;
+    EXPECT_TRUE(manager.Add(md, path1));
+  }
+
   EXPECT_THAT(manager.files_to_pin_, UnorderedElementsAre(id1));
   EXPECT_THAT(manager.files_to_track_, SizeIs(1));
 
   // Try to add a conflicting item with the same ID, but different path and
   // size.
-  EXPECT_FALSE(manager.Add(id1, path2, size2, true));
+  {
+    FileMetadata md;
+    md.stable_id = static_cast<int64_t>(id1);
+    md.type = FileMetadata::Type::kFile;
+    md.size = size2;
+    md.can_pin = FileMetadata::CanPinStatus::kOk;
+    md.pinned = false;
+    md.available_offline = false;
+    EXPECT_FALSE(manager.Add(md, path2));
+  }
+
   EXPECT_THAT(manager.files_to_pin_, UnorderedElementsAre(id1));
   EXPECT_THAT(manager.files_to_track_, SizeIs(1));
 
@@ -373,7 +403,17 @@ TEST_F(DriveFsPinManagerTest, Add) {
   }
 
   // Add a second item, but which is already pinned this time.
-  EXPECT_TRUE(manager.Add(id2, path2, size2, true));
+  {
+    FileMetadata md;
+    md.stable_id = static_cast<int64_t>(id2);
+    md.type = FileMetadata::Type::kFile;
+    md.size = size2;
+    md.can_pin = FileMetadata::CanPinStatus::kOk;
+    md.pinned = true;
+    md.available_offline = false;
+    EXPECT_TRUE(manager.Add(md, path2));
+  }
+
   EXPECT_THAT(manager.files_to_pin_, UnorderedElementsAre(id1));
   EXPECT_THAT(manager.files_to_track_, SizeIs(2));
 
@@ -398,6 +438,84 @@ TEST_F(DriveFsPinManagerTest, Add) {
     EXPECT_EQ(progress.syncing_files, 1);
     EXPECT_EQ(progress.files_to_pin, 2);
     EXPECT_EQ(progress.skipped_files, 0);
+  }
+
+  // Add a third item, but which is not pinned yet, although already available
+  // offline.
+  {
+    FileMetadata md;
+    md.stable_id = static_cast<int64_t>(id3);
+    md.type = FileMetadata::Type::kFile;
+    md.size = size3;
+    md.can_pin = FileMetadata::CanPinStatus::kOk;
+    md.pinned = false;
+    md.available_offline = true;
+    EXPECT_TRUE(manager.Add(md, path3));
+  }
+
+  EXPECT_THAT(manager.files_to_pin_, UnorderedElementsAre(id1, id3));
+  EXPECT_THAT(manager.files_to_track_, SizeIs(3));
+
+  {
+    const auto it = manager.files_to_track_.find(id3);
+    ASSERT_NE(it, manager.files_to_track_.end());
+    const auto& [id, file] = *it;
+    EXPECT_EQ(id, id3);
+    EXPECT_EQ(file.path, path3);
+    EXPECT_EQ(file.total, size3);
+    EXPECT_EQ(file.transferred, size3);
+    EXPECT_TRUE(file.in_progress);
+    EXPECT_FALSE(file.pinned);
+  }
+
+  {
+    const Progress progress = manager.GetProgress();
+    EXPECT_EQ(progress.pinned_files, 0);
+    EXPECT_EQ(progress.pinned_bytes, size3);
+    EXPECT_EQ(progress.bytes_to_pin, size1 + size2 + size3);
+    EXPECT_EQ(progress.required_space, 777216000);
+    EXPECT_EQ(progress.syncing_files, 1);
+    EXPECT_EQ(progress.files_to_pin, 3);
+    EXPECT_EQ(progress.skipped_files, 0);
+  }
+
+  // Try to add a forth item, but which is both pinned and already available
+  // offline. This should be skipped.
+  {
+    FileMetadata md;
+    md.stable_id = static_cast<int64_t>(id4);
+    md.type = FileMetadata::Type::kFile;
+    md.size = size4;
+    md.can_pin = FileMetadata::CanPinStatus::kOk;
+    md.pinned = true;
+    md.available_offline = true;
+    EXPECT_FALSE(manager.Add(md, path4));
+  }
+
+  EXPECT_THAT(manager.files_to_pin_, UnorderedElementsAre(id1, id3));
+  EXPECT_THAT(manager.files_to_track_, SizeIs(3));
+
+  {
+    const auto it = manager.files_to_track_.find(id3);
+    ASSERT_NE(it, manager.files_to_track_.end());
+    const auto& [id, file] = *it;
+    EXPECT_EQ(id, id3);
+    EXPECT_EQ(file.path, path3);
+    EXPECT_EQ(file.total, size3);
+    EXPECT_EQ(file.transferred, size3);
+    EXPECT_TRUE(file.in_progress);
+    EXPECT_FALSE(file.pinned);
+  }
+
+  {
+    const Progress progress = manager.GetProgress();
+    EXPECT_EQ(progress.pinned_files, 0);
+    EXPECT_EQ(progress.pinned_bytes, size3);
+    EXPECT_EQ(progress.bytes_to_pin, size1 + size2 + size3);
+    EXPECT_EQ(progress.required_space, 777216000);
+    EXPECT_EQ(progress.syncing_files, 1);
+    EXPECT_EQ(progress.files_to_pin, 3);
+    EXPECT_EQ(progress.skipped_files, 1);
   }
 }
 
@@ -708,6 +826,348 @@ TEST_F(DriveFsPinManagerTest, Remove) {
   }
 }
 
+// Tests PinManager::OnFileCreated().
+TEST_F(DriveFsPinManagerTest, OnFileCreated) {
+  PinManager manager(temp_dir_.GetPath(), &drivefs_);
+
+  DCHECK_CALLED_ON_VALID_SEQUENCE(manager.sequence_checker_);
+  EXPECT_EQ(manager.progress_.stage, Stage::kNotStarted);
+
+  const DriveItem item{.size = 2487};
+  mojom::FileChange event;
+  event.type = mojom::FileChange::Type::kCreate;
+  event.stable_id = item.stable_id;
+  event.path = Path("/root/Path 1");
+
+  // Should not have any effect since the Pin manager is in kNotStarted stage.
+  EXPECT_CALL(drivefs_, GetMetadataByStableId(_, _)).Times(0);
+  manager.OnFileCreated(std::as_const(event));
+
+  EXPECT_EQ(manager.progress_.pinned_files, 0);
+  EXPECT_EQ(manager.progress_.pinned_bytes, 0);
+  EXPECT_EQ(manager.progress_.bytes_to_pin, 0);
+  EXPECT_EQ(manager.progress_.required_space, 0);
+  EXPECT_EQ(manager.progress_.syncing_files, 0);
+
+  // Switch to kListingFiles stage.
+  manager.progress_.stage = Stage::kListingFiles;
+  EXPECT_CALL(drivefs_, GetMetadataByStableId(item.stable_id, _))
+      .Times(1)
+      .WillOnce(RunOnceCallback<1>(kFileOk, MakeMetadata(item)));
+  manager.OnFileCreated(std::as_const(event));
+
+  EXPECT_EQ(manager.progress_.pinned_files, 0);
+  EXPECT_EQ(manager.progress_.pinned_bytes, 0);
+  EXPECT_EQ(manager.progress_.bytes_to_pin, 2487);
+  EXPECT_EQ(manager.progress_.required_space, 4096);
+  EXPECT_EQ(manager.progress_.syncing_files, 0);
+
+  EXPECT_THAT(manager.files_to_pin_, UnorderedElementsAre(Id(item.stable_id)));
+  EXPECT_THAT(manager.files_to_track_, SizeIs(1));
+
+  // Calling OnFileCreated again with an already tracked ID should not have any
+  // effect.
+  EXPECT_CALL(drivefs_, GetMetadataByStableId(_, _)).Times(0);
+  event.path = Path("/root/Path 2");
+  manager.OnFileCreated(std::as_const(event));
+
+  EXPECT_EQ(manager.progress_.pinned_files, 0);
+  EXPECT_EQ(manager.progress_.pinned_bytes, 0);
+  EXPECT_EQ(manager.progress_.bytes_to_pin, 2487);
+  EXPECT_EQ(manager.progress_.required_space, 4096);
+  EXPECT_EQ(manager.progress_.syncing_files, 0);
+
+  EXPECT_THAT(manager.files_to_pin_, UnorderedElementsAre(Id(item.stable_id)));
+  EXPECT_THAT(manager.files_to_track_, SizeIs(1));
+
+  manager.progress_.stage = Stage::kStopped;
+}
+
+// Tests PinManager::OnFileDeleted().
+TEST_F(DriveFsPinManagerTest, OnFileDeleted) {
+  PinManager manager(temp_dir_.GetPath(), &drivefs_);
+
+  DCHECK_CALLED_ON_VALID_SEQUENCE(manager.sequence_checker_);
+  EXPECT_EQ(manager.progress_.stage, Stage::kNotStarted);
+
+  const DriveItem item{.size = 2487};
+  const Path path("/root/Path 1");
+
+  mojom::FileChange event;
+  event.type = mojom::FileChange::Type::kDelete;
+  event.stable_id = item.stable_id;
+  event.path = path;
+
+  EXPECT_CALL(drivefs_, SetPinnedByStableId(item.stable_id, false, _))
+      .WillOnce(RunOnceCallback<2>(kFileOk));
+
+  manager.OnFileDeleted(std::as_const(event));
+
+  EXPECT_CALL(drivefs_, SetPinnedByStableId(item.stable_id, false, _))
+      .WillOnce(RunOnceCallback<2>(FileError::FILE_ERROR_ACCESS_DENIED));
+
+  manager.OnFileDeleted(std::as_const(event));
+}
+
+// Tests PinManager::OnMetadataForCreatedFile().
+TEST_F(DriveFsPinManagerTest, OnMetadataForCreatedFile) {
+  PinManager manager(temp_dir_.GetPath(), &drivefs_);
+
+  DCHECK_CALLED_ON_VALID_SEQUENCE(manager.sequence_checker_);
+  EXPECT_THAT(manager.files_to_pin_, IsEmpty());
+  EXPECT_THAT(manager.files_to_track_, IsEmpty());
+  EXPECT_EQ(manager.progress_.failed_files, 0);
+  EXPECT_EQ(manager.progress_.pinned_files, 0);
+
+  manager.progress_.stage = Stage::kListingFiles;
+
+  const Id id = Id(101);
+  const Path path("/root/Path 1");
+  const DriveItem item{.stable_id = static_cast<int64_t>(id), .size = 2487};
+
+  // Cannot get metadata for an untracked file.
+  manager.OnMetadataForCreatedFile(id, path, drive::FILE_ERROR_ACCESS_DENIED,
+                                   nullptr);
+  EXPECT_THAT(manager.files_to_pin_, IsEmpty());
+  EXPECT_THAT(manager.files_to_track_, IsEmpty());
+  EXPECT_EQ(manager.progress_.failed_files, 0);
+  EXPECT_EQ(manager.progress_.pinned_files, 0);
+
+  // Add a tracked file.
+  ASSERT_TRUE(manager.Add(*MakeMetadata(item), path));
+  EXPECT_THAT(manager.files_to_pin_, UnorderedElementsAre(id));
+  EXPECT_THAT(manager.files_to_track_, SizeIs(1));
+  EXPECT_EQ(manager.progress_.failed_files, 0);
+  EXPECT_EQ(manager.progress_.pinned_files, 0);
+
+  // Cannot get metadata for a tracked file.
+  manager.OnMetadataForCreatedFile(
+      id, path, FileError::FILE_ERROR_ACCESS_DENIED, nullptr);
+  EXPECT_THAT(manager.files_to_pin_, IsEmpty());
+  EXPECT_THAT(manager.files_to_track_, IsEmpty());
+  EXPECT_EQ(manager.progress_.failed_files, 1);
+  EXPECT_EQ(manager.progress_.pinned_files, 0);
+
+  // Get metadata for an untracked file.
+  manager.progress_.failed_files = 0;
+  manager.OnMetadataForCreatedFile(id, path, kFileOk, MakeMetadata(item));
+  EXPECT_THAT(manager.files_to_pin_, UnorderedElementsAre(id));
+  EXPECT_THAT(manager.files_to_track_, SizeIs(1));
+  EXPECT_EQ(manager.progress_.failed_files, 0);
+  EXPECT_EQ(manager.progress_.pinned_files, 0);
+
+  manager.progress_.stage = Stage::kStopped;
+}
+
+// Tests PinManager::OnFileModified().
+TEST_F(DriveFsPinManagerTest, OnFileModified) {
+  PinManager manager(temp_dir_.GetPath(), &drivefs_);
+
+  DCHECK_CALLED_ON_VALID_SEQUENCE(manager.sequence_checker_);
+  EXPECT_EQ(manager.progress_.stage, Stage::kNotStarted);
+
+  const DriveItem item{.size = 2487};
+  const Id id = Id(item.stable_id);
+  const Path path1("/root/Path 1");
+  mojom::FileChange event;
+  event.type = mojom::FileChange::Type::kModify;
+  event.stable_id = item.stable_id;
+  event.path = path1;
+
+  // Should not have any effect since this file is not tracked.
+  EXPECT_CALL(drivefs_, GetMetadataByStableId(_, _)).Times(0);
+  manager.OnFileModified(std::as_const(event));
+
+  EXPECT_THAT(manager.files_to_pin_, IsEmpty());
+  EXPECT_THAT(manager.files_to_track_, IsEmpty());
+  EXPECT_EQ(manager.progress_.pinned_files, 0);
+  EXPECT_EQ(manager.progress_.pinned_bytes, 0);
+  EXPECT_EQ(manager.progress_.bytes_to_pin, 0);
+  EXPECT_EQ(manager.progress_.required_space, 0);
+  EXPECT_EQ(manager.progress_.syncing_files, 0);
+
+  // Add a tracked file.
+  const Path path2("/root/Path 2");
+  ASSERT_TRUE(manager.Add(*MakeMetadata(item), path2));
+  EXPECT_THAT(manager.files_to_pin_, UnorderedElementsAre(id));
+  EXPECT_THAT(manager.files_to_track_, SizeIs(1));
+  EXPECT_EQ(manager.progress_.failed_files, 0);
+  EXPECT_EQ(manager.progress_.pinned_files, 0);
+  EXPECT_EQ(manager.progress_.pinned_bytes, 0);
+  EXPECT_EQ(manager.progress_.bytes_to_pin, 2487);
+  EXPECT_EQ(manager.progress_.required_space, 4096);
+  EXPECT_EQ(manager.progress_.syncing_files, 0);
+
+  {
+    const auto it = manager.files_to_track_.find(id);
+    ASSERT_NE(it, manager.files_to_track_.end());
+    const auto& [got_id, file] = *it;
+    EXPECT_EQ(got_id, id);
+    EXPECT_EQ(file.path, path2);
+  }
+
+  // Should modify the path.
+  EXPECT_CALL(drivefs_, GetMetadataByStableId(event.stable_id, _))
+      .Times(1)
+      .WillOnce(RunOnceCallback<1>(kFileOk, MakeMetadata(item)));
+  manager.OnFileModified(std::as_const(event));
+
+  EXPECT_THAT(manager.files_to_pin_, UnorderedElementsAre(id));
+  EXPECT_THAT(manager.files_to_track_, SizeIs(1));
+  EXPECT_EQ(manager.progress_.failed_files, 0);
+  EXPECT_EQ(manager.progress_.pinned_files, 0);
+  EXPECT_EQ(manager.progress_.pinned_bytes, 0);
+  EXPECT_EQ(manager.progress_.bytes_to_pin, 2487);
+  EXPECT_EQ(manager.progress_.required_space, 4096);
+  EXPECT_EQ(manager.progress_.syncing_files, 0);
+
+  {
+    const auto it = manager.files_to_track_.find(id);
+    ASSERT_NE(it, manager.files_to_track_.end());
+    const auto& [got_id, file] = *it;
+    EXPECT_EQ(got_id, id);
+    EXPECT_EQ(file.path, path1);
+  }
+}
+
+// Tests PinManager::OnMetadataForModifiedFile().
+TEST_F(DriveFsPinManagerTest, OnMetadataForModifiedFile) {
+  PinManager manager(temp_dir_.GetPath(), &drivefs_);
+
+  DCHECK_CALLED_ON_VALID_SEQUENCE(manager.sequence_checker_);
+  EXPECT_THAT(manager.files_to_pin_, IsEmpty());
+  EXPECT_THAT(manager.files_to_track_, IsEmpty());
+  EXPECT_EQ(manager.progress_.failed_files, 0);
+  EXPECT_EQ(manager.progress_.pinned_files, 0);
+
+  manager.progress_.stage = Stage::kListingFiles;
+
+  const Id id = Id(101);
+  const Path path("/root/Path 1");
+  DriveItem item{.stable_id = static_cast<int64_t>(id), .size = 2487};
+
+  // Cannot get metadata for an untracked file.
+  manager.OnMetadataForModifiedFile(id, path, drive::FILE_ERROR_ACCESS_DENIED,
+                                    nullptr);
+  EXPECT_THAT(manager.files_to_pin_, IsEmpty());
+  EXPECT_THAT(manager.files_to_track_, IsEmpty());
+  EXPECT_EQ(manager.progress_.failed_files, 0);
+  EXPECT_EQ(manager.progress_.pinned_files, 0);
+
+  // Add a tracked and unpinned file.
+  ASSERT_TRUE(manager.Add(*MakeMetadata(item), path));
+  EXPECT_THAT(manager.files_to_pin_, UnorderedElementsAre(id));
+  EXPECT_THAT(manager.files_to_track_, SizeIs(1));
+  EXPECT_EQ(manager.progress_.failed_files, 0);
+  EXPECT_EQ(manager.progress_.pinned_files, 0);
+
+  // Cannot get metadata for a tracked file.
+  manager.OnMetadataForModifiedFile(
+      id, path, FileError::FILE_ERROR_ACCESS_DENIED, nullptr);
+  EXPECT_THAT(manager.files_to_pin_, IsEmpty());
+  EXPECT_THAT(manager.files_to_track_, IsEmpty());
+  EXPECT_EQ(manager.progress_.failed_files, 1);
+  EXPECT_EQ(manager.progress_.pinned_files, 0);
+
+  // Get metadata for an untracked file.
+  manager.progress_.failed_files = 0;
+  manager.OnMetadataForModifiedFile(id, path, kFileOk, MakeMetadata(item));
+  EXPECT_THAT(manager.files_to_pin_, IsEmpty());
+  EXPECT_THAT(manager.files_to_track_, IsEmpty());
+  EXPECT_EQ(manager.progress_.failed_files, 0);
+  EXPECT_EQ(manager.progress_.pinned_files, 0);
+
+  // Add a tracked file.
+  ASSERT_TRUE(manager.Add(*MakeMetadata(item), path));
+  EXPECT_THAT(manager.files_to_pin_, UnorderedElementsAre(id));
+  EXPECT_THAT(manager.files_to_track_, SizeIs(1));
+  EXPECT_EQ(manager.progress_.failed_files, 0);
+  EXPECT_EQ(manager.progress_.pinned_files, 0);
+  EXPECT_EQ(manager.progress_.pinned_bytes, 0);
+  EXPECT_EQ(manager.progress_.bytes_to_pin, 2487);
+  EXPECT_EQ(manager.progress_.required_space, 4096);
+  EXPECT_EQ(manager.progress_.syncing_files, 0);
+
+  {
+    const auto it = manager.files_to_track_.find(id);
+    ASSERT_NE(it, manager.files_to_track_.end());
+    const auto& [got_id, file] = *it;
+    EXPECT_EQ(got_id, id);
+    EXPECT_EQ(file.path, path);
+  }
+
+  // Metadata indicates that the file is still not pinned.
+  manager.OnMetadataForModifiedFile(id, path, kFileOk, MakeMetadata(item));
+  EXPECT_THAT(manager.files_to_pin_, UnorderedElementsAre(id));
+  EXPECT_THAT(manager.files_to_track_, SizeIs(1));
+  EXPECT_EQ(manager.progress_.failed_files, 0);
+  EXPECT_EQ(manager.progress_.pinned_files, 0);
+  EXPECT_EQ(manager.progress_.pinned_bytes, 0);
+  EXPECT_EQ(manager.progress_.bytes_to_pin, 2487);
+  EXPECT_EQ(manager.progress_.required_space, 4096);
+  EXPECT_EQ(manager.progress_.syncing_files, 0);
+
+  {
+    const auto it = manager.files_to_track_.find(id);
+    ASSERT_NE(it, manager.files_to_track_.end());
+    const auto& [got_id, file] = *it;
+    EXPECT_EQ(got_id, id);
+    EXPECT_EQ(file.path, path);
+    EXPECT_FALSE(file.pinned);
+  }
+
+  // Metadata indicates that the file is pinned but not available offline.
+  item.pinned = true;
+  manager.OnMetadataForModifiedFile(id, path, kFileOk, MakeMetadata(item));
+  EXPECT_THAT(manager.files_to_pin_, UnorderedElementsAre(id));
+  EXPECT_THAT(manager.files_to_track_, SizeIs(1));
+  EXPECT_EQ(manager.progress_.failed_files, 0);
+  EXPECT_EQ(manager.progress_.pinned_files, 0);
+  EXPECT_EQ(manager.progress_.pinned_bytes, 0);
+  EXPECT_EQ(manager.progress_.bytes_to_pin, 2487);
+  EXPECT_EQ(manager.progress_.required_space, 4096);
+  EXPECT_EQ(manager.progress_.syncing_files, 0);
+
+  // Metadata indicates that the file is pinned and available offline.
+  item.available_offline = true;
+  item.size = 87489;
+  manager.OnMetadataForModifiedFile(id, path, kFileOk, MakeMetadata(item));
+  EXPECT_THAT(manager.files_to_pin_, IsEmpty());
+  EXPECT_THAT(manager.files_to_track_, IsEmpty());
+  EXPECT_EQ(manager.progress_.failed_files, 0);
+  EXPECT_EQ(manager.progress_.pinned_files, 1);
+  EXPECT_EQ(manager.progress_.pinned_bytes, 87489);
+  EXPECT_EQ(manager.progress_.bytes_to_pin, 87489);
+  EXPECT_EQ(manager.progress_.required_space, 0);
+  EXPECT_EQ(manager.progress_.syncing_files, 0);
+
+  // Reset counters.
+  manager.progress_.pinned_files = 0;
+  manager.progress_.pinned_bytes = 0;
+  manager.progress_.bytes_to_pin = 0;
+
+  // Add a tracked and pinned file.
+  item.pinned = true;
+  item.available_offline = false;
+  ASSERT_TRUE(manager.Add(*MakeMetadata(item), path));
+  EXPECT_THAT(manager.files_to_pin_, IsEmpty());
+  EXPECT_THAT(manager.files_to_track_, SizeIs(1));
+
+  // Metadata indicates that the file has been unexpectedly unpinned.
+  item.pinned = false;
+  manager.OnMetadataForModifiedFile(id, path, kFileOk, MakeMetadata(item));
+  EXPECT_THAT(manager.files_to_pin_, IsEmpty());
+  EXPECT_THAT(manager.files_to_track_, IsEmpty());
+  EXPECT_EQ(manager.progress_.failed_files, 1);
+  EXPECT_EQ(manager.progress_.pinned_files, 0);
+  EXPECT_EQ(manager.progress_.pinned_bytes, 0);
+  EXPECT_EQ(manager.progress_.bytes_to_pin, 0);
+  EXPECT_EQ(manager.progress_.required_space, 0);
+  EXPECT_EQ(manager.progress_.syncing_files, 0);
+
+  manager.progress_.stage = Stage::kStopped;
+}
+
 // Tests PinManager::OnSyncingEvent().
 TEST_F(DriveFsPinManagerTest, OnSyncingEvent) {
   PinManager manager(temp_dir_.GetPath(), &drivefs_);
@@ -959,8 +1419,7 @@ TEST_F(DriveFsPinManagerTest, InvalidFileList) {
   base::RunLoop run_loop;
 
   EXPECT_CALL(drivefs_, OnStartSearchQuery(_)).Times(1);
-  EXPECT_CALL(drivefs_, OnGetNextPage(_))
-      .WillOnce(Return(FileError::FILE_ERROR_OK));
+  EXPECT_CALL(drivefs_, OnGetNextPage(_)).WillOnce(Return(kFileOk));
   EXPECT_CALL(mock_callback, Run(Stage::kCannotListFiles))
       .WillOnce(RunClosure(run_loop.QuitClosure()));
   EXPECT_CALL(space_getter_, GetFreeSpace(gcache_dir_, _))
@@ -992,10 +1451,8 @@ TEST_F(DriveFsPinManagerTest, NotEnoughSpace) {
 
   EXPECT_CALL(drivefs_, OnStartSearchQuery(_)).Times(1);
   EXPECT_CALL(drivefs_, OnGetNextPage(_))
-      .WillOnce(
-          DoAll(PopulateSearchItems(items), Return(FileError::FILE_ERROR_OK)))
-      .WillOnce(
-          DoAll(PopulateNoSearchItems(), Return(FileError::FILE_ERROR_OK)));
+      .WillOnce(DoAll(PopulateSearchItems(items), Return(kFileOk)))
+      .WillOnce(DoAll(PopulateNoSearchItems(), Return(kFileOk)));
   EXPECT_CALL(mock_callback, Run(Stage::kNotEnoughSpace))
       .WillOnce(RunClosure(run_loop.QuitClosure()));
   EXPECT_CALL(space_getter_, GetFreeSpace(gcache_dir_, _))
@@ -1026,10 +1483,8 @@ TEST_F(DriveFsPinManagerTest, JustCheckRequiredSpace) {
 
   EXPECT_CALL(drivefs_, OnStartSearchQuery(_)).Times(1);
   EXPECT_CALL(drivefs_, OnGetNextPage(_))
-      .WillOnce(
-          DoAll(PopulateSearchItems(items), Return(FileError::FILE_ERROR_OK)))
-      .WillOnce(
-          DoAll(PopulateNoSearchItems(), Return(FileError::FILE_ERROR_OK)));
+      .WillOnce(DoAll(PopulateSearchItems(items), Return(kFileOk)))
+      .WillOnce(DoAll(PopulateNoSearchItems(), Return(kFileOk)));
   EXPECT_CALL(mock_callback, Run(Stage::kSuccess))
       .WillOnce(RunClosure(run_loop.QuitClosure()));
   EXPECT_CALL(space_getter_, GetFreeSpace(gcache_dir_, _))
@@ -1061,22 +1516,19 @@ TEST_F(DriveFsPinManagerTest,
   EXPECT_CALL(drivefs_, OnStartSearchQuery(_)).Times(2);
   EXPECT_CALL(drivefs_, OnGetNextPage(_))
       // Results returned whilst calculating free disk space.
-      .WillOnce(
-          DoAll(PopulateSearchItems(items), Return(FileError::FILE_ERROR_OK)))
-      .WillOnce(
-          DoAll(PopulateNoSearchItems(), Return(FileError::FILE_ERROR_OK)))
+      .WillOnce(DoAll(PopulateSearchItems(items), Return(kFileOk)))
+      .WillOnce(DoAll(PopulateNoSearchItems(), Return(kFileOk)))
       // Results returned when actually performing the pinning, don't return a
       // final empty list as this should be aborted due to one of the pinning
       // operations being mock failed.
-      .WillOnce(
-          DoAll(PopulateSearchItems(items), Return(FileError::FILE_ERROR_OK)));
+      .WillOnce(DoAll(PopulateSearchItems(items), Return(kFileOk)));
   EXPECT_CALL(mock_callback, Run(Stage::kSuccess))
       .WillOnce(RunClosure(run_loop.QuitClosure()));
   EXPECT_CALL(space_getter_, GetFreeSpace(gcache_dir_, _))
       .WillOnce(RunOnceCallback<1>(1 << 30));  // 1 GB.
   EXPECT_CALL(drivefs_, SetPinned(_, true, _))
       // Mock the first file to successfully get pinned.
-      .WillOnce(RunOnceCallback<2>(FileError::FILE_ERROR_OK))
+      .WillOnce(RunOnceCallback<2>(kFileOk))
       // Mock the second file to unsuccessfully get pinned.
       .WillOnce(RunOnceCallback<2>(FileError::FILE_ERROR_FAILED));
 
@@ -1102,8 +1554,7 @@ TEST_F(DriveFsPinManagerTest, DISABLED_OnlyUnpinnedItemsShouldGetPinned) {
                    OnceCallback<void(FileError, FileMetadataPtr)> callback) {
             for (const DriveItem& item : items) {
               if (item.path == path) {
-                std::move(callback).Run(FileError::FILE_ERROR_OK,
-                                        MakeMetadata(item));
+                std::move(callback).Run(kFileOk, MakeMetadata(item));
                 return;
               }
             }
@@ -1115,26 +1566,24 @@ TEST_F(DriveFsPinManagerTest, DISABLED_OnlyUnpinnedItemsShouldGetPinned) {
   EXPECT_CALL(drivefs_, OnStartSearchQuery(_)).Times(1);
   EXPECT_CALL(drivefs_, OnGetNextPage(_))
       // Results returned whilst calculating free disk space.
-      .WillOnce(
-          DoAll(PopulateSearchItems(items), Return(FileError::FILE_ERROR_OK)))
-      .WillOnce(
-          DoAll(PopulateNoSearchItems(), Return(FileError::FILE_ERROR_OK)));
+      .WillOnce(DoAll(PopulateSearchItems(items), Return(kFileOk)))
+      .WillOnce(DoAll(PopulateNoSearchItems(), Return(kFileOk)));
   EXPECT_CALL(space_getter_, GetFreeSpace(gcache_dir_, _))
       .WillOnce(RunOnceCallback<1>(1 << 30));  // 1 GB.
   EXPECT_CALL(drivefs_, SetPinnedByStableId(items[0].stable_id, true, _))
-      .WillOnce([&items](int64_t, bool,
-                         OnceCallback<void(FileError)> callback) {
-        items[0].pinned = true;
-        SequencedTaskRunner::GetCurrentDefault()->PostTask(
-            FROM_HERE, BindOnce(std::move(callback), FileError::FILE_ERROR_OK));
-      });
+      .WillOnce(
+          [&items](int64_t, bool, OnceCallback<void(FileError)> callback) {
+            items[0].pinned = true;
+            SequencedTaskRunner::GetCurrentDefault()->PostTask(
+                FROM_HERE, BindOnce(std::move(callback), kFileOk));
+          });
   EXPECT_CALL(drivefs_, SetPinnedByStableId(items[1].stable_id, true, _))
-      .WillOnce([&items](int64_t, bool,
-                         OnceCallback<void(FileError)> callback) {
-        items[1].pinned = true;
-        SequencedTaskRunner::GetCurrentDefault()->PostTask(
-            FROM_HERE, BindOnce(std::move(callback), FileError::FILE_ERROR_OK));
-      });
+      .WillOnce(
+          [&items](int64_t, bool, OnceCallback<void(FileError)> callback) {
+            items[1].pinned = true;
+            SequencedTaskRunner::GetCurrentDefault()->PostTask(
+                FROM_HERE, BindOnce(std::move(callback), kFileOk));
+          });
   EXPECT_CALL(mock_callback, Run(Stage::kSuccess))
       .WillOnce(RunClosure(run_loop.QuitClosure()));
 
@@ -1180,25 +1629,22 @@ TEST_F(DriveFsPinManagerTest,
   EXPECT_CALL(drivefs_, OnStartSearchQuery(_)).Times(2);
   EXPECT_CALL(drivefs_, OnGetNextPage(_))
       // Results returned whilst calculating free disk space.
-      .WillOnce(
-          DoAll(PopulateSearchItems(items), Return(FileError::FILE_ERROR_OK)))
-      .WillOnce(
-          DoAll(PopulateNoSearchItems(), Return(FileError::FILE_ERROR_OK)))
+      .WillOnce(DoAll(PopulateSearchItems(items), Return(kFileOk)))
+      .WillOnce(DoAll(PopulateNoSearchItems(), Return(kFileOk)))
       // Results returned when actually performing the pinning, the final
       // response (i.e. PopulateNoSearchItems()) happens after the
       // `OnSyncingStatusUpdate` instead.
-      .WillOnce(
-          DoAll(PopulateSearchItems(items), Return(FileError::FILE_ERROR_OK)));
+      .WillOnce(DoAll(PopulateSearchItems(items), Return(kFileOk)));
   EXPECT_CALL(space_getter_, GetFreeSpace(gcache_dir_, _))
       .WillOnce(RunOnceCallback<1>(1 << 30));  // 1 GB.
   EXPECT_CALL(drivefs_, SetPinned(_, true, _))
       .Times(2)
-      .WillOnce(RunOnceCallback<2>(FileError::FILE_ERROR_OK))
+      .WillOnce(RunOnceCallback<2>(kFileOk))
       // `RunOnceCallback` can't be chained together in a `DoAll` action
       // combinator, so use an inline lambda instead.
       .WillOnce([&run_loop](const Path& path, bool pinned,
                             OnceCallback<void(FileError)> callback) {
-        std::move(callback).Run(FileError::FILE_ERROR_OK);
+        std::move(callback).Run(kFileOk);
         run_loop.QuitClosure().Run();
       });
 
@@ -1220,16 +1666,13 @@ TEST_F(DriveFsPinManagerTest,
   base::RunLoop new_run_loop;
   EXPECT_CALL(drivefs_, GetMetadata(b_path, _))
       .WillOnce(RunOnceCallback<1>(
-          FileError::FILE_ERROR_OK,
-          MakeMetadata(/*available_offline=*/true, /*size=*/128)));
+          kFileOk, MakeMetadata(/*available_offline=*/true, /*size=*/128)));
   EXPECT_CALL(drivefs_, GetMetadata(gdoc_path, _))
       // Mock the first file to be available offline with a 0 size.
       .WillOnce(RunOnceCallback<1>(
-          FileError::FILE_ERROR_OK,
-          MakeMetadata(/*available_offline=*/true, /*size=*/0)));
+          kFileOk, MakeMetadata(/*available_offline=*/true, /*size=*/0)));
   EXPECT_CALL(drivefs_, OnGetNextPage(_))
-      .WillOnce(
-          DoAll(PopulateNoSearchItems(), Return(FileError::FILE_ERROR_OK)));
+      .WillOnce(DoAll(PopulateNoSearchItems(), Return(kFileOk)));
   EXPECT_CALL(mock_callback, Run(Stage::kSuccess))
       .WillOnce(RunClosure(new_run_loop.QuitClosure()));
   SetState(status->item_events, ItemEvent::State::kCompleted);
@@ -1265,15 +1708,12 @@ TEST_F(DriveFsPinManagerTest,
   EXPECT_CALL(drivefs_, OnStartSearchQuery(_)).Times(2);
   EXPECT_CALL(drivefs_, OnGetNextPage(_))
       // Results returned whilst calculating free disk space.
-      .WillOnce(
-          DoAll(PopulateSearchItems(items), Return(FileError::FILE_ERROR_OK)))
-      .WillOnce(
-          DoAll(PopulateNoSearchItems(), Return(FileError::FILE_ERROR_OK)))
+      .WillOnce(DoAll(PopulateSearchItems(items), Return(kFileOk)))
+      .WillOnce(DoAll(PopulateNoSearchItems(), Return(kFileOk)))
       // Results returned when actually performing the pinning, the final
       // response (i.e. PopulateNoSearchItems()) happens after the
       // `OnSyncingStatusUpdate` instead.
-      .WillOnce(
-          DoAll(PopulateSearchItems(items), Return(FileError::FILE_ERROR_OK)));
+      .WillOnce(DoAll(PopulateSearchItems(items), Return(kFileOk)));
   EXPECT_CALL(space_getter_, GetFreeSpace(gcache_dir_, _))
       .WillOnce(RunOnceCallback<1>(1 << 30));  // 1 GB.
   EXPECT_CALL(drivefs_, SetPinned(_, true, _))
@@ -1282,7 +1722,7 @@ TEST_F(DriveFsPinManagerTest,
       // combinator, so use an inline lambda instead.
       .WillOnce([&run_loop](const Path& path, bool pinned,
                             OnceCallback<void(FileError)> callback) {
-        std::move(callback).Run(FileError::FILE_ERROR_OK);
+        std::move(callback).Run(kFileOk);
         run_loop.QuitClosure().Run();
       });
 
@@ -1318,12 +1758,10 @@ TEST_F(DriveFsPinManagerTest,
   // delta so we expect the pinned disk space to only equal the final file size.
   base::RunLoop new_run_loop;
   EXPECT_CALL(drivefs_, OnGetNextPage(_))
-      .WillOnce(
-          DoAll(PopulateNoSearchItems(), Return(FileError::FILE_ERROR_OK)));
+      .WillOnce(DoAll(PopulateNoSearchItems(), Return(kFileOk)));
   EXPECT_CALL(drivefs_, GetMetadata(_, _))
       .WillOnce(RunOnceCallback<1>(
-          FileError::FILE_ERROR_OK,
-          MakeMetadata(/*available_offline=*/true, /*size=*/128)));
+          kFileOk, MakeMetadata(/*available_offline=*/true, /*size=*/128)));
   EXPECT_CALL(mock_callback, Run(Stage::kSuccess))
       .WillOnce(RunClosure(new_run_loop.QuitClosure()));
   SetState(status->item_events, ItemEvent::State::kCompleted);

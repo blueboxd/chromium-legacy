@@ -9,12 +9,14 @@
 #import "base/functional/bind.h"
 #import "base/ios/ios_util.h"
 #import "base/logging.h"
+#import "base/metrics/histogram_functions.h"
 #import "base/metrics/histogram_macros.h"
 #import "base/metrics/user_metrics.h"
 #import "base/metrics/user_metrics_action.h"
 #import "base/strings/sys_string_conversions.h"
 #import "ios/chrome/browser/crash_report/crash_keys_helper.h"
 #import "ios/chrome/browser/tabs/features.h"
+#import "ios/chrome/browser/tabs/inactive_tabs/features.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/commands/popup_menu_commands.h"
 #import "ios/chrome/browser/ui/default_promo/default_browser_utils.h"
@@ -73,20 +75,6 @@ typedef NS_ENUM(NSUInteger, TabGridConfiguration) {
   TabGridConfigurationFloatingButton,
 };
 
-// User interaction that triggered a page change, if any.
-typedef NS_ENUM(NSUInteger, PageChangeInteraction) {
-  // There has been no interaction since the last page change.
-  PageChangeInteractionNone = 0,
-  // The user dragged in the scroll view to change pages.
-  PageChangeInteractionScrollDrag,
-  // The user tapped a segment of the page control to change pages.
-  PageChangeInteractionPageControlTap,
-  // The user dragged the page control slider to change pages.
-  PageChangeInteractionPageControlDrag,
-  // The user dragged an item in another scroll view to change pages.
-  PageChangeInteractionItemDrag,
-};
-
 // Key of the UMA IOS.TabSwitcher.PageChangeInteraction histogram.
 const char kUMATabSwitcherPageChangeInteractionHistogram[] =
     "IOS.TabSwitcher.PageChangeInteraction";
@@ -100,12 +88,6 @@ enum class TabSwitcherPageChangeInteraction {
   kItemDrag = 4,
   kMaxValue = kItemDrag,
 };
-
-// Convenience function to record a page change interaction.
-void RecordPageChangeInteraction(TabSwitcherPageChangeInteraction interaction) {
-  UMA_HISTOGRAM_ENUMERATION(kUMATabSwitcherPageChangeInteractionHistogram,
-                            interaction);
-}
 
 // Computes the page from the offset and width of `scrollView`.
 TabGridPage GetPageFromScrollView(UIScrollView* scrollView) {
@@ -181,7 +163,6 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
 @property(nonatomic, assign, getter=isScrollViewAnimatingContentOffset)
     BOOL scrollViewAnimatingContentOffset;
 
-@property(nonatomic, assign) PageChangeInteraction pageChangeInteraction;
 // UIView whose background color changes to create a fade-in / fade-out effect
 // when revealing / hiding the Thumb Strip.
 @property(nonatomic, weak) UIView* foregroundView;
@@ -214,7 +195,17 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
 
 @end
 
-@implementation TabGridViewController
+@implementation TabGridViewController {
+  // Idle page status.
+  // Tracks whether the user closed the tab switcher without doing any
+  // meaningful action.
+  BOOL _idleRegularTabGrid;
+  BOOL _idleIncognitoTabGrid;
+  BOOL _idleRecentTabs;
+
+  TabGridPage _activePageWhenAppear;
+}
+
 // TabGridPaging property.
 @synthesize activePage = _activePage;
 @synthesize tabGridMode = _tabGridMode;
@@ -381,7 +372,9 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
       [self broadcastIncognitoContentVisibility];
       [self configureButtonsForActiveAndCurrentPage];
       // Records when the user drags the scrollView to switch pages.
-      [self recordActionSwitchingToPage:_currentPage];
+      [self recordActionSwitchingToPage:_currentPage
+                         withInteration:TabSwitcherPageChangeInteraction::
+                                            kScrollDrag];
     }
   }
 }
@@ -391,7 +384,6 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
   // tapping on the page control during scrolling can result in erratic
   // scrolling.
   self.topToolbar.pageControl.userInteractionEnabled = NO;
-  self.pageChangeInteraction = PageChangeInteractionScrollDrag;
 }
 
 - (void)scrollViewDidEndDragging:(UIScrollView*)scrollView
@@ -401,10 +393,6 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
 }
 
 - (void)scrollViewDidEndDecelerating:(UIScrollView*)scrollView {
-  // Mark the interaction as ended, so that scrolls that don't change page don't
-  // cause other interactions to be mislabeled.
-  self.pageChangeInteraction = PageChangeInteractionNone;
-
   // Update currentPage if scroll view has moved to a new page. Especially
   // important here for 3-finger accessibility swipes since it's not registered
   // as dragging in scrollViewDidScroll:
@@ -421,8 +409,9 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
   if (currentPage != self.currentPage && self.isDragSeesionInProgress) {
     // This happens when the user drags an item from one scroll view into
     // another.
-    self.pageChangeInteraction = PageChangeInteractionItemDrag;
-    [self recordActionSwitchingToPage:currentPage];
+    [self recordActionSwitchingToPage:currentPage
+                       withInteration:TabSwitcherPageChangeInteraction::
+                                          kItemDrag];
     [self.topToolbar.pageControl setSelectedPage:currentPage animated:YES];
   }
   self.currentPage = currentPage;
@@ -492,15 +481,16 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
 #pragma mark - Public Methods
 
 - (void)prepareForAppearance {
-  int gridSize = [self approximateVisibleGridCount];
+  NSSet<NSString*>* visibleGridItems = [self visibleGridItemsForActivePage];
+
   switch (self.activePage) {
     case TabGridPageIncognitoTabs:
       [self.incognitoTabsImageDataSource
-          preloadSnapshotsForVisibleGridSize:gridSize];
+          preloadSnapshotsForVisibleGridItems:visibleGridItems];
       break;
     case TabGridPageRegularTabs:
       [self.regularTabsImageDataSource
-          preloadSnapshotsForVisibleGridSize:gridSize];
+          preloadSnapshotsForVisibleGridItems:visibleGridItems];
       break;
     case TabGridPageRemoteTabs:
       // Nothing to do.
@@ -508,10 +498,20 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
   }
 }
 
+- (NSSet<NSString*>*)visibleGridItemsForActivePage {
+  GridViewController* activeGridViewController =
+      [self gridViewControllerForPage:self.activePage];
+
+  return [activeGridViewController visibleGridItems];
+}
+
 - (void)contentWillAppearAnimated:(BOOL)animated {
+  [self resetIdlePageStatus];
   self.viewVisible = YES;
-  [self.topToolbar.pageControl setSelectedPage:self.currentPage animated:YES];
+  [self.topToolbar.pageControl setSelectedPage:self.currentPage animated:NO];
+  _activePageWhenAppear = self.currentPage;
   [self configureViewControllerForCurrentSizeClassesAndPage];
+
   // The toolbars should be hidden (alpha 0.0) before the tab appears, so that
   // they can be animated in. They can't be set to 0.0 here, because if
   // `animated` is YES, this method is being called inside the animation block.
@@ -545,6 +545,8 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
 }
 
 - (void)contentWillDisappearAnimated:(BOOL)animated {
+  [self recordIdlePageStatus];
+
   self.undoCloseAllAvailable = NO;
   if (self.tabGridMode != TabGridModeSearch || !animated) {
     // Updating the mode reset the items on the grid, in that case of search
@@ -560,6 +562,7 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
   } else {
     [self hideToolbars];
   }
+
   self.viewVisible = NO;
 
   [self.incognitoTabsViewController contentWillDisappear];
@@ -993,6 +996,60 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
 
 #pragma mark - Private
 
+// Records the idle page status for the current `currentPage`.
+- (void)recordIdlePageStatus {
+  if (!self.viewVisible) {
+    return;
+  }
+
+  // If the page has changed, the idle status of tab grid pages is `NO`.
+  BOOL onSamePage = self.currentPage == _activePageWhenAppear;
+
+  switch (self.currentPage) {
+    case TabGridPage::TabGridPageIncognitoTabs:
+      base::UmaHistogramBoolean(
+          kUMATabSwitcherIdleIncognitoTabGridPageHistogram,
+          _idleIncognitoTabGrid && onSamePage);
+      break;
+    case TabGridPage::TabGridPageRegularTabs:
+      base::UmaHistogramBoolean(kUMATabSwitcherIdleRegularTabGridPageHistogram,
+                                _idleRegularTabGrid && onSamePage);
+      break;
+    case TabGridPage::TabGridPageRemoteTabs:
+      base::UmaHistogramBoolean(kUMATabSwitcherIdleRecentTabsHistogram,
+                                _idleRecentTabs);
+      break;
+  }
+}
+
+// Sets the idle page status of the `currentPage`.
+- (void)setCurrentIdlePageStatus:(BOOL)idlePageStatus {
+  if (!self.viewVisible) {
+    return;
+  }
+
+  switch (self.currentPage) {
+    case TabGridPage::TabGridPageIncognitoTabs:
+      _idleIncognitoTabGrid = idlePageStatus;
+      break;
+    case TabGridPage::TabGridPageRegularTabs:
+      _idleRegularTabGrid = idlePageStatus;
+      break;
+    case TabGridPage::TabGridPageRemoteTabs:
+      _idleRecentTabs = idlePageStatus;
+      break;
+  }
+}
+
+// Resets idle page status.
+- (void)resetIdlePageStatus {
+  _idleIncognitoTabGrid = YES;
+  _idleRegularTabGrid = YES;
+  // `_idleRecentTabs` is set to 'YES' if the "Done" button has been tapped from
+  // the "TabGridPageRemoteTabs" or if the page has changed.
+  _idleRecentTabs = NO;
+}
+
 // Returns wether there is a selected pinned cell.
 - (BOOL)isPinnedCellSelected {
   if (!IsPinnedTabsEnabled() || self.currentPage != TabGridPageRegularTabs) {
@@ -1191,12 +1248,22 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
 }
 
 - (void)setCurrentPage:(TabGridPage)currentPage {
+  BOOL samePage = _currentPage == currentPage;
+
+  // Record the idle metric if the previous page was `TabGridPageRemoteTabs`.
+  if (!samePage && _currentPage == TabGridPageRemoteTabs) {
+    [self setCurrentIdlePageStatus:YES];
+    [self recordIdlePageStatus];
+    [self setCurrentIdlePageStatus:NO];
+  }
+
   // Original current page is about to not be visible. Disable it from being
   // focused by VoiceOver.
   self.currentPageViewController.view.accessibilityElementsHidden = YES;
   UIViewController* previousPageVC = self.currentPageViewController;
   _currentPage = currentPage;
   self.currentPageViewController.view.accessibilityElementsHidden = NO;
+
   if (self.tabGridMode == TabGridModeSearch) {
     // `UIAccessibilityLayoutChangedNotification` doesn't change the current
     // item focused by the voiceOver if the notification argument provided with
@@ -1563,8 +1630,11 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
                              action:@selector(pageControlChangedValue:)
                    forControlEvents:UIControlEventValueChanged];
   [topToolbar.pageControl addTarget:self
-                             action:@selector(pageControlChangedPage:)
-                   forControlEvents:UIControlEventTouchUpInside];
+                             action:@selector(pageControlChangedPageByDrag:)
+                   forControlEvents:TabGridPageChangeByDragEvent];
+  [topToolbar.pageControl addTarget:self
+                             action:@selector(pageControlChangedPageByTap:)
+                   forControlEvents:TabGridPageChangeByTapEvent];
 
   [NSLayoutConstraint activateConstraints:@[
     [topToolbar.topAnchor
@@ -1788,7 +1858,7 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
       return !([self.regularTabsViewController isGridEmpty] &&
                [self.pinnedTabsViewController isCollectionEmpty]);
     case TabGridPageIncognitoTabs:
-      return [self.incognitoTabsViewController isGridEmpty];
+      return ![self.incognitoTabsViewController isGridEmpty];
   }
 }
 
@@ -1961,7 +2031,9 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
 // Records when the user switches between incognito and regular pages in the tab
 // grid. Switching to a different TabGridPage can either be driven by dragging
 // the scrollView or tapping on the pageControl.
-- (void)recordActionSwitchingToPage:(TabGridPage)page {
+- (void)recordActionSwitchingToPage:(TabGridPage)page
+                     withInteration:
+                         (TabSwitcherPageChangeInteraction)interaction {
   switch (page) {
     case TabGridPageIncognitoTabs:
       // There are duplicate metrics below that correspond to the previous
@@ -1983,30 +2055,8 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
       LogLikelyInterestedDefaultBrowserUserActivity(DefaultPromoTypeAllTabs);
       break;
   }
-  switch (self.pageChangeInteraction) {
-    case PageChangeInteractionNone:
-      // This shouldn't happen, but in case it does happen in release, track it.
-      NOTREACHED() << "Recorded a page change with no interaction.";
-      RecordPageChangeInteraction(TabSwitcherPageChangeInteraction::kNone);
-      break;
-    case PageChangeInteractionScrollDrag:
-      RecordPageChangeInteraction(
-          TabSwitcherPageChangeInteraction::kScrollDrag);
-      break;
-    case PageChangeInteractionPageControlTap:
-      RecordPageChangeInteraction(
-          TabSwitcherPageChangeInteraction::kControlTap);
-      break;
-    case PageChangeInteractionPageControlDrag:
-      RecordPageChangeInteraction(
-          TabSwitcherPageChangeInteraction::kControlDrag);
-      break;
-    case PageChangeInteractionItemDrag:
-      RecordPageChangeInteraction(TabSwitcherPageChangeInteraction::kItemDrag);
-      break;
-  }
-  // Don't reset `self.pageChangeInteraction` here, because a drag may still be
-  // in process.
+  UMA_HISTOGRAM_ENUMERATION(kUMATabSwitcherPageChangeInteractionHistogram,
+                            interaction);
 }
 
 // Tells the appropriate delegate to create a new item, and then tells the
@@ -2072,21 +2122,6 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
       (self.currentPage == TabGridPageIncognitoTabs &&
        !self.incognitoTabsViewController.gridEmpty);
   [self.handler setIncognitoContentVisible:incognitoContentVisible];
-}
-
-// Returns the approximate number of grid cells that will be visible on this
-// device.
-- (int)approximateVisibleGridCount {
-  if (IsRegularXRegularSizeClass(self)) {
-    // A 12" iPad Pro can show 30 cells in the tab grid.
-    return 30;
-  }
-  if (IsCompactWidth(self)) {
-    // A portrait phone shows up to four rows of two cells.
-    return 8;
-  }
-  // A landscape phone shows up to three rows of four cells.
-  return 12;
 }
 
 - (void)setupSearchUI {
@@ -2291,14 +2326,7 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
   if (IsPinnedTabsEnabled() && !self.pinnedTabsViewController.view.isHidden) {
     CGFloat pinnedViewHeight =
         self.pinnedTabsViewController.view.bounds.size.height;
-    switch (GetPinnedTabsPosition()) {
-      case PinnedTabsPosition::kBottomPosition:
-        inset.bottom += pinnedViewHeight + kPinnedViewBottomPadding;
-        break;
-      case PinnedTabsPosition::kTopPosition:
-        inset.top += pinnedViewHeight + kPinnedViewTopPadding;
-        break;
-    }
+    inset.bottom += pinnedViewHeight + kPinnedViewBottomPadding;
   }
 
   return inset;
@@ -2384,6 +2412,8 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
   [self.pinnedTabsDelegate selectItemWithID:itemID];
 
   self.activePage = self.currentPage;
+  [self setCurrentIdlePageStatus:NO];
+
   [self.tabPresentationDelegate showActiveTabInPage:self.currentPage
                                        focusOmnibox:NO
                                        closeTabGrid:YES];
@@ -2404,6 +2434,17 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
                          inset;
                    }
                    completion:nil];
+}
+
+- (void)pinnedTabsViewController:
+            (PinnedTabsViewController*)pinnedTabsViewController
+               didMoveItemWithID:(NSString*)itemID {
+  [self setCurrentIdlePageStatus:NO];
+}
+
+- (void)pinnedTabsViewController:(GridViewController*)gridViewController
+             didRemoveItemWIthID:(NSString*)itemID {
+  [self setCurrentIdlePageStatus:NO];
 }
 
 #pragma mark - GridViewControllerDelegate
@@ -2440,6 +2481,10 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
   }
 
   alreadySelected = [tabsDelegate isItemWithIDSelected:itemID];
+  if (!alreadySelected) {
+    [self setCurrentIdlePageStatus:NO];
+  }
+
   [tabsDelegate selectItemWithID:itemID];
 
   if (self.tabGridMode == TabGridModeSearch) {
@@ -2469,6 +2514,8 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
 
 - (void)gridViewController:(GridViewController*)gridViewController
         didCloseItemWithID:(NSString*)itemID {
+  [self setCurrentIdlePageStatus:NO];
+
   if (gridViewController == self.regularTabsViewController) {
     [self.regularTabsDelegate closeItemWithID:itemID];
     // Record when a regular tab is closed.
@@ -2483,6 +2530,8 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
 
 - (void)didTapPlusSignInGridViewController:
     (GridViewController*)gridViewController {
+  [self setCurrentIdlePageStatus:NO];
+
   [self plusSignButtonTapped:self];
   [self.tabPresentationDelegate showActiveTabInPage:self.currentPage
                                        focusOmnibox:NO
@@ -2492,6 +2541,8 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
 - (void)gridViewController:(GridViewController*)gridViewController
          didMoveItemWithID:(NSString*)itemID
                    toIndex:(NSUInteger)destinationIndex {
+  [self setCurrentIdlePageStatus:NO];
+
   if (gridViewController == self.regularTabsViewController) {
     [self.regularTabsDelegate moveItemWithID:itemID toIndex:destinationIndex];
   } else if (gridViewController == self.incognitoTabsViewController) {
@@ -2521,6 +2572,11 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
     crash_keys::SetIncognitoTabCount(count);
   }
   [self broadcastIncognitoContentVisibility];
+}
+
+- (void)gridViewController:(GridViewController*)gridViewController
+       didRemoveItemWIthID:(NSString*)itemID {
+  [self setCurrentIdlePageStatus:NO];
 }
 
 - (void)didChangeLastItemVisibilityInGridViewController:
@@ -2611,6 +2667,14 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
   }
 }
 
+- (void)didTapInactiveTabsButtonInGridViewController:
+    (GridViewController*)gridViewController {
+  DCHECK(IsInactiveTabsEnabled());
+  DCHECK_EQ(self.currentPage, TabGridPageRegularTabs);
+  base::RecordAction(base::UserMetricsAction("MobileTabGridShowInactiveTabs"));
+  [self.delegate showInactiveTabs];
+}
+
 #pragma mark - Control actions
 
 - (void)doneButtonTapped:(id)sender {
@@ -2626,6 +2690,7 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
   TabGridPage newActivePage = self.currentPage;
 
   if (self.currentPage == TabGridPageRemoteTabs) {
+    [self setCurrentIdlePageStatus:YES];
     newActivePage = self.activePage;
   }
   self.activePage = newActivePage;
@@ -2723,6 +2788,7 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
 }
 
 - (void)newTabButtonTapped:(id)sender {
+  [self setCurrentIdlePageStatus:NO];
   base::RecordAction(base::UserMetricsAction("MobileTabNewTab"));
   [self openNewTabInPage:self.currentPage focusOmnibox:NO];
   // Record metrics for button taps
@@ -2821,8 +2887,6 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
   if (UseRTLLayout())
     offset = 1.0 - offset;
 
-  self.pageChangeInteraction = PageChangeInteractionPageControlDrag;
-
   // Total space available for the scroll view to scroll (horizontally).
   CGFloat offsetWidth =
       self.scrollView.contentSize.width - self.scrollView.frame.size.width;
@@ -2833,21 +2897,28 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
   self.scrollView.contentOffset = contentOffset;
 }
 
-- (void)pageControlChangedPage:(id)sender {
+- (void)pageControlChangedPageByDrag:(id)sender {
   TabGridPage newPage = self.topToolbar.pageControl.selectedPage;
-  // If the user has dragged the page control, -pageControlChangedPage: will be
-  // called after the calls to -pageControlChangedValue:, so only set the
-  // interaction here if one hasn't already been set.
-  if (self.pageChangeInteraction == PageChangeInteractionNone)
-    self.pageChangeInteraction = PageChangeInteractionPageControlTap;
 
-  TabGridPage currentPage = self.currentPage;
   [self scrollToPage:newPage animated:YES];
   // Records when the user uses the pageControl to switch pages.
-  if (currentPage != newPage)
-    [self recordActionSwitchingToPage:newPage];
-  // Regardless of whether the page changed, mark the interaction as done.
-  self.pageChangeInteraction = PageChangeInteractionNone;
+  if (self.currentPage != newPage) {
+    [self recordActionSwitchingToPage:newPage
+                       withInteration:TabSwitcherPageChangeInteraction::
+                                          kControlDrag];
+  }
+}
+
+- (void)pageControlChangedPageByTap:(id)sender {
+  TabGridPage newPage = self.topToolbar.pageControl.selectedPage;
+
+  [self scrollToPage:newPage animated:YES];
+  // Records when the user uses the pageControl to switch pages.
+  if (self.currentPage != newPage) {
+    [self recordActionSwitchingToPage:newPage
+                       withInteration:TabSwitcherPageChangeInteraction::
+                                          kControlTap];
+  }
 }
 
 #pragma mark - DisabledTabViewControllerDelegate
@@ -3030,6 +3101,9 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
       [pinnedView.trailingAnchor
           constraintEqualToAnchor:self.view.trailingAnchor
                          constant:-kPinnedViewHorizontalPadding],
+      [pinnedView.bottomAnchor
+          constraintEqualToAnchor:self.bottomToolbar.topAnchor
+                         constant:-kPinnedViewBottomPadding],
     ]];
   } else {
     [pinnedTabsConstraints addObjectsFromArray:@[
@@ -3037,30 +3111,10 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
           constraintEqualToAnchor:self.view.centerXAnchor],
       [pinnedView.widthAnchor
           constraintEqualToAnchor:self.view.widthAnchor
-                       multiplier:kPinnedViewMaxWidthInPercent]
+                       multiplier:kPinnedViewMaxWidthInPercent],
+      [pinnedView.topAnchor
+          constraintEqualToAnchor:self.bottomToolbar.topAnchor],
     ]];
-  }
-
-  switch (GetPinnedTabsPosition()) {
-    case PinnedTabsPosition::kBottomPosition: {
-      if (compactLayout) {
-        [pinnedTabsConstraints
-            addObject:[pinnedView.bottomAnchor
-                          constraintEqualToAnchor:self.bottomToolbar.topAnchor
-                                         constant:-kPinnedViewBottomPadding]];
-      } else {
-        [pinnedTabsConstraints
-            addObject:[pinnedView.topAnchor
-                          constraintEqualToAnchor:self.bottomToolbar
-                                                      .topAnchor]];
-      }
-    } break;
-    case PinnedTabsPosition::kTopPosition:
-      [pinnedTabsConstraints
-          addObject:[pinnedView.topAnchor
-                        constraintEqualToAnchor:self.topToolbar.bottomAnchor
-                                       constant:kPinnedViewTopPadding]];
-      break;
   }
 
   self.pinnedTabsConstraints = pinnedTabsConstraints;

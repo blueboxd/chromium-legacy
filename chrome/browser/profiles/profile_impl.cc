@@ -110,8 +110,8 @@
 #include "chrome/browser/updates/announcement_notification/announcement_notification_service_factory.h"
 #include "chrome/browser/webid/federated_identity_api_permission_context.h"
 #include "chrome/browser/webid/federated_identity_api_permission_context_factory.h"
-#include "chrome/browser/webid/federated_identity_auto_signin_permission_context.h"
-#include "chrome/browser/webid/federated_identity_auto_signin_permission_context_factory.h"
+#include "chrome/browser/webid/federated_identity_auto_reauthn_permission_context.h"
+#include "chrome/browser/webid/federated_identity_auto_reauthn_permission_context_factory.h"
 #include "chrome/browser/webid/federated_identity_permission_context.h"
 #include "chrome/browser/webid/federated_identity_permission_context_factory.h"
 #include "chrome/common/buildflags.h"
@@ -163,7 +163,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/dom_storage_context.h"
 #include "content/public/browser/federated_identity_api_permission_context_delegate.h"
-#include "content/public/browser/federated_identity_auto_signin_permission_context_delegate.h"
+#include "content/public/browser/federated_identity_auto_reauthn_permission_context_delegate.h"
 #include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/permission_controller.h"
 #include "content/public/browser/render_process_host.h"
@@ -243,8 +243,8 @@
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
 #include "chrome/browser/content_settings/content_settings_supervised_provider.h"
 #include "chrome/browser/supervised_user/supervised_user_settings_service_factory.h"
+#include "components/supervised_user/core/browser/supervised_user_settings_service.h"
 #include "components/supervised_user/core/common/supervised_user_constants.h"
-#include "components/supervised_user/core/common/supervised_user_settings_service.h"
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
@@ -1386,9 +1386,9 @@ ProfileImpl::GetFederatedIdentityApiPermissionContext() {
   return FederatedIdentityApiPermissionContextFactory::GetForProfile(this);
 }
 
-content::FederatedIdentityAutoSigninPermissionContextDelegate*
-ProfileImpl::GetFederatedIdentityAutoSigninPermissionContext() {
-  return FederatedIdentityAutoSigninPermissionContextFactory::GetForProfile(
+content::FederatedIdentityAutoReauthnPermissionContextDelegate*
+ProfileImpl::GetFederatedIdentityAutoReauthnPermissionContext() {
+  return FederatedIdentityAutoReauthnPermissionContextFactory::GetForProfile(
       this);
 }
 

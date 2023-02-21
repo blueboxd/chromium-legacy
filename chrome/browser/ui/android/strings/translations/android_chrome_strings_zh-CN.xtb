@@ -450,6 +450,7 @@
 <translation id="3421726884497337397">选择何时屏蔽第三方 Cookie</translation>
 <translation id="3428747202529429621">保护您在 Chrome 中免受安全威胁，登录状态下还可让您更安全地使用其他 Google 应用</translation>
 <translation id="3429160811076349561">试用版功能已关闭</translation>
+<translation id="3432973700170747422">删除过去 15 分钟的浏览数据</translation>
 <translation id="3435465986463792564">打开了许多窗口？您可在此处管理它们</translation>
 <translation id="3435738964857648380">安全</translation>
 <translation id="3443221991560634068">重新加载当前网页</translation>
@@ -516,7 +517,6 @@
 <translation id="3830886834687455630">请更新 Google Play 服务以检查您的密码</translation>
 <translation id="3845098929839618392">在无痕式标签页中打开</translation>
 <translation id="3856096718352044181">请检查并确保这是一个有效的提供商，或者稍后重试</translation>
-<translation id="3858127568696903256">在此查看您关注的内容</translation>
 <translation id="3858860766373142691">名称</translation>
 <translation id="3861633093716975811">热门视频</translation>
 <translation id="3874520961715512166">已移除网站</translation>
@@ -1242,6 +1242,7 @@
 <translation id="7682724950699840886">请尝试按以下提示操作：确保您的设备上有足够的空间，然后重新尝试导出。</translation>
 <translation id="7686086654630106285">详细了解网站建议的广告</translation>
 <translation id="768618399695552958">在您访问的网页中，有一些是预加载的网页。从 Google 网站链接到的网页可能会通过 Google 服务器预加载。</translation>
+<translation id="7691043218961417207">探索值得关注的内容</translation>
 <translation id="7698359219371678927">在 <ph name="APP_NAME" /> 中创建电子邮件</translation>
 <translation id="7707922173985738739">使用移动数据</translation>
 <translation id="7709094866268987903">您移除的兴趣将会显示在此处</translation>

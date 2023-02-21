@@ -221,7 +221,16 @@ BASE_FEATURE(kPreinstalledWebAppInstallation,
 BASE_FEATURE(kPreinstalledWebAppDuplicationFixer,
              "PreinstalledWebAppDuplicationFixer",
              base::FEATURE_ENABLED_BY_DEFAULT);
+#endif
 
+#if BUILDFLAG(IS_CHROMEOS)
+// An experiment for making preinstalled apps open in a window by default.
+BASE_FEATURE(kPreinstalledWebAppWindowExperiment,
+             "PreinstalledWebAppWindowExperiment",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+#endif
+
+#if !BUILDFLAG(IS_ANDROID)
 // Enables OS Integration sub managers to execute the
 // registration/unregistration functionality and write the new OS states to the
 // DB.
@@ -600,6 +609,11 @@ BASE_FEATURE(kHideWebAppOriginText,
 
 // Sets whether the HTTPS-Only Mode setting is displayed in the settings UI.
 BASE_FEATURE(kHttpsOnlyMode, "HttpsOnlyMode", base::FEATURE_ENABLED_BY_DEFAULT);
+
+// Kill switch for crbug.com/1414633.
+BASE_FEATURE(kHttpsFirstModeForAdvancedProtectionUsers,
+             "HttpsOnlyModeForAdvancedProtectionUsers",
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Enables the new implementation of HTTPS-First Mode.
 BASE_FEATURE(kHttpsFirstModeV2,

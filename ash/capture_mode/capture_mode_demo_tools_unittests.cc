@@ -29,7 +29,13 @@
 #include "ash/display/window_tree_host_manager.h"
 #include "ash/projector/projector_controller_impl.h"
 #include "ash/public/cpp/capture_mode/capture_mode_test_api.h"
+#include "ash/public/cpp/shelf_model.h"
 #include "ash/resources/vector_icons/vector_icons.h"
+#include "ash/shelf/shelf.h"
+#include "ash/shelf/shelf_app_button.h"
+#include "ash/shelf/shelf_test_util.h"
+#include "ash/shelf/shelf_view.h"
+#include "ash/shelf/shelf_view_test_api.h"
 #include "ash/shell.h"
 #include "ash/style/icon_button.h"
 #include "ash/test/ash_test_base.h"
@@ -41,6 +47,7 @@
 #include "ui/base/ime/fake_text_input_client.h"
 #include "ui/base/ime/text_input_type.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
+#include "ui/events/base_event_utils.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/keycodes/keyboard_codes_posix.h"
 #include "ui/events/pointer_details.h"
@@ -99,32 +106,32 @@ class CaptureModeDemoToolsTest : public AshTestBase {
 
   aura::Window* window() const { return window_.get(); }
 
-  gfx::Rect GetConfinedBoundsInScreenCoordinates() {
+  gfx::Rect GetConfineBoundsInScreenCoordinates() {
     auto* recording_watcher =
         CaptureModeController::Get()->video_recording_watcher_for_testing();
-    gfx::Rect confined_bounds_in_screen =
+    gfx::Rect confine_bounds_in_screen =
         recording_watcher->GetCaptureSurfaceConfineBounds();
     wm::ConvertRectToScreen(recording_watcher->window_being_recorded(),
-                            &confined_bounds_in_screen);
-    return confined_bounds_in_screen;
+                            &confine_bounds_in_screen);
+    return confine_bounds_in_screen;
   }
 
   // Verifies that the `key_combo_widget` is positioned in the middle
-  // horizontally within the confined bounds and that the distance between the
-  // bottom of the widget and the bottom of the confined bounds is always equal
+  // horizontally within the confine bounds and that the distance between the
+  // bottom of the widget and the bottom of the confine bounds is always equal
   // to `capture_mode::kKeyWidgetDistanceFromBottom`.
   void VerifyKeyComboWidgetPosition() {
     CaptureModeDemoToolsTestApi demo_tools_test_api(
         GetCaptureModeDemoToolsController());
     auto* key_combo_widget = demo_tools_test_api.GetKeyComboWidget();
     ASSERT_TRUE(key_combo_widget);
-    auto confined_bounds_in_screen = GetConfinedBoundsInScreenCoordinates();
+    auto confine_bounds_in_screen = GetConfineBoundsInScreenCoordinates();
     const gfx::Rect key_combo_widget_bounds =
         key_combo_widget->GetWindowBoundsInScreen();
-    EXPECT_NEAR(confined_bounds_in_screen.CenterPoint().x(),
+    EXPECT_NEAR(confine_bounds_in_screen.CenterPoint().x(),
                 key_combo_widget_bounds.CenterPoint().x(), /*abs_error=*/1);
     EXPECT_EQ(
-        confined_bounds_in_screen.bottom() - key_combo_widget_bounds.bottom(),
+        confine_bounds_in_screen.bottom() - key_combo_widget_bounds.bottom(),
         capture_mode::kKeyWidgetDistanceFromBottom);
   }
 
@@ -221,7 +228,10 @@ class CaptureModeDemoToolsTest : public AshTestBase {
         event_generator->current_screen_location()};
     const auto expected_touch_highlight_layer_bounds =
         capture_mode_util::CalculateHighlightLayerBounds(
-            updated_event_location, capture_mode::kHighlightLayerRadius);
+            updated_event_location,
+            capture_mode::kHighlightLayerRadius +
+                capture_mode::kInnerHightlightBorderThickness +
+                capture_mode::kOuterHightlightBorderThickness);
     auto actual_touch_highlight_layer_bounds = original_touch_highlight_bounds;
     actual_touch_highlight_layer_bounds.Offset(drag_offset.x(),
                                                drag_offset.y());
@@ -753,12 +763,12 @@ TEST_F(CaptureModeDemoToolsTest,
   FireTimerAndVerifyWidget(/*should_hide_view=*/true);
 }
 
-// Tests that if the width of the confined bounds is smaller than that of the
+// Tests that if the width of the confine bounds is smaller than that of the
 // preferred size of the key combo widget, the key combo widget will be shifted
 // to the left. But the right edge of the key combo widget will always be to the
-// left of the right edge of the capture surface confined bounds.
+// left of the right edge of the capture surface confine bounds.
 TEST_F(CaptureModeDemoToolsTest,
-       ConfinedBoundsSizeSmallerThanPreferredSizeTest) {
+       ConfineBoundsSizeSmallerThanPreferredSizeTest) {
   auto* controller = CaptureModeController::Get();
   const gfx::Rect capture_region(100, 200, 200, 50);
   controller->SetUserCaptureRegion(capture_region, /*by_user=*/true);
@@ -836,6 +846,104 @@ TEST_F(CaptureModeDemoToolsTest, WorkAreaChangeTest) {
   controller->EndVideoRecording(EndRecordingReason::kStopRecordingButton);
 }
 
+// Tests that if a touch down event happens before video recording starts, there
+// will be no crash and no touch highlight will be generated.
+TEST_F(CaptureModeDemoToolsTest, TouchDownBeforeVideoRecordingTest) {
+  CaptureModeController* controller = StartCaptureSession(
+      CaptureModeSource::kFullscreen, CaptureModeType::kVideo);
+  controller->EnableDemoTools(true);
+
+  // Press touch before starting the video recording.
+  auto* root_window = Shell::GetPrimaryRootWindow();
+  const gfx::Rect root_window_bounds_in_screen =
+      root_window->GetBoundsInScreen();
+  const gfx::Point display_center = root_window_bounds_in_screen.CenterPoint();
+  auto* event_generator = GetEventGenerator();
+  event_generator->PressTouchId(0, display_center);
+
+  StartVideoRecordingImmediately();
+  WaitForSeconds(1);
+
+  auto* demo_tools_controller = GetCaptureModeDemoToolsController();
+  EXPECT_TRUE(demo_tools_controller);
+  CaptureModeDemoToolsTestApi demo_tools_test_api(demo_tools_controller);
+  const auto& touch_highlight_map =
+      demo_tools_test_api.GetTouchIdToHighlightLayerMap();
+  EXPECT_TRUE(touch_highlight_map.empty());
+  event_generator->ReleaseTouchId(0);
+  controller->EndVideoRecording(EndRecordingReason::kStopRecordingButton);
+}
+
+// Tests that the drag and drop in the shelf during video recording with demo
+// tools enabled works properly with no crash.
+TEST_F(CaptureModeDemoToolsTest, DragAndDropIconOnShelfTest) {
+  ShelfItem item = ShelfTestUtil::AddAppShortcut("app_id", TYPE_PINNED_APP);
+  const ShelfID& id = item.id;
+  ShelfView* shelf_view = GetPrimaryShelf()->GetShelfViewForTesting();
+  ShelfViewTestAPI test_api(shelf_view);
+  ShelfAppButton* button =
+      test_api.GetButton(ShelfModel::Get()->ItemIndexByID(id));
+  ASSERT_TRUE(button);
+  const gfx::Point button_center_point =
+      button->GetBoundsInScreen().CenterPoint();
+
+  CaptureModeController* controller = StartCaptureSession(
+      CaptureModeSource::kFullscreen, CaptureModeType::kVideo);
+  controller->EnableDemoTools(true);
+  StartVideoRecordingImmediately();
+
+  auto* event_generator = GetEventGenerator();
+  event_generator->PressTouch(button_center_point);
+  ASSERT_TRUE(button->FireDragTimerForTest());
+  button->FireRippleActivationTimerForTest();
+
+  ui::GestureEventDetails event_details(ui::ET_GESTURE_LONG_PRESS);
+  ui::GestureEvent long_press(button_center_point.x(), button_center_point.y(),
+                              0, ui::EventTimeForNow(), event_details);
+  event_generator->Dispatch(&long_press);
+  event_generator->MoveTouchBy(0, -10);
+
+  EXPECT_TRUE(shelf_view->drag_view());
+  EXPECT_TRUE(button->state() & ShelfAppButton::STATE_DRAGGING);
+  event_generator->ReleaseTouch();
+  controller->EndVideoRecording(EndRecordingReason::kStopRecordingButton);
+}
+
+// Tests that the order of the currently pressed modifier keys will be preserved
+// when updating the key combo view by removing released keys or appending new
+// keys.
+TEST_F(CaptureModeDemoToolsTest, FollowPreDeterminedOrder) {
+  CaptureModeController* controller = StartCaptureSession(
+      CaptureModeSource::kFullscreen, CaptureModeType::kVideo);
+  controller->EnableDemoTools(true);
+  StartVideoRecordingImmediately();
+  EXPECT_TRUE(controller->is_recording_in_progress());
+  CaptureModeDemoToolsController* demo_tools_controller =
+      GetCaptureModeDemoToolsController();
+  EXPECT_TRUE(demo_tools_controller);
+
+  std::vector<ui::KeyboardCode> expected_modifier_key_vector = {
+      ui::VKEY_CONTROL, ui::VKEY_MENU, ui::VKEY_SHIFT, ui::VKEY_COMMAND};
+  CaptureModeDemoToolsTestApi demo_tools_test_api(demo_tools_controller);
+  auto* event_generator = GetEventGenerator();
+  event_generator->PressKey(ui::VKEY_SHIFT, ui::EF_NONE);
+  event_generator->PressKey(ui::VKEY_COMMAND, ui::EF_NONE);
+  event_generator->PressKey(ui::VKEY_MENU, ui::EF_NONE);
+  event_generator->PressKey(ui::VKEY_CONTROL, ui::EF_NONE);
+  EXPECT_EQ(demo_tools_test_api.GetShownModifiersKeyCodes(),
+            expected_modifier_key_vector);
+
+  event_generator->ReleaseKey(ui::VKEY_SHIFT, ui::EF_NONE);
+  FireTimerAndVerifyWidget(/*should_hide_view=*/false);
+  EXPECT_EQ(demo_tools_test_api.GetShownModifiersKeyCodes(),
+            std::vector<ui::KeyboardCode>(
+                {ui::VKEY_CONTROL, ui::VKEY_MENU, ui::VKEY_COMMAND}));
+
+  event_generator->PressKey(ui::VKEY_SHIFT, ui::EF_NONE);
+  EXPECT_EQ(demo_tools_test_api.GetShownModifiersKeyCodes(),
+            expected_modifier_key_vector);
+}
+
 // Tests that the metrics that record if a recording starts with demo tools
 // feature enabled are recorded correctly in a capture session both in clamshell
 // and tablet mode.
@@ -906,7 +1014,7 @@ class CaptureModeDemoToolsTestWithAllSources
   }
 };
 
-// Tests that the key combo viewer widget should be centered within its confined
+// Tests that the key combo viewer widget should be centered within its confine
 // bounds.
 TEST_P(CaptureModeDemoToolsTestWithAllSources,
        KeyComboViewerShouldBeCenteredTest) {
@@ -936,9 +1044,9 @@ TEST_P(CaptureModeDemoToolsTestWithAllSources, MouseHighlightTest) {
   EXPECT_TRUE(demo_tools_controller);
   CaptureModeDemoToolsTestApi demo_tools_test_api(demo_tools_controller);
 
-  gfx::Rect confined_bounds_in_screen = GetConfinedBoundsInScreenCoordinates();
+  gfx::Rect confine_bounds_in_screen = GetConfineBoundsInScreenCoordinates();
   auto* event_generator = GetEventGenerator();
-  event_generator->MoveMouseTo(confined_bounds_in_screen.CenterPoint());
+  event_generator->MoveMouseTo(confine_bounds_in_screen.CenterPoint());
   event_generator->PressLeftButton();
   event_generator->ReleaseLeftButton();
   const MouseHighlightLayers& highlight_layers =
@@ -966,7 +1074,7 @@ TEST_P(CaptureModeDemoToolsTestWithAllSources,
   CaptureModeDemoToolsTestApi demo_tools_test_api =
       CaptureModeDemoToolsTestApi(demo_tools_controller);
 
-  gfx::Rect inner_rect = GetConfinedBoundsInScreenCoordinates();
+  gfx::Rect inner_rect = GetConfineBoundsInScreenCoordinates();
   inner_rect.Inset(5);
 
   const auto& layers_vector = demo_tools_test_api.GetMouseHighlightLayers();
@@ -1019,22 +1127,22 @@ TEST_P(CaptureModeDemoToolsTestWithAllSources, TouchHighlightTest) {
   EXPECT_TRUE(demo_tools_controller);
   CaptureModeDemoToolsTestApi demo_tools_test_api(demo_tools_controller);
 
-  const gfx::Rect confined_bounds_in_screen =
-      GetConfinedBoundsInScreenCoordinates();
+  const gfx::Rect confine_bounds_in_screen =
+      GetConfineBoundsInScreenCoordinates();
   auto* event_generator = GetEventGenerator();
 
   const auto& touch_highlight_map =
       demo_tools_test_api.GetTouchIdToHighlightLayerMap();
 
-  const auto center_point = confined_bounds_in_screen.CenterPoint();
+  const auto center_point = confine_bounds_in_screen.CenterPoint();
   event_generator->PressTouchId(0, center_point);
   EXPECT_FALSE(touch_highlight_map.empty());
   event_generator->ReleaseTouchId(0);
   EXPECT_TRUE(touch_highlight_map.empty());
 
   const gfx::Vector2d drag_offset =
-      gfx::Vector2d(confined_bounds_in_screen.width() / 4,
-                    confined_bounds_in_screen.height() / 4);
+      gfx::Vector2d(confine_bounds_in_screen.width() / 4,
+                    confine_bounds_in_screen.height() / 4);
   DragTouchAndVerifyHighlight(/*touch_id=*/0, /*touch_point=*/center_point,
                               drag_offset);
 }
@@ -1058,7 +1166,7 @@ TEST_P(CaptureModeDemoToolsTestWithAllSources, MutiTouchHighlightTest) {
       demo_tools_test_api.GetTouchIdToHighlightLayerMap();
   EXPECT_TRUE(touch_highlight_map.empty());
 
-  gfx::Rect inner_rect = GetConfinedBoundsInScreenCoordinates();
+  gfx::Rect inner_rect = GetConfineBoundsInScreenCoordinates();
   inner_rect.Inset(20);
 
   struct {
@@ -1159,9 +1267,9 @@ TEST_F(ProjectorCaptureModeDemoToolsTest,
   EXPECT_TRUE(demo_tools_controller);
   CaptureModeDemoToolsTestApi demo_tools_test_api(demo_tools_controller);
 
-  const gfx::Rect confined_bounds_in_screen =
-      GetConfinedBoundsInScreenCoordinates();
-  const gfx::Point center_point = confined_bounds_in_screen.CenterPoint();
+  const gfx::Rect confine_bounds_in_screen =
+      GetConfineBoundsInScreenCoordinates();
+  const gfx::Point center_point = confine_bounds_in_screen.CenterPoint();
   auto* event_generator = GetEventGenerator();
 
   auto mouse_highlight_test = [&](bool annotating) {

@@ -48,6 +48,7 @@ using ::chromeos::settings::mojom::kDeviceSectionPath;
 using ::chromeos::settings::mojom::kDisplaySubpagePath;
 using ::chromeos::settings::mojom::kExternalStorageSubpagePath;
 using ::chromeos::settings::mojom::kKeyboardSubpagePath;
+using ::chromeos::settings::mojom::kPerDeviceKeyboardRemapKeysSubpagePath;
 using ::chromeos::settings::mojom::kPerDeviceKeyboardSubpagePath;
 using ::chromeos::settings::mojom::kPerDeviceMouseSubpagePath;
 using ::chromeos::settings::mojom::kPerDevicePointingStickSubpagePath;
@@ -615,8 +616,14 @@ void AddDeviceKeyboardStrings(content::WebUIDataSource* html_source) {
       {"keyRepeatRateSlow", IDS_SETTINGS_KEYBOARD_AUTO_REPEAT_RATE_SLOW},
       {"perDeviceKeyboardTitle", IDS_SETTINGS_PER_DEVICE_KEYBOARD_TITLE},
       {"remapKeyboardKeysRowLabel", IDS_SETTINGS_KEYBOARD_REMAP_KEYS_ROW_LABEL},
+      {"remapKeyboardKeysDescription",
+       IDS_SETTINGS_KEYBOARD_REMAP_KEYS_DESCRIPTION},
       {"showKeyboardShortcutViewer",
        IDS_SETTINGS_KEYBOARD_SHOW_SHORTCUT_VIEWER},
+      {"keyboardKeyLauncher", IDS_SETTINGS_KEYBOARD_KEY_LAUNCHER},
+      {"keyboardKeySearch", IDS_SETTINGS_KEYBOARD_KEY_SEARCH},
+      {"keyboardRemapRestoreDefaultsLabel",
+       IDS_SETTINGS_KEYBOARD_REMAP_RESTORE_BUTTON_LABEL},
   };
   html_source->AddLocalizedStrings(keyboard_strings);
 
@@ -830,9 +837,15 @@ void AddDeviceAudioStrings(content::WebUIDataSource* html_source) {
       {"audioInputNoiseCancellationTitle",
        IDS_SETTINGS_AUDIO_INPUT_NOISE_CANCELLATION_TITLE},
       {"audioInputTitle", IDS_SETTINGS_AUDIO_INPUT_TITLE},
+      {"audioMutedByPolicyTooltip", IDS_SETTINGS_AUDIO_MUTED_BY_POLICY_TOOLTIP},
+      {"audioMutedExternallyTooltip",
+       IDS_SETTINGS_AUDIO_MUTED_EXTERNALLY_TOOLTIP},
       {"audioOutputDeviceTitle", IDS_SETTINGS_AUDIO_OUTPUT_DEVICE_TITLE},
       {"audioOutputTitle", IDS_SETTINGS_AUDIO_OUTPUT_TITLE},
       {"audioTitle", IDS_SETTINGS_AUDIO_TITLE},
+      {"audioToggleToMuteTooltip", IDS_SETTINGS_AUDIO_TOGGLE_TO_MUTE_TOOLTIP},
+      {"audioToggleToUnmuteTooltip",
+       IDS_SETTINGS_AUDIO_TOGGLE_TO_UNMUTE_TOOLTIP},
       {"audioVolumeTitle", IDS_SETTINGS_AUDIO_VOLUME_TITLE},
   };
 
@@ -1066,6 +1079,14 @@ void DeviceSection::RegisterHierarchy(HierarchyGenerator* generator) const {
                                        mojom::SearchResultIcon::kKeyboard,
                                        mojom::SearchResultDefaultRank::kMedium,
                                        mojom::kPerDeviceKeyboardSubpagePath);
+
+    generator->RegisterNestedSubpage(
+        IDS_SETTINGS_KEYBOARD_REMAP_KEYS_ROW_LABEL,
+        mojom::Subpage::kPerDeviceKeyboardRemapKeys,
+        mojom::Subpage::kPerDeviceKeyboard, mojom::SearchResultIcon::kKeyboard,
+        mojom::SearchResultDefaultRank::kMedium,
+        mojom::kPerDeviceKeyboardRemapKeysSubpagePath);
+
     // Per-device Mouse.
     generator->RegisterTopLevelSubpage(IDS_SETTINGS_MOUSE_TITLE,
                                        mojom::Subpage::kPerDeviceMouse,

@@ -35,6 +35,8 @@ BASE_DECLARE_FEATURE(kMdnsResponderGeneratedNameListing);
 COMPONENT_EXPORT(NETWORK_CPP) BASE_DECLARE_FEATURE(kOpaqueResponseBlockingV01);
 COMPONENT_EXPORT(NETWORK_CPP) BASE_DECLARE_FEATURE(kOpaqueResponseBlockingV02);
 
+COMPONENT_EXPORT(NETWORK_CPP)
+BASE_DECLARE_FEATURE(kAttributionReportingTriggerAttestation);
 COMPONENT_EXPORT(NETWORK_CPP) BASE_DECLARE_FEATURE(kPrivateStateTokens);
 
 enum class TrustTokenOriginTrialSpec {
@@ -91,6 +93,9 @@ COMPONENT_EXPORT(NETWORK_CPP) BASE_DECLARE_FEATURE(kDisableResourceScheduler);
 COMPONENT_EXPORT(NETWORK_CPP)
 BASE_DECLARE_FEATURE(kPrivateNetworkAccessPreflightShortTimeout);
 
+COMPONENT_EXPORT(NETWORK_CPP)
+BASE_DECLARE_FEATURE(kPrivateNetworkAccessAllowSecureSameOrigin);
+
 COMPONENT_EXPORT(NETWORK_CPP) BASE_DECLARE_FEATURE(kPreconnectInNetworkService);
 
 COMPONENT_EXPORT(NETWORK_CPP) BASE_DECLARE_FEATURE(kPrefetchDNSWithURL);
@@ -120,6 +125,12 @@ BASE_DECLARE_FEATURE(kPrefetchNoVarySearch);
 // https://crbug.com/1382361
 COMPONENT_EXPORT(NETWORK_CPP)
 BASE_DECLARE_FEATURE(kPrerender2ContentSecurityPolicyExtensions);
+
+// Enables UMA to track received GetCookiesString IPCs. This feature is enabled
+// by default, it is just here to allow some tests to disable it. These tests
+// make use of TaskEnvironment::FastForward with very long delays (days) which
+// interacts poorly with this metric that is recorded every 30s.
+COMPONENT_EXPORT(NETWORK_CPP) BASE_DECLARE_FEATURE(kGetCookiesStringUma);
 
 }  // namespace features
 }  // namespace network

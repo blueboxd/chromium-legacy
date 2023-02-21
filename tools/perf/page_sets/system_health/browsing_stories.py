@@ -1474,6 +1474,8 @@ class _GmailBrowsingStory(system_health_story.SystemHealthStory):
   """
   SKIP_LOGIN = False
 
+  USE_LOGINURL = False
+
   # Patch performance.mark and measure to get notified about page events.
   PERFOMANCE_MARK_AND_MEASURE = '''
     window.__telemetry_observed_page_events = new Set();
@@ -1516,8 +1518,10 @@ class _GmailBrowsingStory(system_health_story.SystemHealthStory):
         performance_mark_and_measure=self.PERFOMANCE_MARK_AND_MEASURE)
 
   def _Login(self, action_runner):
-    if self.wpr_mode == wpr_modes.WPR_OFF:
-      self._url = google_login.GetLoginUrl(self.URL)
+    if self.USE_LOGINURL or self.wpr_mode in [
+        wpr_modes.WPR_OFF, wpr_modes.WPR_RECORD
+    ]:
+      google_login.LoginWithLoginUrl(action_runner, self.URL)
     else:
       google_login.NewLoginGoogleAccount(action_runner, 'googletest')
 

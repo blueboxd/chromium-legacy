@@ -34,6 +34,7 @@
 #include "services/metrics/public/cpp/ukm_source_id.h"
 #include "services/network/public/mojom/content_security_policy.mojom-blink.h"
 #include "third_party/blink/public/common/frame/fullscreen_request_token.h"
+#include "third_party/blink/public/common/frame/history_user_activation_state.h"
 #include "third_party/blink/public/common/frame/payment_request_token.h"
 #include "third_party/blink/public/common/metrics/post_message_counter.h"
 #include "third_party/blink/public/common/scheduler/task_attribution_id.h"
@@ -46,7 +47,6 @@
 #include "third_party/blink/renderer/core/editing/suggestion/text_suggestion_controller.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/frame/dom_window.h"
-#include "third_party/blink/renderer/core/frame/history_user_activation_state.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/use_counter_impl.h"
 #include "third_party/blink/renderer/core/html/closewatcher/close_watcher.h"
@@ -505,10 +505,6 @@ class CORE_EXPORT LocalDOMWindow final : public DOMWindow,
     return closewatcher_stack_;
   }
 
-  HistoryUserActivationState& history_user_activation_state() {
-    return history_user_activation_state_;
-  }
-
   void IncrementNavigationId() { navigation_id_++; }
   uint32_t GetNavigationId() const { return navigation_id_; }
 
@@ -656,8 +652,6 @@ class CORE_EXPORT LocalDOMWindow final : public DOMWindow,
   Member<Fence> fence_;
 
   Member<CloseWatcher::WatcherStack> closewatcher_stack_;
-
-  HistoryUserActivationState history_user_activation_state_;
 
   // If set, this window is a Document Picture in Picture window.
   // https://wicg.github.io/document-picture-in-picture/

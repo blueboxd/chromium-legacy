@@ -123,12 +123,17 @@ enum class RawPtrTraits : unsigned {
   kDisableHooks = kEmpty,
 #endif
 
+  // Pointer arithmetic is discouraged and disabled by default.
+  //
+  // Don't use directly, use AllowPtrArithmetic instead.
+  kAllowPtrArithmetic = (1 << 3),
+
   // Adds accounting, on top of the chosen implementation, for test purposes.
   // raw_ptr/raw_ref with this trait perform extra bookkeeping, e.g. to track
   // the number of times the raw_ptr is wrapped, unwrapped, etc.
   //
   // Test only.
-  kUseCountingWrapperForTest = (1 << 3),
+  kUseCountingWrapperForTest = (1 << 4),
 };
 
 // Used to combine RawPtrTraits:
@@ -158,6 +163,7 @@ constexpr bool AreValid(RawPtrTraits traits) {
   return Remove(traits, RawPtrTraits::kMayDangle |
                             RawPtrTraits::kDisableMTECheckedPtr |
                             RawPtrTraits::kDisableHooks |
+                            RawPtrTraits::kAllowPtrArithmetic |
                             RawPtrTraits::kUseCountingWrapperForTest) ==
          RawPtrTraits::kEmpty;
 }
@@ -300,16 +306,32 @@ struct MTECheckedPtrImpl {
   // Wraps a pointer, and returns its uintptr_t representation.
   template <typename T>
   static PA_ALWAYS_INLINE T* WrapRawPtr(T* ptr) {
+    // Catch the obviously unsupported cases, e.g. `nullptr` or `-1ull`.
+    //
+    // `ExtractPtr(ptr)` should be functionally identical to `ptr` for
+    // the purposes of `EnabledForPtr()`, since we assert that `ptr` is
+    // an untagged raw pointer (there are no tag bits provided by
+    // MTECheckedPtr to strip off). However, something like `-1ull`
+    // looks identical to a fully tagged-up pointer. We'll add a check
+    // here just to make sure there's no difference in the support check
+    // whether extracted or not.
+    const bool extracted_supported =
+        PartitionAllocSupport::EnabledForPtr(ExtractPtr(ptr));
+    const bool raw_supported = PartitionAllocSupport::EnabledForPtr(ptr);
+    PA_BASE_DCHECK(extracted_supported == raw_supported);
+
+    // At the expense of consistency, we use the `raw_supported`
+    // condition. When wrapping a raw pointer, we assert that having set
+    // bits conflatable with the MTECheckedPtr tag disqualifies `ptr`
+    // from support.
+    if (!raw_supported) {
+      return ptr;
+    }
+
     // Disambiguation: UntagPtr removes the hardware MTE tag, whereas this
     // function is responsible for adding the software MTE tag.
     uintptr_t addr = partition_alloc::UntagPtr(ptr);
     PA_BASE_DCHECK(ExtractTag(addr) == 0ull);
-
-    // Return a not-wrapped |addr|, if it's either nullptr or if the protection
-    // for this pointer is disabled.
-    if (!PartitionAllocSupport::EnabledForPtr(ptr)) {
-      return ptr;
-    }
 
     // Read the tag and place it in the top bits of the address.
     // Even if PartitionAlloc's tag has less than kTagBits, we'll read
@@ -365,14 +387,26 @@ struct MTECheckedPtrImpl {
   // memory was freed or not.
   template <typename T>
   static PA_ALWAYS_INLINE T* SafelyUnwrapPtrForExtraction(T* wrapped_ptr) {
-    return ExtractPtr(wrapped_ptr);
+    // Return `wrapped_ptr` straightaway if protection is disabled, e.g.
+    // when `ptr` is `nullptr` or `uintptr_t{-1ull}`.
+    T* extracted_ptr = ExtractPtr(wrapped_ptr);
+    if (!PartitionAllocSupport::EnabledForPtr(extracted_ptr)) {
+      return wrapped_ptr;
+    }
+    return extracted_ptr;
   }
 
   // Unwraps the pointer's uintptr_t representation, without making an assertion
   // on whether memory was freed or not.
   template <typename T>
   static PA_ALWAYS_INLINE T* UnsafelyUnwrapPtrForComparison(T* wrapped_ptr) {
-    return ExtractPtr(wrapped_ptr);
+    // Return `wrapped_ptr` straightaway if protection is disabled, e.g.
+    // when `ptr` is `nullptr` or `uintptr_t{-1ull}`.
+    T* extracted_ptr = ExtractPtr(wrapped_ptr);
+    if (!PartitionAllocSupport::EnabledForPtr(extracted_ptr)) {
+      return wrapped_ptr;
+    }
+    return extracted_ptr;
   }
 
   // Upcasts the wrapped pointer.
@@ -652,12 +686,13 @@ struct TraitsToImpl {
       /*allow_dangling=*/Contains(Traits, RawPtrTraits::kMayDangle)>;
 
 #elif BUILDFLAG(USE_ASAN_UNOWNED_PTR)
-  using UnderlyingImpl =
-      std::conditional_t<Contains(Traits, RawPtrTraits::kMayDangle),
-                         // No special bookkeeping required for this case,
-                         // just treat these as ordinary pointers.
-                         internal::RawPtrNoOpImpl,
-                         internal::RawPtrAsanUnownedImpl>;
+  using UnderlyingImpl = std::conditional_t<
+      Contains(Traits, RawPtrTraits::kMayDangle),
+      // No special bookkeeping required for this case,
+      // just treat these as ordinary pointers.
+      internal::RawPtrNoOpImpl,
+      internal::RawPtrAsanUnownedImpl<
+          Contains(Traits, RawPtrTraits::kAllowPtrArithmetic)>>;
 #elif PA_CONFIG(ENABLE_MTE_CHECKED_PTR_SUPPORT_WITH_64_BITS_POINTERS)
   using UnderlyingImpl =
       std::conditional_t<Contains(Traits, RawPtrTraits::kDisableMTECheckedPtr),
@@ -715,7 +750,6 @@ struct TraitsToImpl {
 // compiler. We have not managed to construct such an example in Chromium yet.
 template <typename T, RawPtrTraits Traits = RawPtrTraits::kEmpty>
 class PA_TRIVIAL_ABI PA_GSL_POINTER raw_ptr {
-  using RawPtrTraits = RawPtrTraits;
   // Type to return from ExtractAsDangling(), which is identical except
   // kMayDangle trait is added (if one isn't there already).
   using DanglingRawPtrType = raw_ptr<T, Traits | RawPtrTraits::kMayDangle>;
@@ -960,20 +994,23 @@ class PA_TRIVIAL_ABI PA_GSL_POINTER raw_ptr {
     return *this += -delta_elems;
   }
 
-  template <
-      typename Z,
-      typename = std::enable_if_t<partition_alloc::internal::offset_type<Z>>>
+  // Do not disable operator+() and operator-().
+  // They provide OOB checks. Keep them enabled, which may be blocked later when
+  // attempting to apply the += or -= operation, when disabled. In the absence
+  // of operators +/-, the compiler is free to implicitly convert to the
+  // underlying T* representation and perform ordinary pointer arithmetic, thus
+  // invalidating the purpose behind disabling them.
+  template <typename Z>
   friend PA_ALWAYS_INLINE raw_ptr operator+(const raw_ptr& p, Z delta_elems) {
     raw_ptr result = p;
     return result += delta_elems;
   }
-  template <
-      typename Z,
-      typename = std::enable_if_t<partition_alloc::internal::offset_type<Z>>>
+  template <typename Z>
   friend PA_ALWAYS_INLINE raw_ptr operator-(const raw_ptr& p, Z delta_elems) {
     raw_ptr result = p;
     return result -= delta_elems;
   }
+
   friend PA_ALWAYS_INLINE ptrdiff_t operator-(const raw_ptr& p1,
                                               const raw_ptr& p2) {
     return Impl::GetDeltaElems(p1.wrapped_ptr_, p2.wrapped_ptr_);
@@ -1278,8 +1315,8 @@ constexpr auto DanglingUntriaged = base::RawPtrTraits::kMayDangle;
 // might receive dangling pointers. In any other cases, please use one of:
 // - raw_ptr<T, DanglingUntriaged>
 // - raw_ptr<T, DisableDanglingPtrDetection>
-template <typename T>
-using MayBeDangling = base::raw_ptr<T, base::RawPtrTraits::kMayDangle>;
+template <typename T, base::RawPtrTraits Traits = base::RawPtrTraits::kEmpty>
+using MayBeDangling = base::raw_ptr<T, Traits | base::RawPtrTraits::kMayDangle>;
 
 // The following template parameters are only meaningful when `raw_ptr`
 // is `MTECheckedPtr` (never the case unless a particular GN arg is set
@@ -1295,6 +1332,11 @@ using MayBeDangling = base::raw_ptr<T, base::RawPtrTraits::kMayDangle>;
 
 // Direct pass-through to no-op implementation.
 constexpr auto DegradeToNoOpWhenMTE = base::RawPtrTraits::kDisableMTECheckedPtr;
+
+// The use of pointer arithmetic with raw_ptr is strongly discouraged and
+// disabled by default. Usually a container like span<> should be used
+// instead of the raw_ptr.
+constexpr auto AllowPtrArithmetic = base::RawPtrTraits::kAllowPtrArithmetic;
 
 namespace std {
 

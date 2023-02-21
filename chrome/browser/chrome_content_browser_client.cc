@@ -3383,7 +3383,7 @@ bool ChromeContentBrowserClient::IsSharedStorageAllowed(
       top_frame_origin, accessing_origin);
   if (rfh) {
     content_settings::PageSpecificContentSettings::BrowsingDataAccessed(
-        rfh, blink::StorageKey(accessing_origin),
+        rfh, blink::StorageKey::CreateFirstParty(accessing_origin),
         BrowsingDataModel::StorageType::kSharedStorage, !allowed);
   }
   return allowed;
@@ -5971,8 +5971,11 @@ ChromeContentBrowserClient::WillCreateURLLoaderRequestInterceptors(
       std::make_unique<SearchPrefetchURLLoaderInterceptor>(frame_tree_node_id));
 
   if (base::FeatureList::IsEnabled(features::kHttpsFirstModeV2)) {
-    interceptors.push_back(
-        std::make_unique<HttpsUpgradesInterceptor>(frame_tree_node_id));
+    auto https_upgrades_interceptor =
+        HttpsUpgradesInterceptor::MaybeCreateInterceptor(frame_tree_node_id);
+    if (https_upgrades_interceptor) {
+      interceptors.push_back(std::move(https_upgrades_interceptor));
+    }
   } else {
     interceptors.push_back(
         std::make_unique<HttpsOnlyModeUpgradeInterceptor>(frame_tree_node_id));

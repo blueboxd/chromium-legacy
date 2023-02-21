@@ -37,6 +37,7 @@
 #include "third_party/blink/renderer/core/css/resolver/match_flags.h"
 #include "third_party/blink/renderer/core/css/style_request.h"
 #include "third_party/blink/renderer/core/css/style_scope.h"
+#include "third_party/blink/renderer/core/css/style_scope_frame.h"
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/scroll/scroll_types.h"
 #include "third_party/blink/renderer/platform/heap/collection_support/heap_hash_map.h"
@@ -104,46 +105,6 @@ class CORE_EXPORT SelectorChecker {
   SelectorChecker(const SelectorChecker&) = delete;
   SelectorChecker& operator=(const SelectorChecker&) = delete;
 
-  struct StyleScopeActivation {
-    DISALLOW_NEW();
-
-   public:
-    void Trace(blink::Visitor*) const;
-
-    // The root is the element when the activation happened. In other words,
-    // the element that matched <scope-start>.
-    //
-    // https://drafts.csswg.org/css-cascade-6/#typedef-scope-start
-    Member<Element> root;
-    // The distance to the root, in terms of number of inclusive ancestors
-    // between some subject element and the root.
-    unsigned proximity = 0;
-    // True if some subject element matches <scope-end>.
-    //
-    // https://drafts.csswg.org/css-cascade-6/#typedef-scope-end
-    bool limit = false;
-  };
-
-  // Stores the current @scope activations for a given subject element.
-  //
-  // See documentation near EnsureActivations for more information.
-  //
-  // TODO(crbug.com/1280240): Provide a parent frame in the future.
-  class StyleScopeFrame {
-    STACK_ALLOCATED();
-
-   public:
-    using Activations = HeapVector<StyleScopeActivation>;
-
-    explicit StyleScopeFrame(Element& element) : element_(element) {}
-
-   private:
-    friend class SelectorChecker;
-
-    Element& element_;
-    HeapHashMap<Member<const StyleScope>, Member<const Activations>> data_;
-  };
-
   // Wraps the current element and a CSSSelector and stores some other state of
   // the selector matching process.
   struct SelectorCheckingContext {
@@ -182,6 +143,8 @@ class CORE_EXPORT SelectorChecker {
     bool is_inside_visited_link = false;
     bool pseudo_has_in_rightmost_compound = true;
     bool is_inside_has_pseudo_class = false;
+    // Set to true if :initial pseudo class should match.
+    bool is_initial = false;
   };
 
   struct MatchResult {
@@ -275,6 +238,7 @@ class CORE_EXPORT SelectorChecker {
   static bool MatchesFocusVisiblePseudoClass(const Element&);
   static bool MatchesSpatialNavigationInterestPseudoClass(const Element&);
   static bool MatchesSelectorFragmentAnchorPseudoClass(const Element&);
+  bool CheckInStyleScope(const SelectorCheckingContext&, MatchResult&) const;
 
  private:
   // Does the work of checking whether the simple selector and element pointed
@@ -330,23 +294,13 @@ class CORE_EXPORT SelectorChecker {
                         const CSSSelector* selector_list,
                         MatchResult& result) const;
 
-  // The *activations* for a given StyleScope/element, is a list of active
-  // scopes found in the ancestor chain, their roots (Element*), and the
-  // proximities to those roots.
-  //
-  // The idea is that, if we're matching a selector ':scope' within some
-  // StyleScope, we look up the activations for that StyleScope, and
-  // and check if the current element (`SelectorCheckingContext.element`)
-  // matches any of the activation roots.
-  using Activations = StyleScopeFrame::Activations;
-
-  const Activations& EnsureActivations(const SelectorCheckingContext&,
-                                       const StyleScope&) const;
-  const Activations* CalculateActivations(
+  const StyleScopeActivations& EnsureActivations(const SelectorCheckingContext&,
+                                                 const StyleScope&) const;
+  const StyleScopeActivations* CalculateActivations(
       Element&,
       const StyleScope&,
-      const Activations& outer_activations) const;
-  bool CheckInStyleScope(const SelectorCheckingContext&, MatchResult&) const;
+      const StyleScopeActivations& outer_activations,
+      StyleScopeFrame*) const;
   bool MatchesWithScope(Element&, const CSSSelectorList&, Element* scope) const;
 
   CustomScrollbar* scrollbar_;
@@ -362,11 +316,65 @@ class CORE_EXPORT SelectorChecker {
   friend class NthIndexCache;
 };
 
-}  // namespace blink
+// An accelerated selector checker that matches only selectors with a
+// certain set of restrictions, informally called “easy” selectors.
+// (Not to be confused with simple selectors, which is a standards-defined
+// term.) Easy selectors support only a very small subset of the full
+// CSS selector machinery, but does so much faster than SelectorChecker
+// (typically a bit over twice as fast), and that subset tends to be enough
+// for ~80% of actual selectors checks on a typical web page. (It is also
+// ree from the complexities of Shadow DOM and does not check whether
+// the query exceeds the scope, so it cannot be used for querySelector().)
+//
+// The set of supported selectors is formally given as “anything IsEasy()
+// returns true for”, but roughly encompasses the following:
+//
+//  - Tag matches (e.g. div).
+//  - ID matches (e.g. #id).
+//  - Class matches (e.g. .c).
+//  - Case-sensitive attribute is-set and exact matches ([foo] and [foo="bar"]).
+//  - Subselector and descendant combinators.
+//  - Anything that does not need further checking
+//    (CSSSelector::IsCoveredByBucketing()).
+//
+// Given this, it does not need to set up any context, do recursion,
+// backtracking, have large switch/cases for pseudos, or the similar.
+//
+// You must include selector_checker-inl.h to use this class;
+// its functions are declared ALWAYS_INLINE because the call overhead
+// is so large compared to what the functions are actually doing.
+class CORE_EXPORT EasySelectorChecker {
+ public:
+  // Returns true iff the given selector is easy and can be given to Match().
+  // Should be precomputed for the given selector.
+  //
+  // If IsEasy() is true, this selector can never return any match flags,
+  // or match (dynamic) pseudos.
+  static ALWAYS_INLINE bool IsEasy(const CSSSelector* selector);
 
-WTF_ALLOW_MOVE_INIT_AND_COMPARE_WITH_MEM_FUNCTIONS(
-    blink::SelectorChecker::StyleScopeActivation)
-WTF_ALLOW_MOVE_INIT_AND_COMPARE_WITH_MEM_FUNCTIONS(
-    blink::SelectorChecker::StyleScopeFrame)
+  // Returns whether the given selector matches the given element.
+  // The following preconditions apply:
+  //
+  //  - The selector must be easy (see IsEasy()).
+  //  - Tag matching must be case-sensitive in the current context,
+  //    i.e., that the element is _not_ a non-HTML element in an
+  //    HTML document.
+  //
+  // Unlike SelectorChecker, does not check style_scope; the caller
+  // will need to do that if desired.
+  static ALWAYS_INLINE bool Match(const CSSSelector* selector,
+                                  const Element* element);
+
+ private:
+  static ALWAYS_INLINE bool MatchOne(const CSSSelector* selector,
+                                     const Element* element);
+  static ALWAYS_INLINE bool AttributeIsSet(const Element& element,
+                                           const QualifiedName& attr);
+  static ALWAYS_INLINE bool AttributeMatches(const Element& element,
+                                             const QualifiedName& attr,
+                                             const AtomicString& value);
+};
+
+}  // namespace blink
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_CORE_CSS_SELECTOR_CHECKER_H_

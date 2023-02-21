@@ -450,6 +450,7 @@ Els testimonis d'estat privat milloren la privadesa al web i no poden utilitzar-
 <translation id="3421726884497337397">Tria quan vols bloquejar galetes de tercers</translation>
 <translation id="3428747202529429621">Et protegeix a Chrome i és possible que s'utilitzi per millorar la teva seguretat en altres aplicacions de Google quan tinguis la sessió iniciada</translation>
 <translation id="3429160811076349561">Les funcions de prova estan desactivades</translation>
+<translation id="3432973700170747422">Suprimeix 15 darrers min</translation>
 <translation id="3435465986463792564">Tens moltes finestres obertes? Pots gestionar-les aquí.</translation>
 <translation id="3435738964857648380">Seguretat</translation>
 <translation id="3443221991560634068">Torna a carregar la pàgina actual</translation>
@@ -516,7 +517,6 @@ Els testimonis d'estat privat milloren la privadesa al web i no poden utilitzar-
 <translation id="3830886834687455630">Actualitza Serveis de Google Play per comprovar les teves contrasenyes</translation>
 <translation id="3845098929839618392">Obre en una pestanya d'incògnit</translation>
 <translation id="3856096718352044181">Verifica que aquest és un proveïdor vàlid o torna-ho a provar més tard</translation>
-<translation id="3858127568696903256">Consulta aquí el contingut que segueixes</translation>
 <translation id="3858860766373142691">Nom</translation>
 <translation id="3861633093716975811">Vídeos populars</translation>
 <translation id="3874520961715512166">S'ha suprimit el lloc web</translation>
@@ -800,7 +800,7 @@ Per canviar aquesta opció, <ph name="BEGIN_LINK" />restableix la sincronitzaci�
 <translation id="5339031667684712858">Llocs web que has suprimit</translation>
 <translation id="5342314432463739672">Sol·licituds de permís</translation>
 <translation id="53537532693258630">Els llocs web que hagis suprimit es mostraran aquí</translation>
-<translation id="5355191726083956201">Està activada la protecció millorada</translation>
+<translation id="5355191726083956201">La protecció millorada està activada</translation>
 <translation id="5368227114232678694">Per navegar de manera privada en aquest dispositiu, prova el mode d'incògnit</translation>
 <translation id="5375577065097716013">Cerca la imatge amb Lens <ph name="BEGIN_NEW" />Novetat<ph name="END_NEW" /></translation>
 <translation id="5401851137404501592">Per continuar, <ph name="IDENTITY_PROVIDER_ETLD_PLUS_ONE" /> compartirà el teu nom, la teva adreça electrònica i la teva foto de perfil amb aquest lloc web.</translation>
@@ -1242,6 +1242,7 @@ Per exemple, és possible que alguns llocs web responguin a aquesta sol·licitud
 <translation id="7682724950699840886">Segueix aquests consells: comprova que hi hagi prou espai al dispositiu i prova d'exportar les contrasenyes de nou.</translation>
 <translation id="7686086654630106285">Més informació sobre els anuncis suggerits per llocs web</translation>
 <translation id="768618399695552958">Algunes de les pàgines que visites estan precarregades. És possible que les pàgines es precarreguin a través dels servidors de Google quan s'enllacin des d'un lloc web de Google.</translation>
+<translation id="7691043218961417207">Explora contingut i segueix-lo</translation>
 <translation id="7698359219371678927">Crea una adreça electrònica a <ph name="APP_NAME" /></translation>
 <translation id="7707922173985738739">Utilitza dades mòbils</translation>
 <translation id="7709094866268987903">Els interessos que hagis suprimit es mostraran aquí</translation>

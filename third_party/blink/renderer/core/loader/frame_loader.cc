@@ -1056,42 +1056,6 @@ void FrameLoader::CommitNavigation(
     extra_data = document_loader_->TakeExtraData();
   }
 
-  // Fenced frame reporting metadata persists across same-origin navigations
-  // initiated from inside the fenced frame. Embedder-initiated navigations
-  // use a unique origin (in `FencedFrame::Navigate`), so the requestor is
-  // always considered cross-origin by the check (in MPArch).
-  // TODO(crbug.com/1381158): Move the checks for whether fenced frame reporting
-  // metadata should be copied or not, to the browser process.
-  bool is_requestor_same_origin =
-      !navigation_params->requestor_origin.IsNull() &&
-      navigation_params->requestor_origin.IsSameOriginWith(
-          WebSecurityOrigin::Create(navigation_params->url));
-  if (is_requestor_same_origin) {
-    // Check if all redirects are same origin with `requestor_origin`.
-    // If there is a cross-origin redirect, renderer will mark the fenced frame
-    // having no associated reporting metadata.
-    auto has_same_origin_with_requestor =
-        [&requestor_origin = std::as_const(
-             navigation_params->requestor_origin)](const auto& redirect) {
-          return requestor_origin.IsSameOriginWith(
-              WebSecurityOrigin::Create(redirect.new_url));
-        };
-    is_requestor_same_origin = base::ranges::all_of(
-        navigation_params->redirects, has_same_origin_with_requestor);
-  }
-  if (is_requestor_same_origin) {
-    if (navigation_params->has_fenced_frame_reporting) {
-      // In urn iframes, embedder-initiated navigations may be same-origin, so
-      // this isn't true.
-      DCHECK(!frame_->IsFencedFrameRoot() &&
-             blink::features::IsAllowURNsInIframeEnabled());
-    } else if (document_loader_->HasFencedFrameReporting()) {
-      // Fenced frame reporting metadata persists across same-origin navigations
-      // initiated from inside the fenced frame.
-      navigation_params->has_fenced_frame_reporting = true;
-    }
-  }
-
   // Create the OldDocumentInfoForCommit for the old document (that might be in
   // another FrameLoader) and save it in ScopedOldDocumentInfoForCommitCapturer,
   // so that the old document can access it and fill in the information as it
@@ -1751,71 +1715,6 @@ void FrameLoader::ModifyRequestForCSP(
   MixedContentChecker::UpgradeInsecureRequest(
       resource_request, fetch_client_settings_object, window_for_logging,
       frame_type, frame_->GetContentSettingsClient());
-}
-
-void FrameLoader::ReportLegacyTLSVersion(const KURL& url,
-                                         bool is_subresource,
-                                         bool is_ad_resource) {
-  document_loader_->GetUseCounter().Count(
-      is_subresource
-          ? WebFeature::kLegacyTLSVersionInSubresource
-          : (frame_->IsOutermostMainFrame()
-                 ? WebFeature::kLegacyTLSVersionInMainFrameResource
-                 : WebFeature::kLegacyTLSVersionInSubframeMainResource),
-      frame_.Get());
-
-  // For non-main-frame loads, we have to use the main frame's document for
-  // the UKM recorder and source ID.
-  auto& root = frame_->LocalFrameRoot();
-  ukm::builders::Net_LegacyTLSVersion(root.GetDocument()->UkmSourceID())
-      .SetIsMainFrame(frame_->IsMainFrame())
-      .SetIsSubresource(is_subresource)
-      .SetIsAdResource(is_ad_resource)
-      .Record(root.GetDocument()->UkmRecorder());
-
-  String origin = SecurityOrigin::Create(url)->ToString();
-  // To prevent log spam, only log the message once per origin.
-  if (tls_version_warning_origins_.Contains(origin))
-    return;
-
-  // After |kMaxSecurityWarningMessages| warnings, stop printing messages to the
-  // console. At exactly |kMaxSecurityWarningMessages| warnings, print a message
-  // that additional resources on the page use legacy certificates without
-  // specifying which exact resources. Before |kMaxSecurityWarningMessages|
-  // messages, print the exact resource URL in the message to help the developer
-  // pinpoint the problematic resources.
-  const size_t kMaxSecurityWarningMessages = 10;
-  size_t num_warnings = tls_version_warning_origins_.size();
-  if (num_warnings > kMaxSecurityWarningMessages)
-    return;
-
-  String console_message;
-  if (num_warnings == kMaxSecurityWarningMessages) {
-    console_message =
-        "Additional resources on this page were loaded with TLS 1.0 or TLS "
-        "1.1, which are deprecated and will be disabled in the future. Once "
-        "disabled, users will be prevented from loading these resources. "
-        "Servers should enable TLS 1.2 or later. See "
-        "https://www.chromestatus.com/feature/5654791610957824 for more "
-        "information.";
-  } else {
-    console_message =
-        "The connection used to load resources from " + origin +
-        " used TLS 1.0 or TLS "
-        "1.1, which are deprecated and will be disabled in the future. Once "
-        "disabled, users will be prevented from loading these resources. The "
-        "server should enable TLS 1.2 or later. See "
-        "https://www.chromestatus.com/feature/5654791610957824 for more "
-        "information.";
-  }
-  tls_version_warning_origins_.insert(origin);
-  // To avoid spamming the console, use verbose message level for subframe
-  // resources, and only use the warning level for main-frame resources.
-  frame_->Console().AddMessage(MakeGarbageCollected<ConsoleMessage>(
-      mojom::ConsoleMessageSource::kOther,
-      frame_->IsOutermostMainFrame() ? mojom::ConsoleMessageLevel::kWarning
-                                     : mojom::ConsoleMessageLevel::kVerbose,
-      console_message));
 }
 
 void FrameLoader::WriteIntoTrace(perfetto::TracedValue context) const {

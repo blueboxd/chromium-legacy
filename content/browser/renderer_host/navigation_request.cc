@@ -1440,24 +1440,20 @@ NavigationRequest::CreateForSynchronousRendererCommit(
           navigation_request->ComputeFencedFrameNonce());
   url::Origin top_level_origin =
       render_frame_host->ComputeTopFrameOrigin(origin);
-  // If the `nonce` is set the `top_level_site` must be the same as `origin` and
-  // the `ancestor_chain_bit` must be kCrossSite.
-  // TODO(https://crbug.com/1410254): Cleanup this logic.
   if (nonce) {
+    // If the nonce isn't null, we can use the simpler form of the constructor.
     navigation_request->commit_params_->storage_key =
-        blink::StorageKey::CreateWithOptionalNonce(
-            origin, net::SchemefulSite(origin), base::OptionalToPtr(nonce),
-            blink::mojom::AncestorChainBit::kCrossSite);
+        blink::StorageKey::CreateWithNonce(origin, *nonce);
   } else {
+    // Otherwise we need to derive the top_level_site and ancestor_chain_bit.
     net::SchemefulSite top_level_site(top_level_origin);
-    navigation_request->commit_params_->storage_key =
-        blink::StorageKey::CreateWithOptionalNonce(
-            origin, top_level_site, nullptr,
-            render_frame_host->ComputeSiteForCookies().IsNull() ||
-                    net::SchemefulSite(origin) != top_level_site ||
-                    top_level_site.opaque()
-                ? blink::mojom::AncestorChainBit::kCrossSite
-                : blink::mojom::AncestorChainBit::kSameSite);
+    navigation_request->commit_params_->storage_key = blink::StorageKey::Create(
+        origin, top_level_site,
+        render_frame_host->ComputeSiteForCookies().IsNull() ||
+                net::SchemefulSite(origin) != top_level_site ||
+                origin.opaque() || top_level_site.opaque()
+            ? blink::mojom::AncestorChainBit::kCrossSite
+            : blink::mojom::AncestorChainBit::kSameSite);
   }
   navigation_request->commit_params_->session_storage_key =
       frame_tree_node->frame_tree().GetSessionStorageKey(
@@ -1879,7 +1875,8 @@ NavigationRequest::NavigationRequest(
                 .GetBrowserContext()
                 ->GetStoragePartition(site_info_.storage_partition_config())
                 ->GetServiceWorkerContext()) {
-      const blink::StorageKey key(GetTentativeOriginAtRequestTime());
+      const blink::StorageKey key = blink::StorageKey::CreateFirstParty(
+          GetTentativeOriginAtRequestTime());
       if (context->MaybeHasRegistrationForStorageKey(key)) {
         context->StartServiceWorkerForNavigationHint(GetURL(), key,
                                                      base::DoNothing());
@@ -1959,9 +1956,30 @@ NavigationRequest::~NavigationRequest() {
   if (loading_mem_tracker_)
     loading_mem_tracker_->Cancel();
   ResetExpectedProcess();
-  if (state_ >= WILL_START_NAVIGATION && !HasCommitted()) {
-    devtools_instrumentation::OnNavigationRequestFailed(
-        *this, network::URLLoaderCompletionStatus(net::ERR_ABORTED));
+  if (!HasCommitted()) {
+    if (state_ >= WILL_START_NAVIGATION) {
+      devtools_instrumentation::OnNavigationRequestFailed(
+          *this, network::URLLoaderCompletionStatus(net::ERR_ABORTED));
+    }
+
+    // NavigationRequests with pending Navigation API keys must notify the
+    // renderer when they fail.
+    if (pending_navigation_api_key_) {
+      frame_tree_node_->current_frame_host()
+          ->GetAssociatedLocalFrame()
+          ->TraverseCancelled(
+              *pending_navigation_api_key_,
+              blink::mojom::TraverseCancelledReason::kAbortedBeforeCommit);
+    }
+
+    // If subframe history navigations were deferred waiting for this request,
+    // the cancelation of this request should cancel them, too.
+    for (auto& throttle : subframe_history_navigation_throttles_) {
+      if (throttle) {
+        throttle->Cancel();
+      }
+    }
+    subframe_history_navigation_throttles_.clear();
   }
 
   // If this NavigationRequest is the last one referencing the pending
@@ -2265,11 +2283,6 @@ void NavigationRequest::OnFencedFrameURLMappingComplete(
       properties->mapped_url_->GetValueIgnoringVisibility();
   common_params_->url = mapped_url_value;
   commit_params_->original_url = mapped_url_value;
-
-  // Create a view of the fenced frame properties from the perspective of the
-  // fenced frame content, which will be sent to its renderer.
-  commit_params_->fenced_frame_properties =
-      properties->RedactFor(content::FencedFrameEntity::kContent);
 
   // Store the browser's view of the fenced frame properties in the
   // `NavigationRequest`. Upon commit, it will be stored in the fenced frame
@@ -5378,6 +5391,13 @@ void NavigationRequest::CommitPageActivation() {
         commit_params_->pending_history_list_offset;
     page_restore_params->current_history_list_length =
         commit_params_->current_history_list_length;
+    page_restore_params->view_transition_state =
+        std::move(commit_params_->view_transition_state);
+    // Since we moved the view transition state to page restore params, we
+    // should reset the commit params one (move doesn't clear the optional).
+    // This ensures that we don't erroneously think that view_transition_state
+    // is unhandled and attempt to clean it up.
+    commit_params_->view_transition_state.reset();
     activated_entry = controller->GetBackForwardCache().RestoreEntry(
         nav_entry_id_, std::move(page_restore_params));
     // The only time activated_entry can be nullptr here, is if the
@@ -6558,6 +6578,8 @@ void NavigationRequest::DidCommitNavigation(
     frame_tree_node()->SetCollapsed(false);
   }
 
+  UnblockPendingSubframeNavigationRequestsIfNeeded();
+
   if (service_worker_handle_) {
     // Notify the service worker navigation handle that the navigation finished
     // committing.
@@ -6799,6 +6821,39 @@ void NavigationRequest::ReadyToCommitNavigation(bool is_error) {
     if (entry && entry->IsViewSourceMode()) {
       // Put the renderer in view source mode.
       render_frame_host_->GetAssociatedLocalFrame()->EnableViewSourceMode();
+    }
+  }
+
+  // For fenced frames, update the mapped URL to be the URL from navigation
+  // commit (after redirects), because we want future same-origin checks to be
+  // performed with respect to the first origin committed in the fenced frame.
+  if (is_embedder_initiated_fenced_frame_navigation_) {
+    // In certain circumstances, the FencedFrameProperties will not have a
+    // mapped url.
+    // * The initial about:blank navigation in a fenced frame.
+    // * Embedder-initiated FF root navigations to transparent (non-urn) urls.
+    // In those cases, we skip this step.
+    if (fenced_frame_properties_->mapped_url_.has_value()) {
+      fenced_frame_properties_->UpdateMappedURL(GetURL());
+    }
+  }
+
+  // Create a view of the fenced frame properties from the perspective of the
+  // fenced frame content, which will be sent to its renderer.
+  // On each navigation commit within the fenced frame tree, if the committed
+  // origin is same-origin to the urn's mapped_url (after redirects), the
+  // browser sends the `RedactedFencedFrameProperties` to the renderer for that
+  // frame. This is because we want to make fenced frame APIs available only
+  // in same-origin contexts.
+  const auto& computed_fenced_frame_properties = ComputeFencedFrameProperties();
+  if (computed_fenced_frame_properties.has_value()) {
+    if (computed_fenced_frame_properties->mapped_url_.has_value() &&
+        url::Origin::Create(common_params_->url)
+            .IsSameOriginWith(computed_fenced_frame_properties->mapped_url_
+                                  ->GetValueIgnoringVisibility())) {
+      commit_params_->fenced_frame_properties =
+          computed_fenced_frame_properties->RedactFor(
+              content::FencedFrameEntity::kContent);
     }
   }
 
@@ -8425,6 +8480,47 @@ void NavigationRequest::RenderFallbackContentForObjectTag() {
         ->GetAssociatedLocalFrame()
         ->RenderFallbackContent();
   }
+}
+
+absl::optional<base::UnguessableToken>
+NavigationRequest::GetNavigationTokenForDeferringSubframes() {
+  DCHECK(IsInMainFrame());
+  if (!base::FeatureList::IsEnabled(
+          blink::features::kNavigateEventCancelableTraversals)) {
+    return absl::nullopt;
+  }
+  if (!IsSameDocument() ||
+      !NavigationTypeUtils::IsHistory(common_params_->navigation_type)) {
+    return absl::nullopt;
+  }
+  RenderFrameHostImpl* current_frame_host =
+      frame_tree_node_->current_frame_host();
+  if (!current_frame_host->has_navigate_event_handler()) {
+    return absl::nullopt;
+  }
+  if (commit_params_->is_browser_initiated &&
+      !current_frame_host->IsHistoryUserActivationActive()) {
+    return absl::nullopt;
+  }
+  return commit_params_->navigation_token;
+}
+
+void NavigationRequest::AddDeferredSubframeNavigationThrottle(
+    base::WeakPtr<SubframeHistoryNavigationThrottle> throttle) {
+  DCHECK(IsInMainFrame());
+  subframe_history_navigation_throttles_.push_back(throttle);
+}
+
+void NavigationRequest::UnblockPendingSubframeNavigationRequestsIfNeeded() {
+  // After a main frame same-document history navigation completes successfully,
+  // we can resume any corresponding subframe history navigations that were
+  // blocked on it.
+  for (auto& throttle : subframe_history_navigation_throttles_) {
+    if (throttle) {
+      throttle->Resume();
+    }
+  }
+  subframe_history_navigation_throttles_.clear();
 }
 
 bool NavigationRequest::IsServedFromBackForwardCache() const {

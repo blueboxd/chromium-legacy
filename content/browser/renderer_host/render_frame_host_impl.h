@@ -111,6 +111,7 @@
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "third_party/blink/public/common/frame/frame_owner_element_type.h"
 #include "third_party/blink/public/common/frame/fullscreen_request_token.h"
+#include "third_party/blink/public/common/frame/history_user_activation_state.h"
 #include "third_party/blink/public/common/frame/user_activation_state.h"
 #include "third_party/blink/public/common/permissions_policy/permissions_policy.h"
 #include "third_party/blink/public/common/permissions_policy/permissions_policy_declaration.h"
@@ -373,7 +374,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   // RenderFrameHost
   int GetRoutingID() const override;
-  const blink::LocalFrameToken& GetFrameToken() override;
+  const blink::LocalFrameToken& GetFrameToken() const override;
   const base::UnguessableToken& GetReportingSource() override;
 
   ui::AXTreeID GetAXTreeID() override;
@@ -389,10 +390,12 @@ class CONTENT_EXPORT RenderFrameHostImpl
   RenderWidgetHostView* GetView() override;
   RenderFrameHostImpl* GetParent() const override;
   RenderFrameHostImpl* GetParentOrOuterDocument() const override;
+  RenderFrameHostImpl* GetParentOrOuterDocumentOrEmbedder() const override;
   RenderFrameHostImpl* GetMainFrame() override;
   PageImpl& GetPage() override;
   bool IsInPrimaryMainFrame() override;
   RenderFrameHostImpl* GetOutermostMainFrame() override;
+  RenderFrameHostImpl* GetOutermostMainFrameOrEmbedder() override;
   bool IsFencedFrameRoot() const override;
   bool IsNestedWithinFencedFrame() const override;
   void ForEachRenderFrameHostWithAction(
@@ -2137,15 +2140,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
     return media_device_id_salt_base_;
   }
 
-  // Returns the topmost ancestor RenderFrameHost. This includes any parents (in
-  // the case of subframes), any outer documents (e.g. fenced frame owners), and
-  // any GuestViews. See also GetOutermostMainFrame which does not escape
-  // GuestViews and GetParentOrOuterDocumentOrEmbedder for more details.
-  // Note that this may be different from getting the WebContents' primary main
-  // frame. For example, if `this` is in a bfcached or prerendered page, this
-  // will return the cached/prerendered page's main RenderFrameHost.
-  RenderFrameHostImpl* GetOutermostMainFrameOrEmbedder();
-
   void set_inner_tree_main_frame_tree_node_id(int id) {
     inner_tree_main_frame_tree_node_id_ = id;
   }
@@ -2234,6 +2228,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void UpdateUserActivationState(
       blink::mojom::UserActivationUpdateType update_type,
       blink::mojom::UserActivationNotificationType notification_type) override;
+  void DidConsumeHistoryUserActivation() override;
   void HandleAccessibilityFindInPageResult(
       blink::mojom::FindInPageResultAXParamsPtr params) override;
   void HandleAccessibilityFindInPageTermination() override;
@@ -2592,26 +2587,17 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void MaybeDispatchDOMContentLoadedOnPrerenderActivation();
   void MaybeDispatchDidFinishLoadOnPrerenderActivation();
 
-  // Returns the document owning the frame this RenderFrameHost is located
-  // in, which will either be a parent (for <iframe>s) or outer document (for
-  // <fencedframe>, <portal> or an embedder (e.g. GuestViews)). See
-  // `RenderFrameHost::GetParentOrOuterDocument` for the version of this API
-  // that does not cross a browsing session boundary (ie. Not escaping a
-  // GuestView). This method typically will be used for input, compositing, and
-  // focus related functionality where the physical arrangement of frames, as
-  // opposed to their semantics is required. Example:
-  //  A (GuestView embedder)
-  //   B (<webview> - placeholder frame)
-  //    B* (embedded document main frame)
-  //     C (iframe)
-  //
-  //  C GetParent & GetParentOrOuterDocumentOrEmbedder returns B*.
-  //  B* GetParent & GetParentOrOuterDocument returns null.
-  //  B* GetParentOrOuterDocumentOrEmbedder returns A.
-  //  B GetParent & GetParentOrOuterDocumentOrEmbedder returns A.
-  //  A GetParent & GetParentOrOuterDocumentOrEmbedder returns
-  //  nullptr.
-  RenderFrameHostImpl* GetParentOrOuterDocumentOrEmbedder() const;
+  // Versions of `GetParentOrOuterDocumentOrEmbedder` and
+  // `GetOutermostMainFrameOrEmbedder` which exclude embedders which own, but
+  // have not yet attached, our frame tree for rendering. These should be
+  // avoided in favor of `GetParentOrOuterDocumentOrEmbedder` and
+  // `GetOutermostMainFrameOrEmbedder`. This distinction should only matter for
+  // cases which implement a view hierarchy such as the implementation of
+  // RenderWidgetHostView.
+  RenderFrameHostImpl*
+  GetParentOrOuterDocumentOrEmbedderExcludingProspectiveOwners() const;
+  RenderFrameHostImpl*
+  GetOutermostMainFrameOrEmbedderExcludingProspectiveOwners();
 
   // Computes the nonce to be used for isolation info and storage key.
   // For navigations, populate `fenced_frame_nonce_for_navigation` with
@@ -2768,29 +2754,30 @@ class CONTENT_EXPORT RenderFrameHostImpl
 #endif
 
   // Returns the sticky bit of the User Activation v2 state of this document.
-  bool HasStickyUserActivation() const {
-    return user_activation_state_.HasBeenActive();
-  }
-
-  bool IsActiveUserActivation() const {
-    return user_activation_state_.IsActive();
-  }
-
-  void ClearUserActivation() { user_activation_state_.Clear(); }
-
-  void ConsumeTransientUserActivation() {
-    user_activation_state_.ConsumeIfActive();
-  }
-
+  bool HasStickyUserActivation() const;
+  bool IsActiveUserActivation() const;
+  void ClearUserActivation();
+  void ConsumeTransientUserActivation();
   void ActivateUserActivation(
-      blink::mojom::UserActivationNotificationType notification_type) {
-    user_activation_state_.Activate(notification_type);
-  }
+      blink::mojom::UserActivationNotificationType notification_type);
+
+  // These are called only when RenderFrameHostOwner is iterating over all
+  // frames, not directly from the renderer.
+  bool IsHistoryUserActivationActive() const;
+  void ConsumeHistoryUserActivation();
+
+  // Parameter for `ClosePage()` that indicates whether the request comes from
+  // the browser or the renderer. This is used to determine whether navigation
+  // should prevent the page from closing, since navigations should not prevent
+  // the page from closing if the browser is trying to close the page.
+  enum class ClosePageSource { kRenderer, kBrowser };
 
   // Tells the renderer process to run the page's unload handler.
   // A completion callback is invoked by the renderer when the handler
-  // execution completes.
-  void ClosePage();
+  // execution completes. The `source` parameter indicates whether this request
+  // comes from the browser or the renderer. If the request comes from the
+  // renderer, then it may be ignored if a different document commits first.
+  void ClosePage(ClosePageSource source);
 
   // When true, indicates that the unload handlers have already executed (e.g.,
   // after receiving a ClosePage ACK) or that they should be ignored. This is
@@ -2980,6 +2967,11 @@ class CONTENT_EXPORT RenderFrameHostImpl
   FRIEND_TEST_ALL_PREFIXES(SitePerProcessSSLBrowserTest,
                            UnloadHandlersArePowerfulGrandChild);
   FRIEND_TEST_ALL_PREFIXES(RenderFrameHostImplTest, ExpectedMainWorldOrigin);
+  FRIEND_TEST_ALL_PREFIXES(RenderFrameHostImplTest,
+                           RendererInitiatedCloseIsCancelledIfPageIsntPrimary);
+  FRIEND_TEST_ALL_PREFIXES(
+      RenderFrameHostImplTest,
+      BrowserInitiatedCloseIsNotCancelledIfPageIsntPrimary);
   FRIEND_TEST_ALL_PREFIXES(DocumentUserDataTest, CheckInPendingDeletionState);
   FRIEND_TEST_ALL_PREFIXES(WebContentsImplBrowserTest, FrozenAndUnfrozenIPC);
   FRIEND_TEST_ALL_PREFIXES(RenderFrameHostImplBrowserTest,
@@ -3752,12 +3744,37 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // Close the page ignoring whether it has unload events registered. This is
   // called either (1) when the unload events have already run in the renderer
   // and the ACK is received, or (2) when a timeout for running those events
-  // has expired.
-  void ClosePageIgnoringUnloadEvents();
+  // has expired. The `source` parameter indicates whether this request comes
+  // from the browser or the renderer. If the request comes from the renderer,
+  // then it may be ignored if a different document commits first.
+  void ClosePageIgnoringUnloadEvents(ClosePageSource source);
 
   // Called when this frame's page has started closing via ClosePage(), and the
-  // timer for running unload events has expired.
-  void ClosePageTimeout();
+  // timer for running unload events has expired. The `source` parameter
+  // indicates whether this request comes from the browser or the renderer. If
+  // the request comes from the renderer, then it may be ignored if a different
+  // document commits first.
+  void ClosePageTimeout(ClosePageSource source);
+
+  // Send an automatic `reserved.top_navigation` beacon if one was registered
+  // with the NavigationRequest's initiator frame using the
+  // `window.fence.setReportEventDataForAutomaticBeacons` API.
+  void MaybeSendFencedFrameReportingBeacon(
+      NavigationRequest& navigation_request);
+
+  // Helper function that handles creating and sending a fenced frame beacon.
+  // This also handles sending console messages if the call to send the beacon
+  // originated from the renderer.
+  // Calls to this function for automatic beacons (i.e. the
+  // "reserved.top_navigation" beacon) will originate from the browser. All
+  // other fenced frame beacon calls happen through a `fence.sendBeacon()`
+  // JavaScript call which will originate from the renderer.
+  void SendFencedFrameReportingBeaconInternal(
+      const std::string& event_data,
+      const std::string& event_type,
+      blink::FencedFrame::ReportingDestination destination,
+      bool from_renderer,
+      absl::optional<int64_t> navigation_id = absl::nullopt);
 
   // The RenderViewHost that this RenderFrameHost is associated with.
   //
@@ -4753,6 +4770,14 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // The user activation state of this document.  See |UserActivationState| for
   // details on how this state is maintained.
   blink::UserActivationState user_activation_state_;
+
+  // Similar to `user_activation_state_`, but specifically for use with
+  // web-exposed history manipulation (e.g., cancelling a history navigation via
+  // the Navigation API). Activated when `user_activation_state_` is activated,
+  // but consumed separately when a page interrupts browser-initiated history
+  // navigations (e.g., after canceled history navigations or uses of
+  // CloseWatcher).
+  blink::HistoryUserActivationState history_user_activation_state_;
 
   // Used to avoid sending AXTreeData to the renderer if the renderer has not
   // been told root ID yet. See UpdateAXTreeData() for more details.

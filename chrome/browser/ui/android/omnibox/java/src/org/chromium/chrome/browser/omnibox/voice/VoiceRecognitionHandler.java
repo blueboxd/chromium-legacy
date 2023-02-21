@@ -26,6 +26,7 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.supplier.ObservableSupplier;
 import org.chromium.base.supplier.Supplier;
+import org.chromium.build.annotations.MockedInTests;
 import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.MutableFlagWithSafeDefault;
@@ -57,6 +58,7 @@ import java.util.List;
 /**
  * Class containing functionality related to voice search.
  */
+@MockedInTests
 public class VoiceRecognitionHandler {
     private static final String TAG = "VoiceRecognition";
 
@@ -415,7 +417,10 @@ public class VoiceRecognitionHandler {
 
             RenderFrameHost renderFrameHost = webContents.getMainFrame();
             if (renderFrameHost == null) return;
-            if (TemplateUrlServiceFactory.get().isSearchResultsPageFromDefaultSearchProvider(url)) {
+
+            if (!mProfileSupplier.hasValue()) return;
+            if (TemplateUrlServiceFactory.getForProfile(mProfileSupplier.get())
+                            .isSearchResultsPageFromDefaultSearchProvider(url)) {
                 renderFrameHost.notifyUserActivation();
             }
         }
@@ -426,11 +431,6 @@ public class VoiceRecognitionHandler {
                 setReceivedUserGesture(navigation.getUrl());
             }
             destroy();
-        }
-
-        @Override
-        public void didFinishNavigationNoop(NavigationHandle navigation) {
-            if (!navigation.isInPrimaryMainFrame()) return;
         }
     }
 
@@ -534,16 +534,17 @@ public class VoiceRecognitionHandler {
                 }
             }
 
-            AutocompleteMatch match = null;
-            if (mProfileSupplier.hasValue()) {
-                match = AutocompleteControllerProvider.from(mDelegate.getWindowAndroid())
-                                .get(mProfileSupplier.get())
-                                .classify(topResultQuery, false);
-            }
+            if (!mProfileSupplier.hasValue()) return;
+
+            Profile profile = mProfileSupplier.get();
+            AutocompleteMatch match =
+                    AutocompleteControllerProvider.from(mDelegate.getWindowAndroid())
+                            .get(profile)
+                            .classify(topResultQuery, false);
 
             String url;
             if (match == null || match.isSearchSuggestion()) {
-                url = TemplateUrlServiceFactory.get()
+                url = TemplateUrlServiceFactory.getForProfile(profile)
                               .getUrlForVoiceSearchQuery(topResultQuery)
                               .getSpec();
                 // If a language was returned to us from voice recognition, then use it. Currently,

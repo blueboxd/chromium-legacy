@@ -15,9 +15,9 @@
 #include "base/task/single_thread_task_runner.h"
 #include "third_party/blink/public/platform/modules/service_worker/web_service_worker_fetch_context.h"
 #include "third_party/blink/public/platform/web_common.h"
-#include "third_party/blink/public/platform/web_string.h"
-#include "third_party/blink/public/platform/web_vector.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace base {
 class WaitableEvent;
@@ -25,7 +25,7 @@ class WaitableEvent;
 
 namespace blink {
 
-class InternetDisconnectedWebURLLoaderFactory;
+class InternetDisconnectedURLLoaderFactory;
 
 class BLINK_EXPORT WebServiceWorkerFetchContextImpl final
     : public WebServiceWorkerFetchContext,
@@ -57,16 +57,16 @@ class BLINK_EXPORT WebServiceWorkerFetchContextImpl final
           preference_watcher_receiver,
       mojo::PendingReceiver<mojom::blink::SubresourceLoaderUpdater>
           pending_subresource_loader_updater,
-      const WebVector<WebString>& cors_exempt_header_list);
+      Vector<String> cors_exempt_header_list);
 
   // WebServiceWorkerFetchContext implementation:
   void SetTerminateSyncLoadEvent(base::WaitableEvent*) override;
   void InitializeOnWorkerThread(AcceptLanguagesWatcher*) override;
-  WebURLLoaderFactory* GetURLLoaderFactory() override;
-  std::unique_ptr<WebURLLoaderFactory> WrapURLLoaderFactory(
+  URLLoaderFactory* GetURLLoaderFactory() override;
+  std::unique_ptr<URLLoaderFactory> WrapURLLoaderFactory(
       CrossVariantMojoRemote<network::mojom::URLLoaderFactoryInterfaceBase>
           url_loader_factory) override;
-  WebURLLoaderFactory* GetScriptLoaderFactory() override;
+  URLLoaderFactory* GetScriptLoaderFactory() override;
   void WillSendRequest(WebURLRequest&) override;
   mojom::ControllerServiceWorkerMode GetControllerServiceWorkerMode()
       const override;
@@ -90,7 +90,7 @@ class BLINK_EXPORT WebServiceWorkerFetchContextImpl final
 
   RendererPreferences renderer_preferences_;
   const KURL worker_script_url_;
-  // Consumed on the worker thread to create |web_url_loader_factory_|.
+  // Consumed on the worker thread to create |url_loader_factory_|.
   std::unique_ptr<network::PendingSharedURLLoaderFactory>
       pending_url_loader_factory_;
   // Consumed on the worker thread to create |web_script_loader_factory_|.
@@ -103,14 +103,14 @@ class BLINK_EXPORT WebServiceWorkerFetchContextImpl final
   KURL script_url_to_skip_throttling_;
 
   // Responsible for regular loads from the service worker (i.e., Fetch API).
-  std::unique_ptr<WebURLLoaderFactory> web_url_loader_factory_;
+  std::unique_ptr<URLLoaderFactory> url_loader_factory_;
   // Responsible for loads which always fail as INTERNET_DISCONNECTED
   // error, which is used in offline mode.
-  std::unique_ptr<InternetDisconnectedWebURLLoaderFactory>
-      internet_disconnected_web_url_loader_factory_;
+  std::unique_ptr<InternetDisconnectedURLLoaderFactory>
+      internet_disconnected_url_loader_factory_;
   // Responsible for script loads from the service worker (i.e., the
   // classic/module main script, module imported scripts, or importScripts()).
-  std::unique_ptr<WebURLLoaderFactory> web_script_loader_factory_;
+  std::unique_ptr<URLLoaderFactory> web_script_loader_factory_;
 
   std::unique_ptr<URLLoaderThrottleProvider> throttle_provider_;
   std::unique_ptr<WebSocketHandshakeThrottleProvider>
@@ -133,7 +133,7 @@ class BLINK_EXPORT WebServiceWorkerFetchContextImpl final
 
   AcceptLanguagesWatcher* accept_languages_watcher_ = nullptr;
 
-  WebVector<WebString> cors_exempt_header_list_;
+  Vector<String> cors_exempt_header_list_;
   bool is_offline_mode_ = false;
 };
 

@@ -11,12 +11,16 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/path_service.h"
+#include "base/ranges/algorithm.h"
+#include "base/strings/string_piece.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/values_test_util.h"
 #include "base/types/expected.h"
 #include "base/values.h"
 #include "content/browser/attribution_reporting/attribution_config.h"
 #include "content/browser/attribution_reporting/attribution_interop_parser.h"
 #include "content/browser/attribution_reporting/attribution_interop_runner.h"
+#include "services/network/public/cpp/features.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -60,6 +64,18 @@ std::vector<base::FilePath> GetInputs() {
   return input_paths;
 }
 
+void ProcessReports(base::Value::Dict& dict, base::StringPiece key) {
+  base::Value::List* list = dict.FindList(key);
+  if (!list) {
+    return;
+  }
+  if (list->empty()) {
+    dict.Remove(key);
+    return;
+  }
+  base::ranges::sort(*list);
+}
+
 class AttributionInteropTest : public ::testing::TestWithParam<base::FilePath> {
  public:
   static void SetUpTestSuite() {
@@ -69,11 +85,21 @@ class AttributionInteropTest : public ::testing::TestWithParam<base::FilePath> {
     g_config_ = *maybe_config;
   }
 
+  AttributionInteropTest() {
+    // This UMA records a sample every 30s via a periodic task which
+    // interacts poorly with TaskEnvironment::FastForward using day long
+    // delays (we need to run the uma update every 30s for that
+    // interval)
+    scoped_feature_list_.InitAndDisableFeature(
+        network::features::kGetCookiesStringUma);
+  }
+
  protected:
   static AttributionConfig GetConfig() { return g_config_; }
 
  private:
   static AttributionConfig g_config_;
+  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 // static
@@ -100,7 +126,16 @@ TEST_P(AttributionInteropTest, HasExpectedOutput) {
   absl::optional<base::Value> expected_output = dict.Extract("output");
   ASSERT_TRUE(expected_output.has_value());
 
-  EXPECT_THAT(*actual_output, base::test::IsJson(*expected_output));
+  base::Value::Dict& expected_output_dict = expected_output->GetDict();
+
+  for (const char* key : {kEventLevelResultsKey, kDebugEventLevelResultsKey,
+                          kAggregatableResultsKey, kDebugAggregatableResultsKey,
+                          kVerboseDebugReportsKey}) {
+    ProcessReports(*actual_output, key);
+    ProcessReports(expected_output_dict, key);
+  }
+
+  EXPECT_THAT(*actual_output, base::test::IsJson(expected_output_dict));
 }
 
 INSTANTIATE_TEST_SUITE_P(

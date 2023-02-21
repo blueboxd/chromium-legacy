@@ -243,6 +243,7 @@ Google Chrome ne peut pas récupérer vos paramètres.</translation>
 <translation id="5678190148303298925">{COUNT,plural, =0{Votre administrateur vous demande de relancer Chrome pour installer cette mise à jour}=1{Votre administrateur vous demande de relancer Chrome pour installer cette mise à jour. Sachez que la fenêtre de navigation privée ne sera pas rouverte.}one{Votre administrateur vous demande de relancer Chrome pour installer cette mise à jour. Sachez que la fenêtre de navigation privée (#) ne sera pas rouverte.}other{Votre administrateur vous demande de relancer Chrome pour installer cette mise à jour. Sachez que les # fenêtres de navigation privée ne seront pas rouvertes.}}</translation>
 <translation id="5686916850681061684">Personnalisez et contrôlez Google Chrome. Une action de votre part est requise. Cliquez pour en savoir plus.</translation>
 <translation id="5690427481109656848">Google LLC</translation>
+<translation id="570005089986962444">Lorsque cette option est activée, Chrome libère de la mémoire dans les onglets inactifs. Ainsi, les onglets actifs et d'autres applis peuvent utiliser davantage de ressources, et Chrome reste rapide. Vos onglets inactifs redeviennent actifs lorsque vous les consultez.</translation>
 <translation id="5715063361988620182">{SECONDS,plural, =1{Google Chrome va redémarrer dans 1 seconde}one{Google Chrome va redémarrer dans # seconde}other{Google Chrome va redémarrer dans # secondes}}</translation>
 <translation id="5727531838415286053">Si Chrome vous a intégré aléatoirement à un essai actif, votre historique de navigation influe sur les annonces que vous voyez et les centres d'intérêt estimés ci-dessous. Pour protéger votre confidentialité, Chrome supprime vos centres d'intérêt tous les mois. Les centres d'intérêt s'actualisent, sauf si vous les supprimez.</translation>
 <translation id="5736850870166430177">Si un site tente de voler votre mot de passe ou si vous téléchargez un fichier dangereux, Chrome peut également envoyer les URL concernées, y compris des extraits du contenu des pages, à la fonctionnalité de navigation sécurisée</translation>
@@ -323,7 +324,6 @@ Les autorisations que vous avez déjà accordées aux sites Web et aux applis pe
 <translation id="7410958280246779049">Chrome a bloqué ce fichier, car il est dangereux</translation>
 <translation id="7426611252293106642">Google Chrome risque de ne pas fonctionner correctement, car la compatibilité n'est plus assurée sur cette distribution Linux</translation>
 <translation id="7481213027396403996">Renforcer la sécurité de Chrome</translation>
-<translation id="7486227612705979895">Chromium va accéder à votre Drive pour proposer des suggestions dans la barre d'adresse</translation>
 <translation id="7535429826459677826">Google Chrome pour les développeurs</translation>
 <translation id="7583399374488819119">Programme d'installation de <ph name="COMPANY_NAME" /></translation>
 <translation id="7606334485649076285">Google ChromeOS Flex</translation>
@@ -366,7 +366,6 @@ Les autorisations que vous avez déjà accordées aux sites Web et aux applis pe
 <translation id="8286862437124483331">Google Chrome tente d'afficher les mots de passe. Pour autoriser cette action, saisissez votre mot de passe Windows.</translation>
 <translation id="828798499196665338">Ton parent a désactivé l'option "Autorisations des sites, applications et extensions" pour Chrome. Tu ne peux pas activer cette <ph name="EXTENSION_TYPE_PARAMETER" />.</translation>
 <translation id="8290100596633877290">Google Chrome est bloqué. Voulez-vous le relancer maintenant ?</translation>
-<translation id="8341646175450781745">Lorsque cette option est activée, Chrome libère de la mémoire dans les onglets inactifs. Ainsi, les onglets actifs et d'autres applis peuvent utiliser davantage de ressources, et Chrome reste rapide. Vos onglets inactifs redeviennent actifs lorsque vous les consultez. <ph name="BEGIN_LINK" />En savoir plus<ph name="END_LINK" /> ou <ph name="BEGIN_LINK_2" />envoyer des commentaires<ph name="END_LINK_2" /></translation>
 <translation id="8342675569599923794">Chrome a bloqué ce fichier, car ce dernier est dangereux.</translation>
 <translation id="8349795646647783032"><ph name="BEGIN_BOLD" />Comment nous utilisons ces données<ph name="END_BOLD" /> : les sites peuvent stocker des informations sur vos centres d'intérêt dans Chrome. Par exemple, si vous allez sur un site afin d'acheter des chaussures pour un marathon, le site peut définir le marathon comme l'un de vos centres d'intérêt. Ensuite, si vous consultez un autre site pour vous enregistrer pour une course, ce site peut diffuser une annonce pour des chaussures de running en se basant sur vos centres d'intérêt.</translation>
 <translation id="8370517070665726704">© <ph name="YEAR" /> Google LLC. Tous droits réservés.</translation>
@@ -411,7 +410,6 @@ Les autorisations que vous avez déjà accordées aux sites Web et aux applis pe
 <translation id="8986207147630327271">Vous êtes sur le point d'ajouter un profil professionnel à ce navigateur et d'en donner le contrôle à votre administrateur.</translation>
 <translation id="8989968390305463310">Votre historique de navigation influe sur les annonces que vous voyez et les centres d'intérêt estimés ci-dessous. Pour protéger votre confidentialité, Chrome supprime automatiquement vos centres d'intérêt tous les mois. Les centres d'intérêt peuvent s'actualiser, sauf si vous les supprimez.</translation>
 <translation id="8999208279178790196">{0,plural, =0{Une mise à jour de Chrome est disponible}=1{Une mise à jour de Chrome est disponible}one{Une mise à jour de Chrome est disponible depuis # jour}other{Une mise à jour de Chrome est disponible depuis # jours}}</translation>
-<translation id="9003498785844995646">Lorsque cette option est activée, Chrome préserve l'autonomie de la batterie en limitant l'activité et les effets visuels en arrière-plan, comme le défilement fluide et la fréquence d'images vidéo. <ph name="BEGIN_LINK" />En savoir plus<ph name="END_LINK" /> ou <ph name="BEGIN_LINK_2" />envoyer des commentaires<ph name="END_LINK_2" /></translation>
 <translation id="9053892488859122171">Système ChromeOS Flex</translation>
 <translation id="9067395829937117663">Vous devez disposer de Windows 7 ou version ultérieure pour utiliser Google Chrome.</translation>
 <translation id="911206726377975832">Supprimer également vos données de navigation ?</translation>
@@ -422,6 +420,7 @@ Les autorisations que vous avez déjà accordées aux sites Web et aux applis pe
 <translation id="93760716455950538">Redémarrer ChromeOS Flex</translation>
 <translation id="940313311831216333">Pour retrouver vos données Chrome sur tous vos appareils, connectez-vous, puis activez la synchronisation.</translation>
 <translation id="943390475793766444">Chrome recommande d'analyser ce fichier, car il est peut-être dangereux.</translation>
+<translation id="963650557422347554">Lorsque cette option est activée, Chrome préserve l'autonomie de la batterie en limitant l'activité et les effets visuels en arrière-plan, comme le défilement fluide et la fréquence d'images vidéo.</translation>
 <translation id="989369509083708165">Google Chrome est votre navigateur par défaut</translation>
 <translation id="989816563149873169"><ph name="SHORTCUT" /> permet de passer d'un profil Chrome à un autre</translation>
 </translationbundle>

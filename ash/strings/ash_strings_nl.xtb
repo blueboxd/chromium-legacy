@@ -133,11 +133,13 @@ Hier zijn wat voorbeelden van wat je kunt proberen om aan de slag te gaan.</tran
 <translation id="163517899691012366">Het geluid van meldingen staat uit als Niet storen aanstaat</translation>
 <translation id="1637505162081889933"><ph name="NUM_DEVICES" /> apparaten</translation>
 <translation id="1639239467298939599">Laden</translation>
+<translation id="1647986356840967552">Vorige pagina</translation>
 <translation id="1654477262762802994">Een gesproken zoekopdracht starten</translation>
 <translation id="1668469839109562275">Ingebouwde VPN</translation>
 <translation id="1677472565718498478"><ph name="TIME" /> resterend</translation>
 <translation id="1677507110654891115"><ph name="FEATURE_NAME" /> is niet verbonden.</translation>
 <translation id="1677582821739292812">Iemand bekijkt je scherm</translation>
+<translation id="1683399938733266832">Huidig CPU-gebruik: <ph name="CPU_USEAGE" />%</translation>
 <translation id="169515659049020177">Shift</translation>
 <translation id="1698080062160024910">Timer van <ph name="TOTAL_TIME" /> · <ph name="LABEL" /></translation>
 <translation id="1698760176351776263">IPv6-adres: <ph name="ADDRESS" /></translation>
@@ -380,6 +382,7 @@ Hier zijn wat voorbeelden van wat je kunt proberen om aan de slag te gaan.</tran
 <translation id="3051189971848907985">Naam van profiel wijzigen. Wacht een paar minuten.</translation>
 <translation id="3055162170959710888">Je hebt dit apparaat vandaag <ph name="USED_TIME" /> gebruikt</translation>
 <translation id="3062298103034426069">Niet ondersteund</translation>
+<translation id="3068622547379332530">Versie <ph name="VERSION_NAME" /> (<ph name="OFFICIAL_STATUS" />) <ph name="CHANNEL_NAME" /> <ph name="PROCESSOR_VARIATION" /></translation>
 <translation id="3068711042108640621">Plank aan linkerkant</translation>
 <translation id="3077734595579995578">shift</translation>
 <translation id="3081696990447829002">Menu uitvouwen</translation>
@@ -555,6 +558,7 @@ Sluit je apparaat aan op een stopcontact.</translation>
 <translation id="397105322502079400">Berekenen...</translation>
 <translation id="397726367135689299">Het opladen van de batterij kan onbetrouwbaar zijn.</translation>
 <translation id="3977512764614765090">Batterij op <ph name="PERCENTAGE" />% en wordt opgeladen.</translation>
+<translation id="3984536049089846927">Volgende pagina</translation>
 <translation id="3986082989454912832">Beantwoorden</translation>
 <translation id="3995138139523574647">USB-C-apparaat (poort rechts aan de achterkant)</translation>
 <translation id="40062176907008878">Handschrift</translation>
@@ -577,7 +581,7 @@ Sluit je apparaat aan op een stopcontact.</translation>
 <translation id="4123259114412175274">Zorg dat bluetooth aanstaat op je telefoon om je Chromebook te ontgrendelen</translation>
 <translation id="4125970834901680537">Kan apps niet streamen in de tabletmodus. Probeer het opnieuw in de laptopmodus.</translation>
 <translation id="4129129681837227511">Als je meldingen op je vergrendelscherm wilt zien, ontgrendel je het scherm om de instellingen te wijzigen</translation>
-<translation id="4130035430755296270">Plaats de muisaanwijzer voor meer lay-outopties.</translation>
+<translation id="4131973331381812765">Temperatuur: <ph name="TEMPERATURE" /> °C - Huidige snelheid: <ph name="CPU_AVERAGE_CURRENT_FREQUENCY_GHZ" /> GHz</translation>
 <translation id="4136724716305260864">Aan tot zonsopgang</translation>
 <translation id="4146833061457621061">Speel muziek</translation>
 <translation id="4150201353443180367">Weergave</translation>
@@ -718,7 +722,6 @@ Sluit je apparaat aan op een stopcontact.</translation>
 <translation id="481455355267255546">Volgende</translation>
 <translation id="4831034276697007977">Weet je zeker dat je automatische klikken wilt uitzetten?</translation>
 <translation id="4849058404725798627">Object met toetsenbordfocus markeren</translation>
-<translation id="4855250849489639581">Swipe omlaag voor meer indelingsopties</translation>
 <translation id="485592688953820832">Geen actie (onderbreken)</translation>
 <translation id="485634149294284819">Toetsenbord openen</translation>
 <translation id="4860284199500934869">Check je netwerkverbinding om <ph name="FILENAME" /> te downloaden</translation>
@@ -733,6 +736,7 @@ Sluit je apparaat aan op een stopcontact.</translation>
 <translation id="4895488851634969361">De batterij is vol.</translation>
 <translation id="490375751687810070">Verticaal</translation>
 <translation id="490788395437447240">Batterij <ph name="BATTERY_PERCENTAGE" />%</translation>
+<translation id="491504982845934899">Activeren na apparaatinstelling <ph name="NETWORK_NAME" /></translation>
 <translation id="4917385247580444890">Sterk</translation>
 <translation id="4918086044614829423">Accepteren</translation>
 <translation id="4919841137949306064"><ph name="APP_NAME" /> gebruikt momenteel je camera</translation>
@@ -1326,6 +1330,7 @@ Nieuwe installatie</translation>
 <translation id="8131740175452115882">Bevestigen</translation>
 <translation id="8131994907636310308">Sorteertoast sluiten</translation>
 <translation id="8132793192354020517">Verbonden met <ph name="NAME" /></translation>
+<translation id="8138705869659070104">Activeren na apparaatinstelling</translation>
 <translation id="813913629614996137">Starten...</translation>
 <translation id="8142441511840089262">Dubbelklik</translation>
 <translation id="8142699993796781067">Privénetwerk</translation>

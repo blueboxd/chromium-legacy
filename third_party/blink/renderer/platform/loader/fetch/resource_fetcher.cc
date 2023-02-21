@@ -32,7 +32,6 @@
 #include <utility>
 
 #include "base/auto_reset.h"
-#include "base/debug/dump_without_crashing.h"
 #include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_functions.h"
@@ -53,7 +52,6 @@
 #include "third_party/blink/public/mojom/use_counter/metrics/web_feature.mojom-blink.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/scheduler/web_scoped_virtual_time_pauser.h"
-#include "third_party/blink/public/platform/web_back_forward_cache_loader_helper.h"
 #include "third_party/blink/public/platform/web_code_cache_loader.h"
 #include "third_party/blink/public/platform/web_url.h"
 #include "third_party/blink/public/platform/web_url_request.h"
@@ -411,6 +409,10 @@ void ResourceFetcher::AddPriorityObserverForTesting(
 // a priority. It will not be called for ResourceRequests that already have a
 // pre-set priority (e.g., requests coming from a Service Worker) except for
 // images, which may need to be reprioritized.
+// platform/loader/fetch/README.md contains more details on prioritization
+// as well as links to all of the relevant places in the code where priority
+// is determined. If the priority logic is updated here, be sure to update
+// the other code as needed.
 ResourceLoadPriority ResourceFetcher::ComputeLoadPriority(
     ResourceType type,
     const ResourceRequestHead& resource_request,
@@ -1362,7 +1364,7 @@ void ResourceFetcher::InitializeRevalidation(
   resource->SetRevalidatingRequest(revalidating_request);
 }
 
-std::unique_ptr<WebURLLoader> ResourceFetcher::CreateURLLoader(
+std::unique_ptr<URLLoader> ResourceFetcher::CreateURLLoader(
     const ResourceRequestHead& request,
     const ResourceLoaderOptions& options) {
   DCHECK(!GetProperties().IsDetached());
@@ -1386,9 +1388,9 @@ std::unique_ptr<WebURLLoader> ResourceFetcher::CreateURLLoader(
     }
   }
 
-  return loader_factory_->CreateURLLoader(
-      ResourceRequest(request), options, freezable_task_runner_, task_runner,
-      WebBackForwardCacheLoaderHelper(back_forward_cache_loader_helper_));
+  return loader_factory_->CreateURLLoader(ResourceRequest(request), options,
+                                          freezable_task_runner_, task_runner,
+                                          back_forward_cache_loader_helper_);
 }
 
 std::unique_ptr<WebCodeCacheLoader> ResourceFetcher::CreateCodeCacheLoader() {

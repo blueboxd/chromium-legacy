@@ -32,7 +32,6 @@
 <translation id="1254593899333212300">直接连接到互联网</translation>
 <translation id="1272293450992660632">PIN 码的值不一致。</translation>
 <translation id="1280820357415527819">正在搜索移动网络</translation>
-<translation id="1291603679744561561">SIM 卡已锁定</translation>
 <translation id="1293556467332435079">文件</translation>
 <translation id="1297922636971898492">Google云端硬盘暂时无法使用。Google云端硬盘恢复正常后，系统将自动重新开始上传。</translation>
 <translation id="1307931752636661898">无法查看 Linux 文件</translation>
@@ -192,6 +191,7 @@
 <translation id="2574327434504608656">已与 Bruschetta 共享 1 个文件夹</translation>
 <translation id="2578394532502990878">泰米尔语注音</translation>
 <translation id="2579959351793446050">奥里亚语</translation>
+<translation id="2587195714949534472">正在准备同步“<ph name="FILE_NAME" />”…</translation>
 <translation id="2602810353103180630">第 <ph name="NETWORK_INDEX" /> 个网络（共 <ph name="NETWORK_COUNT" /> 个），<ph name="NETWORK_NAME" />，<ph name="CONNECTION_STATUS" />，信号强度为 <ph name="SIGNAL_STRENGTH" />%，由您的管理员管理，详细信息</translation>
 <translation id="2614589611416690597"><ph name="VIDEO_TYPE" /> 视频</translation>
 <translation id="2620090360073999360">Google 云端硬盘目前无法访问。</translation>
@@ -293,6 +293,7 @@
 <translation id="3486821258960016770">蒙古语</translation>
 <translation id="3495304270784461826"><ph name="COUNT" />个错误。</translation>
 <translation id="3509680540198371098">第 <ph name="NETWORK_INDEX" /> 个网络（共 <ph name="NETWORK_COUNT" /> 个），<ph name="NETWORK_NAME" />，<ph name="SECURITY_STATUS" />，<ph name="CONNECTION_STATUS" />，信号强度为 <ph name="SIGNAL_STRENGTH" />%，详细信息</translation>
+<translation id="3511705761158917664">正在准备同步 <ph name="NUMBER_OF_ITEMS" /> 项内容…</translation>
 <translation id="3522708245912499433">葡萄牙语</translation>
 <translation id="3524311639100184459">警告：这些都是临时文件，可能会被系统自动删除以释放磁盘空间。<ph name="BEGIN_LINK" />了解详情<ph name="END_LINK" /></translation>
 <translation id="3527085408025491307">文件夹</translation>
@@ -353,6 +354,7 @@
 <translation id="3971140002794351170">下载移动网络配置文件，第 <ph name="NETWORK_INDEX" /> 个网络（共 <ph name="NETWORK_COUNT" /> 个），网络名称为“<ph name="NETWORK_NAME" />”，网络服务提供商为“<ph name="NETWORK_PROVIDER_NAME" />”</translation>
 <translation id="3973925058222872294">英语（英国）</translation>
 <translation id="3975895378829046965">孟加拉语注音</translation>
+<translation id="3999574733850440202">最近打开的 Microsoft 文件已移至 OneDrive</translation>
 <translation id="4002066346123236978">标题</translation>
 <translation id="4017788180641807848">英语（美国）Workman 键盘</translation>
 <translation id="4019998208269143058">固定到“快捷文件”空间</translation>
@@ -899,6 +901,7 @@
 <translation id="8300849813060516376">OTASP 失败</translation>
 <translation id="8312871300878166382">粘贴到文件夹中</translation>
 <translation id="8329978297633540474">纯文本</translation>
+<translation id="8332007959299458842">最近打开的 Microsoft 文件已移至 Google 云端硬盘</translation>
 <translation id="8335587457941836791">取消固定到任务栏</translation>
 <translation id="8335837413233998004">白俄罗斯语</translation>
 <translation id="8336153091935557858">昨天<ph name="YESTERDAY_DAYTIME" /></translation>

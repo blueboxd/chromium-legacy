@@ -39,6 +39,7 @@
 #include "chromeos/ash/components/network/prohibited_technologies_handler.h"
 #include "chromeos/ash/components/network/proxy/ui_proxy_config_service.h"
 #include "chromeos/ash/components/network/system_token_cert_db_storage.h"
+#include "chromeos/ash/components/network/technology_state_controller.h"
 #include "chromeos/ash/services/network_config/public/cpp/cros_network_config_test_observer.h"
 #include "chromeos/ash/services/network_config/test_apn_data.h"
 #include "chromeos/ash/services/network_config/test_network_configuration_observer.h"
@@ -75,7 +76,6 @@ constexpr char kCellularTestApnPassword1[] = "Test Pass";
 constexpr char kCellularTestApnAttach1[] = "";
 constexpr char kCellularTestApnId1[] = "1";
 constexpr char kCellularTestApnAuthenticationType1[] = "";
-constexpr char kCellularTestApnIpType1[] = "";
 constexpr char kCellularTestApnTypes1[] = "Default";
 
 constexpr char kCellularTestApn2[] = "TEST.APN2";
@@ -199,7 +199,7 @@ std::string CreateApnShillDict() {
   test_apn_data.attach = kCellularTestApnAttach1;
   test_apn_data.id = kCellularTestApnId1;
   test_apn_data.onc_authentication = kCellularTestApnAuthenticationType1;
-  test_apn_data.onc_ip_type = kCellularTestApnIpType1;
+  test_apn_data.onc_ip_type = ::onc::cellular_apn::kIpTypeIpv4;
   test_apn_data.onc_apn_types.emplace_back(kCellularTestApnTypes1);
   return test_apn_data.AsApnShillDict();
 }
@@ -267,7 +267,8 @@ class CrosNetworkConfigTest : public testing::Test {
         network_handler->managed_network_configuration_handler(),
         network_handler->network_connection_handler(),
         network_handler->network_certificate_handler(),
-        network_handler->network_profile_handler());
+        network_handler->network_profile_handler(),
+        network_handler->technology_state_controller());
     SetupPolicy();
     SetupNetworks();
   }
@@ -1401,7 +1402,7 @@ TEST_F(CrosNetworkConfigTest, GetDeviceStateList) {
   EXPECT_EQ(mojom::DeviceStateType::kEnabled, vpn->device_state);
 
   // Disable WiFi
-  NetworkHandler::Get()->network_state_handler()->SetTechnologyEnabled(
+  NetworkHandler::Get()->technology_state_controller()->SetTechnologiesEnabled(
       NetworkTypePattern::WiFi(), false, network_handler::ErrorCallback());
   base::RunLoop().RunUntilIdle();
   devices = GetDeviceStateList();
@@ -3469,8 +3470,8 @@ TEST_F(CrosNetworkConfigTest, DeviceListChanged) {
       NetworkHandler::Get()->network_state_handler();
 
   // Disable wifi
-  network_state_handler->SetTechnologyEnabled(NetworkTypePattern::WiFi(), false,
-                                              network_handler::ErrorCallback());
+  NetworkHandler::Get()->technology_state_controller()->SetTechnologiesEnabled(
+      NetworkTypePattern::WiFi(), false, network_handler::ErrorCallback());
   base::RunLoop().RunUntilIdle();
   // This will trigger three device list updates. First when wifi is in the
   // disabling state, next when it's actually disabled, and lastly when

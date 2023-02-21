@@ -32,7 +32,6 @@
 <translation id="1254593899333212300">インターネットへの直接接続</translation>
 <translation id="1272293450992660632">PIN の値が一致しません。</translation>
 <translation id="1280820357415527819">モバイル ネットワークを検索しています</translation>
-<translation id="1291603679744561561">SIM がロックされています</translation>
 <translation id="1293556467332435079">ファイル</translation>
 <translation id="1297922636971898492">Google ドライブは現在ご利用いただけません。Google ドライブが利用可能になったときに、自動的にアップロードを再開します。</translation>
 <translation id="1307931752636661898">[Linux ファイル] を表示できません</translation>
@@ -192,6 +191,7 @@
 <translation id="2574327434504608656">1 個のフォルダが Bruschetta と共有されています</translation>
 <translation id="2578394532502990878">タミル語（表音）</translation>
 <translation id="2579959351793446050">オディア語</translation>
+<translation id="2587195714949534472"><ph name="FILE_NAME" /> の同期を準備しています...</translation>
 <translation id="2602810353103180630"><ph name="NETWORK_INDEX" /> 番目のネットワーク（全 <ph name="NETWORK_COUNT" /> 件）、<ph name="NETWORK_NAME" />、<ph name="CONNECTION_STATUS" />、信号強度 <ph name="SIGNAL_STRENGTH" />%、管理者によってブロック、詳細</translation>
 <translation id="2614589611416690597">動画（<ph name="VIDEO_TYPE" />）</translation>
 <translation id="2620090360073999360">現在 Google ドライブにアクセスできません。</translation>
@@ -293,6 +293,7 @@
 <translation id="3486821258960016770">モンゴル語</translation>
 <translation id="3495304270784461826"><ph name="COUNT" /> 件のエラーがあります。</translation>
 <translation id="3509680540198371098"><ph name="NETWORK_INDEX" /> 番目のネットワーク（全 <ph name="NETWORK_COUNT" /> 件）、<ph name="NETWORK_NAME" />、<ph name="SECURITY_STATUS" />、<ph name="CONNECTION_STATUS" />、信号強度 <ph name="SIGNAL_STRENGTH" />%、詳細</translation>
+<translation id="3511705761158917664"><ph name="NUMBER_OF_ITEMS" /> 個のアイテムの同期を準備しています...</translation>
 <translation id="3522708245912499433">ポルトガル語</translation>
 <translation id="3524311639100184459">注: これらのファイルは一時的なもので、ディスクの空き容量を増やすために自動的に削除されることがあります。<ph name="BEGIN_LINK" />詳細<ph name="END_LINK" /></translation>
 <translation id="3527085408025491307">フォルダ</translation>

@@ -17,6 +17,7 @@
 #include "ash/public/cpp/test/shell_test_api.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
+#include "ash/webui/system_apps/public/system_web_app_type.h"
 #include "ash/wm/desks/desk.h"
 #include "ash/wm/desks/desks_controller.h"
 #include "ash/wm/desks/desks_test_util.h"
@@ -25,7 +26,6 @@
 #include "ash/wm/desks/templates/saved_desk_test_util.h"
 #include "ash/wm/desks/templates/saved_desk_util.h"
 #include "ash/wm/float/float_controller.h"
-#include "ash/wm/multitask_menu_nudge_controller.h"
 #include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/overview/overview_grid.h"
 #include "ash/wm/overview/overview_session.h"
@@ -55,7 +55,6 @@
 #include "chrome/browser/ash/login/ui/user_adding_screen.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/ash/system_web_apps/system_web_app_manager.h"
-#include "chrome/browser/ash/system_web_apps/types/system_web_app_type.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/policy/policy_test_utils.h"
 #include "chrome/browser/prefs/session_startup_pref.h"
@@ -82,6 +81,7 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "chromeos/crosapi/mojom/desk.mojom-shared.h"
 #include "chromeos/ui/base/window_state_type.h"
+#include "chromeos/ui/frame/multitask_menu/multitask_menu_nudge_controller.h"
 #include "chromeos/ui/wm/features.h"
 #include "components/account_id/account_id.h"
 #include "components/app_constants/constants.h"
@@ -470,7 +470,7 @@ class DesksClientTest : public extensions::PlatformAppBrowserTest {
 
     // Suppress the multitask menu nudge as we'll be checking the stacking order
     // and the count of the active desk children.
-    ash::MultitaskMenuNudgeController::SetSuppressNudgeForTesting(true);
+    chromeos::MultitaskMenuNudgeController::SetSuppressNudgeForTesting(true);
   }
   DesksClientTest(const DesksClientTest&) = delete;
   DesksClientTest& operator=(const DesksClientTest&) = delete;

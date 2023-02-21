@@ -3,20 +3,13 @@
 # found in the LICENSE file.
 
 import("//build/config/chromeos/ui_mode.gni")
-import("//chrome/browser/resources/tools/build_webui.gni")
 import("//chrome/common/features.gni")
 import("//crypto/features.gni")
-import("//third_party/closure_compiler/compile_js.gni")
+import("//ui/webui/resources/tools/build_webui.gni")
 import("//ui/webui/webui_features.gni")
 import("./settings.gni")
 
 assert(!is_android, "Android does not use these settings")
-
-if (is_chromeos_ash) {
-  group("closure_compile") {
-    deps = [ "chromeos:closure_compile_module" ]
-  }
-}
 
 build_webui("build") {
   grd_prefix = "settings"
@@ -90,6 +83,7 @@ build_webui("build") {
     "autofill_page/credit_card_list_entry.ts",
     "autofill_page/iban_edit_dialog.ts",
     "autofill_page/iban_list_entry.ts",
+    "autofill_page/local_credit_card_remove_confirmation_dialog.ts",
     "autofill_page/password_check_edit_disclaimer_dialog.ts",
     "autofill_page/password_check_list_item.ts",
     "autofill_page/password_check.ts",

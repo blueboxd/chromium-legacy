@@ -168,10 +168,8 @@ PrerenderHost::PrerenderHost(const PrerenderAttributes& attributes,
   // host can be pending until the host starts or is cancelled. So the outcome
   // is set here to track the pending status.
   if (base::FeatureList::IsEnabled(
-          blink::features::kPrerender2SequentialPrerendering) &&
-      attempt_) {
-    attempt_->SetTriggeringOutcome(
-        PreloadingTriggeringOutcome::kTriggeredButPending);
+          blink::features::kPrerender2SequentialPrerendering)) {
+    SetTriggeringOutcome(PreloadingTriggeringOutcome::kTriggeredButPending);
   }
 
   scoped_refptr<SiteInstanceImpl> site_instance =
@@ -254,6 +252,11 @@ int PrerenderHost::GetOuterDelegateFrameTreeNodeId() {
   // FrameTree in the sense of an "outer delegate" relationship, so we return
   // the invalid ID here.
   return FrameTreeNode::kFrameTreeNodeInvalidId;
+}
+
+RenderFrameHostImpl* PrerenderHost::GetProspectiveOuterDocument() {
+  // A prerendered FrameTree never has an outer document.
+  return nullptr;
 }
 
 bool PrerenderHost::IsPortal() {
@@ -917,6 +920,9 @@ void PrerenderHost::SetInitialNavigation(NavigationRequest* navigation) {
 }
 
 void PrerenderHost::SetTriggeringOutcome(PreloadingTriggeringOutcome outcome) {
+  devtools_instrumentation::DidUpdatePrerenderStatus(
+      initiator_frame_tree_node_id(), prerendering_url(), outcome);
+
   if (!attempt_)
     return;
 
@@ -931,9 +937,6 @@ void PrerenderHost::SetEligibility(PreloadingEligibility eligibility) {
 }
 
 void PrerenderHost::SetFailureReason(PrerenderFinalStatus status) {
-  if (!attempt_)
-    return;
-
   switch (status) {
     // When adding a new failure reason, consider whether it should be
     // propagated to `attempt_`. Most values should be propagated, but we
@@ -998,11 +1001,18 @@ void PrerenderHost::SetFailureReason(PrerenderFinalStatus status) {
     case PrerenderFinalStatus::kBatterySaverEnabled:
     case PrerenderFinalStatus::kActivatedDuringMainFrameNavigation:
     case PrerenderFinalStatus::kPreloadingUnsupportedByWebContents:
-      attempt_->SetFailureReason(ToPreloadingFailureReason(status));
-      // We reset the attempt to ensure we don't update once we have reported it
-      // as failure or accidentally use it for any other prerender attempts as
-      // PrerenderHost deletion is async.
-      attempt_.reset();
+      // SetFailureReason() will call SetTriggeringOutcome() with kFailure.
+      devtools_instrumentation::DidUpdatePrerenderStatus(
+          initiator_frame_tree_node_id(), prerendering_url(),
+          PreloadingTriggeringOutcome::kFailure);
+
+      if (attempt_) {
+        attempt_->SetFailureReason(ToPreloadingFailureReason(status));
+        // We reset the attempt to ensure we don't update once we have reported
+        // it as failure or accidentally use it for any other prerender attempts
+        // as PrerenderHost deletion is async.
+        attempt_.reset();
+      }
       return;
     case PrerenderFinalStatus::kActivated:
       // The activation path does not call this method, so it should never reach

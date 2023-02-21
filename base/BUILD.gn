@@ -137,6 +137,10 @@ if (is_win) {
     ldflags = [
       # Linking with shcore.lib causes the shcore api forwarder dll to load.
       "/DELAYLOAD:api-ms-win-shcore-scaling-l1-1-1.dll",
+
+      # Linking with OneCore.lib causes the next two dlls to load.
+      "/DELAYLOAD:api-ms-win-power-base-l1-1-0.dll",
+      "/DELAYLOAD:api-ms-win-power-setting-l1-1-0.dll",
       "/DELAYLOAD:cfgmgr32.dll",
       "/DELAYLOAD:powrprof.dll",
       "/DELAYLOAD:setupapi.dll",
@@ -297,8 +301,6 @@ component("base") {
     "containers/unique_ptr_adapters.h",
     "containers/util.h",
     "containers/vector_buffer.h",
-    "cpu.cc",
-    "cpu.h",
     "cpu_reduction_experiment.cc",
     "cpu_reduction_experiment.h",
     "critical_closure.h",
@@ -318,8 +320,6 @@ component("base") {
     "debug/asan_service.h",
     "debug/buffered_dwarf_reader.cc",
     "debug/buffered_dwarf_reader.h",
-    "debug/crash_logging.cc",
-    "debug/crash_logging.h",
     "debug/debugger.cc",
     "debug/debugger.h",
     "debug/dump_without_crashing.cc",
@@ -329,8 +329,6 @@ component("base") {
     "debug/leak_annotations.h",
     "debug/profiler.cc",
     "debug/profiler.h",
-    "debug/stack_trace.cc",
-    "debug/stack_trace.h",
     "debug/task_trace.cc",
     "debug/task_trace.h",
     "environment.cc",
@@ -344,21 +342,11 @@ component("base") {
     "files/dir_reader_fallback.h",
     "files/file.cc",
     "files/file.h",
-    "files/file_enumerator.cc",
-    "files/file_enumerator.h",
     "files/file_error_or.h",
     "files/file_path.cc",
     "files/file_path.h",
-    "files/file_proxy.cc",
-    "files/file_proxy.h",
     "files/file_tracing.cc",
     "files/file_tracing.h",
-    "files/file_util.cc",
-    "files/file_util.h",
-    "files/important_file_writer.cc",
-    "files/important_file_writer.h",
-    "files/important_file_writer_cleaner.cc",
-    "files/important_file_writer_cleaner.h",
     "files/memory_mapped_file.cc",
     "files/memory_mapped_file.h",
     "files/platform_file.h",
@@ -366,8 +354,6 @@ component("base") {
     "files/safe_base_name.h",
     "files/scoped_file.cc",
     "files/scoped_file.h",
-    "files/scoped_temp_dir.cc",
-    "files/scoped_temp_dir.h",
     "format_macros.h",
     "functional/bind.h",
     "functional/bind_internal.h",
@@ -393,8 +379,6 @@ component("base") {
     "hash/legacy_hash.cc",
     "hash/legacy_hash.h",
     "json/json_common.h",
-    "json/json_file_value_serializer.cc",
-    "json/json_file_value_serializer.h",
     "json/json_parser.cc",
     "json/json_parser.h",
     "json/json_reader.cc",
@@ -420,11 +404,6 @@ component("base") {
     "logging.h",
     "memory/aligned_memory.cc",
     "memory/aligned_memory.h",
-    "memory/discardable_memory.cc",
-    "memory/discardable_memory.h",
-    "memory/discardable_memory_allocator.cc",
-    "memory/discardable_memory_allocator.h",
-    "memory/discardable_memory_internal.h",
     "memory/free_deleter.h",
     "memory/memory_pressure_listener.cc",
     "memory/memory_pressure_listener.h",
@@ -541,8 +520,6 @@ component("base") {
     "metrics/user_metrics.cc",
     "metrics/user_metrics.h",
     "metrics/user_metrics_action.h",
-    "native_library.cc",
-    "native_library.h",
     "no_destructor.h",
     "notreached.h",
     "observer_list.h",
@@ -555,8 +532,6 @@ component("base") {
     "one_shot_event.cc",
     "one_shot_event.h",
     "parameter_pack.h",
-    "path_service.cc",
-    "path_service.h",
     "pending_task.cc",
     "pending_task.h",
     "pickle.cc",
@@ -589,8 +564,6 @@ component("base") {
     "process/process_handle.cc",
     "process/process_handle.h",
     "process/process_info.h",
-    "process/process_metrics.cc",
-    "process/process_metrics.h",
     "process/process_metrics_iocounters.h",
     "profiler/frame.cc",
     "profiler/frame.h",
@@ -708,9 +681,6 @@ component("base") {
     "sys_byteorder.h",
     "syslog_logging.cc",
     "syslog_logging.h",
-    "system/sys_info.cc",
-    "system/sys_info.h",
-    "system/sys_info_internal.h",
     "system/system_monitor.cc",
     "system/system_monitor.h",
     "task/bind_post_task.h",
@@ -823,8 +793,6 @@ component("base") {
     "task/thread_pool/delayed_task_manager.h",
     "task/thread_pool/environment_config.cc",
     "task/thread_pool/environment_config.h",
-    "task/thread_pool/initialization_util.cc",
-    "task/thread_pool/initialization_util.h",
     "task/thread_pool/job_task_source.cc",
     "task/thread_pool/job_task_source.h",
     "task/thread_pool/pooled_parallel_task_runner.cc",
@@ -1002,10 +970,6 @@ component("base") {
       "files/dir_reader_posix.h",
       "files/file_posix.cc",
       "files/memory_mapped_file_posix.cc",
-      "memory/madv_free_discardable_memory_allocator_posix.cc",
-      "memory/madv_free_discardable_memory_allocator_posix.h",
-      "memory/madv_free_discardable_memory_posix.cc",
-      "memory/madv_free_discardable_memory_posix.h",
       "message_loop/watchable_io_message_pump_posix.cc",
       "message_loop/watchable_io_message_pump_posix.h",
       "posix/eintr_wrapper.h",
@@ -1077,6 +1041,11 @@ component("base") {
     "//build/config/compiler:compiler_buildflags",
     "//third_party/modp_b64",
   ]
+
+  # `raw_ptr` cannot be made a component due to CRT symbol issues.
+  # Its gateway to being a component is through `//base`, so we have
+  # to provide the appropriate `#define` here.
+  defines += [ "IS_RAW_PTR_IMPL" ]
 
   if (is_apple) {
     deps += [ "//base/time/buildflags:buildflags" ]
@@ -1254,6 +1223,8 @@ component("base") {
       "android/library_loader/library_prefetcher_hooks.cc",
       "android/locale_utils.cc",
       "android/locale_utils.h",
+      "android/meminfo_dump_provider.cc",
+      "android/meminfo_dump_provider.h",
       "android/memory_pressure_listener_android.cc",
       "android/memory_pressure_listener_android.h",
       "android/path_service_android.cc",
@@ -1574,14 +1545,20 @@ component("base") {
       "system/sys_info_nacl.cc",
       "threading/platform_thread_linux.cc",
     ]
-
-    sources -= [
+  } else {
+    sources += [
+      "base_paths.cc",
+      "base_paths.h",
       "cpu.cc",
+      "cpu.h",
       "debug/crash_logging.cc",
       "debug/crash_logging.h",
       "debug/stack_trace.cc",
+      "debug/stack_trace.h",
       "files/file_enumerator.cc",
+      "files/file_enumerator.h",
       "files/file_proxy.cc",
+      "files/file_proxy.h",
       "files/file_util.cc",
       "files/file_util.h",
       "files/important_file_writer.cc",
@@ -1589,31 +1566,29 @@ component("base") {
       "files/important_file_writer_cleaner.cc",
       "files/important_file_writer_cleaner.h",
       "files/scoped_temp_dir.cc",
+      "files/scoped_temp_dir.h",
       "json/json_file_value_serializer.cc",
       "json/json_file_value_serializer.h",
       "memory/discardable_memory.cc",
       "memory/discardable_memory.h",
       "memory/discardable_memory_allocator.cc",
       "memory/discardable_memory_allocator.h",
-      "memory/madv_free_discardable_memory_allocator_posix.cc",
-      "memory/madv_free_discardable_memory_allocator_posix.h",
-      "memory/madv_free_discardable_memory_posix.cc",
-      "memory/madv_free_discardable_memory_posix.h",
-      "native_library.cc",
-      "path_service.cc",
-      "process/process_metrics.cc",
-      "system/sys_info.cc",
-      "task/thread_pool/initialization_util.cc",
-      "task/thread_pool/initialization_util.h",
-    ]
-  } else {
-    sources += [
-      "base_paths.cc",
-      "base_paths.h",
+      "memory/discardable_memory_internal.h",
       "metrics/persistent_histogram_storage.cc",
       "metrics/persistent_histogram_storage.h",
+      "native_library.cc",
+      "native_library.h",
+      "path_service.cc",
+      "path_service.h",
+      "process/process_metrics.cc",
+      "process/process_metrics.h",
       "scoped_native_library.cc",
       "scoped_native_library.h",
+      "system/sys_info.cc",
+      "system/sys_info.h",
+      "system/sys_info_internal.h",
+      "task/thread_pool/initialization_util.cc",
+      "task/thread_pool/initialization_util.h",
     ]
 
     if (is_win) {
@@ -1640,6 +1615,10 @@ component("base") {
     if (is_posix) {
       sources += [
         "base_paths_posix.h",
+        "memory/madv_free_discardable_memory_allocator_posix.cc",
+        "memory/madv_free_discardable_memory_allocator_posix.h",
+        "memory/madv_free_discardable_memory_posix.cc",
+        "memory/madv_free_discardable_memory_posix.h",
         "posix/unix_domain_socket.cc",
         "posix/unix_domain_socket.h",
         "rand_util_posix.cc",
@@ -1938,6 +1917,8 @@ component("base") {
 
     libs += [
       "cfgmgr32.lib",
+      "ntdll.lib",
+      "onecore.lib",
       "powrprof.lib",
       "propsys.lib",
       "setupapi.lib",
@@ -3482,6 +3463,8 @@ test("base_unittests") {
     if (enable_cet_shadow_stack) {
       sources += [ "win/cet_shadow_stack_unittest.cc" ]
     }
+
+    libs = [ "ntdll.lib" ]
   }
 
   if (is_linux || is_chromeos) {
@@ -3602,6 +3585,7 @@ test("base_unittests") {
       "android/linker/linker_jni.cc",
       "android/linker/linker_jni.h",
       "android/linker/linker_unittest.cc",
+      "android/meminfo_dump_provider_unittest.cc",
       "android/path_utils_unittest.cc",
       "android/radio_utils_unittest.cc",
       "android/reached_addresses_bitset_unittest.cc",
@@ -4023,6 +4007,7 @@ if (is_android || is_robolectric) {
       "android/java/src/org/chromium/base/library_loader/LibraryLoader.java",
       "android/java/src/org/chromium/base/library_loader/LibraryPrefetcher.java",
       "android/java/src/org/chromium/base/memory/JavaHeapDumpGenerator.java",
+      "android/java/src/org/chromium/base/memory/MemoryInfoBridge.java",
       "android/java/src/org/chromium/base/metrics/NativeUmaRecorder.java",
       "android/java/src/org/chromium/base/metrics/StatisticsRecorderAndroid.java",
       "android/java/src/org/chromium/base/process_launcher/ChildProcessService.java",
@@ -4219,11 +4204,13 @@ if (is_android) {
       "android/java/src/org/chromium/base/lifetime/DestroyChecker.java",
       "android/java/src/org/chromium/base/lifetime/Destroyable.java",
       "android/java/src/org/chromium/base/memory/JavaHeapDumpGenerator.java",
+      "android/java/src/org/chromium/base/memory/MemoryInfoBridge.java",
       "android/java/src/org/chromium/base/memory/MemoryPressureCallback.java",
       "android/java/src/org/chromium/base/memory/MemoryPressureMonitor.java",
       "android/java/src/org/chromium/base/memory/MemoryPressureUma.java",
       "android/java/src/org/chromium/base/memory/MemoryPurgeManager.java",
       "android/java/src/org/chromium/base/metrics/CachingUmaRecorder.java",
+      "android/java/src/org/chromium/base/metrics/HistogramBucket.java",
       "android/java/src/org/chromium/base/metrics/NativeUmaRecorder.java",
       "android/java/src/org/chromium/base/metrics/NoopUmaRecorder.java",
       "android/java/src/org/chromium/base/metrics/RecordHistogram.java",
@@ -4293,6 +4280,7 @@ if (is_android) {
       "//base/test:test_support_java",
       "//build/android:build_java",
       "//third_party/android_support_test_runner:runner_java",
+      "//third_party/androidx:androidx_annotation_annotation_java",
       "//third_party/androidx:androidx_test_runner_java",
       "//third_party/hamcrest:hamcrest_java",
       "//third_party/junit:junit",
@@ -4322,6 +4310,10 @@ if (is_android) {
       "android/javatests/src/org/chromium/base/task/SingleThreadTaskRunnerImplTest.java",
       "android/javatests/src/org/chromium/base/task/TaskRunnerImplTest.java",
       "android/javatests/src/org/chromium/base/test/metrics/HistogramTestRuleTest.java",
+      "android/javatests/src/org/chromium/base/test/metrics/HistogramWatcherTestBase.java",
+      "android/javatests/src/org/chromium/base/test/metrics/HistogramWatcherTransitionToNativeTest.java",
+      "android/javatests/src/org/chromium/base/test/metrics/HistogramWatcherWithNativeTest.java",
+      "android/javatests/src/org/chromium/base/test/metrics/HistogramWatcherWithoutNativeTest.java",
       "android/javatests/src/org/chromium/base/util/GarbageCollectionTestUtilsTest.java",
     ]
 
@@ -4367,6 +4359,7 @@ if (is_android) {
       "//build/android:build_java",
       "//third_party/accessibility_test_framework:accessibility_test_framework_java",
       "//third_party/android_deps:espresso_java",
+      "//third_party/android_deps:guava_android_java",
       "//third_party/android_sdk:android_test_base_java",
       "//third_party/android_sdk:android_test_mock_java",
       "//third_party/android_support_test_runner:runner_java",
@@ -4515,6 +4508,7 @@ if (is_android) {
       "android/junit/src/org/chromium/base/LifetimeAssertTest.java",
       "android/junit/src/org/chromium/base/LogTest.java",
       "android/junit/src/org/chromium/base/MathUtilsTest.java",
+      "android/junit/src/org/chromium/base/PathUtilsTest.java",
       "android/junit/src/org/chromium/base/PiiEliderTest.java",
       "android/junit/src/org/chromium/base/PromiseTest.java",
       "android/junit/src/org/chromium/base/TimeUtilsTest.java",
@@ -4566,6 +4560,7 @@ if (is_android) {
       ":base_junit_test_support",
       "//base/test:test_support_java",
       "//third_party/androidx:androidx_annotation_annotation_java",
+      "//third_party/androidx:androidx_test_core_java",
       "//third_party/androidx:androidx_test_runner_java",
       "//third_party/hamcrest:hamcrest_java",
     ]
@@ -4652,6 +4647,13 @@ fuzzer_test("base_json_reader_fuzzer") {
 fuzzer_test("base_json_string_escape_fuzzer") {
   sources = [ "json/string_escape_fuzzer.cc" ]
   deps = [ "//base" ]
+}
+
+fuzzer_test("base_activity_analyzer_fuzzer") {
+  sources = [ "debug/activity_analyzer_fuzzer.cc" ]
+  deps = [ "//base" ]
+  dict = "debug/activity_analyzer_fuzzer.dict"
+  seed_corpus = "test/data/activity_analyzer_fuzzer"
 }
 
 if (is_mac) {

@@ -83,6 +83,7 @@
   X("DXVA_Decoding")                                                     \
   X("evdev")                                                             \
   X("event")                                                             \
+  X("event_latency")                                                     \
   X("exo")                                                               \
   X("extensions")                                                        \
   X("explore_sites")                                                     \
@@ -311,7 +312,7 @@
   X("browser,startup")                                                        \
   X("category1,category2")                                                    \
   X("cc,benchmark")                                                           \
-  X("cc,benchmark,input")                                                     \
+  X("cc,benchmark,input,event_latency")                                       \
   X("cc,benchmark," TRACE_DISABLED_BY_DEFAULT("devtools.timeline.frame"))     \
   X("cc,input")                                                               \
   X("cc,raf_investigation")                                                   \
@@ -392,9 +393,12 @@ PERFETTO_DEFINE_TEST_CATEGORY_PREFIXES("cat",
 
 // Define a Perfetto TrackEvent data source using the list of categories defined
 // above. See https://perfetto.dev/docs/instrumentation/track-events.
-PERFETTO_DEFINE_CATEGORIES(
+PERFETTO_DEFINE_CATEGORIES_IN_NAMESPACE_WITH_ATTRS(
+    base,
+    BASE_EXPORT,
     INTERNAL_TRACE_LIST_BUILTIN_CATEGORIES(INTERNAL_CATEGORY)
         INTERNAL_TRACE_LIST_BUILTIN_CATEGORY_GROUPS(INTERNAL_CATEGORY_GROUP));
+PERFETTO_USE_CATEGORIES_FROM_NAMESPACE(base);
 
 #undef INTERNAL_CATEGORY
 #undef INTERNAL_CATEGORY_GROUP

@@ -12,7 +12,6 @@ Sumir eiginleikar kunna að vera óaðgengilegir og breytingar á kjörstillingu
 <translation id="1131805035311359397"><ph name="BEGIN_LINK" />Skráðu þig inn á Chromium<ph name="END_LINK" /> til að athuga hvort aðgangsorðin þín séu óhult fyrir öryggisbrotum og öðrum öryggisvandamálum.</translation>
 <translation id="1185134272377778587">Um Chromium</translation>
 <translation id="1203500561924088507">Takk fyrir að setja upp. Þú þarft að endurræsa vafrann áður en þú getur notað <ph name="BUNDLE_NAME" />.</translation>
-<translation id="1231839967188101156">Þegar kveikt er á þessu losar Chromium um minni úr óvirkum flipum. Þetta veitir virkum flipum og öðrum forritum meiri tölvugögn og heldur Chromium hröðum. Óvirkir flipar virkjast aftur sjálfkrafa þegar þú opnar þá. <ph name="BEGIN_LINK" />Nánar<ph name="END_LINK" /></translation>
 <translation id="1261119230216066228">Minnissparnaður gerði Chromium hraðari</translation>
 <translation id="1315551408014407711">Settu upp nýja Chromium prófílinn þinn</translation>
 <translation id="1396446129537741364">Chromium er að reyna að birta aðgangsorð.</translation>
@@ -124,7 +123,6 @@ Heimildir sem þú hefur þegar veitt vefsvæðum og forritum kunna að gilda á
 <translation id="3702352323269013324">Nánar um sérsniðnar auglýsingar í Chromium</translation>
 <translation id="370962675267501463">{COUNT,plural, =0{Kerfisstjórinn þinn vill að þú endurræsir Chromium til að setja upp þessa uppfærslu}=1{Kerfisstjórinn þinn vill að þú endurræsir Chromium til að setja upp þessa uppfærslu. Huliðsglugginn enduropnast ekki.}one{Kerfisstjórinn þinn vill að þú endurræsir Chromium til að setja upp þessa uppfærslu. # huliðsgluggi enduropnast ekki.}other{Kerfisstjórinn þinn vill að þú endurræsir Chromium til að setja upp þessa uppfærslu. # huliðsgluggar enduropnast ekki.}}</translation>
 <translation id="3713809861844741608">Opna &amp;tengil í nýjum Chromium flipa</translation>
-<translation id="3728336900324680424">Chromium mun fá aðgang að svæðinu þínu á Drive til þess að bjóða upp á tillögur í veffangastikunni</translation>
 <translation id="378917192836375108">Með Chromium geturðu smellt á símanúmer á vefnum og hringt í það með Skype!</translation>
 <translation id="3830894615770080216">ChromiumOS kerfi</translation>
 <translation id="3848258323044014972"><ph name="PAGE_TITLE" /> – Chromium</translation>
@@ -220,6 +218,7 @@ Heimildir sem þú hefur þegar veitt vefsvæðum og forritum kunna að gilda á
 <translation id="6072463441809498330">Láttu Chromium vinna hraðar</translation>
 <translation id="608006075545470555">Bæta vinnusniði við þennan vafra</translation>
 <translation id="6096348254544841612">Sérstilltu og stjórnaðu Chromium. Uppfærsla er í boði.</translation>
+<translation id="6102072151902574948">Þegar kveikt er á minnissparnaði dregur Chromium úr rafhlöðunotkun með því að takmarka bakgrunnsvirkni og myndáhrif á borð við mjúkflettingu og rammatíðni myndskeiða.</translation>
 <translation id="6119438414301547735">Leyfa viðbót að sýna aðgangsbeiðnir í tækjastiku Chromium</translation>
 <translation id="6120345080069858279">Chromium mun vista þetta aðgangsorð á Google reikningnum þínum. Þú þarft ekki að muna það.</translation>
 <translation id="6129621093834146363"><ph name="FILE_NAME" /> er skaðleg skrá og Chromium útilokaði hana.</translation>
@@ -280,6 +279,7 @@ Sumir eiginleikar kunna að verða óaðgengilegir. Tilgreindu aðra prófílam�
 <translation id="6940431691900807093">Seinna getur vefsvæði sem þú opnar beðið Chrome um að sýna áhugasvið þitt til að hægt sé að sérsníða auglýsingarnar sem þú sérð. Chromium getur deilt allt að 3 áhugasviðum.</translation>
 <translation id="6964305034639999644">Opna tengil í &amp;huliðsglugga í Chromium</translation>
 <translation id="6978145336957848883">Léleg aðgangsorð eru þau sem auðvelt er að giska á. Leyfðu Chromium <ph name="BEGIN_LINK" />að búa til traust aðgangsorð fyrir þig og muna þau<ph name="END_LINK" />.</translation>
+<translation id="6981396265751285733">Þegar kveikt er á þessu losar Chromium um minni úr óvirkum flipum. Þetta veitir virkum flipum og öðrum forritum meiri tölvugögn og heldur Chromium hröðum. Óvirkir flipar virkjast aftur sjálfkrafa þegar þú opnar þá.</translation>
 <translation id="6984667024406244807">Chromium er ekki virkt</translation>
 <translation id="6985329841647292029">Skilmálar ChromiumOS</translation>
 <translation id="6990124437352146030">Chromium þarf leyfi til að nota hljóðnemann á þessu vefsvæði</translation>
@@ -353,7 +353,6 @@ Chromium getur ekki endurheimt stillingarnar þínar.</translation>
 <translation id="8550334526674375523">Þessi vinnuprófíll er algjörlega aðskilinn þínum eigin prófíl.</translation>
 <translation id="8558383651099478961">Foreldrar þínir hafa slökkt á „Heimildum fyrir vefsvæði, forrit og viðbætur" fyrir Chromium. Ekki er leyfilegt að bæta við þessu <ph name="EXTENSION_TYPE_PARAMETER" />.</translation>
 <translation id="8568283329061645092">Chromium getur athugað aðgangsorðin þín þegar þú skráir þig inn með Google reikningnum þínum</translation>
-<translation id="8574036838419011058">Þegar kveikt er á minnissparnaði dregur Chromium úr rafhlöðunotkun með því að takmarka bakgrunnsvirkni og myndáhrif á borð við mjúkflettingu og rammatíðni myndskeiða. <ph name="BEGIN_LINK" />Nánar<ph name="END_LINK" /></translation>
 <translation id="8586442755830160949">Höfundarréttur <ph name="YEAR" /> höfundar Chromium. Allur réttur áskilinn.</translation>
 <translation id="8608079656141766906"><ph name="BEGIN_BOLD" />Svona notum við þessi gögn:<ph name="END_BOLD" /> Vefsvæði geta vistað upplýsingar um áhugasvið þín í Chromium. Ef þú heimsækir til dæmis vefsvæði til að kaupa skó fyrir maraþonhlaup kann vefsvæðið að skilgreina maraþonhlaup sem áhugasvið þitt. Ef þú heimsækir svo annað vefsvæði síðar meir til að skrá þig í hlaup getur viðkomandi vefsvæði birt þér auglýsingu um hlaupaskó í samræmi við áhugasvið þitt.</translation>
 <translation id="8619360774459241877">Ræsir Chromium...</translation>

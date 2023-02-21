@@ -69,6 +69,7 @@ ci/lacros-amd64-generic-binary-size-rel
 ci/lacros-amd64-generic-rel
 ci/lacros-arm-archive-rel
 ci/lacros-arm-generic-rel
+ci/lacros-arm-generic-rel-skylab
 ci/lacros-arm64-generic-rel-skylab
 ci/lacros64-archive-rel
 ci/linux-archive-dbg
@@ -79,6 +80,7 @@ ci/linux-chromeos-dbg
 ci/linux-chromeos-rel
 ci/linux-extended-tracing-rel
 ci/linux-gcc-rel
+ci/linux-lacros-asan-lsan-rel
 ci/linux-lacros-builder-rel
 ci/linux-lacros-dbg
 ci/linux-lacros-tester-rel

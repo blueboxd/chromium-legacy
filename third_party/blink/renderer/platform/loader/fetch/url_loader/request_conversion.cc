@@ -139,7 +139,7 @@ mojom::ResourceType RequestContextToResourceType(
     case mojom::blink::RequestContextType::XML_HTTP_REQUEST:
       return mojom::ResourceType::kXhr;
 
-    // Navigation requests should not go through WebURLLoader.
+    // Navigation requests should not go through URLLoader.
     case mojom::blink::RequestContextType::FORM:
     case mojom::blink::RequestContextType::HYPERLINK:
     case mojom::blink::RequestContextType::LOCATION:
@@ -400,6 +400,8 @@ void PopulateResourceRequest(const ResourceRequestHead& src,
     dest->do_not_prompt_for_login = true;
     dest->load_flags |= net::LOAD_DO_NOT_USE_EMBEDDED_IDENTITY;
   }
+
+  dest->has_storage_access = src.GetHasStorageAccess();
 }
 
 }  // namespace blink

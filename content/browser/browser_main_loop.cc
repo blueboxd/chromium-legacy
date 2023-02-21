@@ -375,7 +375,7 @@ std::unique_ptr<base::MemoryPressureMonitor> CreateMemoryPressureMonitor(
   // No memory monitor on other platforms...
 
   if (monitor)
-    monitor->Start();
+    monitor->MaybeStartPlatformVoter();
 
   return monitor;
 }
@@ -1565,6 +1565,11 @@ SmsProvider* BrowserMainLoop::GetSmsProvider() {
 void BrowserMainLoop::SetSmsProviderForTesting(
     std::unique_ptr<SmsProvider> provider) {
   sms_provider_ = std::move(provider);
+}
+
+base::PlatformThreadId BrowserMainLoop::GetIOThreadId() {
+  CHECK(io_thread_ && io_thread_->IsRunning());
+  return io_thread_->GetThreadId();
 }
 
 }  // namespace content

@@ -29,6 +29,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_key.h"
+#include "chrome/browser/supervised_user/kids_chrome_management/kids_chrome_management_client_factory.h"
 #include "chrome/browser/supervised_user/permission_request_creator.h"
 #include "chrome/browser/supervised_user/supervised_user_service_factory.h"
 #include "chrome/browser/supervised_user/supervised_user_service_observer.h"
@@ -41,10 +42,10 @@
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
+#include "components/supervised_user/core/browser/supervised_user_settings_service.h"
 #include "components/supervised_user/core/common/features.h"
 #include "components/supervised_user/core/common/pref_names.h"
 #include "components/supervised_user/core/common/supervised_user_constants.h"
-#include "components/supervised_user/core/common/supervised_user_settings_service.h"
 #include "components/sync/driver/sync_service.h"
 #include "components/sync/driver/sync_user_settings.h"
 #include "content/public/browser/browser_context.h"
@@ -246,7 +247,7 @@ bool SupervisedUserService::IsURLFilteringEnabled() const {
   return account_info.capabilities.is_subject_to_parental_controls() ==
              signin::Tribool::kTrue &&
          base::FeatureList::IsEnabled(
-             supervised_users::kFilterWebsitesForSupervisedUsersOnThirdParty);
+             supervised_user::kFilterWebsitesForSupervisedUsersOnThirdParty);
 #endif
 }
 
@@ -267,7 +268,8 @@ void SupervisedUserService::RemoveObserver(
 
 SupervisedUserService::SupervisedUserService(
     Profile* profile,
-    signin::IdentityManager* identity_manager)
+    signin::IdentityManager* identity_manager,
+    ValidateURLSupportCallback check_webstore_url_callback)
     : profile_(profile),
       identity_manager_(identity_manager),
       active_(false),
@@ -275,6 +277,7 @@ SupervisedUserService::SupervisedUserService(
       is_profile_active_(false),
       did_init_(false),
       did_shutdown_(false),
+      url_filter_(std::move(check_webstore_url_callback)),
       denylist_state_(DenylistLoadState::NOT_LOADED) {
   url_filter_.AddObserver(this);
 #if BUILDFLAG(ENABLE_EXTENSIONS)
@@ -561,7 +564,9 @@ void SupervisedUserService::UpdateAsyncUrlChecker() {
 
   if (use_online_check != url_filter_.HasAsyncURLChecker()) {
     if (use_online_check) {
-      url_filter_.InitAsyncURLChecker();
+      url_filter_.InitAsyncURLChecker(
+          KidsChromeManagementClientFactory::GetInstance()
+              ->GetForBrowserContext(profile_));
     } else {
       url_filter_.ClearAsyncURLChecker();
     }

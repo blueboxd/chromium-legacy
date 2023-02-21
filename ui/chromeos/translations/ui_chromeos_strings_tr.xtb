@@ -27,12 +27,12 @@
 <translation id="1201402288615127009">İleri</translation>
 <translation id="1209796539517632982">Otomatik ad sunucuları</translation>
 <translation id="1210831758834677569">Laoca</translation>
+<translation id="1221555006497674479"><ph name="TOTAL_SPACE" /> olan ortak Drive depolama alanınızda %<ph name="REMAINING_PERCENTAGE" /> oranından daha az depolama alanı kaldı.</translation>
 <translation id="1243314992276662751">Yükle</translation>
 <translation id="1249250836236328755">Tür</translation>
 <translation id="1254593899333212300">Doğrudan İnternet bağlantısı</translation>
 <translation id="1272293450992660632">PIN değerleri eşleşmiyor.</translation>
 <translation id="1280820357415527819">Mobil ağlar aranıyor</translation>
-<translation id="1291603679744561561">SIM Kilitlendi</translation>
 <translation id="1293556467332435079">Dosyalar</translation>
 <translation id="1297922636971898492">Google Drive şu anda kullanılamıyor. Google Drive tekrar kullanılabilir olduğunda yükleme işlemi otomatik olarak yeniden başlayacak.</translation>
 <translation id="1307931752636661898">Linux dosyaları görüntülenemiyor</translation>
@@ -74,6 +74,7 @@
 <translation id="1641780993263690097">Çince Pinyin</translation>
 <translation id="1646019627374511909"><ph name="NUMBER_OF_ITEMS" /> dosya çevrimdışı kullanılabilir hale getiriliyor</translation>
 <translation id="164969095109328410">Chrome cihaz</translation>
+<translation id="1661207570040737402">Google Workspace ortak Drive depolama alanınızın tamamını kullandınız.</translation>
 <translation id="1661867754829461514">PIN eksik</translation>
 <translation id="166439687370499867">Paylaşılan ağ yapılandırmalarının değiştirilmesine izin verilmez</translation>
 <translation id="1665611772925418501">Dosya değiştirilemedi.</translation>
@@ -192,6 +193,7 @@
 <translation id="2574327434504608656">1 klasör Bruschetta ile paylaşıldı</translation>
 <translation id="2578394532502990878">Tamilce Fonetik</translation>
 <translation id="2579959351793446050">Oriya</translation>
+<translation id="2587195714949534472"><ph name="FILE_NAME" /> dosyası senkronize edilmeye hazırlanıyor...</translation>
 <translation id="2602810353103180630">Ağ <ph name="NETWORK_INDEX" />/<ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" />, Sinyal Gücü %<ph name="SIGNAL_STRENGTH" />, Yöneticiniz tarafından engellenmiş, Ayrıntılar</translation>
 <translation id="2614589611416690597"><ph name="VIDEO_TYPE" /> video</translation>
 <translation id="2620090360073999360">Google Drive'a şu anda erişilemiyor.</translation>
@@ -293,6 +295,7 @@
 <translation id="3486821258960016770">Moğolca</translation>
 <translation id="3495304270784461826"><ph name="COUNT" /> hata.</translation>
 <translation id="3509680540198371098">Ağ <ph name="NETWORK_INDEX" />/<ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, %<ph name="SIGNAL_STRENGTH" /> Sinyal Gücü, Ayrıntılar</translation>
+<translation id="3511705761158917664"><ph name="NUMBER_OF_ITEMS" /> öğe senkronize edilmeye hazırlanıyor...</translation>
 <translation id="3522708245912499433">Portekizce</translation>
 <translation id="3524311639100184459">Dikkat: Bu dosyalar geçicidir ve disk alanından kazanmak için otomatik olarak silinebilir.  <ph name="BEGIN_LINK" />Daha Fazla Bilgi<ph name="END_LINK" /></translation>
 <translation id="3527085408025491307">Klasör</translation>

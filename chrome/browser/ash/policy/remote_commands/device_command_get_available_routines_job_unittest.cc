@@ -13,6 +13,7 @@
 #include "base/test/test_future.h"
 #include "base/time/time.h"
 #include "base/values.h"
+#include "chromeos/ash/components/mojo_service_manager/fake_mojo_service_manager.h"
 #include "chromeos/ash/services/cros_healthd/public/cpp/fake_cros_healthd.h"
 #include "chromeos/ash/services/cros_healthd/public/mojom/cros_healthd_diagnostics.mojom.h"
 #include "components/policy/proto/device_management_backend.pb.h"
@@ -64,6 +65,7 @@ class DeviceCommandGetAvailableRoutinesJobTest : public testing::Test {
 
   base::test::TaskEnvironment task_environment_{
       base::test::TaskEnvironment::TimeSource::MOCK_TIME};
+  ::ash::mojo_service_manager::FakeMojoServiceManager fake_service_manager_;
 
   base::TimeTicks test_start_time_;
 };
@@ -101,8 +103,9 @@ std::string DeviceCommandGetAvailableRoutinesJobTest::CreateSuccessPayload(
   std::string payload;
   base::Value::Dict root_dict;
   base::Value::List routine_list;
-  for (const auto& routine : available_routines)
+  for (const auto& routine : available_routines) {
     routine_list.Append(static_cast<int>(routine));
+  }
   root_dict.Set(kRoutinesFieldName, std::move(routine_list));
   base::JSONWriter::Write(root_dict, &payload);
   return payload;

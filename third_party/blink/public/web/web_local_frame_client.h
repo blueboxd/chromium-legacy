@@ -74,7 +74,6 @@
 #include "third_party/blink/public/platform/web_set_sink_id_callbacks.h"
 #include "third_party/blink/public/platform/web_source_location.h"
 #include "third_party/blink/public/platform/web_url_error.h"
-#include "third_party/blink/public/platform/web_url_loader_factory.h"
 #include "third_party/blink/public/platform/web_url_request.h"
 #include "third_party/blink/public/platform/web_worker_fetch_context.h"
 #include "third_party/blink/public/web/web_ax_object.h"
@@ -132,7 +131,7 @@ class WebServiceWorkerProvider;
 class WebSocketHandshakeThrottle;
 class WebString;
 class WebURL;
-class WebURLLoader;
+class URLLoader;
 class WebURLRequest;
 class WebURLResponse;
 class WebView;
@@ -675,7 +674,7 @@ class BLINK_EXPORT WebLocalFrameClient {
     return nullptr;
   }
 
-  virtual std::unique_ptr<WebURLLoader> CreateURLLoaderForTesting() {
+  virtual std::unique_ptr<URLLoader> CreateURLLoaderForTesting() {
     return nullptr;
   }
 

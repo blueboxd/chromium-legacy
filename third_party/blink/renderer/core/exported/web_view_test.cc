@@ -61,7 +61,6 @@
 #include "third_party/blink/public/mojom/manifest/display_mode.mojom-shared.h"
 #include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
 #include "third_party/blink/public/platform/web_drag_data.h"
-#include "third_party/blink/public/platform/web_url_loader_mock_factory.h"
 #include "third_party/blink/public/public_buildflags.h"
 #include "third_party/blink/public/test/test_web_frame_content_dumper.h"
 #include "third_party/blink/public/web/web_autofill_client.h"
@@ -150,6 +149,7 @@
 #include "third_party/blink/renderer/platform/testing/histogram_tester.h"
 #include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
+#include "third_party/blink/renderer/platform/testing/url_loader_mock_factory.h"
 #include "third_party/blink/renderer/platform/testing/url_test_helpers.h"
 #include "third_party/blink/renderer/platform/wtf/casting.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -2626,6 +2626,39 @@ TEST_F(WebViewTest, FullscreenBackgroundColor) {
   UpdateAllLifecyclePhases();
 
   EXPECT_EQ(SK_ColorYELLOW, web_view_impl->BackgroundColor());
+}
+
+static void ExitFullscreen(Document& document) {
+  Fullscreen::FullyExitFullscreen(document);
+  Fullscreen::DidExitFullscreen(document);
+  EXPECT_EQ(Fullscreen::FullscreenElementFrom(document), nullptr);
+}
+
+// Tests that the removal from the top layer is scheduled.
+TEST_F(WebViewTest, FullscreenRemovalTiming) {
+  RegisterMockedHttpURLLoad("fullscreen_style.html");
+  WebViewImpl* web_view_impl =
+      web_view_helper_.InitializeAndLoad(base_url_ + "fullscreen_style.html");
+  web_view_impl->MainFrameViewWidget()->Resize(gfx::Size(800, 600));
+  UpdateAllLifecyclePhases();
+
+  // Enter fullscreen.
+  LocalFrame* frame = web_view_impl->MainFrameImpl()->GetFrame();
+  Document* document = frame->GetDocument();
+  ASSERT_TRUE(document);
+  Element* element = document->getElementById("fullscreenElement");
+  ASSERT_TRUE(element);
+  LocalFrame::NotifyUserActivation(
+      frame, mojom::UserActivationNotificationType::kTest);
+  Fullscreen::RequestFullscreen(*element);
+  web_view_impl->DidEnterFullscreen();
+  UpdateAllLifecyclePhases();
+  EXPECT_TRUE(element->IsInTopLayer());
+
+  ExitFullscreen(*document);
+  EXPECT_TRUE(element->IsInTopLayer());
+  UpdateAllLifecyclePhases();
+  EXPECT_FALSE(element->IsInTopLayer());
 }
 
 class PrintWebFrameClient : public frame_test_helpers::TestWebFrameClient {

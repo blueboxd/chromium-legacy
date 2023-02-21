@@ -24,6 +24,8 @@
 #include "third_party/blink/public/platform/web_dedicated_or_shared_worker_fetch_context.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/renderer/platform/wtf/casting.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 
@@ -70,7 +72,7 @@ class BLINK_PLATFORM_EXPORT DedicatedOrSharedWorkerFetchContextImpl final
       std::unique_ptr<URLLoaderThrottleProvider> throttle_provider,
       std::unique_ptr<WebSocketHandshakeThrottleProvider>
           websocket_handshake_throttle_provider,
-      const WebVector<WebString>& cors_exempt_header_list,
+      Vector<String> cors_exempt_header_list,
       mojo::PendingRemote<mojom::ResourceLoadInfoNotifier>
           pending_resource_load_info_notifier);
 
@@ -112,8 +114,8 @@ class BLINK_PLATFORM_EXPORT DedicatedOrSharedWorkerFetchContextImpl final
   // WebWorkerFetchContext implementation:
   void SetTerminateSyncLoadEvent(base::WaitableEvent*) override;
   void InitializeOnWorkerThread(AcceptLanguagesWatcher*) override;
-  WebURLLoaderFactory* GetURLLoaderFactory() override;
-  std::unique_ptr<WebURLLoaderFactory> WrapURLLoaderFactory(
+  URLLoaderFactory* GetURLLoaderFactory() override;
+  std::unique_ptr<URLLoaderFactory> WrapURLLoaderFactory(
       CrossVariantMojoRemote<network::mojom::URLLoaderFactoryInterfaceBase>
           url_loader_factory) override;
   std::unique_ptr<WebCodeCacheLoader> CreateCodeCacheLoader(
@@ -283,7 +285,7 @@ class BLINK_PLATFORM_EXPORT DedicatedOrSharedWorkerFetchContextImpl final
   // This is owned by ThreadedMessagingProxyBase on the main thread.
   base::WaitableEvent* terminate_sync_load_event_ = nullptr;
 
-  // The WebURLLoaderFactory which was created and passed to
+  // The URLLoaderFactory which was created and passed to
   // Blink by GetURLLoaderFactory().
   std::unique_ptr<Factory> web_loader_factory_;
 
@@ -291,7 +293,7 @@ class BLINK_PLATFORM_EXPORT DedicatedOrSharedWorkerFetchContextImpl final
   std::unique_ptr<WebSocketHandshakeThrottleProvider>
       websocket_handshake_throttle_provider_;
 
-  WebVector<WebString> cors_exempt_header_list_;
+  Vector<String> cors_exempt_header_list_;
 
   mojo::PendingRemote<mojom::ResourceLoadInfoNotifier>
       pending_resource_load_info_notifier_;

@@ -450,6 +450,7 @@ Privéstatustokens verbeteren de privacy op het web en kunnen niet worden gebrui
 <translation id="3421726884497337397">Kies wanneer je cookies van derden wilt blokkeren</translation>
 <translation id="3428747202529429621">Beschermt je op Chrome en kan worden gebruikt om de beveiliging in andere Google-apps te verbeteren als je bent ingelogd</translation>
 <translation id="3429160811076349561">Proeffuncties staan uit</translation>
+<translation id="3432973700170747422">Laatste 15 minuten verwijderen</translation>
 <translation id="3435465986463792564">Heb je veel vensters open? Beheer ze hier.</translation>
 <translation id="3435738964857648380">Beveiliging</translation>
 <translation id="3443221991560634068">De huidige pagina opnieuw laden</translation>
@@ -516,7 +517,6 @@ Privéstatustokens verbeteren de privacy op het web en kunnen niet worden gebrui
 <translation id="3830886834687455630">Update Google Play-services om je wachtwoorden te checken</translation>
 <translation id="3845098929839618392">Openen op incognitotabblad</translation>
 <translation id="3856096718352044181">Controleer of dit een geldige provider is of probeer het later opnieuw</translation>
-<translation id="3858127568696903256">Bekijk hier content die je volgt</translation>
 <translation id="3858860766373142691">Naam</translation>
 <translation id="3861633093716975811">Populaire video's</translation>
 <translation id="3874520961715512166">Site verwijderd</translation>
@@ -932,7 +932,7 @@ Voor je Google-account kunnen andere vormen van browsegeschiedenis (zoals zoekop
 <translation id="6085886413119427067">Bepaalt hoe verbinding wordt gemaakt met websites via een beveiligde verbinding</translation>
 <translation id="6091413777268123602">Met een Privacy Sandbox-proef kunnen sites dezelfde browsefunctionaliteit leveren terwijl er minder van je gegevens worden gebruikt. Zo heb jij meer privacy en word je minder gevolgd op meerdere sites. Als andere proeven klaar zijn om getest te worden, voegen we deze toe.</translation>
 <translation id="60923314841986378"><ph name="HOURS" /> uur resterend</translation>
-<translation id="6095578583683628124">Als Google ook je standaardzoekmachine is, krijg je betere, contextueel relevante suggesties te zien.</translation>
+<translation id="6095578583683628124">Als Google ook je standaard zoekmachine is, krijg je betere, contextueel relevante suggesties te zien.</translation>
 <translation id="6108923351542677676">Instellen wordt uitgevoerd...</translation>
 <translation id="6112702117600201073">Pagina vernieuwen</translation>
 <translation id="6122831415929794347">Safe Browsing uitzetten?</translation>
@@ -1242,6 +1242,7 @@ Zo kunnen sommige websites op dit verzoek reageren door advertenties te bekijken
 <translation id="7682724950699840886">Probeer de volgende tips: zorg dat er voldoende ruimte op je apparaat beschikbaar is, probeer opnieuw te exporteren.</translation>
 <translation id="7686086654630106285">Meer informatie over door de site voorgestelde advertenties</translation>
 <translation id="768618399695552958">Sommige pagina's die je bezoekt, zijn vooraf geladen. Pagina's kunnen vooraf worden geladen via Google-servers als ernaar wordt gelinkt vanaf een Google-site.</translation>
+<translation id="7691043218961417207">Ontdek content om te volgen</translation>
 <translation id="7698359219371678927">E-mail in <ph name="APP_NAME" /> maken</translation>
 <translation id="7707922173985738739">Mobiele data gebruiken</translation>
 <translation id="7709094866268987903">Door jou verwijderde interesses verschijnen hier</translation>

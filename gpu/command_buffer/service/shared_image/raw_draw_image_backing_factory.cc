@@ -9,8 +9,12 @@
 #include "gpu/command_buffer/service/shared_image/raw_draw_image_backing.h"
 
 namespace gpu {
+constexpr uint32_t kSupportedUsage =
+    SHARED_IMAGE_USAGE_DISPLAY_READ | SHARED_IMAGE_USAGE_RASTER |
+    SHARED_IMAGE_USAGE_OOP_RASTERIZATION | SHARED_IMAGE_USAGE_RAW_DRAW;
 
-RawDrawImageBackingFactory::RawDrawImageBackingFactory() = default;
+RawDrawImageBackingFactory::RawDrawImageBackingFactory()
+    : SharedImageBackingFactory(kSupportedUsage) {}
 
 RawDrawImageBackingFactory::~RawDrawImageBackingFactory() = default;
 
@@ -63,13 +67,7 @@ RawDrawImageBackingFactory::CreateSharedImage(
 bool RawDrawImageBackingFactory::CanUseRawDrawImageBacking(
     uint32_t usage,
     GrContextType gr_context_type) const {
-  // Ignore for mipmap usage.
-  usage &= ~SHARED_IMAGE_USAGE_MIPMAP;
-
-  auto kRawDrawImageBackingUsage =
-      SHARED_IMAGE_USAGE_DISPLAY_READ | SHARED_IMAGE_USAGE_RASTER |
-      SHARED_IMAGE_USAGE_OOP_RASTERIZATION | SHARED_IMAGE_USAGE_RAW_DRAW;
-  return usage == kRawDrawImageBackingUsage;
+  return usage == kSupportedUsage;
 }
 
 bool RawDrawImageBackingFactory::IsSupported(

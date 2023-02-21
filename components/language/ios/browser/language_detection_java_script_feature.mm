@@ -39,7 +39,7 @@ LanguageDetectionJavaScriptFeature::GetInstance() {
 LanguageDetectionJavaScriptFeature::LanguageDetectionJavaScriptFeature()
     : web::JavaScriptFeature(
           // TODO(crbug.com/1380918): Move language detection feature to
-          // kAnyContentWorld once WebFrameManager supports tracking frames in
+          // kIsolatedWorld once WebFrameManager supports tracking frames in
           // an isolated world.
           web::ContentWorld::kPageContentWorld,
           {FeatureScript::CreateWithFilename(
@@ -86,7 +86,7 @@ void LanguageDetectionJavaScriptFeature::ScriptMessageReceived(
                       base::Milliseconds(*capture_text_time));
 
   web::WebFrame* sender_frame =
-      web_state->GetWebFramesManager()->GetFrameWithId(*frame_id);
+      web_state->GetPageWorldWebFramesManager()->GetFrameWithId(*frame_id);
   if (!sender_frame) {
     return;
   }

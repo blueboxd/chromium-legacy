@@ -372,7 +372,7 @@ BASE_FEATURE(kAutofillIgnoreUnmappableAutocompleteValues,
 // TODO(crbug.com/1339277) Remove once launched.
 BASE_FEATURE(kAutofillImprovedLabelForInference,
              "AutofillImprovedLabelForInference",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // When enabled, only changed values are highlighted in preview mode.
 // TODO(crbug/1248585): Remove when launched.
@@ -526,6 +526,12 @@ BASE_FEATURE(kAutofillSharedAutofill,
 // See FormForest::GetRendererFormsOfBrowserForm() for details.
 const base::FeatureParam<bool> kAutofillSharedAutofillRelaxedParam{
     &kAutofillSharedAutofill, "relax_shared_autofill", false};
+
+// Controls whether to offer a delete button for Autocomplete entries in the
+// Autofill popup.
+BASE_FEATURE(kAutofillShowAutocompleteDeleteButton,
+             "AutofillShowAutocompleteDeleteButton",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Controls whether Manual fallbacks would be shown in the context menu for
 // filling. Used only in Desktop.

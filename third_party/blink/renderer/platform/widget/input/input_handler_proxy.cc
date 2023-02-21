@@ -861,11 +861,6 @@ void InputHandlerProxy::RecordMainThreadScrollingReasons(
     return;
   }
 
-  // The "NonCompositedScrollReasons" are only reported by the pre-unification
-  // main thread event handling path.
-  DCHECK(!cc::MainThreadScrollingReason::HasNonCompositedScrollReasons(
-      reasons_from_scroll_begin));
-
   // This records whether a scroll is handled on the main or compositor
   // threads. Note: scrolls handled on the compositor but blocked on main due
   // to event handlers are still considered compositor scrolls.
@@ -1069,8 +1064,11 @@ InputHandlerProxy::HandleGestureScrollUpdate(
     return DROP_EVENT;
   }
 
-  if (!handling_gesture_on_impl_thread_ && !gesture_pinch_in_progress_)
-    return DID_NOT_HANDLE;
+  if (!handling_gesture_on_impl_thread_ && !gesture_pinch_in_progress_) {
+    return base::FeatureList::IsEnabled(::features::kScrollUnification)
+               ? DROP_EVENT
+               : DID_NOT_HANDLE;
+  }
 
   cc::ScrollState scroll_state = CreateScrollStateForGesture(gesture_event);
   in_inertial_scrolling_ = scroll_state.is_in_inertial_phase();
@@ -1158,7 +1156,9 @@ InputHandlerProxy::EventDisposition InputHandlerProxy::HandleGestureScrollEnd(
 
   if (!handling_gesture_on_impl_thread_) {
     DCHECK(!currently_active_gesture_device_.has_value());
-    return DID_NOT_HANDLE;
+    return base::FeatureList::IsEnabled(::features::kScrollUnification)
+               ? DROP_EVENT
+               : DID_NOT_HANDLE;
   }
 
   if (!currently_active_gesture_device_.has_value() ||
@@ -1426,13 +1426,23 @@ InputHandlerProxy::EventDisposition InputHandlerProxy::HandleTouchEnd(
       return DID_HANDLE;
     }
   }
+
+  EventDisposition result = DID_NOT_HANDLE;
+  // If all other touch events in this interaction sequence were dropped, we can
+  // safely drop the touchend too.
+  if (base::FeatureList::IsEnabled(
+          features::kDroppedTouchSequenceIncludesTouchEnd) &&
+      touch_result_.has_value() && touch_result_ == DROP_EVENT) {
+    result = DROP_EVENT;
+  }
+
   if (touch_event.touches_length == 1)
     touch_result_.reset();
 
   if (main_thread_touch_sequence_start_disposition_.has_value())
     main_thread_touch_sequence_start_disposition_.reset();
 
-  return DID_NOT_HANDLE;
+  return result;
 }
 
 void InputHandlerProxy::Animate(base::TimeTicks time) {

@@ -24,8 +24,6 @@
 #include "third_party/blink/public/mojom/conversions/attribution_data_host.mojom-blink.h"
 #include "third_party/blink/public/mojom/conversions/conversions.mojom-blink.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-blink.h"
-#include "third_party/blink/public/platform/web_url_loader_factory.h"
-#include "third_party/blink/public/platform/web_url_loader_mock_factory.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/execution_context/security_context.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
@@ -36,8 +34,10 @@
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/heap/persistent.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_request.h"
+#include "third_party/blink/renderer/platform/loader/fetch/url_loader/url_loader_factory.h"
 #include "third_party/blink/renderer/platform/loader/testing/mock_resource.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
+#include "third_party/blink/renderer/platform/testing/url_loader_mock_factory.h"
 #include "third_party/blink/renderer/platform/testing/url_test_helpers.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/weborigin/referrer.h"
@@ -57,8 +57,8 @@ class AttributionSrcLocalFrameClient : public EmptyLocalFrameClient {
  public:
   AttributionSrcLocalFrameClient() = default;
 
-  std::unique_ptr<WebURLLoader> CreateURLLoaderForTesting() override {
-    return WebURLLoaderMockFactory::GetSingletonInstance()->CreateURLLoader();
+  std::unique_ptr<URLLoader> CreateURLLoaderForTesting() override {
+    return URLLoaderMockFactory::GetSingletonInstance()->CreateURLLoader();
   }
 
   void DispatchWillSendRequest(ResourceRequest& request) override {
@@ -80,7 +80,7 @@ class MockDataHost : public mojom::blink::AttributionDataHost {
       mojo::PendingReceiver<mojom::blink::AttributionDataHost> data_host) {
     receiver_.Bind(std::move(data_host));
     receiver_.set_disconnect_handler(
-        base::BindOnce(&MockDataHost::OnDisconnect, base::Unretained(this)));
+        WTF::BindOnce(&MockDataHost::OnDisconnect, WTF::Unretained(this)));
   }
 
   ~MockDataHost() override = default;
@@ -136,8 +136,8 @@ class MockAttributionHost : public mojom::blink::ConversionHost {
   explicit MockAttributionHost(blink::AssociatedInterfaceProvider* provider) {
     provider->OverrideBinderForTesting(
         mojom::blink::ConversionHost::Name_,
-        base::BindRepeating(&MockAttributionHost::BindReceiver,
-                            base::Unretained(this)));
+        WTF::BindRepeating(&MockAttributionHost::BindReceiver,
+                           WTF::Unretained(this)));
   }
 
   ~MockAttributionHost() override = default;
@@ -203,7 +203,7 @@ class AttributionSrcLoaderTest : public PageTestBase {
         .GetRemoteNavigationAssociatedInterfaces()
         ->OverrideBinderForTesting(
             mojom::blink::ConversionHost::Name_,
-            base::BindRepeating([](mojo::ScopedInterfaceEndpointHandle) {}));
+            WTF::BindRepeating([](mojo::ScopedInterfaceEndpointHandle) {}));
     url_test_helpers::UnregisterAllURLsAndClearMemoryCache();
     PageTestBase::TearDown();
   }

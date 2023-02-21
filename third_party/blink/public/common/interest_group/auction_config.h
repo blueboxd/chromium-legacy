@@ -99,6 +99,7 @@ struct BLINK_COMMON_EXPORT AuctionConfig {
 
     Tag tag() const { return tag_; }
     const Value& value() const { return value_; }
+    Value& mutable_value_for_testing() { return value_; }
 
    private:
     Tag tag_ = Tag::kValue;
@@ -111,6 +112,11 @@ struct BLINK_COMMON_EXPORT AuctionConfig {
   // Typemapped to blink::mojom::AuctionAdConfigMaybePromisePerBuyerSignals.
   using MaybePromisePerBuyerSignals =
       MaybePromise<absl::optional<base::flat_map<url::Origin, std::string>>>;
+
+  // Typemapped to
+  // blink::mojom::AuctionAdConfigMaybePromiseDirectFromSellerSignals
+  using MaybePromiseDirectFromSellerSignals =
+      MaybePromise<absl::optional<DirectFromSellerSignals>>;
 
   // Representation of bidder timeouts, including optional global and per-origin
   // timeouts.
@@ -165,9 +171,6 @@ struct BLINK_COMMON_EXPORT AuctionConfig {
     NonSharedParams& operator=(const NonSharedParams&);
     NonSharedParams& operator=(NonSharedParams&&);
 
-    // Returns how many of the params are promises. Includes component auctions.
-    int NumPromises() const;
-
     // Owners of interest groups allowed to participate in the auction.
     absl::optional<std::vector<url::Origin>> interest_group_buyers;
 
@@ -189,6 +192,11 @@ struct BLINK_COMMON_EXPORT AuctionConfig {
 
     // Values restrict the runtime of generateBid() scripts.
     MaybePromiseBuyerTimeouts buyer_timeouts;
+
+    // Collective timeouts for all interest groups with the same buyer. Includes
+    // launching worklet processes, loading scripts and signals, and running
+    // the buyer's generateBid() functions.
+    MaybePromiseBuyerTimeouts buyer_cumulative_timeouts;
 
     // Values restrict the number of bidding interest groups for a particular
     // buyer that can participate in an auction. Values must be greater than 0.
@@ -238,6 +246,18 @@ struct BLINK_COMMON_EXPORT AuctionConfig {
   AuctionConfig& operator=(const AuctionConfig&);
   AuctionConfig& operator=(AuctionConfig&&);
 
+  // Returns how many of the params are promises. Includes component auctions.
+  int NumPromises() const;
+
+  // Helper to check if `url` is HTTPS and matches origin of `seller`.
+  bool IsHttpsAndMatchesSellerOrigin(const GURL& url) const;
+
+  // Helper to verify if DirectFromSellerSignals is valid in context of this
+  // auction.
+  bool IsDirectFromSellerSignalsValid(
+      const absl::optional<blink::DirectFromSellerSignals>&
+          direct_from_seller_signals) const;
+
   // Seller running the auction.
   url::Origin seller;
 
@@ -250,7 +270,7 @@ struct BLINK_COMMON_EXPORT AuctionConfig {
 
   // Subresource bundle URLs that when fetched should yield a JSON
   // direct_from_seller_signals responses for the seller and buyers.
-  absl::optional<DirectFromSellerSignals> direct_from_seller_signals;
+  MaybePromiseDirectFromSellerSignals direct_from_seller_signals;
 
   // Identifier for an experiment group, used when getting trusted
   // signals (and as part of AuctionConfig given to worklets).

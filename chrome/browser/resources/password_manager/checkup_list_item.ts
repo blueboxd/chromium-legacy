@@ -5,6 +5,9 @@ import 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.js';
 import 'chrome://resources/cr_elements/cr_button/cr_button.js';
 import 'chrome://resources/cr_elements/cr_icons.css.js';
 import 'chrome://resources/cr_elements/cr_shared_style.css.js';
+import './dialogs/edit_password_dialog.js';
+import './dialogs/delete_password_disclaimer_dialog.js';
+import './dialogs/edit_password_disclaimer_dialog.js';
 import './site_favicon.js';
 import './shared_style.css.js';
 
@@ -49,6 +52,12 @@ export class CheckupListItemElement extends CheckupListItemElementBase {
       showDetails: Boolean,
 
       showAlreadyChanged: Boolean,
+
+      showEditPasswordDialog_: Boolean,
+
+      showEditPasswordDisclaimer_: Boolean,
+
+      showDeletePasswordDialog_: Boolean,
     };
   }
 
@@ -57,6 +66,9 @@ export class CheckupListItemElement extends CheckupListItemElementBase {
   first: boolean;
   showDetails: boolean;
   showAlreadyChanged: boolean;
+  private showEditPasswordDialog_: boolean;
+  private showEditPasswordDisclaimer_: boolean;
+  private showDeletePasswordDialog_: boolean;
 
   private getPasswordValue_(): string|undefined {
     return this.isPasswordVisible ? this.item.password : ' '.repeat(10);
@@ -113,6 +125,24 @@ export class CheckupListItemElement extends CheckupListItemElementBase {
         .catch(() => {});
   }
 
+  public showEditDialog() {
+    PasswordManagerImpl.getInstance()
+        .requestCredentialsDetails([this.item.id])
+        .then(entries => {
+          const entry = entries[0];
+          assert(!!entry);
+          this.item.affiliatedDomains = entry.affiliatedDomains;
+          this.item.password = entry.password;
+          this.item.note = entry.note;
+          this.showEditPasswordDialog_ = true;
+        })
+        .catch(() => {});
+  }
+
+  public showDeleteDialog() {
+    this.showDeletePasswordDialog_ = true;
+  }
+
   private onChangePasswordClick_() {
     assert(this.item.changePasswordUrl);
     OpenWindowProxyImpl.getInstance().openUrl(this.item.changePasswordUrl);
@@ -122,8 +152,38 @@ export class CheckupListItemElement extends CheckupListItemElementBase {
   }
 
   private onAlreadyChangedClick_(e: Event) {
-    // TODO(crbug.com/1401001): Show edit disclaimer.
+    this.showEditPasswordDisclaimer_ = true;
     e.preventDefault();
+  }
+
+  private onEditPasswordDialogClosed_() {
+    this.showEditPasswordDialog_ = false;
+    this.item.password = undefined;
+    this.item.note = undefined;
+  }
+
+  private onEditPasswordClick_() {
+    this.showEditDialog();
+  }
+
+  private onEditDisclaimerClosed_() {
+    this.showEditPasswordDisclaimer_ = false;
+  }
+
+  private onDeletePasswordDialogClosed_() {
+    this.showDeletePasswordDialog_ = false;
+  }
+
+  private onDeletePasswordClick_() {
+    PasswordManagerImpl.getInstance().removeSavedPassword(
+        this.item.id, this.item.storedIn);
+    this.dispatchEvent(new CustomEvent('password-removed', {
+      bubbles: true,
+      composed: true,
+      detail: {
+        removedFromStores: this.item.storedIn,
+      },
+    }));
   }
 }
 

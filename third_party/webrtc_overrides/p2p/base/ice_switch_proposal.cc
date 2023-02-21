@@ -1,8 +1,5 @@
 #include "third_party/webrtc_overrides/p2p/base/ice_switch_proposal.h"
 
-#include <algorithm>
-#include <iterator>
-
 #include "base/notreached.h"
 
 #include "third_party/webrtc/p2p/base/ice_controller_interface.h"
@@ -36,6 +33,8 @@ IceSwitchReason ConvertFromWebrtcIceSwitchReason(
       return IceSwitchReason::kSelectedConnectionDestroyed;
     case cricket::IceSwitchReason::ICE_CONTROLLER_RECHECK:
       return IceSwitchReason::kIceControllerRecheck;
+    case cricket::IceSwitchReason::APPLICATION_REQUESTED:
+      return IceSwitchReason::kApplicationRequested;
     default:
       NOTREACHED();
       return IceSwitchReason::kUnknown;
@@ -66,8 +65,43 @@ std::string IceSwitchReasonToString(IceSwitchReason reason) {
       return "SelectedConnectionDestroyed";
     case IceSwitchReason::kIceControllerRecheck:
       return "IceControllerRecheck";
+    case IceSwitchReason::kApplicationRequested:
+      return "ApplicationRequested";
     default:
       NOTREACHED();
+  }
+}
+
+cricket::IceSwitchReason ConvertToWebrtcIceSwitchReason(
+    IceSwitchReason reason) {
+  switch (reason) {
+    case IceSwitchReason::kRemoteCandidateGenerationChange:
+      return cricket::IceSwitchReason::REMOTE_CANDIDATE_GENERATION_CHANGE;
+    case IceSwitchReason::kNetworkPreferenceChange:
+      return cricket::IceSwitchReason::NETWORK_PREFERENCE_CHANGE;
+    case IceSwitchReason::kNewConnectionFromLocalCandidate:
+      return cricket::IceSwitchReason::NEW_CONNECTION_FROM_LOCAL_CANDIDATE;
+    case IceSwitchReason::kNewConnectionFromRemoteCandidate:
+      return cricket::IceSwitchReason::NEW_CONNECTION_FROM_REMOTE_CANDIDATE;
+    case IceSwitchReason::kNewConnectionFromUnknownRemoteAddress:
+      return cricket::IceSwitchReason::
+          NEW_CONNECTION_FROM_UNKNOWN_REMOTE_ADDRESS;
+    case IceSwitchReason::kNominationOnControlledSide:
+      return cricket::IceSwitchReason::NOMINATION_ON_CONTROLLED_SIDE;
+    case IceSwitchReason::kDataReceived:
+      return cricket::IceSwitchReason::DATA_RECEIVED;
+    case IceSwitchReason::kConnectStateChange:
+      return cricket::IceSwitchReason::CONNECT_STATE_CHANGE;
+    case IceSwitchReason::kSelectedConnectionDestroyed:
+      return cricket::IceSwitchReason::SELECTED_CONNECTION_DESTROYED;
+    case IceSwitchReason::kIceControllerRecheck:
+      return cricket::IceSwitchReason::ICE_CONTROLLER_RECHECK;
+    case IceSwitchReason::kApplicationRequested:
+      return cricket::IceSwitchReason::APPLICATION_REQUESTED;
+    case IceSwitchReason::kUnknown:
+    default:
+      NOTREACHED();
+      return cricket::IceSwitchReason::UNKNOWN;
   }
 }
 
@@ -81,13 +115,18 @@ IceSwitchProposal::IceSwitchProposal(
     bool reply_expected)
     : IceProposal(reply_expected),
       reason_(ConvertFromWebrtcIceSwitchReason(reason)),
-      connection_(switch_result.connection),
       recheck_event_(switch_result.recheck_event) {
-  std::transform(
-      switch_result.connections_to_forget_state_on.cbegin(),
-      switch_result.connections_to_forget_state_on.cend(),
-      std::back_inserter(connections_to_forget_state_on_),
-      [](const cricket::Connection* conn) { return IceConnection(conn); });
+  if (switch_result.connection.value_or(nullptr)) {
+    connection_ = IceConnection(switch_result.connection.value());
+  } else {
+    connection_ = absl::nullopt;
+  }
+  for (const cricket::Connection* conn :
+       switch_result.connections_to_forget_state_on) {
+    if (conn) {
+      connections_to_forget_state_on_.emplace_back(conn);
+    }
+  }
 }
 
 std::string IceSwitchProposal::ToString() const {

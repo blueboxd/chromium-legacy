@@ -13,6 +13,7 @@
 #include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/task/single_thread_task_runner.h"
+#include "base/threading/platform_thread.h"
 #include "cc/resources/ui_resource_bitmap.h"
 #include "cc/resources/ui_resource_client.h"
 #include "cc/slim/frame_sink.h"
@@ -75,7 +76,9 @@ class COMPONENT_EXPORT(CC_SLIM) FrameSinkImpl
   void DidReceiveCompositorFrameAck(
       std::vector<viz::ReturnedResource> resources) override;
   void OnBeginFrame(const viz::BeginFrameArgs& begin_frame_args,
-                    const viz::FrameTimingDetailsMap& timing_details) override;
+                    const viz::FrameTimingDetailsMap& timing_details,
+                    bool frame_ack,
+                    std::vector<viz::ReturnedResource> resources) override;
   void OnBeginFramePausedChanged(bool paused) override {}
   void ReclaimResources(std::vector<viz::ReturnedResource> resources) override;
   void OnCompositorFrameTransitionDirectiveProcessed(
@@ -102,7 +105,8 @@ class COMPONENT_EXPORT(CC_SLIM) FrameSinkImpl
                     compositor_frame_sink_associated_remote,
                 mojo::PendingReceiver<viz::mojom::CompositorFrameSinkClient>
                     client_receiver,
-                scoped_refptr<viz::ContextProvider> context_provider);
+                scoped_refptr<viz::ContextProvider> context_provider,
+                base::PlatformThreadId io_thread_id);
 
   using UploadedResourceMap =
       base::flat_map<cc::UIResourceId, UploadedUIResource>;
@@ -118,6 +122,8 @@ class COMPONENT_EXPORT(CC_SLIM) FrameSinkImpl
       pending_client_receiver_;
 
   mojo::AssociatedRemote<viz::mojom::CompositorFrameSink> frame_sink_remote_;
+  // Separate from AssociatedRemote above for testing.
+  viz::mojom::CompositorFrameSink* frame_sink_ = nullptr;
   mojo::Receiver<viz::mojom::CompositorFrameSinkClient> client_receiver_{this};
   scoped_refptr<viz::ContextProvider> context_provider_;
   raw_ptr<FrameSinkImplClient> client_ = nullptr;
@@ -127,6 +133,11 @@ class COMPONENT_EXPORT(CC_SLIM) FrameSinkImpl
   viz::ClientResourceProvider resource_provider_;
   // Last `HitTestRegionList` sent to viz.
   absl::optional<viz::HitTestRegionList> hit_test_region_list_;
+  base::PlatformThreadId io_thread_id_;
+
+  viz::LocalSurfaceId last_submitted_local_surface_id_;
+  float last_submitted_device_scale_factor_ = 1.f;
+  gfx::Size last_submitted_size_in_pixels_;
 
   bool needs_begin_frame_ = false;
 };

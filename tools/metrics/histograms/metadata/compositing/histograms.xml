@@ -256,7 +256,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Compositing.Display.DrawToSwapUs" units="microseconds"
-    expires_after="2023-06-11">
+    expires_after="2023-08-13">
   <owner>backer@chromium.org</owner>
   <owner>rjkroege@chromium.org</owner>
   <summary>
@@ -269,7 +269,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Compositing.Display.DrmOverlayManager.FirstTestPageFlipPassed"
-    enum="Boolean" expires_after="2023-06-18">
+    enum="Boolean" expires_after="2023-08-20">
   <owner>khaslett@chromium.org</owner>
   <owner>kylechar@chromium.org</owner>
   <summary>
@@ -279,7 +279,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Compositing.Display.DrmOverlayManager.TestPageFlipCount"
-    units="units" expires_after="2023-06-18">
+    units="units" expires_after="2023-08-20">
   <owner>khaslett@chromium.org</owner>
   <owner>kylechar@chromium.org</owner>
   <summary>
@@ -289,7 +289,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Compositing.Display.DrmOverlayManager.TestPageFlipUs"
-    units="microseconds" expires_after="2023-06-18">
+    units="microseconds" expires_after="2023-08-20">
   <owner>khaslett@chromium.org</owner>
   <owner>kylechar@chromium.org</owner>
   <summary>
@@ -360,7 +360,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Compositing.Display.OverlayProcessorOzone.MaxPlanesSupported"
-    units="units" expires_after="2023-06-18">
+    units="units" expires_after="2023-08-20">
   <owner>khaslett@chromium.org</owner>
   <owner>kylechar@chromium.org</owner>
   <summary>
@@ -372,7 +372,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="Compositing.Display.OverlayProcessorUsingStrategy.CandidateCombinationPreviouslySucceeded"
-    enum="Boolean" expires_after="2023-06-18">
+    enum="Boolean" expires_after="2023-08-20">
   <owner>khaslett@chromium.org</owner>
   <owner>kylechar@chromium.org</owner>
   <summary>
@@ -435,7 +435,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="Compositing.Display.OverlayProcessorUsingStrategy.ShouldAttemptMultipleOverlays"
-    enum="AttemptingMultipleOverlays" expires_after="2023-06-18">
+    enum="AttemptingMultipleOverlays" expires_after="2023-08-20">
   <owner>khaslett@chromium.org</owner>
   <owner>kylechar@chromium.org</owner>
   <summary>
@@ -622,7 +622,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Compositing.Renderer.LCDTextDisallowedReasonKPixels"
-    enum="LCDTextDisallowedReason" expires_after="2023-06-18">
+    enum="LCDTextDisallowedReason" expires_after="2023-08-20">
   <owner>wangxianzhu@chromium.org</owner>
   <owner>paint-dev@chromium.org</owner>
   <summary>
@@ -748,7 +748,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Compositing.SurfaceAggregator.DeclareResourcesUs"
-    units="microseconds" expires_after="2023-06-18">
+    units="microseconds" expires_after="2023-08-20">
   <owner>kylechar@chromium.org</owner>
   <owner>jonross@chromium.org</owner>
   <summary>
@@ -762,7 +762,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Compositing.SurfaceAggregator.PrewalkedSurfaceCount"
-    units="surfaces" expires_after="2023-06-18">
+    units="surfaces" expires_after="2023-08-20">
   <owner>kylechar@chromium.org</owner>
   <owner>jonross@chromium.org</owner>
   <summary>
@@ -772,7 +772,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Compositing.SurfaceAggregator.PrewalkUs" units="microseconds"
-    expires_after="2023-06-18">
+    expires_after="2023-08-20">
   <owner>kylechar@chromium.org</owner>
   <owner>jonross@chromium.org</owner>
   <summary>
@@ -928,6 +928,54 @@ chromium-metrics-reviews@google.com.
   </token>
 </histogram>
 
+<histogram name="Graphics.Exo.Smoothness.DidNotProduceToFrameArrival"
+    units="microseconds" expires_after="2023-12-31">
+  <owner>jonross@chromium.org</owner>
+  <owner>yzshen@chromium.org</owner>
+  <owner>graphics-dev@chromium.org</owner>
+  <summary>
+    Measures the time duration between Exo sending a DidNotProduceFrame response
+    and the next frame arrival, if the next frame arrives before a new
+    BeginFrame request. Reported for clients with high-resolution clocks.
+
+    This metric is used to measure whether the deadline Exo uses to wait for
+    frames is reasonable. Please note that a value is reported for each
+    DidNotProduceFrame. If (1) DidNotProduceFrame is issued when there are
+    already queued BeginFrame requests; or (2) a new BeginFrame request arrives
+    before the next frame, then the value reported is 0.
+  </summary>
+</histogram>
+
+<histogram name="Graphics.Exo.Smoothness.PercentDidNotProduceFrame" units="%"
+    expires_after="2023-12-31">
+  <owner>jonross@chromium.org</owner>
+  <owner>yzshen@chromium.org</owner>
+  <owner>graphics-dev@chromium.org</owner>
+  <summary>
+    Tracks the percent of BeginFrame requests that Exo receives and responds
+    with DidNotProduceFrame.
+
+    A new value is reported for every 100 BeginFrame requests that a shell
+    surface receives. Note that this metric is reported only when there are
+    sufficient number of BeginFrame requests (&gt;= 100).
+  </summary>
+</histogram>
+
+<histogram name="Graphics.Exo.Smoothness.PercentFrameDiscarded" units="%"
+    expires_after="2023-12-31">
+  <owner>jonross@chromium.org</owner>
+  <owner>yzshen@chromium.org</owner>
+  <owner>graphics-dev@chromium.org</owner>
+  <summary>
+    Tracks the percent of compositor frames that are submitted from Exo clients
+    and directly discarded without being sent to the GPU process.
+
+    A new value is reported for every 100 frames that a shell surface submits.
+    Note that this metric is reported only when there are sufficient number of
+    frames (&gt;= 100).
+  </summary>
+</histogram>
+
 <histogram name="Graphics.Smoothness.95pctPercentDroppedFrames_1sWindow"
     units="%" expires_after="2023-07-02">
   <owner>jonross@chromium.org</owner>
@@ -951,7 +999,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Graphics.Smoothness.Checkerboarding" units="%"
-    expires_after="2023-06-18">
+    expires_after="2023-08-20">
   <owner>jonross@chromium.org</owner>
   <owner>graphics-dev@chromium.org</owner>
   <summary>
@@ -992,7 +1040,7 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Graphics.Smoothness.Jank" units="%" expires_after="2023-08-08">
+<histogram name="Graphics.Smoothness.Jank" units="%" expires_after="2023-08-20">
   <owner>jonross@chromium.org</owner>
   <owner>mjzhang@chromium.org</owner>
   <owner>graphics-dev@chromium.org</owner>
@@ -1228,7 +1276,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Graphics.Smoothness.PercentMissedDeadlineFrames.AllSequences"
-    units="%" expires_after="2023-06-18">
+    units="%" expires_after="2023-08-20">
   <owner>jonross@chromium.org</owner>
   <owner>graphics-dev@chromium.org</owner>
   <summary>

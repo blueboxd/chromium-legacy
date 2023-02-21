@@ -79,7 +79,7 @@ FeatureTile::FeatureTile(base::RepeatingCallback<void()> callback,
   enabled_changed_subscription_ = AddEnabledChangedCallback(base::BindRepeating(
       [](FeatureTile* feature_tile) {
         feature_tile->UpdateColors();
-        if (!feature_tile->drill_in_button()) {
+        if (!feature_tile->drill_in_button_) {
           return;
         }
         feature_tile->drill_in_button_->SetEnabled(feature_tile->GetEnabled());
@@ -184,20 +184,37 @@ void FeatureTile::CreateDrillInButton(base::RepeatingCallback<void()> callback,
 
   drill_in_button_ = AddChildView(std::move(drill_in_button));
   drill_in_arrow_ = drill_in_button_->AddChildView(std::move(drill_in_arrow));
+
+  UpdateColors();
 }
 
 void FeatureTile::UpdateColors() {
   ui::ColorId background_color;
   ui::ColorId foreground_color;
+  ui::ColorId foreground_optional_color;
 
   if (GetEnabled()) {
     background_color = toggled_ ? cros_tokens::kCrosSysSystemPrimaryContainer
                                 : cros_tokens::kCrosSysSystemOnBase;
     foreground_color = toggled_ ? cros_tokens::kCrosSysSystemOnPrimaryContainer
                                 : cros_tokens::kCrosSysOnSurface;
+    foreground_optional_color =
+        toggled_ ? cros_tokens::kCrosSysSystemOnPrimaryContainer
+                 : cros_tokens::kCrosSysSecondary;
+
+    if (!features::IsJellyEnabled() && drill_in_arrow_) {
+      // TODO(b/262615213): Only the toggled states are interesting here. The
+      // un-toggled states are the defaults for `IconButton` so when Jelly
+      // launches, this can be deleted safely.
+      drill_in_arrow_->SetIconColorId(foreground_optional_color);
+      drill_in_arrow_->SetBackgroundColorId(
+          toggled_ ? static_cast<ui::ColorId>(kColorAshTileSmallCircle)
+                   : kColorAshControlBackgroundColorInactive);
+    }
   } else {
     background_color = cros_tokens::kCrosSysDisabledContainer;
     foreground_color = cros_tokens::kCrosSysDisabled;
+    foreground_optional_color = cros_tokens::kCrosSysDisabled;
   }
 
   SetBackground(views::CreateThemedRoundedRectBackground(background_color,
@@ -206,7 +223,7 @@ void FeatureTile::UpdateColors() {
                                                  foreground_color, kIconSize));
   label_->SetEnabledColorId(foreground_color);
   if (sub_label_) {
-    sub_label_->SetEnabledColorId(foreground_color);
+    sub_label_->SetEnabledColorId(foreground_optional_color);
   }
 }
 

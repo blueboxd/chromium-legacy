@@ -27,6 +27,7 @@ per-file chromium.fyi.json=lacros-version-skew-roller@chops-service-accounts.iam
 per-file chromium.fyi.json=chrome-weblayer-builder@chops-service-accounts.iam.gserviceaccount.com
 per-file chromium.chromiumos.json=chrome-weblayer-builder@chops-service-accounts.iam.gserviceaccount.com
 per-file chromium.memory.json=chrome-weblayer-builder@chops-service-accounts.iam.gserviceaccount.com
+per-file chromium.coverage.json=chrome-weblayer-builder@chops-service-accounts.iam.gserviceaccount.com
 
 # For Lacros skylab tests cros image roller related reviews
 per-file chrome.json=skylab-test-cros-roller@chops-service-accounts.iam.gserviceaccount.com
@@ -58,8 +59,9 @@ per-file chromium.perf.fyi.json=chonggu@google.com
 per-file chromium.rust.json=file://build/rust/OWNERS
 
 # WebRTC owners
-per-file chromium.webrtc.json=file://infra/config/subprojects/webrtc/OWNERS
 per-file chromium.webrtc.fyi.json=file://infra/config/subprojects/webrtc/OWNERS
+per-file chromium.webrtc.json=file://infra/config/subprojects/webrtc/OWNERS
+per-file tryserver.webrtc.json=file://infra/config/subprojects/webrtc/OWNERS
 
 # Open Screen owners.  Keep in sync with openscreen.py recipe owners.
 per-file *openscreen*.json=jophba@chromium.org

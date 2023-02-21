@@ -33,7 +33,6 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/input/web_coalesced_input_event.h"
-#include "third_party/blink/public/platform/web_url_loader_mock_factory.h"
 #include "third_party/blink/public/web/web_element.h"
 #include "third_party/blink/public/web/web_settings.h"
 #include "third_party/blink/renderer/core/dom/element.h"
@@ -53,6 +52,7 @@
 #include "third_party/blink/renderer/core/testing/sim/sim_test.h"
 #include "third_party/blink/renderer/platform/testing/testing_platform_support.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
+#include "third_party/blink/renderer/platform/testing/url_loader_mock_factory.h"
 #include "third_party/blink/renderer/platform/testing/url_test_helpers.h"
 
 namespace blink {
@@ -88,7 +88,7 @@ class BrowserControlsTest : public testing::Test,
   }
 
   ~BrowserControlsTest() override {
-    WebURLLoaderMockFactory::GetSingletonInstance()
+    URLLoaderMockFactory::GetSingletonInstance()
         ->UnregisterAllURLsAndClearMemoryCache();
   }
 

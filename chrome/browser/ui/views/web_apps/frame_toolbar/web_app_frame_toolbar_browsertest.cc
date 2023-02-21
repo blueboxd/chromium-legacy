@@ -23,6 +23,7 @@
 #include "chrome/browser/ui/views/frame/app_menu_button.h"
 #include "chrome/browser/ui/views/frame/browser_non_client_frame_view.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
+#include "chrome/browser/ui/views/frame/browser_view_layout.h"
 #include "chrome/browser/ui/views/frame/toolbar_button_provider.h"
 #include "chrome/browser/ui/views/frame/top_container_view.h"
 #include "chrome/browser/ui/views/infobars/infobar_container_view.h"
@@ -37,7 +38,7 @@
 #include "chrome/browser/ui/web_applications/test/web_app_browsertest_util.h"
 #include "chrome/browser/ui/web_applications/web_app_controller_browsertest.h"
 #include "chrome/browser/ui/web_applications/web_app_menu_model.h"
-#include "chrome/browser/web_applications/isolation_data.h"
+#include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_location.h"
 #include "chrome/browser/web_applications/mojom/user_display_mode.mojom.h"
 #include "chrome/browser/web_applications/web_app_constants.h"
 #include "chrome/browser/web_applications/web_app_install_info.h"
@@ -483,7 +484,7 @@ class WebAppFrameToolbarBrowserTest_Borderless
       web_app::ScopedRegistryUpdate(&provider->sync_bridge_unsafe())
           ->UpdateApp(app_id)
           ->SetIsolationData(
-              web_app::IsolationData(web_app::IsolationData::DevModeProxy{
+              web_app::WebApp::IsolationData(web_app::DevModeProxy{
                   .proxy_url = url::Origin::Create(start_url)}));
     }
 
@@ -724,6 +725,30 @@ IN_PROC_BROWSER_TEST_F(WebAppFrameToolbarBrowserTest_Borderless, PopupResize) {
             kExpectedWidth);
   EXPECT_EQ(EvalJs(popup_web_contents, "window.outerWidth").ExtractInt(),
             kExpectedWidth);
+#endif
+}
+
+// Test to ensure that the minimum size for a borderless app is as small as
+// possible. To test the fix for b/265935069.
+IN_PROC_BROWSER_TEST_F(WebAppFrameToolbarBrowserTest_Borderless,
+                       FrameMinimumSize) {
+  InstallAndLaunchWebApp(/*uses_borderless=*/true);
+  GrantWindowManagementPermission();
+
+  ASSERT_TRUE(helper()->browser_view()->borderless_mode_enabled_for_testing());
+  ASSERT_TRUE(helper()
+                  ->browser_view()
+                  ->window_management_permission_granted_for_testing());
+  ASSERT_TRUE(helper()->browser_view()->IsBorderlessModeEnabled());
+
+  // The minimum size of a window is smaller for a borderless mode app than for
+  // a normal app. The size of the borders is inconsistent (and we don't have
+  // access to the exact borders from here) and varies by OS.
+#if BUILDFLAG(IS_CHROMEOS)
+  EXPECT_LT(helper()->frame_view()->GetMinimumSize().width(),
+            BrowserViewLayout::kMainBrowserContentsMinimumWidth);
+#elif BUILDFLAG(IS_LINUX)
+  EXPECT_EQ(helper()->frame_view()->GetMinimumSize(), gfx::Size(1, 1));
 #endif
 }
 

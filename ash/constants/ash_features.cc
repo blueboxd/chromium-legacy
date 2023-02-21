@@ -53,6 +53,13 @@ BASE_FEATURE(kAllowAmbientEQ,
              "AllowAmbientEQ",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+// Allows network connections which use EAP methods that validate the
+// server certificate to use the default server CA certificate without
+// verifying the servers identity.
+BASE_FEATURE(kAllowEapDefaultCasWithoutSubjectVerification,
+             "AllowEapDefaultCasWithoutSubjectVerification",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // Controls whether devices are updated before reboot after the first update.
 BASE_FEATURE(kAllowRepeatedUpdates,
              "AllowRepeatedUpdates",
@@ -177,10 +184,6 @@ BASE_FEATURE(kAssistantNativeIcons,
 // Enables Peripheral volume change by hardware reported steps
 BASE_FEATURE(kAudioPeripheralVolumeGranularity,
              "AudioPeripheralVolumeGranularity",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
-BASE_FEATURE(kCrasSplitAlsaUsbInternal,
-             "CrasSplitAlsaUsbInternal",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Controls whether the AudioSourceFetcher resamples the audio for speech
@@ -581,11 +584,6 @@ BASE_FEATURE(kDragUnpinnedAppToPin,
              "DragUnpinnedAppToPin",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
-// Enables dragging and dropping an existing window to new desk in overview.
-BASE_FEATURE(kDragWindowToNewDesk,
-             "DragWindowToNewDesk",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 // If enabled, DriveFS will be used for Drive sync.
 BASE_FEATURE(kDriveFs, "DriveFS", base::FEATURE_ENABLED_BY_DEFAULT);
 
@@ -660,6 +658,12 @@ BASE_FEATURE(kEnableBackgroundBlur,
 // Enables external keyboard testers in the diagnostics app.
 BASE_FEATURE(kEnableExternalKeyboardsInDiagnostics,
              "EnableExternalKeyboardsInDiagnosticsApp",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Enables loading debug daemon logs for feedback in parallel to reduce client
+// side wait time.
+BASE_FEATURE(kEnableGetDebugdLogsInParallel,
+             "EnableGetDebugdLogsInParallel",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Enables setting the device hostname.
@@ -832,6 +836,11 @@ BASE_FEATURE(kFastPairBleRotation,
 // Enables using new Handshake retry logic for Fast Pair.
 BASE_FEATURE(kFastPairHandshakeRefactor,
              "FastPairHandshakeRefactor",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
+// Enables Saved Devices nicknames logic for Fast Pair.
+BASE_FEATURE(kFastPairSavedDevicesNicknames,
+             "FastPairSavedDevicesNicknames",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
 // The amount of minutes we should wait before allowing notifications for a
@@ -1267,11 +1276,6 @@ BASE_FEATURE(kLacrosProfileMigrationForceOff,
              "LacrosProfileMigrationForceOff",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-// Disable this to turn off profile migration for non-googlers.
-BASE_FEATURE(kLacrosProfileMigrationForAnyUser,
-             "LacrosProfileMigrationForAnyUser",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 // If enabled, use `MoveMigrator` instead of `CopyMigrator` to migrate data.
 // `MoveMigrator` moves data from ash to lacros instead of copying them.
 BASE_FEATURE(kLacrosMoveProfileMigration,
@@ -1624,12 +1628,6 @@ BASE_FEATURE(kProjector, "Projector", base::FEATURE_ENABLED_BY_DEFAULT);
 // Controls whether to enable Projector for managed users.
 BASE_FEATURE(kProjectorManagedUser,
              "ProjectorManagedUser",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
-// Controls whether to enable Projector annotator tools.
-// The annotator tools are based on the ink library.
-BASE_FEATURE(kProjectorAnnotator,
-             "ProjectorAnnotator",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Controls whether the Projector app launches in debug mode, with more detailed
@@ -2179,6 +2177,18 @@ BASE_FEATURE(kDeviceActiveClientChurnCohortCheckMembership,
              "DeviceActiveClientChurnCohortCheckMembership",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+// Enables or disables PSM CheckIn for the churn observation device active
+// pings on ChromeOS.
+BASE_FEATURE(kDeviceActiveClientChurnObservationCheckIn,
+             "DeviceActiveClientChurnObservationCheckIn",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Enables or disables PSM CheckMembership for the churn observation
+// device active pings on ChromeOS.
+BASE_FEATURE(kDeviceActiveClientChurnObservationCheckMembership,
+             "DeviceActiveClientChurnObservationCheckMembership",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // Enables or disables forced reboots when DeviceScheduledReboot policy is set.
 BASE_FEATURE(kDeviceForceScheduledReboot,
              "DeviceForceScheduledReboot",
@@ -2265,6 +2275,11 @@ bool IsAdjustSplitViewForVKEnabled() {
 
 bool IsAllowAmbientEQEnabled() {
   return base::FeatureList::IsEnabled(kAllowAmbientEQ);
+}
+
+bool IsEapDefaultCasWithoutSubjectVerificationAllowed() {
+  return base::FeatureList::IsEnabled(
+      kAllowEapDefaultCasWithoutSubjectVerification);
 }
 
 bool IsAmbientModeDevUseProdEnabled() {
@@ -2442,10 +2457,6 @@ bool IsDragUnpinnedAppToPinEnabled() {
   return base::FeatureList::IsEnabled(kDragUnpinnedAppToPin);
 }
 
-bool IsDragWindowToNewDeskEnabled() {
-  return base::FeatureList::IsEnabled(kDragWindowToNewDesk);
-}
-
 bool IsDriveFsMirroringEnabled() {
   return base::FeatureList::IsEnabled(kDriveFsMirroring);
 }
@@ -2510,6 +2521,10 @@ bool IsFastPairBleRotationEnabled() {
 
 bool IsFastPairHandshakeRefactorEnabled() {
   return base::FeatureList::IsEnabled(kFastPairHandshakeRefactor);
+}
+
+bool IsFastPairSavedDevicesNicknamesEnabled() {
+  return base::FeatureList::IsEnabled(kFastPairSavedDevicesNicknames);
 }
 
 bool IsFastPairLowPowerEnabled() {
@@ -2939,11 +2954,6 @@ bool IsProjectorAllUserEnabled() {
 
 bool IsProjectorManagedUserEnabled() {
   return base::FeatureList::IsEnabled(kProjectorManagedUser);
-}
-
-bool IsProjectorAnnotatorEnabled() {
-  return IsProjectorEnabled() &&
-         base::FeatureList::IsEnabled(kProjectorAnnotator);
 }
 
 bool IsProjectorAppDebugMode() {

@@ -19,53 +19,6 @@ interface Options {
   fixed: boolean;
 }
 
-/**
- * Function used to test ancestor elements
- *
- * Returning true signals we want to return this element
- * Returning false will continue to traverse ancestors
- */
-type ElementTestFn = (element: Element) => boolean;
-
-/**
- * Traverse ancestor elements to find a parent that passes the `testFn`,
- * crossing shadowRoot boundaries when encountered
- *
- * The traversal starts with the parent of the `child` element
- *
- * Traversal ends either when the `root` shadowRoot is encountered or
- * an element produces `true` from the `testFn`.
- */
-function getAncestor(child: Element, root: ShadowRoot, testFn: ElementTestFn):
-    Element|ShadowRoot {
-  let parent: Element|ShadowRoot|null = child.parentElement;
-  while (parent && !testFn(parent)) {
-    if (!parent.parentElement && parent.parentNode instanceof ShadowRoot) {
-      if (parent.parentNode === root) {
-        return root;
-      }
-      parent = parent.parentNode.host;
-    } else {
-      parent = parent.parentElement;
-    }
-  }
-  return parent ? parent : root;
-}
-
-const relativePositionValues = [
-  'absolute',
-  'fixed',
-  'relative',
-];
-
-const isRelativePosition: ElementTestFn = (element) => {
-  const positionVal = getComputedStyle(element).getPropertyValue('position');
-  return relativePositionValues.includes(positionVal);
-};
-
-const isFixedPosition: ElementTestFn = (element) => {
-  return getComputedStyle(element).getPropertyValue('position') === 'fixed';
-};
 
 /**
  * HelpBubble controller class
@@ -79,6 +32,14 @@ export class HelpBubbleController {
   private anchor_: HTMLElement|null = null;
   private bubble_: HelpBubbleElement|null = null;
   private options_: Options = {padding: new InsetsF(), fixed: false};
+
+  /**
+   * Whether the anchor element is contained in an element that is scrollable
+   * but is not the document body. These elements require different visibility
+   * handling as they will not technically intersect the document body when
+   * they're scrolled out of view.
+   */
+  private isNonBodyScrollable_: boolean = false;
 
   /**
    * Whether a help bubble (webui or external) is being shown for this
@@ -151,6 +112,10 @@ export class HelpBubbleController {
     return this.options_.fixed;
   }
 
+  isNonBodyScrollable(): boolean {
+    return this.isNonBodyScrollable_;
+  }
+
   isExternal() {
     return this.isExternal_;
   }
@@ -184,6 +149,8 @@ export class HelpBubbleController {
     anchor.dataset['nativeId'] = this.nativeId_;
     this.anchor_ = anchor;
     this.options_ = options;
+    this.isNonBodyScrollable_ =
+        !options.fixed && HelpBubbleController.getIsNonBodyScrollable_(anchor);
     return true;
   }
 
@@ -253,26 +220,29 @@ export class HelpBubbleController {
         this.bubble_.progress.total >= this.bubble_.progress.current);
 
     assert(this.root_);
-    if (this.options_.fixed) {
-      if (isFixedPosition(this.anchor_)) {
-        // anchor is fixed so bubble needs to be fixed
-        // insert bubble into root
-        this.bubble_.fixed = true;
-        const relativeRoot =
-            getAncestor(this.anchor_, this.root_, isRelativePosition);
-        relativeRoot.appendChild(this.bubble_);
-      } else {
-        // ancestor of anchor should be fixed
-        // insert bubble into fixed ancestor
-        const fixedRoot =
-            getAncestor(this.anchor_, this.root_, isFixedPosition);
-        fixedRoot.appendChild(this.bubble_);
-      }
-    } else {
-      // insert bubble into root
-      this.root_.appendChild(this.bubble_);
-    }
 
+    // The bubble must be placed in the same coordinate system as the anchor.
+    // The `offsetParent` of an element is the element which provides its
+    // coordinate reference frame. The help bubble must also be a descendant of
+    // the host (want to avoid placing the help bubble outside the mixin
+    // element). This provides three possible cases:
+    //  - Fixed anchor. `offsetParent` is null, coordinates are relative to the
+    //    viewport. The help bubble must also be fixed.
+    //  - `offsetParent` is the host or an enclosing element. The help bubble is
+    //    placed in the host's shadow DOM, ensuring it shares a coordinate
+    //    system (the only way this wouldn't work would be if the anchor were
+    //    outside the host, which is a misuse of the help bubble system).
+    //  - `offsetParent` is inside the host. The help bubble is parented to the
+    //    `offsetParent`, guaranteeing that the coordinate systems are the same.
+    const offsetParent = this.anchor_.offsetParent;
+    const bubbleParent = (offsetParent && this.root_.contains(offsetParent)) ?
+        offsetParent :
+        this.root_;
+    if (getComputedStyle(this.anchor_).getPropertyValue('position') ===
+        'fixed') {
+      this.bubble_.fixed = true;
+    }
+    bubbleParent.appendChild(this.bubble_);
     return this.bubble_;
   }
 
@@ -285,5 +255,39 @@ export class HelpBubbleController {
     assert(
         this.anchor_, 'Set anchor highlight: expected valid anchor element.');
     this.anchor_.classList.toggle(ANCHOR_HIGHLIGHT_CLASS, highlight);
+  }
+
+  /**
+   * Gets the immediate ancestor element of `element` in the DOM, or null if
+   * none. This steps out of shadow DOMs as it finds them.
+   */
+  private static getImmediateAncestor(element: Element): Element|null {
+    if (element.parentElement) {
+      return element.parentElement;
+    }
+    if (element.parentNode instanceof ShadowRoot) {
+      return (element.parentNode as ShadowRoot).host;
+    }
+    return null;
+  }
+
+  /**
+   * Returns whether `element` has an ancestor in the document that is
+   * scrollable and that is not the document body. These elements require
+   * special visibility handling.
+   */
+  private static getIsNonBodyScrollable_(element: Element): boolean {
+    const scrollableOverflow = ['scroll', 'auto', 'overlay'];
+    for (let parent = HelpBubbleController.getImmediateAncestor(element);
+         parent && parent !== document.body;
+         parent = HelpBubbleController.getImmediateAncestor(parent)) {
+      const style = getComputedStyle(parent);
+      if (scrollableOverflow.includes(style.overflow) ||
+          scrollableOverflow.includes(style.overflowX) ||
+          scrollableOverflow.includes(style.overflowY)) {
+        return true;
+      }
+    }
+    return false;
   }
 }

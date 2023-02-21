@@ -97,8 +97,6 @@ class ASH_PUBLIC_EXPORT AmbientBackendController {
   using GetSettingsCallback =
       base::OnceCallback<void(const absl::optional<AmbientSettings>& settings)>;
   using UpdateSettingsCallback = base::OnceCallback<void(bool success)>;
-  using OnSettingPreviewFetchedCallback =
-      base::OnceCallback<void(const std::vector<std::string>& preview_urls)>;
   using OnPersonalAlbumsFetchedCallback =
       base::OnceCallback<void(PersonalAlbums)>;
   // TODO(wutao): Make |settings| move only.

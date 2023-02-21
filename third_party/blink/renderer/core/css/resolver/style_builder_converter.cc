@@ -2192,7 +2192,7 @@ TextSizeAdjust StyleBuilderConverter::ConvertTextSizeAdjust(
 TextUnderlinePosition StyleBuilderConverter::ConvertTextUnderlinePosition(
     StyleResolverState& state,
     const CSSValue& value) {
-  TextUnderlinePosition flags = kTextUnderlinePositionAuto;
+  TextUnderlinePosition flags = TextUnderlinePosition::kAuto;
 
   auto process = [&flags](const CSSValue& identifier) {
     flags |=
@@ -2507,7 +2507,7 @@ static const CSSValue& ComputeRegisteredPropertyValue(
     const KURL& base_url = context ? context->BaseURL() : KURL();
     const WTF::TextEncoding& charset =
         context ? context->Charset() : WTF::TextEncoding();
-    return *uri_value->ValueWithURLMadeAbsolute(base_url, charset);
+    return *uri_value->ComputedCSSValue(base_url, charset);
   }
 
   return value;

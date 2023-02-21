@@ -51,6 +51,14 @@ BASE_FEATURE(kDefaultBrowserIntentsShowSettings,
              "DefaultBrowserIntentsShowSettings",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
+BASE_FEATURE(kIOSCustomBrowserEditMenu,
+             "IOSCustomBrowserEditMenu",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+BASE_FEATURE(kIOSEditMenuPartialTranslate,
+             "IOSEditMenuPartialTranslate",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 BASE_FEATURE(kIOSNewOmniboxImplementation,
              "kIOSNewOmniboxImplementation",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -109,12 +117,6 @@ BASE_FEATURE(kEnableExpKitAppleCalendar,
              "EnableExpKitAppleCalendar",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-BASE_FEATURE(kEnableEmails, "EnableEmails", base::FEATURE_DISABLED_BY_DEFAULT);
-
-BASE_FEATURE(kEnablePhoneNumbers,
-             "EnablePhoneNumbers",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
 const char kExperienceKitMapsVariationName[] = "ExperienceKitMapsVariant";
 extern const char kEnableExperienceKitMapsVariationSrp[] = "with SRP";
 
@@ -137,15 +139,3 @@ bool IsTabGridSortedByRecency() {
 BASE_FEATURE(kMultilineFadeTruncatingLabel,
              "MultilineFadeTruncatingLabel",
              base::FEATURE_DISABLED_BY_DEFAULT);
-
-BASE_FEATURE(kTabStripContextMenu,
-             "TabStripContextMenu",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
-BASE_FEATURE(kCloseAllTabsConfirmation,
-             "CloseAllTabsConfirmation",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
-bool IsCloseAllTabsConfirmationEnabled() {
-  return base::FeatureList::IsEnabled(kCloseAllTabsConfirmation);
-}

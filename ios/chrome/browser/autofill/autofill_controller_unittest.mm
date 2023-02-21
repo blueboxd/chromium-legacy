@@ -25,6 +25,7 @@
 #import "components/autofill/core/common/autofill_features.h"
 #import "components/autofill/ios/browser/autofill_agent.h"
 #import "components/autofill/ios/browser/autofill_driver_ios.h"
+#import "components/autofill/ios/browser/autofill_driver_ios_factory.h"
 #import "components/autofill/ios/browser/form_suggestion.h"
 #import "components/autofill/ios/browser/test_autofill_manager_injector.h"
 #import "components/autofill/ios/form_util/unique_id_data_tab_helper.h"
@@ -241,17 +242,13 @@ class AutofillControllerTest : public PlatformTest {
   class TestAutofillManager : public BrowserAutofillManager {
    public:
     TestAutofillManager(AutofillDriverIOS* driver, AutofillClient* client)
-        : BrowserAutofillManager(driver,
-                                 client,
-                                 "en-US",
-                                 EnableDownloadManager(false)) {}
+        : BrowserAutofillManager(driver, client, "en-US") {}
 
     TestAutofillManagerWaiter& waiter() { return waiter_; }
 
    private:
-    TestAutofillManagerWaiter waiter_{
-        *this,
-        {&AutofillManager::Observer::OnAfterFormsSeen}};
+    TestAutofillManagerWaiter waiter_{*this,
+                                      {AutofillManagerEvent::kFormsSeen}};
   };
 
   void SetUp() override;
@@ -350,9 +347,8 @@ void AutofillControllerTest::SetUp() {
   }
 
   std::string locale("en");
-  autofill::AutofillDriverIOS::PrepareForWebStateWebFrameAndDelegate(
-      web_state(), autofill_client_.get(), /*autofill_agent=*/nil, locale,
-      autofill::AutofillManager::EnableDownloadManager(false));
+  autofill::AutofillDriverIOSFactory::CreateForWebState(
+      web_state(), autofill_client_.get(), /*autofill_agent=*/nil, locale);
 
   autofill_manager_injector_ =
       std::make_unique<TestAutofillManagerInjector<TestAutofillManager>>(
@@ -428,7 +424,7 @@ void AutofillControllerTest::WaitForCondition(ConditionBlock condition) {
 TEST_F(AutofillControllerTest, ReadForm) {
   ASSERT_TRUE(LoadHtmlAndWaitForFormFetched(kProfileFormHtml, 1));
   web::WebFrame* main_frame =
-      web_state()->GetWebFramesManager()->GetMainWebFrame();
+      web_state()->GetPageWorldWebFramesManager()->GetMainWebFrame();
   BrowserAutofillManager* autofill_manager =
       AutofillDriverIOS::FromWebStateAndWebFrame(web_state(), main_frame)
           ->autofill_manager();
@@ -449,7 +445,7 @@ TEST_F(AutofillControllerTest, ReadForm) {
 TEST_F(AutofillControllerTest, ReadFormName) {
   ASSERT_TRUE(LoadHtmlAndWaitForFormFetched(kMinimalFormWithNameHtml, 1));
   web::WebFrame* main_frame =
-      web_state()->GetWebFramesManager()->GetMainWebFrame();
+      web_state()->GetPageWorldWebFramesManager()->GetMainWebFrame();
   BrowserAutofillManager* autofill_manager =
       AutofillDriverIOS::FromWebStateAndWebFrame(web_state(), main_frame)
           ->autofill_manager();

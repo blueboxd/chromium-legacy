@@ -124,6 +124,7 @@
 #include "third_party/blink/renderer/core/dom/cdata_section.h"
 #include "third_party/blink/renderer/core/dom/comment.h"
 #include "third_party/blink/renderer/core/dom/context_features.h"
+#include "third_party/blink/renderer/core/dom/css_toggle_inference.h"
 #include "third_party/blink/renderer/core/dom/document_data.h"
 #include "third_party/blink/renderer/core/dom/document_fragment.h"
 #include "third_party/blink/renderer/core/dom/document_init.h"
@@ -383,7 +384,8 @@ enum class RequestStorageResult {
   REJECTED_GRANT_DENIED = 7,
   REJECTED_INCORRECT_FRAME = 8,
   REJECTED_INSECURE_CONTEXT = 9,
-  kMaxValue = REJECTED_INSECURE_CONTEXT,
+  APPROVED_PRIMARY_FRAME = 10,
+  kMaxValue = APPROVED_PRIMARY_FRAME,
 };
 void FireRequestStorageAccessHistogram(RequestStorageResult result) {
   base::UmaHistogramEnumeration("API.StorageAccess.RequestStorageAccess",
@@ -2441,6 +2443,13 @@ bool Document::SetNeedsStyleRecalcForToggles() {
   return true;
 }
 
+CSSToggleInference& Document::EnsureCSSToggleInference() {
+  if (!css_toggle_inference_) {
+    css_toggle_inference_ = MakeGarbageCollected<CSSToggleInference>(this);
+  }
+  return *css_toggle_inference_;
+}
+
 void Document::ApplyScrollRestorationLogic() {
   DCHECK(View());
   // This function is not re-entrant. However, the places that invoke this are
@@ -3551,6 +3560,10 @@ void Document::WillInsertBody() {
     supplement->WillInsertBody();
   }
 
+  if (render_blocking_resource_manager_) {
+    render_blocking_resource_manager_->WillInsertDocumentBody();
+  }
+
   // If we get to the <body> try to resume commits since we should have content
   // to paint now.
   // TODO(esprehn): Is this really optimal? We might start producing frames
@@ -3899,8 +3912,12 @@ bool Document::DispatchBeforeUnloadEvent(ChromeClient* chrome_client,
   if (before_unload_event.returnValue().IsNull()) {
     RecordBeforeUnloadUse(BeforeUnloadUse::kNoDialogNoText);
   }
-  bool cancelled_by_script = !before_unload_event.returnValue().IsNull() ||
-                             before_unload_event.defaultPrevented();
+  bool cancelled_by_script =
+      !before_unload_event.returnValue().IsNull() ||
+      (RuntimeEnabledFeatures::
+           BeforeunloadEventCancelByPreventDefaultEnabled() &&
+       before_unload_event.defaultPrevented());
+
   if (!GetFrame() || !cancelled_by_script) {
     return true;
   }
@@ -6074,10 +6091,20 @@ bool Document::HasStorageAccess() const {
 // TODO(crbug.com/1401089): Update the method to return the result from
 // `HasStorageAccess()`;
 ScriptPromise Document::hasStorageAccess(ScriptState* script_state) {
+  if (!GetFrame()) {
+    // Note that in detached frames, resolvers are not able to return a promise.
+    return ScriptPromise::RejectWithDOMException(
+        script_state, MakeGarbageCollected<DOMException>(
+                          DOMExceptionCode::kInvalidStateError,
+                          "hasStorageAccess: Cannot be used unless the "
+                          "document is fully active."));
+  }
+
   const bool has_access =
       TopFrameOrigin() && GetExecutionContext() &&
       !GetExecutionContext()->GetSecurityOrigin()->IsOpaque() &&
-      dom_window_->isSecureContext() && CookiesEnabled();
+      dom_window_->isSecureContext() &&
+      (IsInOutermostMainFrame() || CookiesEnabled());
   ScriptPromiseResolver* resolver =
       MakeGarbageCollected<ScriptPromiseResolver>(script_state);
 
@@ -6272,6 +6299,17 @@ ScriptPromise Document::requestStorageAccess(ScriptState* script_state) {
     return promise;
   }
 
+  if (IsInOutermostMainFrame()) {
+    FireRequestStorageAccessHistogram(
+        RequestStorageResult::APPROVED_PRIMARY_FRAME);
+
+    // If this is the outermost frame we no longer need to make a request and
+    // can resolve the promise.
+    resolver->Resolve();
+    dom_window_->SetHasStorageAccess();
+    return promise;
+  }
+
   const bool has_user_gesture =
       LocalFrame::HasTransientUserActivation(GetFrame());
   if (!has_user_gesture) {
@@ -6324,16 +6362,6 @@ ScriptPromise Document::requestStorageAccess(ScriptState* script_state) {
     return promise;
   }
 
-  if (CookiesEnabled()) {
-    FireRequestStorageAccessHistogram(
-        RequestStorageResult::APPROVED_EXISTING_ACCESS);
-
-    // If there is current access to storage we no longer need to make a request
-    // and can resolve the promise.
-    resolver->Resolve();
-    return promise;
-  }
-
   if (expressly_denied_storage_access_) {
     FireRequestStorageAccessHistogram(
         RequestStorageResult::REJECTED_EXISTING_DENIAL);
@@ -6355,13 +6383,14 @@ ScriptPromise Document::requestStorageAccess(ScriptState* script_state) {
               [](ScriptPromiseResolver* resolver, Document* document,
                  mojom::blink::PermissionStatus status) {
                 DCHECK(resolver);
-                DCHECK(document);
+                DCHECK(document->GetFrame());
 
                 switch (status) {
                   case mojom::blink::PermissionStatus::GRANTED:
                     document->expressly_denied_storage_access_ = false;
                     FireRequestStorageAccessHistogram(
                         RequestStorageResult::APPROVED_NEW_GRANT);
+                    document->dom_window_->SetHasStorageAccess();
                     resolver->Resolve();
                     break;
                   case mojom::blink::PermissionStatus::DENIED:
@@ -7757,10 +7786,9 @@ void Document::ScheduleForTopLayerRemoval(Element* element) {
   ScheduleLayoutTreeUpdateIfNeeded();
 }
 
-bool Document::RemoveFinishedTopLayerElements() {
-  pending_top_layer_update_ = false;
+void Document::RemoveFinishedTopLayerElements() {
   if (top_layer_elements_pending_removal_.empty()) {
-    return false;
+    return;
   }
   DCHECK(RuntimeEnabledFeatures::CSSTopLayerForTransitionsEnabled());
   HeapVector<Member<Element>> to_remove;
@@ -7770,14 +7798,9 @@ bool Document::RemoveFinishedTopLayerElements() {
       to_remove.push_back(element);
     }
   }
-  if (to_remove.empty()) {
-    return false;
-  }
   for (Element* remove_element : to_remove) {
     RemoveFromTopLayerImmediately(remove_element);
   }
-  pending_top_layer_update_ = true;
-  return true;
 }
 
 void Document::RemoveFromTopLayerImmediately(Element* element) {
@@ -8587,6 +8610,7 @@ void Document::Trace(Visitor* visitor) const {
   visitor->Trace(popovers_waiting_to_hide_);
   visitor->Trace(elements_with_css_toggles_);
   visitor->Trace(elements_needing_style_recalc_for_toggle_);
+  visitor->Trace(css_toggle_inference_);
   visitor->Trace(load_event_delay_timer_);
   visitor->Trace(plugin_loading_timer_);
   visitor->Trace(elem_sheet_);

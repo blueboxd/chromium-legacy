@@ -133,11 +133,13 @@
 <translation id="163517899691012366">'అంతరాయం కలిగించవద్దు' మోడ్ ఆన్‌లో ఉన్నప్పుడు నోటిఫికేషన్‌లు మ్యూట్ చేయబడతాయి</translation>
 <translation id="1637505162081889933"><ph name="NUM_DEVICES" /> పరికరాలు</translation>
 <translation id="1639239467298939599">లోడ్ చేస్తోంది</translation>
+<translation id="1647986356840967552">మునుపటి పేజీ</translation>
 <translation id="1654477262762802994">వాయిస్ ప్రశ్నను ప్రారంభించండి</translation>
 <translation id="1668469839109562275">బిల్ట్-ఇన్ VPN</translation>
 <translation id="1677472565718498478"><ph name="TIME" /> మిగిలి ఉంది</translation>
 <translation id="1677507110654891115"><ph name="FEATURE_NAME" /> కనెక్ట్ కాలేదు.</translation>
 <translation id="1677582821739292812">ఎవరో మీ స్క్రీన్ వైపు చూస్తున్నారు</translation>
+<translation id="1683399938733266832">CPU ప్రస్తుత వినియోగం: <ph name="CPU_USEAGE" />%</translation>
 <translation id="169515659049020177">Shift</translation>
 <translation id="1698080062160024910"><ph name="TOTAL_TIME" /> టైమర్ · <ph name="LABEL" /></translation>
 <translation id="1698760176351776263">IPv6 అడ్రస్‌: <ph name="ADDRESS" /></translation>
@@ -380,6 +382,7 @@
 <translation id="3051189971848907985">ప్రొఫైల్ పేరు మార్చుతోంది. కొన్ని నిమిషాలు వేచి ఉండండి.</translation>
 <translation id="3055162170959710888">మీరు ఈ పరికరాన్ని ఈ రోజు <ph name="USED_TIME" /> పాటు ఉపయోగించారు</translation>
 <translation id="3062298103034426069">సపోర్ట్ చేయనివి</translation>
+<translation id="3068622547379332530">వెర్షన్ <ph name="VERSION_NAME" /> (<ph name="OFFICIAL_STATUS" />) <ph name="CHANNEL_NAME" /> <ph name="PROCESSOR_VARIATION" /></translation>
 <translation id="3068711042108640621">అర ఎడమ వైపున ఉంది</translation>
 <translation id="3077734595579995578">shift</translation>
 <translation id="3081696990447829002">మెనూని విస్తరించు</translation>
@@ -556,6 +559,7 @@
 <translation id="397105322502079400">గణిస్తోంది...</translation>
 <translation id="397726367135689299">బ్యాటరీ ఛార్జింగ్ అస్థిరంగా ఉండవచ్చు.</translation>
 <translation id="3977512764614765090">బ్యాటరీ <ph name="PERCENTAGE" />% ఉంది. ఛార్జ్ అవుతోంది.</translation>
+<translation id="3984536049089846927">తర్వాతి పేజీ</translation>
 <translation id="3986082989454912832">సమాధానం ఇవ్వండి</translation>
 <translation id="3995138139523574647">USB-C పరికరం (కుడివైపు వెనుక పోర్ట్)</translation>
 <translation id="40062176907008878">చేతిరాత</translation>
@@ -578,7 +582,7 @@
 <translation id="4123259114412175274">మీ Chromebookను అన్‌లాక్ చేయడానికి, మీ ఫోన్ బ్లూటూత్ ఆన్‌లో ఉందని నిర్ధారించుకోండి</translation>
 <translation id="4125970834901680537">టాబ్లెట్ మోడ్‌లో యాప్‌లను స్ట్రీమ్ చేయడం సాధ్యం కాదు. ల్యాప్‌టాప్ మోడ్‌లో మళ్లీ ట్రై చేయండి.</translation>
 <translation id="4129129681837227511">మీ లాక్ స్క్రీన్‌లో నోటిఫికేషన్‌లను చూడటానికి, సెట్టింగ్‌ను మార్చేందుకు అన్‌లాక్ చేయండి</translation>
-<translation id="4130035430755296270">మరిన్ని లేఅవుట్ ఆప్షన్‌ల కోసం మౌస్ కర్సర్‌ని ఉంచడం కొనసాగించండి</translation>
+<translation id="4131973331381812765">ఉష్ణోగ్రత: <ph name="TEMPERATURE" />°C - ప్రస్తుత వేగం: <ph name="CPU_AVERAGE_CURRENT_FREQUENCY_GHZ" />GHz</translation>
 <translation id="4136724716305260864">సూర్యోదయం వరకు ఆన్‌లో ఉంటుంది</translation>
 <translation id="4146833061457621061">సంగీతాన్ని ప్లే చేయి</translation>
 <translation id="4150201353443180367">డిస్‌ప్లే</translation>
@@ -719,7 +723,6 @@
 <translation id="481455355267255546">తదుపరిది</translation>
 <translation id="4831034276697007977">ఆటోమేటిక్ క్లిక్‌లను మీరు ఖచ్చితంగా ఆఫ్ చేయాలనుకుంటున్నారా?</translation>
 <translation id="4849058404725798627">కీబోర్డ్ దృష్టి కేంద్రీకరణతో అంశాన్ని హైలైట్ చేయి</translation>
-<translation id="4855250849489639581">మరిన్ని లేఅవుట్ ఆప్షన్‌ల కోసం కిందికి స్వైప్ చేయండి</translation>
 <translation id="485592688953820832">చర్య వద్దు (పాజ్ చేయి)</translation>
 <translation id="485634149294284819">కీబోర్డ్ మెనూను తెరవండి</translation>
 <translation id="4860284199500934869"><ph name="FILENAME" />‌ను డౌన్‌లోడ్ చేయడానికి మీ నెట్‌వర్క్ కనెక్షన్‌ను చెక్ చేయండి</translation>
@@ -734,6 +737,7 @@
 <translation id="4895488851634969361">బ్యాటరీ నిండింది.</translation>
 <translation id="490375751687810070">నిలువుగా ఉంది</translation>
 <translation id="490788395437447240"><ph name="BATTERY_PERCENTAGE" />% బ్యాటరీ</translation>
+<translation id="491504982845934899">పరికరాన్ని సెటప్ చేసిన తర్వాత <ph name="NETWORK_NAME" />ను యాక్టివేట్ చేయండి</translation>
 <translation id="4917385247580444890">బలమైన</translation>
 <translation id="4918086044614829423">ఆమోదించు</translation>
 <translation id="4919841137949306064"><ph name="APP_NAME" /> ప్రస్తుతం మీ కెమెరాను ఉపయోగిస్తోంది</translation>
@@ -1330,6 +1334,7 @@
 <translation id="8131740175452115882">నిర్ధారించు</translation>
 <translation id="8131994907636310308">క్రమపద్ధతిలో అమర్చే ఆప్షన్‌ను మూసివేయమని చూపే టోస్ట్</translation>
 <translation id="8132793192354020517"><ph name="NAME" />కు కనెక్ట్ చేయబడింది</translation>
+<translation id="8138705869659070104">పరికరాన్ని సెటప్ చేసిన తర్వాత యాక్టివేట్ చేయండి</translation>
 <translation id="813913629614996137">ప్రారంభిస్తోంది...</translation>
 <translation id="8142441511840089262">రెండు సార్లు క్లిక్ చేయండి</translation>
 <translation id="8142699993796781067">ప్రైవే. నెట్‌వర్క్</translation>

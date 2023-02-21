@@ -131,6 +131,7 @@ class Attr;
 class BeforeUnloadEventListener;
 class CDATASection;
 class CSSStyleSheet;
+class CSSToggleInference;
 class CanvasFontCache;
 class ChromeClient;
 class Comment;
@@ -1540,7 +1541,7 @@ class CORE_EXPORT Document : public ContainerNode,
     return top_layer_elements_;
   }
   void ScheduleForTopLayerRemoval(Element*);
-  bool RemoveFinishedTopLayerElements();
+  void RemoveFinishedTopLayerElements();
 
   HTMLDialogElement* ActiveModalDialog() const;
 
@@ -1567,6 +1568,8 @@ class CORE_EXPORT Document : public ContainerNode,
   // Call SetNeedsStyleRecalc for elements from AddToRecalcStyleForToggle;
   // return whether any calls were made.
   bool SetNeedsStyleRecalcForToggles();
+  CSSToggleInference* GetCSSToggleInference() { return css_toggle_inference_; }
+  CSSToggleInference& EnsureCSSToggleInference();
 
   // A non-null template_document_host_ implies that |this| was created by
   // EnsureTemplateDocument().
@@ -1935,8 +1938,6 @@ class CORE_EXPORT Document : public ContainerNode,
   }
 
   void ResetAgent(Agent& agent);
-
-  bool PendingTopLayerUpdate() const { return pending_top_layer_update_; }
 
  protected:
   void ClearXMLVersion() { xml_version_ = String(); }
@@ -2414,6 +2415,8 @@ class CORE_EXPORT Document : public ContainerNode,
   // Elements that need to be restyled because a toggle was created on them,
   // or a prior sibling, during the previous restyle.
   HeapHashSet<Member<Element>> elements_needing_style_recalc_for_toggle_;
+  // The inference engine for CSS toggles.
+  Member<CSSToggleInference> css_toggle_inference_;
 
   int load_event_delay_count_;
 
@@ -2574,11 +2577,6 @@ class CORE_EXPORT Document : public ContainerNode,
   Member<RenderBlockingResourceManager> render_blocking_resource_manager_;
 
   bool rendering_has_begun_ = false;
-
-  // Set to true if we are in awaiting an UpdateStyleAndLayoutTree() that is
-  // after removing an element from the top layer. Only used for sanity checking
-  // pending animation updates in StyleForLayoutObject().
-  bool pending_top_layer_update_ = false;
 
   DeclarativeShadowRootAllowState declarative_shadow_root_allow_state_ =
       DeclarativeShadowRootAllowState::kNotSet;

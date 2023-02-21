@@ -47,6 +47,17 @@ class BluetoothRemoteGattCharacteristicTest :
     public BluetoothTest {
 #endif
  public:
+  void SetUp() override {
+#if BUILDFLAG(IS_WIN)
+    BluetoothTestWinrt::SetUp();
+#else
+    BluetoothTest::SetUp();
+#endif
+    if (!PlatformSupportsLowEnergy()) {
+      GTEST_SKIP() << "Low Energy Bluetooth unavailable.";
+    }
+  }
+
   // Creates adapter_, device_, service_, characteristic1_, & characteristic2_.
   // |properties| will be used for each characteristic.
   void FakeCharacteristicBoilerplate(int properties = 0) {
@@ -149,17 +160,6 @@ class BluetoothRemoteGattCharacteristicTest :
     ExpectedNotifyValue(notify_value_state);
   }
 
-  // A few tests below don't behave correctly on Classic Windows, but do for
-  // WinRT. Since a #if BUILDFLAG(IS_WIN) guard is not sufficient to distinguish
-  // these two cases, this small utility function is added.
-  bool IsClassicWin() {
-#if BUILDFLAG(IS_WIN)
-    return !UsesNewBleImplementation();
-#else
-    return false;
-#endif
-  }
-
   raw_ptr<BluetoothDevice> device_ = nullptr;
   raw_ptr<BluetoothRemoteGattService> service_ = nullptr;
   raw_ptr<BluetoothRemoteGattCharacteristic> characteristic1_ = nullptr;
@@ -168,10 +168,6 @@ class BluetoothRemoteGattCharacteristicTest :
 
 #if BUILDFLAG(IS_WIN)
 using BluetoothRemoteGattCharacteristicTestWinrt =
-    BluetoothRemoteGattCharacteristicTest;
-using BluetoothRemoteGattCharacteristicTestWin32Only =
-    BluetoothRemoteGattCharacteristicTest;
-using BluetoothRemoteGattCharacteristicTestWinrtOnly =
     BluetoothRemoteGattCharacteristicTest;
 #endif
 
@@ -185,10 +181,6 @@ TEST_P(BluetoothRemoteGattCharacteristicTestWinrt, GetIdentifier) {
 #else
 TEST_F(BluetoothRemoteGattCharacteristicTest, MAYBE_GetIdentifier) {
 #endif
-  if (!PlatformSupportsLowEnergy()) {
-    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
-    return;
-  }
   InitWithFakeAdapter();
 
   StartLowEnergyDiscoverySession();
@@ -263,10 +255,6 @@ TEST_P(BluetoothRemoteGattCharacteristicTestWinrt, GetUUID) {
 #else
 TEST_F(BluetoothRemoteGattCharacteristicTest, MAYBE_GetUUID) {
 #endif
-  if (!PlatformSupportsLowEnergy()) {
-    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
-    return;
-  }
   InitWithFakeAdapter();
   StartLowEnergyDiscoverySession();
   BluetoothDevice* device = SimulateLowEnergyDevice(3);
@@ -312,10 +300,6 @@ TEST_P(BluetoothRemoteGattCharacteristicTestWinrt, GetProperties) {
 #else
 TEST_F(BluetoothRemoteGattCharacteristicTest, MAYBE_GetProperties) {
 #endif
-  if (!PlatformSupportsLowEnergy()) {
-    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
-    return;
-  }
   InitWithFakeAdapter();
   StartLowEnergyDiscoverySession();
   BluetoothDevice* device = SimulateLowEnergyDevice(3);
@@ -353,10 +337,6 @@ TEST_P(BluetoothRemoteGattCharacteristicTestWinrt, GetService) {
 #else
 TEST_F(BluetoothRemoteGattCharacteristicTest, MAYBE_GetService) {
 #endif
-  if (!PlatformSupportsLowEnergy()) {
-    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
-    return;
-  }
   ASSERT_NO_FATAL_FAILURE(FakeCharacteristicBoilerplate());
 
   EXPECT_EQ(service_, characteristic1_->GetService());
@@ -377,10 +357,6 @@ TEST_P(BluetoothRemoteGattCharacteristicTestWinrt,
 TEST_F(BluetoothRemoteGattCharacteristicTest,
        MAYBE_ReadRemoteCharacteristic_Empty) {
 #endif
-  if (!PlatformSupportsLowEnergy()) {
-    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
-    return;
-  }
   ASSERT_NO_FATAL_FAILURE(FakeCharacteristicBoilerplate(
       BluetoothRemoteGattCharacteristic::PROPERTY_READ));
 
@@ -413,10 +389,6 @@ TEST_P(BluetoothRemoteGattCharacteristicTestWinrt,
 TEST_F(BluetoothRemoteGattCharacteristicTest,
        MAYBE_WriteRemoteCharacteristic_Empty) {
 #endif
-  if (!PlatformSupportsLowEnergy()) {
-    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
-    return;
-  }
   ASSERT_NO_FATAL_FAILURE(FakeCharacteristicBoilerplate(
       BluetoothRemoteGattCharacteristic::PROPERTY_WRITE));
 
@@ -457,10 +429,6 @@ TEST_P(BluetoothRemoteGattCharacteristicTestWinrt,
 TEST_F(BluetoothRemoteGattCharacteristicTest,
        MAYBE_DeprecatedWriteRemoteCharacteristic_Empty) {
 #endif
-  if (!PlatformSupportsLowEnergy()) {
-    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
-    return;
-  }
   ASSERT_NO_FATAL_FAILURE(FakeCharacteristicBoilerplate(
       BluetoothRemoteGattCharacteristic::PROPERTY_WRITE));
 
@@ -493,10 +461,6 @@ TEST_P(BluetoothRemoteGattCharacteristicTestWinrt,
 TEST_F(BluetoothRemoteGattCharacteristicTest,
        MAYBE_Retry_ReadRemoteCharacteristic_DuringDestruction_Fails) {
 #endif
-  if (!PlatformSupportsLowEnergy()) {
-    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
-    return;
-  }
   ASSERT_NO_FATAL_FAILURE(FakeCharacteristicBoilerplate(
       BluetoothRemoteGattCharacteristic::PROPERTY_READ));
 
@@ -532,10 +496,6 @@ TEST_P(BluetoothRemoteGattCharacteristicTestWinrt,
 TEST_F(BluetoothRemoteGattCharacteristicTest,
        MAYBE_Retry_WriteRemoteCharacteristic_DuringDestruction_Fails) {
 #endif
-  if (!PlatformSupportsLowEnergy()) {
-    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
-    return;
-  }
   ASSERT_NO_FATAL_FAILURE(FakeCharacteristicBoilerplate(
       BluetoothRemoteGattCharacteristic::PROPERTY_WRITE));
 
@@ -583,10 +543,6 @@ TEST_F(
     BluetoothRemoteGattCharacteristicTest,
     MAYBE_Retry_DeprecatedWriteRemoteCharacteristic_DuringDestruction_Fails) {
 #endif
-  if (!PlatformSupportsLowEnergy()) {
-    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
-    return;
-  }
   ASSERT_NO_FATAL_FAILURE(FakeCharacteristicBoilerplate(
       BluetoothRemoteGattCharacteristic::PROPERTY_WRITE));
 
@@ -620,19 +576,10 @@ TEST_F(
 // Tests ReadRemoteCharacteristic completing after Chrome objects are deleted.
 // macOS: Not applicable: This can never happen if CBPeripheral delegate is set
 // to nil.
-// WinRT: Not applicable: Pending callbacks won't fire once the underlying
+// Windows: Not applicable: Pending callbacks won't fire once the underlying
 // object is destroyed.
-#if BUILDFLAG(IS_WIN)
-TEST_P(BluetoothRemoteGattCharacteristicTestWin32Only,
-       ReadRemoteCharacteristic_AfterDeleted) {
-#else
 TEST_F(BluetoothRemoteGattCharacteristicTest,
        MAYBE_ReadRemoteCharacteristic_AfterDeleted) {
-#endif
-  if (!PlatformSupportsLowEnergy()) {
-    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
-    return;
-  }
   ASSERT_NO_FATAL_FAILURE(FakeCharacteristicBoilerplate(
       BluetoothRemoteGattCharacteristic::PROPERTY_READ));
 
@@ -659,16 +606,12 @@ TEST_F(BluetoothRemoteGattCharacteristicTest,
   DISABLED_ReadRemoteCharacteristic_Disconnected
 #endif
 #if BUILDFLAG(IS_WIN)
-TEST_P(BluetoothRemoteGattCharacteristicTestWinrtOnly,
+TEST_P(BluetoothRemoteGattCharacteristicTestWinrt,
        ReadRemoteCharacteristic_Disconnected) {
 #else
 TEST_F(BluetoothRemoteGattCharacteristicTest,
        MAYBE_ReadRemoteCharacteristic_Disconnected) {
 #endif
-  if (!PlatformSupportsLowEnergy()) {
-    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
-    return;
-  }
   ASSERT_NO_FATAL_FAILURE(FakeCharacteristicBoilerplate(
       BluetoothRemoteGattCharacteristic::PROPERTY_READ));
 
@@ -710,19 +653,10 @@ TEST_F(BluetoothRemoteGattCharacteristicTest,
 // Tests WriteRemoteCharacteristic completing after Chrome objects are deleted.
 // macOS: Not applicable: This can never happen if CBPeripheral
 // delegate is set to nil.
-// WinRT: Not applicable: Pending callbacks won't fire once the underlying
+// Windows: Not applicable: Pending callbacks won't fire once the underlying
 // object is destroyed.
-#if BUILDFLAG(IS_WIN)
-TEST_P(BluetoothRemoteGattCharacteristicTestWin32Only,
-       WriteRemoteCharacteristic_AfterDeleted) {
-#else
 TEST_F(BluetoothRemoteGattCharacteristicTest,
        MAYBE_WriteRemoteCharacteristic_AfterDeleted) {
-#endif
-  if (!PlatformSupportsLowEnergy()) {
-    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
-    return;
-  }
   ASSERT_NO_FATAL_FAILURE(FakeCharacteristicBoilerplate(
       BluetoothRemoteGattCharacteristic::PROPERTY_WRITE));
 
@@ -757,19 +691,10 @@ TEST_F(BluetoothRemoteGattCharacteristicTest,
 // deleted.
 // macOS: Not applicable: This can never happen if CBPeripheral
 // delegate is set to nil.
-// WinRT: Not applicable: Pending callbacks won't fire once the underlying
+// Windows: Not applicable: Pending callbacks won't fire once the underlying
 // object is destroyed.
-#if BUILDFLAG(IS_WIN)
-TEST_P(BluetoothRemoteGattCharacteristicTestWin32Only,
-       DeprecatedWriteRemoteCharacteristic_AfterDeleted) {
-#else
 TEST_F(BluetoothRemoteGattCharacteristicTest,
        MAYBE_DeprecatedWriteRemoteCharacteristic_AfterDeleted) {
-#endif
-  if (!PlatformSupportsLowEnergy()) {
-    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
-    return;
-  }
   ASSERT_NO_FATAL_FAILURE(FakeCharacteristicBoilerplate(
       BluetoothRemoteGattCharacteristic::PROPERTY_WRITE));
 
@@ -796,16 +721,12 @@ TEST_F(BluetoothRemoteGattCharacteristicTest,
   DISABLED_WriteRemoteCharacteristic_Disconnected
 #endif
 #if BUILDFLAG(IS_WIN)
-TEST_P(BluetoothRemoteGattCharacteristicTestWinrtOnly,
+TEST_P(BluetoothRemoteGattCharacteristicTestWinrt,
        WriteRemoteCharacteristic_Disconnected) {
 #else
 TEST_F(BluetoothRemoteGattCharacteristicTest,
        MAYBE_WriteRemoteCharacteristic_Disconnected) {
 #endif
-  if (!PlatformSupportsLowEnergy()) {
-    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
-    return;
-  }
   ASSERT_NO_FATAL_FAILURE(FakeCharacteristicBoilerplate(
       BluetoothRemoteGattCharacteristic::PROPERTY_WRITE));
 
@@ -852,16 +773,12 @@ TEST_F(BluetoothRemoteGattCharacteristicTest,
   DISABLED_DeprecatedWriteRemoteCharacteristic_Disconnected
 #endif
 #if BUILDFLAG(IS_WIN)
-TEST_P(BluetoothRemoteGattCharacteristicTestWinrtOnly,
+TEST_P(BluetoothRemoteGattCharacteristicTestWinrt,
        DeprecatedWriteRemoteCharacteristic_Disconnected) {
 #else
 TEST_F(BluetoothRemoteGattCharacteristicTest,
        MAYBE_DeprecatedWriteRemoteCharacteristic_Disconnected) {
 #endif
-  if (!PlatformSupportsLowEnergy()) {
-    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
-    return;
-  }
   ASSERT_NO_FATAL_FAILURE(FakeCharacteristicBoilerplate(
       BluetoothRemoteGattCharacteristic::PROPERTY_WRITE));
 
@@ -904,10 +821,6 @@ TEST_P(BluetoothRemoteGattCharacteristicTestWinrt, ReadRemoteCharacteristic) {
 #else
 TEST_F(BluetoothRemoteGattCharacteristicTest, MAYBE_ReadRemoteCharacteristic) {
 #endif
-  if (!PlatformSupportsLowEnergy()) {
-    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
-    return;
-  }
   ASSERT_NO_FATAL_FAILURE(FakeCharacteristicBoilerplate(
       BluetoothRemoteGattCharacteristic::PROPERTY_READ));
 
@@ -955,10 +868,6 @@ TEST_P(BluetoothRemoteGattCharacteristicTestWinrt,
 TEST_F(BluetoothRemoteGattCharacteristicTest,
        MAYBE_ReadRemoteCharacteristic_GattCharacteristicValueChangedNotCalled) {
 #endif
-  if (!PlatformSupportsLowEnergy()) {
-    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
-    return;
-  }
   ASSERT_NO_FATAL_FAILURE(FakeCharacteristicBoilerplate(
       BluetoothRemoteGattCharacteristic::PROPERTY_READ));
 
@@ -973,15 +882,8 @@ TEST_F(BluetoothRemoteGattCharacteristicTest,
   base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(0, observer.gatt_characteristic_value_changed_count());
-  // TODO(https://crbug.com/699694): Remove this #if once the bug on Windows is
-  // fixed.
-  if (IsClassicWin()) {
-    EXPECT_FALSE(observer.last_gatt_characteristic_id().empty());
-    EXPECT_TRUE(observer.last_gatt_characteristic_uuid().IsValid());
-  } else {
-    EXPECT_TRUE(observer.last_gatt_characteristic_id().empty());
-    EXPECT_FALSE(observer.last_gatt_characteristic_uuid().IsValid());
-  }
+  EXPECT_TRUE(observer.last_gatt_characteristic_id().empty());
+  EXPECT_FALSE(observer.last_gatt_characteristic_uuid().IsValid());
   EXPECT_TRUE(observer.last_changed_characteristic_value().empty());
 }
 
@@ -996,10 +898,6 @@ TEST_P(BluetoothRemoteGattCharacteristicTestWinrt, WriteRemoteCharacteristic) {
 #else
 TEST_F(BluetoothRemoteGattCharacteristicTest, MAYBE_WriteRemoteCharacteristic) {
 #endif
-  if (!PlatformSupportsLowEnergy()) {
-    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
-    return;
-  }
   ASSERT_NO_FATAL_FAILURE(FakeCharacteristicBoilerplate(
       BluetoothRemoteGattCharacteristic::PROPERTY_WRITE));
 
@@ -1012,10 +910,7 @@ TEST_F(BluetoothRemoteGattCharacteristicTest, MAYBE_WriteRemoteCharacteristic) {
       test_vector, WriteType::kWithResponse, base::BindLambdaForTesting([&] {
         EXPECT_EQ(1, gatt_write_characteristic_attempts_);
 
-        // TODO(crbug.com/653291): remove this if once the bug on windows is
-        // fixed.
-        if (!IsClassicWin())
-          EXPECT_EQ(0, observer.gatt_characteristic_value_changed_count());
+        EXPECT_EQ(0, observer.gatt_characteristic_value_changed_count());
         EXPECT_EQ(test_vector, last_write_value_);
         loop.Quit();
       }),
@@ -1045,10 +940,6 @@ TEST_P(BluetoothRemoteGattCharacteristicTestWinrt,
 TEST_F(BluetoothRemoteGattCharacteristicTest,
        MAYBE_DeprecatedWriteRemoteCharacteristic) {
 #endif
-  if (!PlatformSupportsLowEnergy()) {
-    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
-    return;
-  }
   ASSERT_NO_FATAL_FAILURE(FakeCharacteristicBoilerplate(
       BluetoothRemoteGattCharacteristic::PROPERTY_WRITE));
 
@@ -1064,9 +955,7 @@ TEST_F(BluetoothRemoteGattCharacteristicTest,
   base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(1, gatt_write_characteristic_attempts_);
-  // TODO(crbug.com/653291): remove this if once the bug on windows is fixed.
-  if (!IsClassicWin())
-    EXPECT_EQ(0, observer.gatt_characteristic_value_changed_count());
+  EXPECT_EQ(0, observer.gatt_characteristic_value_changed_count());
   EXPECT_EQ(test_vector, last_write_value_);
 }
 
@@ -1084,10 +973,6 @@ TEST_P(BluetoothRemoteGattCharacteristicTestWinrt,
 TEST_F(BluetoothRemoteGattCharacteristicTest,
        MAYBE_ReadRemoteCharacteristic_Twice) {
 #endif
-  if (!PlatformSupportsLowEnergy()) {
-    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
-    return;
-  }
   ASSERT_NO_FATAL_FAILURE(FakeCharacteristicBoilerplate(
       BluetoothRemoteGattCharacteristic::PROPERTY_READ));
 
@@ -1132,10 +1017,6 @@ TEST_P(BluetoothRemoteGattCharacteristicTestWinrt,
 TEST_F(BluetoothRemoteGattCharacteristicTest,
        MAYBE_WriteRemoteCharacteristic_Twice) {
 #endif
-  if (!PlatformSupportsLowEnergy()) {
-    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
-    return;
-  }
   ASSERT_NO_FATAL_FAILURE(FakeCharacteristicBoilerplate(
       BluetoothRemoteGattCharacteristic::PROPERTY_WRITE));
 
@@ -1192,10 +1073,6 @@ TEST_P(BluetoothRemoteGattCharacteristicTestWinrt,
 TEST_F(BluetoothRemoteGattCharacteristicTest,
        MAYBE_DeprecatedWriteRemoteCharacteristic_Twice) {
 #endif
-  if (!PlatformSupportsLowEnergy()) {
-    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
-    return;
-  }
   ASSERT_NO_FATAL_FAILURE(FakeCharacteristicBoilerplate(
       BluetoothRemoteGattCharacteristic::PROPERTY_WRITE));
 
@@ -1242,10 +1119,6 @@ TEST_P(BluetoothRemoteGattCharacteristicTestWinrt,
 TEST_F(BluetoothRemoteGattCharacteristicTest,
        MAYBE_ReadRemoteCharacteristic_MultipleCharacteristics) {
 #endif
-  if (!PlatformSupportsLowEnergy()) {
-    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
-    return;
-  }
   ASSERT_NO_FATAL_FAILURE(FakeCharacteristicBoilerplate(
       BluetoothRemoteGattCharacteristic::PROPERTY_READ));
 
@@ -1290,10 +1163,6 @@ TEST_P(BluetoothRemoteGattCharacteristicTestWinrt,
 TEST_F(BluetoothRemoteGattCharacteristicTest,
        MAYBE_WriteRemoteCharacteristic_MultipleCharacteristics) {
 #endif
-  if (!PlatformSupportsLowEnergy()) {
-    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
-    return;
-  }
   ASSERT_NO_FATAL_FAILURE(FakeCharacteristicBoilerplate(
       BluetoothRemoteGattCharacteristic::PROPERTY_WRITE));
 
@@ -1301,39 +1170,25 @@ TEST_F(BluetoothRemoteGattCharacteristicTest,
   std::vector<uint8_t> test_vector1;
   test_vector1.push_back(111);
   characteristic1_->WriteRemoteCharacteristic(
-      test_vector1, WriteType::kWithResponse, base::BindLambdaForTesting([&] {
-        if (IsClassicWin()) {
-          EXPECT_EQ(test_vector1, last_write_value_);
-        }
-        loop1.Quit();
-      }),
+      test_vector1, WriteType::kWithResponse, loop1.QuitClosure(),
       base::BindLambdaForTesting(
           [&](BluetoothGattService::GattErrorCode error_code) {
             ADD_FAILURE() << "unexpected error" << static_cast<int>(error_code);
             loop1.Quit();
           }));
-  if (!IsClassicWin()) {
-    EXPECT_EQ(test_vector1, last_write_value_);
-  }
+  EXPECT_EQ(test_vector1, last_write_value_);
 
   base::RunLoop loop2;
   std::vector<uint8_t> test_vector2;
   test_vector2.push_back(222);
   characteristic2_->WriteRemoteCharacteristic(
-      test_vector2, WriteType::kWithResponse, base::BindLambdaForTesting([&] {
-        if (IsClassicWin()) {
-          EXPECT_EQ(test_vector2, last_write_value_);
-        }
-        loop2.Quit();
-      }),
+      test_vector2, WriteType::kWithResponse, loop2.QuitClosure(),
       base::BindLambdaForTesting(
           [&](BluetoothGattService::GattErrorCode error_code) {
             ADD_FAILURE() << "unexpected error" << static_cast<int>(error_code);
             loop2.Quit();
           }));
-  if (!IsClassicWin()) {
-    EXPECT_EQ(test_vector2, last_write_value_);
-  }
+  EXPECT_EQ(test_vector2, last_write_value_);
 
   SimulateGattCharacteristicWrite(characteristic1_);
   loop1.Run();
@@ -1357,10 +1212,6 @@ TEST_P(BluetoothRemoteGattCharacteristicTestWinrt,
 TEST_F(BluetoothRemoteGattCharacteristicTest,
        MAYBE_DeprecatedWriteRemoteCharacteristic_MultipleCharacteristics) {
 #endif
-  if (!PlatformSupportsLowEnergy()) {
-    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
-    return;
-  }
   ASSERT_NO_FATAL_FAILURE(FakeCharacteristicBoilerplate(
       BluetoothRemoteGattCharacteristic::PROPERTY_WRITE));
 
@@ -1369,29 +1220,21 @@ TEST_F(BluetoothRemoteGattCharacteristicTest,
   characteristic1_->DeprecatedWriteRemoteCharacteristic(
       test_vector1, GetCallback(Call::EXPECTED),
       GetGattErrorCallback(Call::NOT_EXPECTED));
-  if (!IsClassicWin())
-    EXPECT_EQ(test_vector1, last_write_value_);
+  EXPECT_EQ(test_vector1, last_write_value_);
 
   std::vector<uint8_t> test_vector2;
   test_vector2.push_back(222);
   characteristic2_->DeprecatedWriteRemoteCharacteristic(
       test_vector2, GetCallback(Call::EXPECTED),
       GetGattErrorCallback(Call::NOT_EXPECTED));
-  if (!IsClassicWin())
-    EXPECT_EQ(test_vector2, last_write_value_);
+  EXPECT_EQ(test_vector2, last_write_value_);
 
   EXPECT_EQ(0, callback_count_);
   EXPECT_EQ(0, error_callback_count_);
 
   SimulateGattCharacteristicWrite(characteristic1_);
-  base::RunLoop().RunUntilIdle();
-  if (IsClassicWin())
-    EXPECT_EQ(test_vector1, last_write_value_);
-
   SimulateGattCharacteristicWrite(characteristic2_);
   base::RunLoop().RunUntilIdle();
-  if (IsClassicWin())
-    EXPECT_EQ(test_vector2, last_write_value_);
 
   EXPECT_EQ(2, gatt_write_characteristic_attempts_);
   EXPECT_EQ(2, callback_count_);
@@ -1416,10 +1259,6 @@ TEST_P(BluetoothRemoteGattCharacteristicTestWinrt,
 TEST_F(BluetoothRemoteGattCharacteristicTest,
        MAYBE_RemoteCharacteristic_Nested_Read_Read) {
 #endif
-  if (!PlatformSupportsLowEnergy()) {
-    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
-    return;
-  }
   ASSERT_NO_FATAL_FAILURE(FakeCharacteristicBoilerplate(
       BluetoothRemoteGattCharacteristic::PROPERTY_READ));
 
@@ -1468,10 +1307,6 @@ TEST_P(BluetoothRemoteGattCharacteristicTestWinrt,
 TEST_F(BluetoothRemoteGattCharacteristicTest,
        MAYBE_RemoteCharacteristic_Nested_Write_Write) {
 #endif
-  if (!PlatformSupportsLowEnergy()) {
-    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
-    return;
-  }
   ASSERT_NO_FATAL_FAILURE(FakeCharacteristicBoilerplate(
       BluetoothRemoteGattCharacteristic::PROPERTY_WRITE));
 
@@ -1527,10 +1362,6 @@ TEST_P(BluetoothRemoteGattCharacteristicTestWinrt,
 TEST_F(BluetoothRemoteGattCharacteristicTest,
        MAYBE_RemoteCharacteristic_Nested_DeprecatedWrite_DeprecatedWrite) {
 #endif
-  if (!PlatformSupportsLowEnergy()) {
-    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
-    return;
-  }
   ASSERT_NO_FATAL_FAILURE(FakeCharacteristicBoilerplate(
       BluetoothRemoteGattCharacteristic::PROPERTY_WRITE));
 
@@ -1578,10 +1409,6 @@ TEST_P(BluetoothRemoteGattCharacteristicTestWinrt,
 TEST_F(BluetoothRemoteGattCharacteristicTest,
        MAYBE_RemoteCharacteristic_Nested_Read_Write) {
 #endif
-  if (!PlatformSupportsLowEnergy()) {
-    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
-    return;
-  }
   ASSERT_NO_FATAL_FAILURE(FakeCharacteristicBoilerplate(
       BluetoothRemoteGattCharacteristic::PROPERTY_READ |
       BluetoothRemoteGattCharacteristic::PROPERTY_WRITE));
@@ -1638,10 +1465,6 @@ TEST_P(BluetoothRemoteGattCharacteristicTestWinrt,
 TEST_F(BluetoothRemoteGattCharacteristicTest,
        MAYBE_RemoteCharacteristic_Nested_Read_DeprecatedWrite) {
 #endif
-  if (!PlatformSupportsLowEnergy()) {
-    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
-    return;
-  }
   ASSERT_NO_FATAL_FAILURE(FakeCharacteristicBoilerplate(
       BluetoothRemoteGattCharacteristic::PROPERTY_READ |
       BluetoothRemoteGattCharacteristic::PROPERTY_WRITE));
@@ -1693,10 +1516,6 @@ TEST_P(BluetoothRemoteGattCharacteristicTestWinrt,
 TEST_F(BluetoothRemoteGattCharacteristicTest,
        MAYBE_RemoteCharacteristic_Nested_Write_Read) {
 #endif
-  if (!PlatformSupportsLowEnergy()) {
-    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
-    return;
-  }
   ASSERT_NO_FATAL_FAILURE(FakeCharacteristicBoilerplate(
       BluetoothRemoteGattCharacteristic::PROPERTY_READ |
       BluetoothRemoteGattCharacteristic::PROPERTY_WRITE));
@@ -1750,10 +1569,6 @@ TEST_P(BluetoothRemoteGattCharacteristicTestWinrt,
 TEST_F(BluetoothRemoteGattCharacteristicTest,
        MAYBE_RemoteCharacteristic_Nested_DeprecatedWrite_Read) {
 #endif
-  if (!PlatformSupportsLowEnergy()) {
-    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
-    return;
-  }
   ASSERT_NO_FATAL_FAILURE(FakeCharacteristicBoilerplate(
       BluetoothRemoteGattCharacteristic::PROPERTY_READ |
       BluetoothRemoteGattCharacteristic::PROPERTY_WRITE));
@@ -1798,10 +1613,6 @@ TEST_P(BluetoothRemoteGattCharacteristicTestWinrt, ReadError) {
 #else
 TEST_F(BluetoothRemoteGattCharacteristicTest, MAYBE_ReadError) {
 #endif
-  if (!PlatformSupportsLowEnergy()) {
-    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
-    return;
-  }
   ASSERT_NO_FATAL_FAILURE(FakeCharacteristicBoilerplate(
       BluetoothRemoteGattCharacteristic::PROPERTY_READ));
 
@@ -1830,10 +1641,6 @@ TEST_P(BluetoothRemoteGattCharacteristicTestWinrt, WriteError) {
 #else
 TEST_F(BluetoothRemoteGattCharacteristicTest, MAYBE_WriteError) {
 #endif
-  if (!PlatformSupportsLowEnergy()) {
-    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
-    return;
-  }
   ASSERT_NO_FATAL_FAILURE(FakeCharacteristicBoilerplate(
       BluetoothRemoteGattCharacteristic::PROPERTY_WRITE));
 
@@ -1869,10 +1676,6 @@ TEST_P(BluetoothRemoteGattCharacteristicTestWinrt, DeprecatedWriteError) {
 #else
 TEST_F(BluetoothRemoteGattCharacteristicTest, MAYBE_DeprecatedWriteError) {
 #endif
-  if (!PlatformSupportsLowEnergy()) {
-    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
-    return;
-  }
   ASSERT_NO_FATAL_FAILURE(FakeCharacteristicBoilerplate(
       BluetoothRemoteGattCharacteristic::PROPERTY_WRITE));
 
@@ -2019,10 +1822,6 @@ TEST_P(BluetoothRemoteGattCharacteristicTestWinrt,
 TEST_F(BluetoothRemoteGattCharacteristicTest,
        MAYBE_ReadRemoteCharacteristic_ReadPending) {
 #endif
-  if (!PlatformSupportsLowEnergy()) {
-    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
-    return;
-  }
   ASSERT_NO_FATAL_FAILURE(FakeCharacteristicBoilerplate(
       BluetoothRemoteGattCharacteristic::PROPERTY_READ));
 
@@ -2063,10 +1862,6 @@ TEST_P(BluetoothRemoteGattCharacteristicTestWinrt,
 TEST_F(BluetoothRemoteGattCharacteristicTest,
        MAYBE_WriteRemoteCharacteristic_WritePending) {
 #endif
-  if (!PlatformSupportsLowEnergy()) {
-    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
-    return;
-  }
   ASSERT_NO_FATAL_FAILURE(FakeCharacteristicBoilerplate(
       BluetoothRemoteGattCharacteristic::PROPERTY_WRITE));
 
@@ -2120,10 +1915,6 @@ TEST_P(BluetoothRemoteGattCharacteristicTestWinrt,
 TEST_F(BluetoothRemoteGattCharacteristicTest,
        MAYBE_DeprecatedWriteRemoteCharacteristic_WritePending) {
 #endif
-  if (!PlatformSupportsLowEnergy()) {
-    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
-    return;
-  }
   ASSERT_NO_FATAL_FAILURE(FakeCharacteristicBoilerplate(
       BluetoothRemoteGattCharacteristic::PROPERTY_WRITE));
 
@@ -2165,10 +1956,6 @@ TEST_P(BluetoothRemoteGattCharacteristicTestWinrt,
 TEST_F(BluetoothRemoteGattCharacteristicTest,
        MAYBE_ReadRemoteCharacteristic_WritePending) {
 #endif
-  if (!PlatformSupportsLowEnergy()) {
-    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
-    return;
-  }
   ASSERT_NO_FATAL_FAILURE(FakeCharacteristicBoilerplate(
       BluetoothRemoteGattCharacteristic::PROPERTY_READ |
       BluetoothRemoteGattCharacteristic::PROPERTY_WRITE));
@@ -2217,10 +2004,6 @@ TEST_P(BluetoothRemoteGattCharacteristicTestWinrt,
 TEST_F(BluetoothRemoteGattCharacteristicTest,
        MAYBE_ReadRemoteCharacteristic_DeprecatedWritePending) {
 #endif
-  if (!PlatformSupportsLowEnergy()) {
-    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
-    return;
-  }
   ASSERT_NO_FATAL_FAILURE(FakeCharacteristicBoilerplate(
       BluetoothRemoteGattCharacteristic::PROPERTY_READ |
       BluetoothRemoteGattCharacteristic::PROPERTY_WRITE));
@@ -2262,10 +2045,6 @@ TEST_P(BluetoothRemoteGattCharacteristicTestWinrt,
 TEST_F(BluetoothRemoteGattCharacteristicTest,
        MAYBE_WriteRemoteCharacteristic_ReadPending) {
 #endif
-  if (!PlatformSupportsLowEnergy()) {
-    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
-    return;
-  }
   ASSERT_NO_FATAL_FAILURE(FakeCharacteristicBoilerplate(
       BluetoothRemoteGattCharacteristic::PROPERTY_READ |
       BluetoothRemoteGattCharacteristic::PROPERTY_WRITE));
@@ -2314,10 +2093,6 @@ TEST_P(BluetoothRemoteGattCharacteristicTestWinrt,
 TEST_F(BluetoothRemoteGattCharacteristicTest,
        MAYBE_DeprecatedWriteRemoteCharacteristic_ReadPending) {
 #endif
-  if (!PlatformSupportsLowEnergy()) {
-    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
-    return;
-  }
   ASSERT_NO_FATAL_FAILURE(FakeCharacteristicBoilerplate(
       BluetoothRemoteGattCharacteristic::PROPERTY_READ |
       BluetoothRemoteGattCharacteristic::PROPERTY_WRITE));
@@ -2355,16 +2130,12 @@ TEST_F(BluetoothRemoteGattCharacteristicTest,
 // Tests that a notification arriving during a pending read doesn't
 // cause a crash.
 #if BUILDFLAG(IS_WIN)
-TEST_P(BluetoothRemoteGattCharacteristicTestWinrtOnly,
+TEST_P(BluetoothRemoteGattCharacteristicTestWinrt,
        Notification_During_ReadRemoteCharacteristic) {
 #else
 TEST_F(BluetoothRemoteGattCharacteristicTest,
        MAYBE_Notification_During_ReadRemoteCharacteristic) {
 #endif
-  if (!PlatformSupportsLowEnergy()) {
-    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
-    return;
-  }
   ASSERT_NO_FATAL_FAILURE(StartNotifyBoilerplate(
       BluetoothRemoteGattCharacteristic::PROPERTY_NOTIFY |
           BluetoothRemoteGattCharacteristic::PROPERTY_READ,
@@ -2425,10 +2196,6 @@ TEST_P(BluetoothRemoteGattCharacteristicTestWinrt,
 TEST_F(BluetoothRemoteGattCharacteristicTest,
        MAYBE_Notification_During_WriteRemoteCharacteristic) {
 #endif
-  if (!PlatformSupportsLowEnergy()) {
-    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
-    return;
-  }
   ASSERT_NO_FATAL_FAILURE(StartNotifyBoilerplate(
       BluetoothRemoteGattCharacteristic::PROPERTY_NOTIFY |
           BluetoothRemoteGattCharacteristic::PROPERTY_WRITE,
@@ -2478,10 +2245,6 @@ TEST_P(BluetoothRemoteGattCharacteristicTestWinrt,
 TEST_F(BluetoothRemoteGattCharacteristicTest,
        MAYBE_Notification_During_DeprecatedWriteRemoteCharacteristic) {
 #endif
-  if (!PlatformSupportsLowEnergy()) {
-    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
-    return;
-  }
   ASSERT_NO_FATAL_FAILURE(StartNotifyBoilerplate(
       BluetoothRemoteGattCharacteristic::PROPERTY_NOTIFY |
           BluetoothRemoteGattCharacteristic::PROPERTY_WRITE,
@@ -2524,10 +2287,6 @@ TEST_P(BluetoothRemoteGattCharacteristicTestWinrt,
 TEST_F(BluetoothRemoteGattCharacteristicTest,
        MAYBE_StartNotifySession_NoNotifyOrIndicate) {
 #endif
-  if (!PlatformSupportsLowEnergy()) {
-    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
-    return;
-  }
   ASSERT_NO_FATAL_FAILURE(StartNotifyBoilerplate(
       /* properties: NOTIFY */ 0x10, NotifyValueState::NOTIFY,
       StartNotifySetupError::CHARACTERISTIC_PROPERTIES));
@@ -2558,10 +2317,6 @@ TEST_P(BluetoothRemoteGattCharacteristicTestWinrt,
 TEST_F(BluetoothRemoteGattCharacteristicTest,
        MAYBE_StartNotifySession_NoConfigDescriptor) {
 #endif
-  if (!PlatformSupportsLowEnergy()) {
-    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
-    return;
-  }
   ASSERT_NO_FATAL_FAILURE(StartNotifyBoilerplate(
       /* properties: NOTIFY */ 0x10, NotifyValueState::NOTIFY,
       StartNotifySetupError::CONFIG_DESCRIPTOR_MISSING));
@@ -2592,10 +2347,6 @@ TEST_P(BluetoothRemoteGattCharacteristicTestWinrt,
 TEST_F(BluetoothRemoteGattCharacteristicTest,
        MAYBE_StartNotifySession_MultipleConfigDescriptor) {
 #endif
-  if (!PlatformSupportsLowEnergy()) {
-    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
-    return;
-  }
   ASSERT_NO_FATAL_FAILURE(StartNotifyBoilerplate(
       /* properties: NOTIFY */ 0x10, NotifyValueState::NOTIFY,
       StartNotifySetupError::CONFIG_DESCRIPTOR_DUPLICATE));
@@ -2678,10 +2429,6 @@ TEST_P(BluetoothRemoteGattCharacteristicTestWinrt, StartNotifySession) {
 #else
 TEST_F(BluetoothRemoteGattCharacteristicTest, MAYBE_StartNotifySession) {
 #endif
-  if (!PlatformSupportsLowEnergy()) {
-    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
-    return;
-  }
   ASSERT_NO_FATAL_FAILURE(StartNotifyBoilerplate(
       /* properties: NOTIFY */ 0x10, NotifyValueState::NOTIFY));
 }
@@ -2700,10 +2447,6 @@ TEST_P(BluetoothRemoteGattCharacteristicTestWinrt,
 TEST_F(BluetoothRemoteGattCharacteristicTest,
        MAYBE_StartNotifySession_OnIndicate) {
 #endif
-  if (!PlatformSupportsLowEnergy()) {
-    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
-    return;
-  }
   ASSERT_NO_FATAL_FAILURE(StartNotifyBoilerplate(
       /* properties: INDICATE */ 0x20, NotifyValueState::INDICATE));
 }
@@ -2724,10 +2467,6 @@ TEST_P(BluetoothRemoteGattCharacteristicTestWinrt,
 TEST_F(BluetoothRemoteGattCharacteristicTest,
        MAYBE_StartNotifySession_OnNotifyAndIndicate) {
 #endif
-  if (!PlatformSupportsLowEnergy()) {
-    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
-    return;
-  }
   ASSERT_NO_FATAL_FAILURE(StartNotifyBoilerplate(
       /* properties: NOTIFY and INDICATE bits set */ 0x30,
       NotifyValueState::NOTIFY));
@@ -2746,10 +2485,6 @@ TEST_P(BluetoothRemoteGattCharacteristicTestWinrt,
 TEST_F(BluetoothRemoteGattCharacteristicTest,
        MAYBE_StartNotifySession_Multiple) {
 #endif
-  if (!PlatformSupportsLowEnergy()) {
-    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
-    return;
-  }
   ASSERT_NO_FATAL_FAILURE(
       FakeCharacteristicBoilerplate(/* properties: NOTIFY */ 0x10));
   SimulateGattDescriptor(
@@ -2791,16 +2526,12 @@ TEST_F(BluetoothRemoteGattCharacteristicTest,
 #endif
 // Tests multiple StartNotifySessions pending and then an error.
 #if BUILDFLAG(IS_WIN)
-TEST_P(BluetoothRemoteGattCharacteristicTestWinrtOnly,
+TEST_P(BluetoothRemoteGattCharacteristicTestWinrt,
        StartNotifySessionError_Multiple) {
 #else
 TEST_F(BluetoothRemoteGattCharacteristicTest,
        MAYBE_StartNotifySessionError_Multiple) {
 #endif
-  if (!PlatformSupportsLowEnergy()) {
-    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
-    return;
-  }
   ASSERT_NO_FATAL_FAILURE(
       FakeCharacteristicBoilerplate(/* properties: NOTIFY */ 0x10));
   SimulateGattDescriptor(
@@ -2837,16 +2568,12 @@ TEST_F(BluetoothRemoteGattCharacteristicTest,
 // Test that a GATT disconnect in a StartNotifications error callback will
 // behave correctly. Regression test for crbug.com/1107577.
 #if BUILDFLAG(IS_WIN)
-TEST_P(BluetoothRemoteGattCharacteristicTestWinrtOnly,
+TEST_P(BluetoothRemoteGattCharacteristicTestWinrt,
        StartNotifySessionDisconnectOnError) {
 #else
 TEST_F(BluetoothRemoteGattCharacteristicTest,
        MAYBE_StartNotifySessionDisconnectOnError) {
 #endif
-  if (!PlatformSupportsLowEnergy()) {
-    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
-    return;
-  }
   ASSERT_NO_FATAL_FAILURE(
       FakeCharacteristicBoilerplate(/* properties: NOTIFY */ 0x10));
 
@@ -2913,16 +2640,12 @@ TEST_F(BluetoothRemoteGattCharacteristicTest,
 #endif
 // Tests StartNotifySession completing before chrome objects are deleted.
 #if BUILDFLAG(IS_WIN)
-TEST_P(BluetoothRemoteGattCharacteristicTestWinrtOnly,
+TEST_P(BluetoothRemoteGattCharacteristicTestWinrt,
        StartNotifySession_BeforeDeleted) {
 #else
 TEST_F(BluetoothRemoteGattCharacteristicTest,
        MAYBE_StartNotifySession_BeforeDeleted) {
 #endif
-  if (!PlatformSupportsLowEnergy()) {
-    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
-    return;
-  }
   ASSERT_NO_FATAL_FAILURE(
       FakeCharacteristicBoilerplate(/* properties: NOTIFY */ 0x10));
   SimulateGattDescriptor(
@@ -2976,10 +2699,6 @@ TEST_P(BluetoothRemoteGattCharacteristicTestWinrt,
 TEST_F(BluetoothRemoteGattCharacteristicTest,
        MAYBE_StartNotifySession_Reentrant_Success_Success) {
 #endif
-  if (!PlatformSupportsLowEnergy()) {
-    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
-    return;
-  }
   ASSERT_NO_FATAL_FAILURE(
       FakeCharacteristicBoilerplate(/* properties: NOTIFY */ 0x10));
   SimulateGattDescriptor(
@@ -3016,42 +2735,6 @@ TEST_F(BluetoothRemoteGattCharacteristicTest,
   }
 }
 
-#if BUILDFLAG(IS_WIN)
-// Tests StartNotifySession reentrant in start notify session error callback
-// and the reentrant start notify session error.
-TEST_P(BluetoothRemoteGattCharacteristicTestWin32Only,
-       StartNotifySession_Reentrant_Error_Error) {
-  ASSERT_NO_FATAL_FAILURE(
-      FakeCharacteristicBoilerplate(/* properties: NOTIFY */ 0x10));
-  SimulateGattDescriptor(
-      characteristic1_,
-      BluetoothGattDescriptor::ClientCharacteristicConfigurationUuid().value());
-  ASSERT_EQ(1u, characteristic1_->GetDescriptors().size());
-
-  SimulateGattNotifySessionStartError(
-      characteristic1_, BluetoothGattService::GattErrorCode::kUnknown);
-
-  characteristic1_->StartNotifySession(
-      GetReentrantStartNotifySessionSuccessCallback(Call::NOT_EXPECTED,
-                                                    characteristic1_),
-      GetReentrantStartNotifySessionErrorCallback(
-          Call::EXPECTED, characteristic1_, true /* error_in_reentrant */));
-  EXPECT_EQ(0, callback_count_);
-  SimulateGattNotifySessionStarted(characteristic1_);
-  base::RunLoop().RunUntilIdle();
-  ExpectedChangeNotifyValueAttempts(0);
-
-  // Simulate reentrant StartNotifySession request from
-  // BluetoothTestBase::ReentrantStartNotifySessionErrorCallback.
-  SimulateGattNotifySessionStarted(characteristic1_);
-  base::RunLoop().RunUntilIdle();
-  ExpectedChangeNotifyValueAttempts(0);
-  EXPECT_EQ(0, callback_count_);
-  EXPECT_EQ(2, error_callback_count_);
-  ASSERT_EQ(0u, notify_sessions_.size());
-}
-#endif
-
 #if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_MAC)
 #define MAYBE_StopNotifySession StopNotifySession
 #else
@@ -3059,14 +2742,10 @@ TEST_P(BluetoothRemoteGattCharacteristicTestWin32Only,
 #endif
 // Tests StopNotifySession success on a characteristic that enabled Notify.
 #if BUILDFLAG(IS_WIN)
-TEST_P(BluetoothRemoteGattCharacteristicTestWinrtOnly, StopNotifySession) {
+TEST_P(BluetoothRemoteGattCharacteristicTestWinrt, StopNotifySession) {
 #else
 TEST_F(BluetoothRemoteGattCharacteristicTest, MAYBE_StopNotifySession) {
 #endif
-  if (!PlatformSupportsLowEnergy()) {
-    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
-    return;
-  }
   ASSERT_NO_FATAL_FAILURE(StartNotifyBoilerplate(
       /* properties: NOTIFY */ 0x10, NotifyValueState::NOTIFY));
   ExpectedChangeNotifyValueAttempts(1);
@@ -3092,16 +2771,12 @@ TEST_F(BluetoothRemoteGattCharacteristicTest, MAYBE_StopNotifySession) {
 #endif
 // Tests that deleted sessions are stopped.
 #if BUILDFLAG(IS_WIN)
-TEST_P(BluetoothRemoteGattCharacteristicTestWinrtOnly,
+TEST_P(BluetoothRemoteGattCharacteristicTestWinrt,
        StopNotifySession_SessionDeleted) {
 #else
 TEST_F(BluetoothRemoteGattCharacteristicTest,
        MAYBE_StopNotifySession_SessionDeleted) {
 #endif
-  if (!PlatformSupportsLowEnergy()) {
-    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
-    return;
-  }
   ASSERT_NO_FATAL_FAILURE(StartNotifyBoilerplate(
       /* properties: NOTIFY */ 0x10, NotifyValueState::NOTIFY));
   ExpectedChangeNotifyValueAttempts(1);
@@ -3128,16 +2803,12 @@ TEST_F(BluetoothRemoteGattCharacteristicTest,
 // Tests that deleting the sessions before the stop callbacks have been
 // invoked does not cause problems.
 #if BUILDFLAG(IS_WIN)
-TEST_P(BluetoothRemoteGattCharacteristicTestWinrtOnly,
+TEST_P(BluetoothRemoteGattCharacteristicTestWinrt,
        StopNotifySession_SessionDeleted2) {
 #else
 TEST_F(BluetoothRemoteGattCharacteristicTest,
        MAYBE_StopNotifySession_SessionDeleted2) {
 #endif
-  if (!PlatformSupportsLowEnergy()) {
-    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
-    return;
-  }
   ASSERT_NO_FATAL_FAILURE(
       FakeCharacteristicBoilerplate(/* properties: NOTIFY */ 0x10));
 
@@ -3201,10 +2872,6 @@ TEST_P(BluetoothRemoteGattCharacteristicTestWinrt,
 TEST_F(BluetoothRemoteGattCharacteristicTest,
        MAYBE_StopNotifySession_Cancelled) {
 #endif
-  if (!PlatformSupportsLowEnergy()) {
-    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
-    return;
-  }
   ASSERT_NO_FATAL_FAILURE(StartNotifyBoilerplate(
       /* properties: NOTIFY */ 0x10, NotifyValueState::NOTIFY));
 
@@ -3236,10 +2903,6 @@ TEST_P(BluetoothRemoteGattCharacteristicTestWinrt,
 TEST_F(BluetoothRemoteGattCharacteristicTest,
        MAYBE_StopNotifySession_AfterDeleted) {
 #endif
-  if (!PlatformSupportsLowEnergy()) {
-    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
-    return;
-  }
   ASSERT_NO_FATAL_FAILURE(StartNotifyBoilerplate(
       /* properties: NOTIFY */ 0x10, NotifyValueState::NOTIFY));
 
@@ -3276,16 +2939,12 @@ TEST_F(BluetoothRemoteGattCharacteristicTest,
 #endif
 // Tests StopNotifySession success on a characteristic that enabled Indicate.
 #if BUILDFLAG(IS_WIN)
-TEST_P(BluetoothRemoteGattCharacteristicTestWinrtOnly,
+TEST_P(BluetoothRemoteGattCharacteristicTestWinrt,
        StopNotifySession_OnIndicate) {
 #else
 TEST_F(BluetoothRemoteGattCharacteristicTest,
        MAYBE_StopNotifySession_OnIndicate) {
 #endif
-  if (!PlatformSupportsLowEnergy()) {
-    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
-    return;
-  }
   ASSERT_NO_FATAL_FAILURE(StartNotifyBoilerplate(
       /* properties: INDICATE */ 0x20, NotifyValueState::INDICATE));
   ExpectedChangeNotifyValueAttempts(1);
@@ -3313,16 +2972,12 @@ TEST_F(BluetoothRemoteGattCharacteristicTest,
 // Tests StopNotifySession success on a characteristic that enabled Notify &
 // Indicate.
 #if BUILDFLAG(IS_WIN)
-TEST_P(BluetoothRemoteGattCharacteristicTestWinrtOnly,
+TEST_P(BluetoothRemoteGattCharacteristicTestWinrt,
        StopNotifySession_OnNotifyAndIndicate) {
 #else
 TEST_F(BluetoothRemoteGattCharacteristicTest,
        MAYBE_StopNotifySession_OnNotifyAndIndicate) {
 #endif
-  if (!PlatformSupportsLowEnergy()) {
-    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
-    return;
-  }
   ASSERT_NO_FATAL_FAILURE(StartNotifyBoilerplate(
       /* properties: NOTIFY and INDICATE bits set */ 0x30,
       NotifyValueState::NOTIFY));
@@ -3348,15 +3003,10 @@ TEST_F(BluetoothRemoteGattCharacteristicTest,
 #endif
 // Tests StopNotifySession error
 #if BUILDFLAG(IS_WIN)
-TEST_P(BluetoothRemoteGattCharacteristicTestWinrtOnly,
-       StopNotifySession_Error) {
+TEST_P(BluetoothRemoteGattCharacteristicTestWinrt, StopNotifySession_Error) {
 #else
 TEST_F(BluetoothRemoteGattCharacteristicTest, MAYBE_StopNotifySession_Error) {
 #endif
-  if (!PlatformSupportsLowEnergy()) {
-    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
-    return;
-  }
   ASSERT_NO_FATAL_FAILURE(StartNotifyBoilerplate(
       /* properties: NOTIFY */ 0x10, NotifyValueState::NOTIFY));
 
@@ -3384,16 +3034,12 @@ TEST_F(BluetoothRemoteGattCharacteristicTest, MAYBE_StopNotifySession_Error) {
 #endif
 // Tests multiple StopNotifySession calls for a single session.
 #if BUILDFLAG(IS_WIN)
-TEST_P(BluetoothRemoteGattCharacteristicTestWinrtOnly,
+TEST_P(BluetoothRemoteGattCharacteristicTestWinrt,
        StopNotifySession_Multiple1) {
 #else
 TEST_F(BluetoothRemoteGattCharacteristicTest,
        MAYBE_StopNotifySession_Multiple1) {
 #endif
-  if (!PlatformSupportsLowEnergy()) {
-    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
-    return;
-  }
   ASSERT_NO_FATAL_FAILURE(
       FakeCharacteristicBoilerplate(/* properties: NOTIFY */ 0x10));
 
@@ -3440,16 +3086,12 @@ TEST_F(BluetoothRemoteGattCharacteristicTest,
 #endif
 // Tests multiple StartNotifySession calls and multiple StopNotifySession calls.
 #if BUILDFLAG(IS_WIN)
-TEST_P(BluetoothRemoteGattCharacteristicTestWinrtOnly,
+TEST_P(BluetoothRemoteGattCharacteristicTestWinrt,
        StopNotifySession_Multiple2) {
 #else
 TEST_F(BluetoothRemoteGattCharacteristicTest,
        MAYBE_StopNotifySession_Multiple2) {
 #endif
-  if (!PlatformSupportsLowEnergy()) {
-    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
-    return;
-  }
   ASSERT_NO_FATAL_FAILURE(
       FakeCharacteristicBoilerplate(/* properties: NOTIFY */ 0x10));
 
@@ -3508,16 +3150,12 @@ TEST_F(BluetoothRemoteGattCharacteristicTest,
 // Tests starting a new notify session before the previous stop request
 // resolves.
 #if BUILDFLAG(IS_WIN)
-TEST_P(BluetoothRemoteGattCharacteristicTestWinrtOnly,
+TEST_P(BluetoothRemoteGattCharacteristicTestWinrt,
        StopNotifySession_StopStart) {
 #else
 TEST_F(BluetoothRemoteGattCharacteristicTest,
        MAYBE_StopNotifySession_StopStart) {
 #endif
-  if (!PlatformSupportsLowEnergy()) {
-    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
-    return;
-  }
   ASSERT_NO_FATAL_FAILURE(
       FakeCharacteristicBoilerplate(/* properties: NOTIFY */ 0x10));
   SimulateGattDescriptor(
@@ -3567,16 +3205,12 @@ TEST_F(BluetoothRemoteGattCharacteristicTest,
   DISABLED_StopNotifySession_StartStopStart
 #endif
 #if BUILDFLAG(IS_WIN)
-TEST_P(BluetoothRemoteGattCharacteristicTestWinrtOnly,
+TEST_P(BluetoothRemoteGattCharacteristicTestWinrt,
        StopNotifySession_StartStopStart) {
 #else
 TEST_F(BluetoothRemoteGattCharacteristicTest,
        MAYBE_StopNotifySession_StartStopStart) {
 #endif
-  if (!PlatformSupportsLowEnergy()) {
-    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
-    return;
-  }
   ASSERT_NO_FATAL_FAILURE(StartNotifyBoilerplate(
       /* properties: NOTIFY */ 0x10, NotifyValueState::NOTIFY));
 
@@ -3633,16 +3267,12 @@ TEST_F(BluetoothRemoteGattCharacteristicTest,
 // Tests starting a new notify session before the previous stop requests
 // resolve.
 #if BUILDFLAG(IS_WIN)
-TEST_P(BluetoothRemoteGattCharacteristicTestWinrtOnly,
+TEST_P(BluetoothRemoteGattCharacteristicTestWinrt,
        StopNotifySession_StopStopStart) {
 #else
 TEST_F(BluetoothRemoteGattCharacteristicTest,
        MAYBE_StopNotifySession_StopStopStart) {
 #endif
-  if (!PlatformSupportsLowEnergy()) {
-    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
-    return;
-  }
   ASSERT_NO_FATAL_FAILURE(
       FakeCharacteristicBoilerplate(/* properties: NOTIFY */ 0x10));
   SimulateGattDescriptor(
@@ -3707,16 +3337,12 @@ TEST_F(BluetoothRemoteGattCharacteristicTest,
   DISABLED_StopNotifySession_Reentrant_Success_Stop
 #endif
 #if BUILDFLAG(IS_WIN)
-TEST_P(BluetoothRemoteGattCharacteristicTestWinrtOnly,
+TEST_P(BluetoothRemoteGattCharacteristicTestWinrt,
        StopNotifySession_Reentrant_Success_Stop) {
 #else
 TEST_F(BluetoothRemoteGattCharacteristicTest,
        MAYBE_StopNotifySession_Reentrant_Success_Stop) {
 #endif
-  if (!PlatformSupportsLowEnergy()) {
-    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
-    return;
-  }
   ASSERT_NO_FATAL_FAILURE(
       FakeCharacteristicBoilerplate(/* properties: NOTIFY */ 0x10));
   SimulateGattDescriptor(
@@ -3762,16 +3388,12 @@ TEST_F(BluetoothRemoteGattCharacteristicTest,
   DISABLED_StopNotifySession_Reentrant_Stop_StartSuccess
 #endif
 #if BUILDFLAG(IS_WIN)
-TEST_P(BluetoothRemoteGattCharacteristicTestWinrtOnly,
+TEST_P(BluetoothRemoteGattCharacteristicTestWinrt,
        StopNotifySession_Reentrant_Stop_StartSuccess) {
 #else
 TEST_F(BluetoothRemoteGattCharacteristicTest,
        MAYBE_StopNotifySession_Reentrant_Stop_StartSuccess) {
 #endif
-  if (!PlatformSupportsLowEnergy()) {
-    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
-    return;
-  }
   ASSERT_NO_FATAL_FAILURE(StartNotifyBoilerplate(
       /* properties: NOTIFY */ 0x10, NotifyValueState::NOTIFY));
 
@@ -3818,16 +3440,12 @@ TEST_F(BluetoothRemoteGattCharacteristicTest,
   DISABLED_StopNotifySession_Reentrant_Stop_StartError
 #endif
 #if BUILDFLAG(IS_WIN)
-TEST_P(BluetoothRemoteGattCharacteristicTestWinrtOnly,
+TEST_P(BluetoothRemoteGattCharacteristicTestWinrt,
        StopNotifySession_Reentrant_Stop_StartError) {
 #else
 TEST_F(BluetoothRemoteGattCharacteristicTest,
        MAYBE_StopNotifySession_Reentrant_Stop_StartError) {
 #endif
-  if (!PlatformSupportsLowEnergy()) {
-    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
-    return;
-  }
   ASSERT_NO_FATAL_FAILURE(StartNotifyBoilerplate(
       /* properties: NOTIFY */ 0x10, NotifyValueState::NOTIFY));
 
@@ -3876,10 +3494,6 @@ TEST_P(BluetoothRemoteGattCharacteristicTestWinrt, GattCharacteristicAdded) {
 #else
 TEST_F(BluetoothRemoteGattCharacteristicTest, MAYBE_GattCharacteristicAdded) {
 #endif
-  if (!PlatformSupportsLowEnergy()) {
-    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
-    return;
-  }
   ASSERT_NO_FATAL_FAILURE(FakeCharacteristicBoilerplate());
   TestBluetoothAdapterObserver observer(adapter_);
 
@@ -3902,10 +3516,6 @@ TEST_P(BluetoothRemoteGattCharacteristicTestWinrt,
 TEST_F(BluetoothRemoteGattCharacteristicTest,
        MAYBE_GattCharacteristicValueChanged) {
 #endif
-  if (!PlatformSupportsLowEnergy()) {
-    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
-    return;
-  }
   ASSERT_NO_FATAL_FAILURE(StartNotifyBoilerplate(
       /* properties: NOTIFY */ 0x10, NotifyValueState::NOTIFY));
 
@@ -3939,10 +3549,6 @@ TEST_F(BluetoothRemoteGattCharacteristicTest,
 // TODO(crbug.com/694102): Enable this test on Windows.
 TEST_F(BluetoothRemoteGattCharacteristicTest,
        MAYBE_TwoGattCharacteristicValueChanges) {
-  if (!PlatformSupportsLowEnergy()) {
-    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
-    return;
-  }
   ASSERT_NO_FATAL_FAILURE(StartNotifyBoilerplate(
       /* properties: NOTIFY */ 0x10, NotifyValueState::NOTIFY));
 
@@ -3972,13 +3578,8 @@ TEST_F(BluetoothRemoteGattCharacteristicTest,
 // destroyed.
 // macOS: Not applicable: This can never happen if CBPeripheral delegate is set
 // to nil.
-#if BUILDFLAG(IS_WIN)
-TEST_P(BluetoothRemoteGattCharacteristicTestWin32Only,
-       GattCharacteristicValueChanged_AfterDeleted) {
-#else
 TEST_F(BluetoothRemoteGattCharacteristicTest,
        MAYBE_GattCharacteristicValueChanged_AfterDeleted) {
-#endif
   ASSERT_NO_FATAL_FAILURE(StartNotifyBoilerplate(
       /* properties: NOTIFY */ 0x10, NotifyValueState::NOTIFY));
   TestBluetoothAdapterObserver observer(adapter_);
@@ -4004,16 +3605,12 @@ TEST_F(BluetoothRemoteGattCharacteristicTest,
   DISABLED_GattCharacteristicValueChanged_DisconnectDuring
 #endif
 #if BUILDFLAG(IS_WIN)
-TEST_P(BluetoothRemoteGattCharacteristicTestWinrtOnly,
+TEST_P(BluetoothRemoteGattCharacteristicTestWinrt,
        GattCharacteristicValueChanged_DisconnectDuring) {
 #else
 TEST_F(BluetoothRemoteGattCharacteristicTest,
        MAYBE_GattCharacteristicValueChanged_DisconnectDuring) {
 #endif
-  if (!PlatformSupportsLowEnergy()) {
-    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
-    return;
-  }
   ASSERT_NO_FATAL_FAILURE(StartNotifyBoilerplate(
       /* properties: NOTIFY */ 0x10, NotifyValueState::NOTIFY));
   MockBluetoothAdapter::Observer observer1(adapter_);
@@ -4058,10 +3655,6 @@ TEST_P(BluetoothRemoteGattCharacteristicTestWinrt, GetDescriptors_FindNone) {
 #else
 TEST_F(BluetoothRemoteGattCharacteristicTest, MAYBE_GetDescriptors_FindNone) {
 #endif
-  if (!PlatformSupportsLowEnergy()) {
-    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
-    return;
-  }
 
   ASSERT_NO_FATAL_FAILURE(FakeCharacteristicBoilerplate());
 
@@ -4081,10 +3674,6 @@ TEST_P(BluetoothRemoteGattCharacteristicTestWinrt,
 TEST_F(BluetoothRemoteGattCharacteristicTest,
        MAYBE_GetDescriptors_and_GetDescriptor) {
 #endif
-  if (!PlatformSupportsLowEnergy()) {
-    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
-    return;
-  }
 
   ASSERT_NO_FATAL_FAILURE(FakeCharacteristicBoilerplate());
 
@@ -4139,10 +3728,6 @@ TEST_P(BluetoothRemoteGattCharacteristicTestWinrt, GetDescriptorsByUUID) {
 #else
 TEST_F(BluetoothRemoteGattCharacteristicTest, MAYBE_GetDescriptorsByUUID) {
 #endif
-  if (!PlatformSupportsLowEnergy()) {
-    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
-    return;
-  }
 
   ASSERT_NO_FATAL_FAILURE(FakeCharacteristicBoilerplate());
 
@@ -4182,10 +3767,6 @@ TEST_F(BluetoothRemoteGattCharacteristicTest, MAYBE_GetDescriptorsByUUID) {
 // macOS: Does not apply. All events arrive on the UI Thread.
 // TODO(crbug.com/694102): Enable this test on Windows.
 TEST_F(BluetoothRemoteGattCharacteristicTest, MAYBE_ReadDuringDisconnect) {
-  if (!PlatformSupportsLowEnergy()) {
-    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
-    return;
-  }
   ASSERT_NO_FATAL_FAILURE(FakeCharacteristicBoilerplate(
       BluetoothRemoteGattCharacteristic::PROPERTY_READ));
 
@@ -4209,10 +3790,6 @@ TEST_F(BluetoothRemoteGattCharacteristicTest, MAYBE_ReadDuringDisconnect) {
 // macOS: Does not apply. All events arrive on the UI Thread.
 // TODO(crbug.com/694102): Enable this test on Windows.
 TEST_F(BluetoothRemoteGattCharacteristicTest, MAYBE_WriteDuringDisconnect) {
-  if (!PlatformSupportsLowEnergy()) {
-    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
-    return;
-  }
   ASSERT_NO_FATAL_FAILURE(FakeCharacteristicBoilerplate(
       BluetoothRemoteGattCharacteristic::PROPERTY_WRITE));
 
@@ -4246,10 +3823,6 @@ TEST_F(BluetoothRemoteGattCharacteristicTest, MAYBE_WriteDuringDisconnect) {
 // TODO(crbug.com/694102): Enable this test on Windows.
 TEST_F(BluetoothRemoteGattCharacteristicTest,
        MAYBE_DeprecatedWriteDuringDisconnect) {
-  if (!PlatformSupportsLowEnergy()) {
-    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
-    return;
-  }
   ASSERT_NO_FATAL_FAILURE(FakeCharacteristicBoilerplate(
       BluetoothRemoteGattCharacteristic::PROPERTY_WRITE));
 
@@ -4277,17 +3850,13 @@ TEST_F(BluetoothRemoteGattCharacteristicTest,
 // a different thread.
 #if BUILDFLAG(IS_WIN)
 TEST_P(
-    BluetoothRemoteGattCharacteristicTestWinrtOnly,
+    BluetoothRemoteGattCharacteristicTestWinrt,
     WriteWithoutResponseOnlyCharacteristic_WriteRemoteCharacteristicDuringDisconnect) {
 #else
 TEST_F(
     BluetoothRemoteGattCharacteristicTest,
     MAYBE_WriteWithoutResponseOnlyCharacteristic_WriteRemoteCharacteristicDuringDisconnect) {
 #endif
-  if (!PlatformSupportsLowEnergy()) {
-    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
-    return;
-  }
   ASSERT_NO_FATAL_FAILURE(FakeCharacteristicBoilerplate(
       BluetoothRemoteGattCharacteristic::PROPERTY_WRITE_WITHOUT_RESPONSE));
 
@@ -4321,17 +3890,13 @@ TEST_F(
 // a different thread.
 #if BUILDFLAG(IS_WIN)
 TEST_P(
-    BluetoothRemoteGattCharacteristicTestWinrtOnly,
+    BluetoothRemoteGattCharacteristicTestWinrt,
     WriteWithoutResponseOnlyCharacteristic_DeprecatedWriteRemoteCharacteristicDuringDisconnect) {
 #else
 TEST_F(
     BluetoothRemoteGattCharacteristicTest,
     MAYBE_WriteWithoutResponseOnlyCharacteristic_DeprecatedWriteRemoteCharacteristicDuringDisconnect) {
 #endif
-  if (!PlatformSupportsLowEnergy()) {
-    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
-    return;
-  }
   ASSERT_NO_FATAL_FAILURE(FakeCharacteristicBoilerplate(
       BluetoothRemoteGattCharacteristic::PROPERTY_WRITE_WITHOUT_RESPONSE));
 
@@ -4355,17 +3920,13 @@ TEST_F(
   DISABLED_WriteWithoutResponseOnlyCharacteristic_CloseConnectionDuringDisconnect
 #endif
 #if BUILDFLAG(IS_WIN)
-TEST_P(BluetoothRemoteGattCharacteristicTestWinrtOnly,
+TEST_P(BluetoothRemoteGattCharacteristicTestWinrt,
        WriteWithoutResponseOnlyCharacteristic_CloseConnectionDuringDisconnect) {
 #else
 TEST_F(
     BluetoothRemoteGattCharacteristicTest,
     MAYBE_WriteWithoutResponseOnlyCharacteristic_CloseConnectionDuringDisconnect) {
 #endif
-  if (!PlatformSupportsLowEnergy()) {
-    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
-    return;
-  }
   ASSERT_NO_FATAL_FAILURE(FakeCharacteristicBoilerplate(
       BluetoothRemoteGattCharacteristic::PROPERTY_WRITE_WITHOUT_RESPONSE));
 
@@ -4397,17 +3958,13 @@ TEST_F(
 #endif
 #if BUILDFLAG(IS_WIN)
 TEST_P(
-    BluetoothRemoteGattCharacteristicTestWinrtOnly,
+    BluetoothRemoteGattCharacteristicTestWinrt,
     DeprecatedWriteWithoutResponseOnlyCharacteristic_CloseConnectionDuringDisconnect) {
 #else
 TEST_F(
     BluetoothRemoteGattCharacteristicTest,
     MAYBE_DeprecatedWriteWithoutResponseOnlyCharacteristic_CloseConnectionDuringDisconnect) {
 #endif
-  if (!PlatformSupportsLowEnergy()) {
-    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
-    return;
-  }
   ASSERT_NO_FATAL_FAILURE(FakeCharacteristicBoilerplate(
       BluetoothRemoteGattCharacteristic::PROPERTY_WRITE_WITHOUT_RESPONSE));
 
@@ -4438,10 +3995,6 @@ TEST_F(
 TEST_F(
     BluetoothRemoteGattCharacteristicTest,
     MAYBE_WriteWithoutResponseOnlyCharacteristic_DisconnectCalledDuringWriteRemoteCharacteristic) {
-  if (!PlatformSupportsLowEnergy()) {
-    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
-    return;
-  }
   ASSERT_NO_FATAL_FAILURE(FakeCharacteristicBoilerplate(
       BluetoothRemoteGattCharacteristic::PROPERTY_WRITE_WITHOUT_RESPONSE));
 
@@ -4478,10 +4031,6 @@ TEST_F(
 TEST_F(
     BluetoothRemoteGattCharacteristicTest,
     MAYBE_DeprecatedWriteWithoutResponseOnlyCharacteristic_DisconnectCalledDuringWriteRemoteCharacteristic) {
-  if (!PlatformSupportsLowEnergy()) {
-    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
-    return;
-  }
   ASSERT_NO_FATAL_FAILURE(FakeCharacteristicBoilerplate(
       BluetoothRemoteGattCharacteristic::PROPERTY_WRITE_WITHOUT_RESPONSE));
 
@@ -4512,10 +4061,6 @@ TEST_F(
 TEST_F(
     BluetoothRemoteGattCharacteristicTest,
     MAYBE_WriteWithoutResponseOnlyCharacteristic_DisconnectCalledBeforeWriteRemoteCharacteristic) {
-  if (!PlatformSupportsLowEnergy()) {
-    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
-    return;
-  }
   ASSERT_NO_FATAL_FAILURE(FakeCharacteristicBoilerplate(
       BluetoothRemoteGattCharacteristic::PROPERTY_WRITE_WITHOUT_RESPONSE));
 
@@ -4552,10 +4097,6 @@ TEST_F(
 TEST_F(
     BluetoothRemoteGattCharacteristicTest,
     MAYBE_DeprecatedWriteWithoutResponseOnlyCharacteristic_DisconnectCalledBeforeWriteRemoteCharacteristic) {
-  if (!PlatformSupportsLowEnergy()) {
-    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
-    return;
-  }
   ASSERT_NO_FATAL_FAILURE(FakeCharacteristicBoilerplate(
       BluetoothRemoteGattCharacteristic::PROPERTY_WRITE_WITHOUT_RESPONSE));
 
@@ -4585,10 +4126,6 @@ TEST_F(
 // TODO(crbug.com/694102): Enable this test on Windows.
 TEST_F(BluetoothRemoteGattCharacteristicTest,
        MAYBE_StartNotifySessionDuringDisconnect) {
-  if (!PlatformSupportsLowEnergy()) {
-    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
-    return;
-  }
   ASSERT_NO_FATAL_FAILURE(FakeCharacteristicBoilerplate(
       BluetoothRemoteGattCharacteristic::PROPERTY_NOTIFY));
   SimulateGattDescriptor(
@@ -4619,10 +4156,6 @@ TEST_F(BluetoothRemoteGattCharacteristicTest,
 // TODO(crbug.com/694102): Enable this test on Windows.
 TEST_F(BluetoothRemoteGattCharacteristicTest,
        MAYBE_StopNotifySessionDuringDisconnect) {
-  if (!PlatformSupportsLowEnergy()) {
-    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
-    return;
-  }
   ASSERT_NO_FATAL_FAILURE(StartNotifyBoilerplate(
       /* properties: NOTIFY */ 0x10, NotifyValueState::NOTIFY));
 
@@ -4645,10 +4178,6 @@ TEST_F(BluetoothRemoteGattCharacteristicTest,
 // TODO(crbug.com/694102): Enable this test on Windows.
 TEST_F(BluetoothRemoteGattCharacteristicTest,
        MAYBE_DeleteNotifySessionDuringDisconnect) {
-  if (!PlatformSupportsLowEnergy()) {
-    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
-    return;
-  }
   ASSERT_NO_FATAL_FAILURE(StartNotifyBoilerplate(
       /* properties: NOTIFY */ 0x10, NotifyValueState::NOTIFY));
 
@@ -4667,10 +4196,6 @@ TEST_F(BluetoothRemoteGattCharacteristicTest,
 // changed event that could arrive during a discovery procedure.
 TEST_F(BluetoothRemoteGattCharacteristicTest,
        SimulateDeviceModificationWhileDiscoveringDescriptors) {
-  if (!PlatformSupportsLowEnergy()) {
-    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
-    return;
-  }
   InitWithFakeAdapter();
   StartLowEnergyDiscoverySession();
   BluetoothDevice* device = SimulateLowEnergyDevice(3);
@@ -4729,10 +4254,6 @@ TEST_F(BluetoothRemoteGattCharacteristicTest,
 // Android: This test doesn't apply to Android because there is no services
 // changed event that could arrive during a discovery procedure.
 TEST_F(BluetoothRemoteGattCharacteristicTest, ExtraDidDiscoverDescriptorsCall) {
-  if (!PlatformSupportsLowEnergy()) {
-    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
-    return;
-  }
   InitWithFakeAdapter();
   StartLowEnergyDiscoverySession();
   BluetoothDevice* device = SimulateLowEnergyDevice(3);
@@ -4777,17 +4298,7 @@ TEST_F(BluetoothRemoteGattCharacteristicTest, ExtraDidDiscoverDescriptorsCall) {
 #if BUILDFLAG(IS_WIN)
 INSTANTIATE_TEST_SUITE_P(All,
                          BluetoothRemoteGattCharacteristicTestWinrt,
-                         ::testing::ValuesIn(kBluetoothTestWinrtParamAll));
-
-INSTANTIATE_TEST_SUITE_P(
-    All,
-    BluetoothRemoteGattCharacteristicTestWin32Only,
-    ::testing::ValuesIn(kBluetoothTestWinrtParamWin32Only));
-
-INSTANTIATE_TEST_SUITE_P(
-    All,
-    BluetoothRemoteGattCharacteristicTestWinrtOnly,
-    ::testing::ValuesIn(kBluetoothTestWinrtParamWinrtOnly));
+                         ::testing::ValuesIn(kBluetoothTestWinrtParam));
 #endif  // BUILDFLAG(IS_WIN)
 
 }  // namespace device

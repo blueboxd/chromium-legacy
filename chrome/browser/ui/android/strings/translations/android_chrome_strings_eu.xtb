@@ -450,6 +450,7 @@ Egoeraren token pribatuek sareko pribatutasuna hobetzen dute eta ezin dira erabi
 <translation id="3421726884497337397">Aukeratu noiz blokeatu nahi dituzun hirugarrenen cookieak</translation>
 <translation id="3428747202529429621">Babestuta mantentzen zaitu Chrome-n, eta segurtasuna hobetzeko erabil daiteke Google-ren beste aplikazio batzuetan saioa hasita daukazunean</translation>
 <translation id="3429160811076349561">Probako eginbideak desaktibatuta daude</translation>
+<translation id="3432973700170747422">Ezabatu azken 15 minutuak</translation>
 <translation id="3435465986463792564">Leiho gehiegi dituzu? Hemen kudea ditzakezu.</translation>
 <translation id="3435738964857648380">Segurtasuna</translation>
 <translation id="3443221991560634068">Kargatu berriro oraingo orria</translation>
@@ -516,7 +517,6 @@ Egoeraren token pribatuek sareko pribatutasuna hobetzen dute eta ezin dira erabi
 <translation id="3830886834687455630">Pasahitzak egiaztatzeko, eguneratu Google Play Services</translation>
 <translation id="3845098929839618392">Ireki ezkutuko fitxa batean</translation>
 <translation id="3856096718352044181">Egiaztatu hornitzaile horrek balio duela edo saiatu berriro geroago</translation>
-<translation id="3858127568696903256">Ikusi jarraitzen diozun edukia hemen</translation>
 <translation id="3858860766373142691">Izena</translation>
 <translation id="3861633093716975811">Bideo arrakastatsuak</translation>
 <translation id="3874520961715512166">Kendu da webgunea</translation>
@@ -1242,6 +1242,7 @@ Esaterako, bisitatu dituzun webguneetan oinarritzen ez diren iragarkiak bidalita
 <translation id="7682724950699840886">Saiatu hau egiten: ziurtatu gailuan behar adina toki duzula eta saiatu berriro esportatzen.</translation>
 <translation id="7686086654630106285">Webguneek iradokitako iragarkiei buruzko informazio gehiago</translation>
 <translation id="768618399695552958">Bisitatzen dituzun orrietako batzuk aurrez kargatzen dira. Baliteke orriak Google-ren zerbitzarien bidez aurrez kargatzea esteka Google-ren webgune batean badago.</translation>
+<translation id="7691043218961417207">Arakatu jarraitzeko edukia</translation>
 <translation id="7698359219371678927">Sortu mezu elektronikoa <ph name="APP_NAME" /> aplikazioan</translation>
 <translation id="7707922173985738739">Erabili datu-konexioa</translation>
 <translation id="7709094866268987903">Kendutako interesak hemen agertuko dira</translation>

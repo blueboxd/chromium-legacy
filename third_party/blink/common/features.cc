@@ -494,6 +494,12 @@ BASE_FEATURE(kDropInputEventsBeforeFirstPaint,
              "DropInputEventsBeforeFirstPaint",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+// Drop touch-end dispatch from `InputHandlerProxy` when all other touch-events
+// in current interaction sequence are dropeed.
+BASE_FEATURE(kDroppedTouchSequenceIncludesTouchEnd,
+             "DroppedTouchSequenceIncludesTouchEnd",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
 // File handling icons. https://crbug.com/1218213
 BASE_FEATURE(kFileHandlingIcons,
              "FileHandlingIcons",
@@ -700,6 +706,23 @@ BASE_FEATURE(kLowLatencyCanvas2dImageChromium,
 // Enables small accelerated canvases for webview (crbug.com/1004304)
 BASE_FEATURE(kWebviewAccelerateSmallCanvases,
              "WebviewAccelerateSmallCanvases",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+BASE_FEATURE(
+    kCanvas2DHibernation,
+    "Canvas2DHibernation",
+#if BUILDFLAG(IS_MAC)
+    // Canvas hibernation is not always enabled on MacOS X due to a bug that
+    // causes content loss. TODO: Find a better fix for crbug.com/588434
+    base::FeatureState::FEATURE_DISABLED_BY_DEFAULT
+#else
+    base::FeatureState::FEATURE_ENABLED_BY_DEFAULT
+#endif
+);
+
+// Whether to losslessly compress the resulting image after canvas hibernation.
+BASE_FEATURE(kCanvasCompressHibernatedImage,
+             "CanvasCompressHibernatedImage",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Whether to aggressively free resources for canvases in background pages.
@@ -1467,14 +1490,6 @@ BASE_FEATURE(kPrecompileInlineScripts,
              "PrecompileInlineScripts",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-BASE_FEATURE(kPretokenizeCSS,
-             "PretokenizeCSS",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-const base::FeatureParam<bool> kPretokenizeInlineSheets = {
-    &kPretokenizeCSS, "pretokenize_inline_sheets", true};
-const base::FeatureParam<bool> kPretokenizeExternalSheets = {
-    &kPretokenizeCSS, "pretokenize_external_sheets", true};
-
 BASE_FEATURE(kSimulateClickOnAXFocus,
              "SimulateClickOnAXFocus",
 #if BUILDFLAG(IS_WIN)
@@ -1684,7 +1699,7 @@ BASE_FEATURE(kUseThreadPoolForMediaStreamVideoTaskRunner,
 
 BASE_FEATURE(kThrottleDisplayNoneAndVisibilityHiddenCrossOriginIframes,
              "ThrottleDisplayNoneAndVisibilityHiddenCrossOriginIframes",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 bool IsThrottleDisplayNoneAndVisibilityHiddenCrossOriginIframesEnabled() {
   static bool throttling_disabled =
@@ -1724,6 +1739,24 @@ BASE_FEATURE(kUseBlinkSchedulerTaskRunnerWithCustomDeleter,
 
 BASE_FEATURE(kExtendScriptResourceLifetime,
              "ExtendScriptResourceLifetime",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+BASE_FEATURE(kRenderBlockingFonts,
+             "RenderBlockingFonts",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+const base::FeatureParam<int> kMaxBlockingTimeMsForRenderBlockingFonts(
+    &features::kRenderBlockingFonts,
+    "max-blocking-time",
+    1500);
+
+const base::FeatureParam<int> kMaxFCPDelayMsForRenderBlockingFonts(
+    &features::kRenderBlockingFonts,
+    "max-fcp-delay",
+    100);
+
+BASE_FEATURE(kWebRtcStatsReportIdl,
+             "WebRtcStatsReportIdl",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 }  // namespace features

@@ -68,19 +68,6 @@ class NET_EXPORT CertVerifyProc
     kMaxValue = kChainLengthOne
   };
 
-  // These values are persisted to logs. Entries should not be renumbered and
-  // numeric values should never be reused.
-  enum class EKUStatus {
-    kInvalid = 0,
-    kNoEKU = 1,
-    kAnyEKU = 2,
-    kServerAuthOnly = 3,
-    kServerAuthAndClientAuthOnly = 4,
-    kServerAuthAndOthers = 5,
-    kOther = 6,
-    kMaxValue = kOther
-  };
-
 #if !(BUILDFLAG(IS_FUCHSIA) || BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS))
   // Creates and returns a CertVerifyProc that uses the system verifier.
   // |cert_net_fetcher| may not be used, depending on the implementation.
@@ -179,7 +166,6 @@ class NET_EXPORT CertVerifyProc
   //
   // * ocsp_result
   // * has_sha1
-  // * has_sha1_leaf
   //
   // which will be filled in by |Verify()|. If an error code is returned,
   // |verify_result->cert_status| should be non-zero, indicating an

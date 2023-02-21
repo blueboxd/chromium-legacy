@@ -29,6 +29,18 @@ TEST_F('SidePanelBookmarksListTest', 'All', function() {
   mocha.run();
 });
 
+var SidePanelPowerBookmarksContextMenuTest =
+    class extends SidePanelBrowserTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://bookmarks-side-panel.top-chrome/test_loader.html?module=side_panel/bookmarks/power_bookmarks_context_menu_test.js';
+  }
+};
+
+TEST_F('SidePanelPowerBookmarksContextMenuTest', 'All', function() {
+  mocha.run();
+});
+
 var SidePanelPowerBookmarksEditDialogTest = class extends SidePanelBrowserTest {
   /** @override */
   get browsePreload() {
@@ -47,7 +59,8 @@ var SidePanelPowerBookmarksListTest = class extends SidePanelBrowserTest {
   }
 };
 
-TEST_F('SidePanelPowerBookmarksListTest', 'All', function() {
+// TODO(crbug.com/1410117): Flaky across multiple builders. Re-enable this test.
+TEST_F('SidePanelPowerBookmarksListTest', 'DISABLED_All', function() {
   mocha.run();
 });
 

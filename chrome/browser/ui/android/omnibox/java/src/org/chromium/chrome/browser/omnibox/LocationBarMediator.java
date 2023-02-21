@@ -297,15 +297,16 @@ class LocationBarMediator
 
         if (hasFocus && mLocationBarDataProvider.hasTab()
                 && !mLocationBarDataProvider.isIncognito()) {
-            if (mNativeInitialized
-                    && mTemplateUrlServiceSupplier.get().isDefaultSearchEngineGoogle()) {
-                GeolocationHeader.primeLocationForGeoHeaderIfEnabled(
-                        mProfileSupplier.get(), mTemplateUrlServiceSupplier.get());
+            if (mTemplateUrlServiceSupplier.hasValue()) {
+                if (mTemplateUrlServiceSupplier.get().isDefaultSearchEngineGoogle()) {
+                    GeolocationHeader.primeLocationForGeoHeaderIfEnabled(
+                            mProfileSupplier.get(), mTemplateUrlServiceSupplier.get());
+                }
             } else {
-                mDeferredNativeRunnables.add(() -> {
-                    if (mTemplateUrlServiceSupplier.get().isDefaultSearchEngineGoogle()) {
+                mTemplateUrlServiceSupplier.onAvailable((templateUrlService) -> {
+                    if (templateUrlService.isDefaultSearchEngineGoogle()) {
                         GeolocationHeader.primeLocationForGeoHeaderIfEnabled(
-                                mProfileSupplier.get(), mTemplateUrlServiceSupplier.get());
+                                mProfileSupplier.get(), templateUrlService);
                     }
                 });
             }
@@ -319,17 +320,17 @@ class LocationBarMediator
     /*package */ void onFinishNativeInitialization() {
         mNativeInitialized = true;
         mOmniboxPrerender = new OmniboxPrerender();
-        TemplateUrlService templateUrlService = mTemplateUrlServiceSupplier.get();
-        if (templateUrlService != null) {
+        mTemplateUrlServiceSupplier.onAvailable((templateUrlService) -> {
             templateUrlService.addObserver(this);
-        }
-        mAssistantVoiceSearchServiceSupplier.set(new AssistantVoiceSearchService(mContext,
-                ExternalAuthUtils.getInstance(), templateUrlService, GSAState.getInstance(), this,
-                SharedPreferencesManager.getInstance(),
-                IdentityServicesProvider.get().getIdentityManager(
-                        Profile.getLastUsedRegularProfile()),
-                AccountManagerFacadeProvider.getInstance()));
-        onAssistantVoiceSearchServiceChanged();
+            mAssistantVoiceSearchServiceSupplier.set(new AssistantVoiceSearchService(mContext,
+                    ExternalAuthUtils.getInstance(), templateUrlService, GSAState.getInstance(),
+                    LocationBarMediator.this, SharedPreferencesManager.getInstance(),
+                    IdentityServicesProvider.get().getIdentityManager(
+                            Profile.getLastUsedRegularProfile()),
+                    AccountManagerFacadeProvider.getInstance()));
+            onAssistantVoiceSearchServiceChanged();
+        });
+
         mLocationBarLayout.onFinishNativeInitialization();
         setProfile(mProfileSupplier.get());
         onPrimaryColorChanged();

@@ -3,15 +3,16 @@
 // found in the LICENSE file.
 
 #include "third_party/blink/renderer/core/css/parser/css_tokenizer.h"
-
-namespace blink {
-#include "third_party/blink/renderer/core/css/css_tokenizer_codepoints.cc"
-}
-
 #include "third_party/blink/renderer/core/css/parser/css_parser_idioms.h"
 #include "third_party/blink/renderer/core/css/parser/css_parser_token_range.h"
 #include "third_party/blink/renderer/core/html/parser/html_parser_idioms.h"
 #include "third_party/blink/renderer/platform/wtf/text/character_names.h"
+
+#ifdef __SSE2__
+#include <immintrin.h>
+#elif defined(__ARM_NEON__)
+#include <arm_neon.h>
+#endif
 
 namespace blink {
 namespace {
@@ -21,42 +22,6 @@ namespace {
 constexpr wtf_size_t kEstimatedCharactersPerToken = 3;
 
 }  // namespace
-
-// static
-std::unique_ptr<CachedCSSTokenizer> CSSTokenizer::CreateCachedTokenizer(
-    const String& input) {
-  CSSTokenizer tokenizer(input);
-
-  Vector<CSSParserToken> tokens;
-
-  // This holds offsets into the source text for each token.
-  Vector<wtf_size_t> offsets;
-
-  wtf_size_t reserved_size = (tokenizer.input_.length() - tokenizer.Offset()) /
-                             kEstimatedCharactersPerToken;
-  tokens.ReserveInitialCapacity(reserved_size);
-  offsets.ReserveInitialCapacity(reserved_size);
-
-  offsets.push_back(0);
-  while (true) {
-    const CSSParserToken token = tokenizer.NextToken();
-    tokens.push_back(token);
-    offsets.push_back(tokenizer.Offset());
-    if (token.GetType() == kEOFToken) {
-      break;
-    }
-  }
-  return std::make_unique<CachedCSSTokenizer>(
-      input, std::move(tokens), std::move(offsets),
-      std::move(tokenizer.string_pool_));
-}
-
-std::unique_ptr<CachedCSSTokenizer> CachedCSSTokenizer::DuplicateForTesting()
-    const {
-  return std::make_unique<CachedCSSTokenizer>(
-      input_.RangeAt(0, input_.length()).ToString(), tokens_, offsets_,
-      string_pool_);
-}
 
 CSSTokenizer::CSSTokenizer(const String& string, wtf_size_t offset)
     : input_(string) {
@@ -77,15 +42,12 @@ Vector<CSSParserToken, 32> CSSTokenizer::TokenizeToEOF() {
                                 kEstimatedCharactersPerToken);
 
   while (true) {
-    const CSSParserToken token = NextToken();
-    switch (token.GetType()) {
-      case kCommentToken:
-        continue;
-      case kEOFToken:
-        return tokens;
-      default:
-        tokens.push_back(token);
-        break;
+    const CSSParserToken token =
+        NextToken</*SkipComments=*/true, /*StoreOffset=*/false>();
+    if (token.GetType() == kEOFToken) {
+      return tokens;
+    } else {
+      tokens.push_back(token);
     }
   }
 }
@@ -96,19 +58,11 @@ StringView CSSTokenizer::StringRangeAt(wtf_size_t start,
 }
 
 CSSParserToken CSSTokenizer::TokenizeSingle() {
-  while (true) {
-    prev_offset_ = input_.Offset();
-    const CSSParserToken token = NextToken();
-    if (token.GetType() == kCommentToken) {
-      continue;
-    }
-    return token;
-  }
+  return NextToken</*SkipComments=*/true, /*StoreOffset=*/true>();
 }
 
 CSSParserToken CSSTokenizer::TokenizeSingleWithComments() {
-  prev_offset_ = input_.Offset();
-  return NextToken();
+  return NextToken</*SkipComments=*/false, /*StoreOffset=*/true>();
 }
 
 wtf_size_t CSSTokenizer::TokenCount() {
@@ -223,16 +177,6 @@ CSSParserToken CSSTokenizer::HyphenMinus(UChar cc) {
   return CSSParserToken(kDelimiterToken, cc);
 }
 
-CSSParserToken CSSTokenizer::Solidus(UChar cc) {
-  if (ConsumeIfNext('*')) {
-    // These get ignored, but we need a value to return.
-    ConsumeUntilCommentEndFound();
-    return CSSParserToken(kCommentToken);
-  }
-
-  return CSSParserToken(kDelimiterToken, cc);
-}
-
 CSSParserToken CSSTokenizer::Colon(UChar cc) {
   return CSSParserToken(kColonToken);
 }
@@ -333,29 +277,139 @@ CSSParserToken CSSTokenizer::EndOfFile(UChar cc) {
   return CSSParserToken(kEOFToken);
 }
 
+template <bool SkipComments, bool StoreOffset>
 CSSParserToken CSSTokenizer::NextToken() {
-  // Unlike the HTMLTokenizer, the CSS Syntax spec is written
-  // as a stateless, (fixed-size) look-ahead tokenizer.
-  // We could move to the stateful model and instead create
-  // states for all the "next 3 codepoints are X" cases.
-  // State-machine tokenizers are easier to write to handle
-  // incremental tokenization of partial sources.
-  // However, for now we follow the spec exactly.
-  UChar cc = Consume();
-  CodePoint code_point_func = nullptr;
+  do {
+    if (StoreOffset) {
+      prev_offset_ = input_.Offset();
+    }
+    // Unlike the HTMLTokenizer, the CSS Syntax spec is written
+    // as a stateless, (fixed-size) look-ahead tokenizer.
+    // We could move to the stateful model and instead create
+    // states for all the "next 3 codepoints are X" cases.
+    // State-machine tokenizers are easier to write to handle
+    // incremental tokenization of partial sources.
+    // However, for now we follow the spec exactly.
+    UChar cc = Consume();
+    ++token_count_;
 
-  if (IsASCII(cc)) {
-    SECURITY_DCHECK(cc < codePointsNumber);
-    code_point_func = kCodePoints[cc];
-  } else {
-    code_point_func = &CSSTokenizer::NameStart;
-  }
-
-  ++token_count_;
-  if (code_point_func) {
-    return ((this)->*(code_point_func))(cc);
-  }
-  return CSSParserToken(kDelimiterToken, cc);
+    switch (cc) {
+      case 0:
+        return EndOfFile(cc);
+      case '\t':
+      case '\n':
+      case '\f':
+      case '\r':
+      case ' ':
+        return WhiteSpace(cc);
+      case '\'':
+      case '"':
+        return StringStart(cc);
+      case '0':
+      case '1':
+      case '2':
+      case '3':
+      case '4':
+      case '5':
+      case '6':
+      case '7':
+      case '8':
+      case '9':
+        return AsciiDigit(cc);
+      case '(':
+        return LeftParenthesis(cc);
+      case ')':
+        return RightParenthesis(cc);
+      case '[':
+        return LeftBracket(cc);
+      case ']':
+        return RightBracket(cc);
+      case '{':
+        return LeftBrace(cc);
+      case '}':
+        return RightBrace(cc);
+      case '+':
+      case '.':
+        return PlusOrFullStop(cc);
+      case '-':
+        return HyphenMinus(cc);
+      case '*':
+        return Asterisk(cc);
+      case '<':
+        return LessThan(cc);
+      case ',':
+        return Comma(cc);
+      case '/':
+        if (ConsumeIfNext('*')) {
+          ConsumeUntilCommentEndFound();
+          if (SkipComments) {
+            break;  // Read another token.
+          } else {
+            return CSSParserToken(kCommentToken);
+          }
+        }
+        return CSSParserToken(kDelimiterToken, cc);
+      case '\\':
+        return ReverseSolidus(cc);
+      case ':':
+        return Colon(cc);
+      case ';':
+        return SemiColon(cc);
+      case '#':
+        return Hash(cc);
+      case '^':
+        return CircumflexAccent(cc);
+      case '$':
+        return DollarSign(cc);
+      case '|':
+        return VerticalLine(cc);
+      case '~':
+        return Tilde(cc);
+      case '@':
+        return CommercialAt(cc);
+      case 'u':
+      case 'U':
+        return LetterU(cc);
+      case 1:
+      case 2:
+      case 3:
+      case 4:
+      case 5:
+      case 6:
+      case 7:
+      case 8:
+      case 11:
+      case 14:
+      case 15:
+      case 16:
+      case 17:
+      case 18:
+      case 19:
+      case 20:
+      case 21:
+      case 22:
+      case 23:
+      case 24:
+      case 25:
+      case 26:
+      case 27:
+      case 28:
+      case 29:
+      case 30:
+      case 31:
+      case '!':
+      case '%':
+      case '&':
+      case '=':
+      case '>':
+      case '?':
+      case '`':
+      case 127:
+        return CSSParserToken(kDelimiterToken, cc);
+      default:
+        return NameStart(cc);
+    }
+  } while (SkipComments);
 }
 
 // This method merges the following spec sections for efficiency
@@ -619,29 +673,101 @@ bool CSSTokenizer::ConsumeIfNext(UChar character) {
   return false;
 }
 
-// http://www.w3.org/TR/css3-syntax/#consume-a-name
+// http://www.w3.org/TR/css3-syntax/#consume-name
+//
+// Consumes a name, which is defined as a contiguous sequence of name code
+// points (see IsNameCodePoint()), possibly with escapes. We stop at the first
+// thing that is _not_ a name code point (or the end of a string); if that is a
+// backslash, we hand over to the more complete and slower blink::ConsumeName().
+// If not, we can send back the relevant substring of the input, without any
+// allocations.
+//
+// If SIMD is available (we support only SSE2 and NEON), we do this 16 and 16
+// bytes at a time, generally giving a speed boost except for very short names.
+// (We don't get short-circuiting, and we need some extra setup to load
+// constants, but we also don't get a lot of branches per byte that we
+// consider.)
+//
+// The checking for \0 is a bit odd; \0 is sometimes used as an EOF marker
+// internal to this code, so we need to call into blink::ConsumeName()
+// to escape it (into a Unicode replacement character) if we should see it.
 StringView CSSTokenizer::ConsumeName() {
-  // Names without escapes get handled without allocations
-  for (unsigned size = 0;; ++size) {
-    UChar cc = input_.PeekWithoutReplacement(size);
-    if (IsNameCodePoint(cc)) {
-      continue;
+  StringView buffer = input_.Peek();
+
+  unsigned size = 0;
+#if defined(__SSE2__) || defined(__ARM_NEON__)
+  if (buffer.Is8Bit()) {
+    const LChar* ptr = buffer.Characters8();
+    while (size + 16 <= buffer.length()) {
+      int8_t b __attribute__((vector_size(16)));
+      memcpy(&b, ptr + size, sizeof(b));
+
+      // Exactly the same as IsNameCodePoint(), except the IsASCII() part,
+      // which we deal with below. Note that we compute the inverted condition,
+      // since __builtin_ctz wants to find the first 1-bit, not the first 0-bit.
+      auto non_name_mask = ((b | 0x20) < 'a' || (b | 0x20) > 'z') && b != '_' &&
+                           b != '-' && (b < '0' || b > '9');
+#ifdef __SSE2__
+      // pmovmskb extracts only the top bit and ignores the rest,
+      // so to implement the IsASCII() test, which for LChar only
+      // tests whether the top bit is set, we don't need a compare;
+      // we can just rely on the top bit directly (using a PANDN).
+      uint16_t bits = _mm_movemask_epi8(non_name_mask & ~b);
+      if (bits == 0) {
+        size += 16;
+        continue;
+      }
+
+      // We found either the end, or a sign that we need escape-aware parsing.
+      size += __builtin_ctz(bits);
+#else  // __ARM_NEON__
+
+      // NEON doesn't have pmovmskb, so we'll need to do the actual compare
+      // (or something similar, like shifting). Now the mask is either all-zero
+      // or all-one for each byte, so we can use the code from
+      // https://community.arm.com/arm-community-blogs/b/infrastructure-solutions-blog/posts/porting-x86-vector-bitmask-optimizations-to-arm-neon
+      non_name_mask = non_name_mask && (b >= 0);
+      uint8x8_t narrowed_mask = vshrn_n_u16(non_name_mask, 4);
+      uint64_t bits = vget_lane_u64(vreinterpret_u64_u8(narrowed_mask), 0);
+      if (bits == 0) {
+        size += 16;
+        continue;
+      }
+
+      // We found either the end, or a sign that we need escape-aware parsing.
+      size += __builtin_ctzll(bits) >> 2;
+#endif
+      if (ptr[size] == '\0' || ptr[size] == '\\') {
+        // We need escape-aware parsing.
+        return RegisterString(blink::ConsumeName(input_));
+      } else {
+        input_.Advance(size);
+        return StringView(buffer, 0, size);
+      }
     }
-    // peekWithoutReplacement will return NUL when we hit the end of the
-    // input. In that case we want to still use the rangeAt() fast path
-    // below.
-    if (cc == '\0' && input_.Offset() + size < input_.length()) {
-      break;
+    // Fall back to the slow path for the last <= 15 bytes of the string.
+  }
+#endif  // SIMD
+
+  // Slow path for non-UTF-8 and tokens near the end of the string.
+  for (; size < buffer.length(); ++size) {
+    UChar cc = buffer[size];
+    if (!IsNameCodePoint(cc)) {
+      // End of this token, but not end of the string.
+      if (cc == '\0' || cc == '\\') {
+        // We need escape-aware parsing.
+        return RegisterString(blink::ConsumeName(input_));
+      } else {
+        // Names without escapes get handled without allocations
+        input_.Advance(size);
+        return StringView(buffer, 0, size);
+      }
     }
-    if (cc == '\\') {
-      break;
-    }
-    unsigned start_offset = input_.Offset();
-    input_.Advance(size);
-    return input_.RangeAt(start_offset, size);
   }
 
-  return RegisterString(blink::ConsumeName(input_));
+  // The entire rest of the string is a name.
+  input_.Advance(size);
+  return buffer;
 }
 
 // https://drafts.csswg.org/css-syntax/#consume-an-escaped-code-point

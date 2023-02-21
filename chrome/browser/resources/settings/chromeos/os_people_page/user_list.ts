@@ -25,7 +25,7 @@ import {CrScrollableMixin} from 'chrome://resources/cr_elements/cr_scrollable_mi
 import {I18nMixin} from 'chrome://resources/cr_elements/i18n_mixin.js';
 import {DomRepeatEvent, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
-import {routes} from '../os_route.js';
+import {routes} from '../os_settings_routes.js';
 import {RouteObserverMixin} from '../route_observer_mixin.js';
 import {Router} from '../router.js';
 
@@ -102,7 +102,7 @@ class SettingsUserListElement extends SettingsUserListElementBase {
   }
 
   override currentRouteChanged(): void {
-    if (Router.getInstance().getCurrentRoute() === routes.ACCOUNTS) {
+    if (Router.getInstance().currentRoute === routes.ACCOUNTS) {
       this.usersPrivate_.getUsers().then(
           (users: chrome.usersPrivate.User[]) => {
             this.setUsers_(users);

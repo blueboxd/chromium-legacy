@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//chrome/browser/resources/tools/build_webui.gni")
+import("//ui/webui/resources/tools/build_webui.gni")
 
 assert(!is_android)
 assert(!is_chromeos)
@@ -15,6 +15,7 @@ build_webui("build") {
   web_component_files = [
     "app_list.ts",
     "app_item.ts",
+    "deprecated_apps_link.ts",
   ]
 
   non_web_component_files = [

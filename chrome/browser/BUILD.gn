@@ -265,8 +265,6 @@ static_library("browser") {
     "browsing_data/navigation_entry_remover.h",
     "browsing_data/site_data_size_collector.cc",
     "browsing_data/site_data_size_collector.h",
-    "browsing_data/third_party_data_remover.cc",
-    "browsing_data/third_party_data_remover.h",
     "browsing_topics/browsing_topics_service_factory.cc",
     "browsing_topics/browsing_topics_service_factory.h",
     "cart/commerce_hint_service.cc",
@@ -538,6 +536,8 @@ static_library("browser") {
     "file_util_service.h",
     "flag_descriptions.cc",
     "flag_descriptions.h",
+    "follow/follow_features.cc",
+    "follow/follow_features.h",
     "font_pref_change_notifier.cc",
     "font_pref_change_notifier.h",
     "font_pref_change_notifier_factory.cc",
@@ -1185,6 +1185,8 @@ static_library("browser") {
     "policy/messaging_layer/upload/dm_server_uploader.h",
     "policy/messaging_layer/upload/event_upload_size_controller.cc",
     "policy/messaging_layer/upload/event_upload_size_controller.h",
+    "policy/messaging_layer/upload/file_upload_job.cc",
+    "policy/messaging_layer/upload/file_upload_job.h",
     "policy/messaging_layer/upload/network_condition_service.cc",
     "policy/messaging_layer/upload/network_condition_service.h",
     "policy/messaging_layer/upload/record_handler_impl.cc",
@@ -1869,10 +1871,10 @@ static_library("browser") {
     "webid/federated_identity_api_permission_context.h",
     "webid/federated_identity_api_permission_context_factory.cc",
     "webid/federated_identity_api_permission_context_factory.h",
-    "webid/federated_identity_auto_signin_permission_context.cc",
-    "webid/federated_identity_auto_signin_permission_context.h",
-    "webid/federated_identity_auto_signin_permission_context_factory.cc",
-    "webid/federated_identity_auto_signin_permission_context_factory.h",
+    "webid/federated_identity_auto_reauthn_permission_context.cc",
+    "webid/federated_identity_auto_reauthn_permission_context.h",
+    "webid/federated_identity_auto_reauthn_permission_context_factory.cc",
+    "webid/federated_identity_auto_reauthn_permission_context_factory.h",
     "webid/federated_identity_identity_provider_registration_context.cc",
     "webid/federated_identity_identity_provider_registration_context.h",
     "webid/federated_identity_identity_provider_signin_status_context.cc",
@@ -1882,13 +1884,6 @@ static_library("browser") {
     "webid/federated_identity_permission_context_factory.cc",
     "webid/federated_identity_permission_context_factory.h",
   ]
-
-  if (is_chromeos_ash) {
-    sources += [
-      "policy/os_color_mode_policy_handler.cc",
-      "policy/os_color_mode_policy_handler.h",
-    ]
-  }
 
   configs += [
     "//build/config/compiler:wexit_time_destructors",
@@ -2250,6 +2245,7 @@ static_library("browser") {
     "//components/reporting/proto:record_constants",
     "//components/reporting/proto:record_proto",
     "//components/reporting/proto:status_proto",
+    "//components/reporting/proto:upload_tracker_proto",
     "//components/reporting/resources:resource_manager",
     "//components/reporting/storage:storage_configuration",
     "//components/reporting/storage:storage_module",
@@ -4356,7 +4352,6 @@ static_library("browser") {
       "//chrome/app/theme:chrome_unscaled_resources_grit",
       "//chrome/app/vector_icons",
       "//chrome/browser/apps/app_service",
-      "//chrome/browser/ash/system_web_apps/types:types",
       "//chrome/browser/cart:mojo_bindings",
       "//chrome/browser/enterprise/connectors/analysis:features",
       "//chrome/browser/enterprise/connectors/device_trust:prefs",
@@ -4891,6 +4886,8 @@ static_library("browser") {
       "platform_util_ash.cc",
       "policy/default_geolocation_policy_handler.cc",
       "policy/default_geolocation_policy_handler.h",
+      "policy/os_color_mode_policy_handler.cc",
+      "policy/os_color_mode_policy_handler.h",
       "policy/status_provider/device_active_directory_policy_status_provider.cc",
       "policy/status_provider/device_active_directory_policy_status_provider.h",
       "policy/status_provider/device_cloud_policy_status_provider_chromeos.cc",
@@ -4995,7 +4992,6 @@ static_library("browser") {
       "//ash/components/arc:arc_base_utils",
       "//ash/components/arc/enterprise",
       "//ash/components/arc/mojom",
-      "//ash/components/arc/mojom",
       "//ash/constants",
       "//ash/public/cpp",
       "//ash/public/cpp/external_arc",
@@ -5039,7 +5035,9 @@ static_library("browser") {
       "//ash/webui/shimless_rma",
       "//ash/webui/shimless_rma/mojom",
       "//ash/webui/shortcut_customization_ui",
+      "//ash/webui/shortcut_customization_ui/backend/search:mojo_bindings",
       "//ash/webui/shortcut_customization_ui/mojom",
+      "//ash/webui/system_apps/public:system_web_app_type",
       "//ash/webui/system_extensions_internals_ui",
       "//ash/webui/system_extensions_internals_ui/mojom",
       "//build:chromeos_buildflags",
@@ -5054,6 +5052,7 @@ static_library("browser") {
       "//chrome/browser/ash/system_extensions/api/hid",
       "//chrome/browser/ash/system_extensions/api/window_management",
       "//chrome/browser/ash/system_web_apps",
+      "//chrome/browser/ash/system_web_apps/types",
       "//chrome/browser/ash/video_conference",
       "//chrome/browser/enterprise/connectors/device_trust/attestation/ash",
       "//chrome/browser/nearby_sharing:share_target",
@@ -5085,6 +5084,7 @@ static_library("browser") {
       "//chrome/browser/ui/webui/ash/parent_access:mojo_bindings",
       "//chrome/browser/ui/webui/ash/vm:mojo_bindings",
       "//chrome/browser/ui/webui/nearby_share:mojom",
+      "//chrome/browser/ui/webui/settings/ash/input_device_settings:mojom",
       "//chrome/browser/ui/webui/settings/ash/os_apps_page/mojom",
       "//chrome/browser/ui/webui/settings/ash/search:mojo_bindings",
       "//chrome/services/sharing/public/cpp",
@@ -5130,7 +5130,6 @@ static_library("browser") {
       "//chromeos/ash/services/cellular_setup",
       "//chromeos/ash/services/cros_healthd/public/cpp",
       "//chromeos/ash/services/cros_healthd/public/mojom",
-      "//chromeos/ash/services/device_sync/public/cpp:prefs",
       "//chromeos/ash/services/device_sync/public/cpp:prefs",
       "//chromeos/ash/services/device_sync/public/mojom",
       "//chromeos/ash/services/hotspot_config",
@@ -6557,6 +6556,8 @@ static_library("browser") {
     sources += [
       "policy/printing_restrictions_policy_handler.cc",
       "policy/printing_restrictions_policy_handler.h",
+      "printing/print_error_dialog.cc",
+      "printing/print_error_dialog.h",
       "printing/print_job.cc",
       "printing/print_job.h",
       "printing/print_job_manager.cc",
@@ -6585,12 +6586,6 @@ static_library("browser") {
       "//printing/backend",
     ]
 
-    if (!is_android) {
-      sources += [
-        "printing/print_error_dialog.cc",
-        "printing/print_error_dialog.h",
-      ]
-    }
     if (is_win) {
       sources += [
         "printing/pdf_to_emf_converter.cc",
@@ -7398,19 +7393,18 @@ static_library("browser") {
     sources += [
       "content_settings/content_settings_supervised_provider.cc",
       "content_settings/content_settings_supervised_provider.h",
+      "supervised_user/child_accounts/child_account_service.cc",
       "supervised_user/child_accounts/child_account_service.h",
       "supervised_user/child_accounts/child_account_service_factory.cc",
       "supervised_user/child_accounts/child_account_service_factory.h",
-      "supervised_user/child_accounts/child_account_service_impl.cc",
-      "supervised_user/child_accounts/child_account_service_impl.h",
       "supervised_user/child_accounts/family_info_fetcher.cc",
       "supervised_user/child_accounts/family_info_fetcher.h",
       "supervised_user/child_accounts/permission_request_creator_apiary.cc",
       "supervised_user/child_accounts/permission_request_creator_apiary.h",
+      "supervised_user/extensions_utils.cc",
+      "supervised_user/extensions_utils.h",
       "supervised_user/kids_chrome_management/kids_access_token_fetcher.cc",
       "supervised_user/kids_chrome_management/kids_access_token_fetcher.h",
-      "supervised_user/kids_chrome_management/kids_chrome_management_client.cc",
-      "supervised_user/kids_chrome_management/kids_chrome_management_client.h",
       "supervised_user/kids_chrome_management/kids_chrome_management_client_factory.cc",
       "supervised_user/kids_chrome_management/kids_chrome_management_client_factory.h",
       "supervised_user/kids_chrome_management/kids_external_fetcher.cc",
@@ -7419,8 +7413,6 @@ static_library("browser") {
       "supervised_user/kids_chrome_management/kids_management_service.h",
       "supervised_user/kids_chrome_management/kids_profile_manager.cc",
       "supervised_user/kids_chrome_management/kids_profile_manager.h",
-      "supervised_user/kids_management_url_checker_client.cc",
-      "supervised_user/kids_management_url_checker_client.h",
       "supervised_user/parental_control_metrics.cc",
       "supervised_user/parental_control_metrics.h",
       "supervised_user/permission_request_creator.h",
@@ -7469,7 +7461,6 @@ static_library("browser") {
     ]
   }
   if (enable_supervised_users && enable_extensions) {
-    assert(is_chromeos)
     sources += [
       "supervised_user/supervised_user_extensions_delegate_impl.cc",
       "supervised_user/supervised_user_extensions_delegate_impl.h",
@@ -7948,6 +7939,7 @@ static_library("test_support") {
     "//components/reporting/proto:record_constants",
     "//components/reporting/proto:record_proto",
     "//components/reporting/proto:status_proto",
+    "//components/reporting/proto:upload_tracker_proto",
     "//components/reporting/storage:storage_module",
     "//components/reporting/storage_selector",
     "//components/reporting/util:status",

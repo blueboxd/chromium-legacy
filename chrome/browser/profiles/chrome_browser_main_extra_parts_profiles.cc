@@ -11,7 +11,6 @@
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/accessibility/accessibility_labels_service_factory.h"
 #include "chrome/browser/accessibility/page_colors_factory.h"
-#include "chrome/browser/ash/app_list/app_list_syncable_service_factory.h"
 #include "chrome/browser/autocomplete/autocomplete_classifier_factory.h"
 #include "chrome/browser/autocomplete/document_suggestions_service_factory.h"
 #include "chrome/browser/autocomplete/in_memory_url_index_factory.h"
@@ -237,8 +236,10 @@
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "ash/constants/ash_features.h"
+#include "chrome/browser/apps/app_deduplication_service/app_deduplication_service_factory.h"
 #include "chrome/browser/apps/app_preload_service/app_preload_service_factory.h"
 #include "chrome/browser/ash/account_manager/account_apps_availability_factory.h"
+#include "chrome/browser/ash/app_list/app_list_syncable_service_factory.h"
 #include "chrome/browser/ash/browser_context_keyed_service_factories.h"
 #include "chrome/browser/ash/login/security_token_session_controller_factory.h"
 #include "chrome/browser/ash/system_extensions/api/window_management/cros_window_management_context_factory.h"
@@ -453,6 +454,7 @@ void ChromeBrowserMainExtraPartsProfiles::
   apps::AppPreloadServiceFactory::GetInstance();
   ash::AccountAppsAvailabilityFactory::GetInstance();
   ash::SystemWebAppManagerFactory::GetInstance();
+  apps::deduplication::AppDeduplicationServiceFactory::GetInstance();
 #endif
 #if !BUILDFLAG(IS_ANDROID)
   apps::AppServiceProxyFactory::GetInstance();
@@ -511,9 +513,7 @@ void ChromeBrowserMainExtraPartsProfiles::
   CartServiceFactory::GetInstance();
 #endif
 #if BUILDFLAG(IS_ANDROID)
-  if (base::FeatureList::IsEnabled(commerce::kCommerceMerchantViewer)) {
-    MerchantViewerDataManagerFactory::GetInstance();
-  }
+  MerchantViewerDataManagerFactory::GetInstance();
 #endif
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
   CertDbInitializerFactory::GetInstance();

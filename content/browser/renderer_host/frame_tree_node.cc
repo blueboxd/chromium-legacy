@@ -344,30 +344,46 @@ void FrameTreeNode::ResetForNavigation() {
 }
 
 RenderFrameHostImpl* FrameTreeNode::GetParentOrOuterDocument() {
-  return GetParentOrOuterDocumentHelper(/*escape_guest_view=*/false);
+  return GetParentOrOuterDocumentHelper(/*escape_guest_view=*/false,
+                                        /*include_prospective=*/true);
 }
 
 RenderFrameHostImpl* FrameTreeNode::GetParentOrOuterDocumentOrEmbedder() {
-  return GetParentOrOuterDocumentHelper(/*escape_guest_view=*/true);
+  return GetParentOrOuterDocumentHelper(/*escape_guest_view=*/true,
+                                        /*include_prospective=*/true);
 }
 
 RenderFrameHostImpl* FrameTreeNode::GetParentOrOuterDocumentHelper(
-    bool escape_guest_view) {
+    bool escape_guest_view,
+    bool include_prospective) {
   // Find the parent in the FrameTree (iframe).
-  if (parent_)
+  if (parent_) {
     return parent_;
+  }
 
   if (!escape_guest_view) {
     // If we are not a fenced frame root nor inside a portal then return early.
     // This code does not escape GuestViews.
-    if (!IsFencedFrameRoot() && !frame_tree_->delegate()->IsPortal())
+    if (!IsFencedFrameRoot() && !frame_tree_->delegate()->IsPortal()) {
       return nullptr;
+    }
   }
 
   // Find the parent in the outer embedder (GuestView, Portal, or Fenced Frame).
   FrameTreeNode* frame_in_embedder = render_manager()->GetOuterDelegateNode();
-  if (frame_in_embedder)
+  if (frame_in_embedder) {
     return frame_in_embedder->current_frame_host()->GetParent();
+  }
+
+  // Consider embedders which own our frame tree, but have not yet attached it
+  // to the outer frame tree.
+  if (include_prospective) {
+    RenderFrameHostImpl* prospective_outer_document =
+        frame_tree_->delegate()->GetProspectiveOuterDocument();
+    if (prospective_outer_document) {
+      return prospective_outer_document;
+    }
+  }
 
   // No parent found.
   return nullptr;
@@ -797,6 +813,12 @@ bool FrameTreeNode::UpdateUserActivationState(
   return update_result;
 }
 
+void FrameTreeNode::DidConsumeHistoryUserActivation() {
+  for (FrameTreeNode* node : frame_tree().Nodes()) {
+    node->current_frame_host()->ConsumeHistoryUserActivation();
+  }
+}
+
 void FrameTreeNode::PruneChildFrameNavigationEntries(
     NavigationEntryImpl* entry) {
   for (size_t i = 0; i < current_frame_host()->child_count(); ++i) {
@@ -895,7 +917,17 @@ void FrameTreeNode::SetFencedFrameAutomaticBeaconReportEventData(
   if (!properties || !properties->fenced_frame_reporter_) {
     mojo::ReportBadMessage(
         "Automatic beacon data can only be set in fenced frames or iframes "
-        "loaded with a URN.");
+        "loaded from a config with a fenced frame reporter.");
+    return;
+  }
+  // This metadata should only be present in the renderer in frames that are
+  // same-origin to the mapped url.
+  if (!properties->mapped_url_.has_value() ||
+      !current_origin().IsSameOriginWith(url::Origin::Create(
+          properties->mapped_url_->GetValueIgnoringVisibility()))) {
+    mojo::ReportBadMessage(
+        "Automatic beacon data can only be set from documents that are same-"
+        "origin to the mapped url from the fenced frame config.");
     return;
   }
   properties->fenced_frame_reporter_->UpdateAutomaticBeaconData(event_data,

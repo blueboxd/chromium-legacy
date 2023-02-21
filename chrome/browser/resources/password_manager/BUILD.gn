@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//chrome/browser/resources/tools/build_webui.gni")
+import("//ui/webui/resources/tools/build_webui.gni")
 
 build_webui("build") {
   grd_prefix = "password_manager"
@@ -29,7 +29,9 @@ build_webui("build") {
     "checkup_details_section.ts",
     "checkup_list_item.ts",
     "dialogs/add_password_dialog.ts",
+    "dialogs/delete_password_disclaimer_dialog.ts",
     "dialogs/edit_password_dialog.ts",
+    "dialogs/edit_password_disclaimer_dialog.ts",
     "password_details_card.ts",
     "password_details_section.ts",
     "password_list_item.ts",

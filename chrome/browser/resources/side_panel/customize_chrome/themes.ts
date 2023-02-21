@@ -104,6 +104,10 @@ export class ThemesElement extends ThemesElementBase {
     this.registerHelpBubble(CHROME_THEME_BACK_ELEMENT_ID, this.$.backButton);
   }
 
+  focusOnBackButton() {
+    this.$.backButton.focus();
+  }
+
   private onThemesRendered_() {
     const firstTile = this.root!.querySelector('.tile.theme');
     if (firstTile) {
@@ -167,6 +171,10 @@ export class ThemesElement extends ThemesElementBase {
         this.theme_.backgroundImage &&
         this.theme_.backgroundImage.url.url === url &&
         !this.isRefreshToggleChecked_;
+  }
+
+  private getThemeCheckedStatus_(url: string): string {
+    return this.isThemeSelected_(url) ? 'true' : 'false';
   }
 }
 

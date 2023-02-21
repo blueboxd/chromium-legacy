@@ -119,6 +119,9 @@ PrinterSemanticCapsAndDefaults::Paper ParsePaper(
   PrinterSemanticCapsAndDefaults::Paper paper;
   paper.vendor_id = std::string(value);
   paper.size_um = DimensionsToMicrons(dimensions);
+  if (paper.size_um.IsEmpty()) {
+    return PrinterSemanticCapsAndDefaults::Paper();
+  }
 
   // The margins of the printable area are expressed in PWG units (100ths of
   // mm).
@@ -133,6 +136,16 @@ PrinterSemanticCapsAndDefaults::Paper ParsePaper(
   paper.printable_area_um =
       gfx::Rect(printable_area_left_um, printable_area_bottom_um,
                 printable_area_width_um, printable_area_length_um);
+
+  // Default to the paper size if printable area is empty.
+  // We've seen some drivers have a printable area that goes out of bounds
+  // of the paper size. In those cases, set the printable area to be the
+  // size. (See crbug.com/1412305.)
+  const gfx::Rect size_um_rect = gfx::Rect(paper.size_um);
+  if (paper.printable_area_um.IsEmpty() ||
+      !size_um_rect.Contains(paper.printable_area_um)) {
+    paper.printable_area_um = size_um_rect;
+  }
 
   // Omits the final token describing the media dimensions.
   pieces.pop_back();

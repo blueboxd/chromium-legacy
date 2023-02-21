@@ -60,7 +60,10 @@ const CGFloat kVerticalPadding = 8;
   if ([self.urls count] != 0) {
     headerFooter.urls = self.urls;
   }
-  [headerFooter setText:self.text];
+  UIColor* textColor = self.textColor
+                           ? self.textColor
+                           : [UIColor colorNamed:kTextSecondaryColor];
+  [headerFooter setText:self.text withColor:textColor];
 }
 
 @end
@@ -87,8 +90,7 @@ const CGFloat kVerticalPadding = 8;
     _textView.editable = NO;
     _textView.delegate = self;
     _textView.backgroundColor = UIColor.clearColor;
-    _textView.font =
-        [UIFont preferredFontForTextStyle:kTableViewSublabelFontStyle];
+    _textView.font = [UIFont preferredFontForTextStyle:UIFontTextStyleFootnote];
     _textView.adjustsFontForContentSizeCategory = YES;
     _textView.translatesAutoresizingMaskIntoConstraints = NO;
     _textView.linkTextAttributes =
@@ -122,13 +124,13 @@ const CGFloat kVerticalPadding = 8;
 
 #pragma mark - Properties
 
-- (void)setText:(NSString*)text {
+- (void)setText:(NSString*)text withColor:(UIColor*)color {
   StringWithTags parsedString = ParseStringWithLinks(text);
 
   NSDictionary* textAttributes = @{
     NSFontAttributeName :
-        [UIFont preferredFontForTextStyle:kTableViewSublabelFontStyle],
-    NSForegroundColorAttributeName : [UIColor colorNamed:kTextSecondaryColor]
+        [UIFont preferredFontForTextStyle:UIFontTextStyleFootnote],
+    NSForegroundColorAttributeName : color
   };
 
   NSMutableAttributedString* attributedText =

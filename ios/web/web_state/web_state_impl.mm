@@ -12,6 +12,7 @@
 #import "base/feature_list.h"
 #import "base/time/time.h"
 #import "ios/web/common/features.h"
+#import "ios/web/js_messaging/web_frames_manager_impl.h"
 #import "ios/web/public/js_messaging/web_frame.h"
 #import "ios/web/public/permissions/permissions.h"
 #import "ios/web/public/session/crw_session_storage.h"
@@ -198,7 +199,7 @@ int WebStateImpl::GetNavigationItemCount() const {
 }
 
 WebFramesManagerImpl& WebStateImpl::GetWebFramesManagerImpl() {
-  return RealizedState()->GetWebFramesManager();
+  return RealizedState()->GetPageWorldWebFramesManager();
 }
 
 SessionCertificatePolicyCacheImpl&
@@ -485,12 +486,12 @@ NavigationManager* WebStateImpl::GetNavigationManager() {
   return &RealizedState()->GetNavigationManager();
 }
 
-const WebFramesManager* WebStateImpl::GetWebFramesManager() const {
-  return LIKELY(pimpl_) ? &pimpl_->GetWebFramesManager() : nullptr;
+const WebFramesManager* WebStateImpl::GetPageWorldWebFramesManager() const {
+  return LIKELY(pimpl_) ? &pimpl_->GetPageWorldWebFramesManager() : nullptr;
 }
 
-WebFramesManager* WebStateImpl::GetWebFramesManager() {
-  return &RealizedState()->GetWebFramesManager();
+WebFramesManager* WebStateImpl::GetPageWorldWebFramesManager() {
+  return &RealizedState()->GetPageWorldWebFramesManager();
 }
 
 const SessionCertificatePolicyCache*

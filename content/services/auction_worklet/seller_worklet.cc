@@ -72,6 +72,46 @@ bool InsertPrioritySignals(
   return v8_helper->InsertValue(key, v8_priority_signals, object);
 }
 
+// Attempts to create an v8 Object from `maybe_promise_buyer_timeouts`. On fatal
+// error, returns false. Otherwise, writes the result to
+// `out_per_buyer_timeouts`, which will be left unchanged if there are no times
+// to write to it.
+bool CreatePerBuyerTimeoutsObject(
+    v8::Isolate* isolate,
+    const blink::AuctionConfig::MaybePromiseBuyerTimeouts&
+        maybe_promise_buyer_timeouts,
+    v8::Local<v8::Object>& out_per_buyer_timeouts) {
+  DCHECK(!maybe_promise_buyer_timeouts.is_promise());
+
+  const blink::AuctionConfig::BuyerTimeouts& buyer_timeouts =
+      maybe_promise_buyer_timeouts.value();
+  // If there are no times, leave `out_per_buyer_timeouts` empty, and indicate
+  // success.
+  if (!buyer_timeouts.per_buyer_timeouts.has_value() &&
+      !buyer_timeouts.all_buyers_timeout.has_value()) {
+    return true;
+  }
+
+  out_per_buyer_timeouts = v8::Object::New(isolate);
+  gin::Dictionary per_buyer_timeouts_dict(isolate, out_per_buyer_timeouts);
+
+  if (buyer_timeouts.per_buyer_timeouts.has_value()) {
+    for (const auto& kv : buyer_timeouts.per_buyer_timeouts.value()) {
+      if (!per_buyer_timeouts_dict.Set(kv.first.Serialize(),
+                                       kv.second.InMilliseconds())) {
+        return false;
+      }
+    }
+  }
+  if (buyer_timeouts.all_buyers_timeout.has_value()) {
+    if (!per_buyer_timeouts_dict.Set(
+            "*", buyer_timeouts.all_buyers_timeout.value().InMilliseconds())) {
+      return false;
+    }
+  }
+  return true;
+}
+
 // Converts `auction_config` back to JSON format, and appends to args.
 // Returns true if conversion succeeded.
 //
@@ -172,33 +212,26 @@ bool AppendAuctionConfig(AuctionV8Helper* v8_helper,
   }
 
   v8::Local<v8::Object> per_buyer_timeouts;
-  DCHECK(!auction_ad_config_non_shared_params.buyer_timeouts.is_promise());
-  const blink::AuctionConfig::BuyerTimeouts& buyer_timeouts =
-      auction_ad_config_non_shared_params.buyer_timeouts.value();
-  if (buyer_timeouts.per_buyer_timeouts.has_value()) {
-    per_buyer_timeouts = v8::Object::New(isolate);
-    for (const auto& kv : buyer_timeouts.per_buyer_timeouts.value()) {
-      if (!v8_helper->InsertJsonValue(
-              context, kv.first.Serialize(),
-              base::NumberToString(kv.second.InMilliseconds()),
-              per_buyer_timeouts)) {
-        return false;
-      }
-    }
+  if (!CreatePerBuyerTimeoutsObject(
+          isolate, auction_ad_config_non_shared_params.buyer_timeouts,
+          per_buyer_timeouts)) {
+    return false;
   }
-  if (buyer_timeouts.all_buyers_timeout.has_value()) {
-    if (per_buyer_timeouts.IsEmpty())
-      per_buyer_timeouts = v8::Object::New(isolate);
-    if (!v8_helper->InsertJsonValue(
-            context, "*",
-            base::NumberToString(
-                buyer_timeouts.all_buyers_timeout.value().InMilliseconds()),
-            per_buyer_timeouts)) {
-      return false;
-    }
-  }
-  if (!per_buyer_timeouts.IsEmpty())
+  if (!per_buyer_timeouts.IsEmpty()) {
     auction_config_dict.Set("perBuyerTimeouts", per_buyer_timeouts);
+  }
+
+  v8::Local<v8::Object> per_buyer_cumulative_timeouts;
+  if (!CreatePerBuyerTimeoutsObject(
+          isolate,
+          auction_ad_config_non_shared_params.buyer_cumulative_timeouts,
+          per_buyer_cumulative_timeouts)) {
+    return false;
+  }
+  if (!per_buyer_cumulative_timeouts.IsEmpty()) {
+    auction_config_dict.Set("perBuyerCumulativeTimeouts",
+                            per_buyer_cumulative_timeouts);
+  }
 
   if (auction_ad_config_non_shared_params.per_buyer_priority_signals ||
       auction_ad_config_non_shared_params.all_buyers_priority_signals) {

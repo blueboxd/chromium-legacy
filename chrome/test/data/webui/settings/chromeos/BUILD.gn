@@ -145,6 +145,7 @@ test_files = [
   "parental_controls_page_test.js",
   "people_page_account_manager_test.js",
   "per_device_keyboard_subsection_test.js",
+  "per_device_keyboard_remap_keys_test.js",
   "per_device_keyboard_test.js",
   "per_device_mouse_subsection_test.js",
   "per_device_pointing_stick_subsection_test.js",
@@ -246,9 +247,9 @@ copy("copy_mojo") {
 }
 
 ts_library("build_ts") {
+  allow_js = true
   root_dir = target_gen_dir
   out_dir = "$target_gen_dir/tsc"
-  tsconfig_base = "tsconfig_base.json"
   in_files = [ "test_api.test-mojom-webui.js" ] + test_files
   deps = [
     "//chrome/test/data/webui:build_ts",

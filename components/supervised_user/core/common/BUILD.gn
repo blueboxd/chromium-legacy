@@ -20,26 +20,17 @@ static_library("common") {
     "supervised_user_constants.h",
     "supervised_user_denylist.cc",
     "supervised_user_denylist.h",
+    "supervised_user_utils.cc",
+    "supervised_user_utils.h",
     "supervised_users.h",
   ]
 
   deps = [
     ":buildflags",
     "//base",
+    "//build:branding_buildflags",
     "//url",
   ]
-
-  if (enable_supervised_users) {
-    sources += [
-      "supervised_user_settings_service.cc",
-      "supervised_user_settings_service.h",
-    ]
-
-    deps += [
-      "//components/prefs:prefs",
-      "//components/sync",
-    ]
-  }
 }
 
 source_set("unit_tests") {
@@ -49,14 +40,7 @@ source_set("unit_tests") {
     ":common",
     "//base",
     "//base/test:test_support",
+    "//build:branding_buildflags",
     "//testing/gtest",
   ]
-
-  if (enable_supervised_users) {
-    sources += [ "supervised_user_settings_service_unittest.cc" ]
-    deps += [
-      "//components/prefs:test_support",
-      "//components/sync:test_support",
-    ]
-  }
 }

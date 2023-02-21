@@ -1635,7 +1635,8 @@ void WebContentsImpl::CancelActiveAndPendingDialogs() {
 
 void WebContentsImpl::ClosePage() {
   OPTIONAL_TRACE_EVENT0("content", "WebContentsImpl::ClosePage");
-  GetPrimaryMainFrame()->ClosePage();
+  GetPrimaryMainFrame()->ClosePage(
+      RenderFrameHostImpl::ClosePageSource::kBrowser);
 }
 
 RenderWidgetHostView* WebContentsImpl::GetRenderWidgetHostView() {
@@ -1763,7 +1764,7 @@ class AXTreeSnapshotCombiner : public base::RefCounted<AXTreeSnapshotCombiner> {
   void AXTreeSnapshotOnFrame(RenderFrameHostImpl* rfhi) {
     OPTIONAL_TRACE_EVENT0("content",
                           "AXTreeSnapshotCombiner::AXTreeSnapshotOnFrame");
-    bool is_root = !rfhi->GetParentOrOuterDocumentOrEmbedder();
+    bool is_root = rfhi->AccessibilityIsRootFrame();
     rfhi->RequestAXTreeSnapshot(AddFrame(is_root), params_.Clone());
   }
 
@@ -7327,17 +7328,8 @@ std::vector<WebContents*> WebContentsImpl::GetInnerWebContents() {
 }
 
 WebContentsImpl* WebContentsImpl::GetResponsibleWebContents() {
-  // Iteratively ask delegates which other contents is responsible until a fixed
-  // point is found.
-  WebContentsImpl* contents = this;
-  while (WebContentsDelegate* delegate = contents->GetDelegate()) {
-    auto* responsible_contents = static_cast<WebContentsImpl*>(
-        delegate->GetResponsibleWebContents(contents));
-    if (responsible_contents == contents)
-      break;
-    contents = responsible_contents;
-  }
-  return contents;
+  return FromRenderFrameHostImpl(
+      GetPrimaryMainFrame()->GetOutermostMainFrameOrEmbedder());
 }
 
 WebContentsImpl* WebContentsImpl::GetFocusedWebContents() {
@@ -9123,6 +9115,8 @@ WebContentsImpl::GetRecordAggregateWatchTimeCallback(
       delegate_->GetDelegateWeakPtr(), page_main_frame_last_committed_url);
 }
 
+// Cf. `GetProspectiveOuterDocument` which applies to the same situation, but is
+// for ascending.
 std::vector<FrameTreeNode*> WebContentsImpl::GetUnattachedOwnedNodes(
     RenderFrameHostImpl* owner) {
   std::vector<FrameTreeNode*> unattached_owned_nodes;
@@ -9472,6 +9466,30 @@ int WebContentsImpl::GetOuterDelegateFrameTreeNodeId() {
   return node_.outer_contents_frame_tree_node_id();
 }
 
+// Cf. `GetUnattachedOwnedNodes` which applies to the same situation, but is for
+// descending.
+RenderFrameHostImpl* WebContentsImpl::GetProspectiveOuterDocument() {
+  // If the outer WebContents is already known, then there was no need to call
+  // this method.
+  DCHECK(!GetOuterWebContents());
+
+  RenderFrameHostImpl* unattached_guest_owner =
+      browser_plugin_guest_
+          ? browser_plugin_guest_->GetProspectiveOuterDocument()
+          : nullptr;
+  if (unattached_guest_owner) {
+    return unattached_guest_owner;
+  }
+
+  RenderFrameHostImpl* orphaned_portal_owner =
+      portal() ? portal()->owner_render_frame_host() : nullptr;
+  if (orphaned_portal_owner) {
+    return orphaned_portal_owner;
+  }
+
+  return nullptr;
+}
+
 void WebContentsImpl::RenderFrameHostStateChanged(
     RenderFrameHost* render_frame_host,
     LifecycleState old_state,
@@ -9582,7 +9600,7 @@ std::unique_ptr<PrerenderHandle> WebContentsImpl::StartPrerendering(
         url_match_predicate) {
   PrerenderAttributes attributes(
       prerendering_url, trigger_type, embedder_histogram_suffix,
-      content::Referrer(), /*initiator_origin=*/absl::nullopt, prerendering_url,
+      content::Referrer(), /*initiator_origin=*/absl::nullopt,
       content::ChildProcessHost::kInvalidUniqueID, GetWeakPtr(),
       /*initiator_frame_token=*/absl::nullopt,
       /*initiator_frame_tree_node_id=*/RenderFrameHost::kNoFrameTreeNodeId,

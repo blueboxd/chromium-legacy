@@ -16,9 +16,9 @@
 #include "third_party/blink/renderer/bindings/modules/v8/v8_ml_resample_2d_options.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
+#include "third_party/blink/renderer/modules/ml/buildflags.h"
 #include "third_party/blink/renderer/modules/ml/ml.h"
 #include "third_party/blink/renderer/modules/ml/ml_context.h"
-#include "third_party/blink/renderer/modules/ml/webnn/buildflags.h"
 #include "third_party/blink/renderer/modules/ml/webnn/ml_graph.h"
 #include "third_party/blink/renderer/modules/ml/webnn/ml_operand.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
@@ -1115,38 +1115,6 @@ MLOperand* MLGraphBuilder::resample2d(const MLOperand* input,
   return output;
 }
 
-MLOperand* MLGraphBuilder::softmax(const MLOperand* input,
-                                   ExceptionState& exception_state) {
-  // According to WebNN spec:
-  // https://www.w3.org/TR/webnn/#api-mlgraphbuilder-softmax, The input must be
-  // a 2-D tensor.
-  if (input->Dimensions().size() != 2) {
-    exception_state.ThrowDOMException(DOMExceptionCode::kDataError,
-                                      "The input must be a 2-D tensor.");
-    return nullptr;
-  }
-  // The input type must be one of the floating point types.
-  if (!IsFloatingPointType(input->Type())) {
-    exception_state.ThrowDOMException(
-        DOMExceptionCode::kDataError,
-        "The input type must be one of the floating point types.");
-    return nullptr;
-  }
-  auto* softmax = MakeGarbageCollected<MLOperator>(
-      this, MLOperator::OperatorKind::kSoftmax);
-  // The output tensor has the same shape as the input tensor.
-  String error_message;
-  auto* output = MLOperand::ValidateAndCreateOutput(
-      this, input->Type(), input->Dimensions(), softmax, error_message);
-  if (!output) {
-    exception_state.ThrowDOMException(DOMExceptionCode::kDataError,
-                                      error_message);
-    return nullptr;
-  }
-  softmax->Connect({input}, {output});
-  return output;
-}
-
 MLOperand* MLGraphBuilder::sigmoid(const MLOperand* input,
                                    ExceptionState& exception_state) {
   auto* sigmoid = MakeGarbageCollected<MLOperator>(
@@ -1179,9 +1147,41 @@ MLOperator* MLGraphBuilder::sigmoid(ExceptionState& exception_state) {
                                           MLOperator::OperatorKind::kSigmoid);
 }
 
-ScriptPromise MLGraphBuilder::buildAsync(ScriptState* script_state,
-                                         const MLNamedOperands& named_outputs,
-                                         ExceptionState& exception_state) {
+MLOperand* MLGraphBuilder::softmax(const MLOperand* input,
+                                   ExceptionState& exception_state) {
+  // According to WebNN spec:
+  // https://www.w3.org/TR/webnn/#api-mlgraphbuilder-softmax, The input must be
+  // a 2-D tensor.
+  if (input->Dimensions().size() != 2) {
+    exception_state.ThrowDOMException(DOMExceptionCode::kDataError,
+                                      "The input must be a 2-D tensor.");
+    return nullptr;
+  }
+  // The input type must be one of the floating point types.
+  if (!IsFloatingPointType(input->Type())) {
+    exception_state.ThrowDOMException(
+        DOMExceptionCode::kDataError,
+        "The input type must be one of the floating point types.");
+    return nullptr;
+  }
+  auto* softmax = MakeGarbageCollected<MLOperator>(
+      this, MLOperator::OperatorKind::kSoftmax);
+  // The output tensor has the same shape as the input tensor.
+  String error_message;
+  auto* output = MLOperand::ValidateAndCreateOutput(
+      this, input->Type(), input->Dimensions(), softmax, error_message);
+  if (!output) {
+    exception_state.ThrowDOMException(DOMExceptionCode::kDataError,
+                                      error_message);
+    return nullptr;
+  }
+  softmax->Connect({input}, {output});
+  return output;
+}
+
+ScriptPromise MLGraphBuilder::build(ScriptState* script_state,
+                                    const MLNamedOperands& named_outputs,
+                                    ExceptionState& exception_state) {
   if (!script_state->ContextIsValid()) {
     exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
                                       "Invalid script state");

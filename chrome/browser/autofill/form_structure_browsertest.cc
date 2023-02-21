@@ -175,17 +175,13 @@ class FormStructureBrowserTest
   class TestAutofillManager : public BrowserAutofillManager {
    public:
     TestAutofillManager(ContentAutofillDriver* driver, AutofillClient* client)
-        : BrowserAutofillManager(driver,
-                                 client,
-                                 "en-US",
-                                 EnableDownloadManager(false)) {}
+        : BrowserAutofillManager(driver, client, "en-US") {}
 
     TestAutofillManagerWaiter& waiter() { return waiter_; }
 
    private:
-    TestAutofillManagerWaiter waiter_{
-        *this,
-        {&AutofillManager::Observer::OnAfterFormsSeen}};
+    TestAutofillManagerWaiter waiter_{*this,
+                                      {AutofillManagerEvent::kFormsSeen}};
   };
 
   std::unique_ptr<HttpResponse> HandleRequest(const HttpRequest& request);

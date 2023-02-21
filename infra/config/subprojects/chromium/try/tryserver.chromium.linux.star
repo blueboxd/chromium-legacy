@@ -11,23 +11,23 @@ load("//lib/consoles.star", "consoles")
 load("//project.star", "settings")
 
 try_.defaults.set(
-    builder_group = "tryserver.chromium.linux",
     executable = try_.DEFAULT_EXECUTABLE,
+    builder_group = "tryserver.chromium.linux",
+    pool = try_.DEFAULT_POOL,
     cores = 8,
     os = os.LINUX_DEFAULT,
-    pool = try_.DEFAULT_POOL,
-    service_account = try_.DEFAULT_SERVICE_ACCOUNT,
     compilator_cores = 8,
     compilator_goma_jobs = goma.jobs.J300,
     compilator_reclient_jobs = reclient.jobs.HIGH_JOBS_FOR_CQ,
     execution_timeout = try_.DEFAULT_EXECUTION_TIMEOUT,
     orchestrator_cores = 2,
     reclient_instance = reclient.instance.DEFAULT_UNTRUSTED,
+    service_account = try_.DEFAULT_SERVICE_ACCOUNT,
 )
 
 consoles.list_view(
     name = "tryserver.chromium.linux",
-    branch_selector = branches.CROS_LTS_MILESTONE,
+    branch_selector = branches.selector.LINUX_BRANCHES,
 )
 
 try_.builder(
@@ -35,7 +35,7 @@ try_.builder(
     mirrors = [
         "ci/WebKit Linux Leak",
     ],
-    goma_backend = goma.backend.RBE_PROD,
+    reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
 )
 
 try_.builder(
@@ -66,19 +66,18 @@ try_.builder(
 
 try_.builder(
     name = "linux-annotator-rel",
-    goma_backend = goma.backend.RBE_PROD,
     mirrors = ["ci/linux-annotator-rel"],
+    reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
 )
 
 try_.builder(
     name = "linux-arm64-castos",
-    branch_selector = branches.MAIN,
-    goma_backend = goma.backend.RBE_PROD,
     mirrors = [
         "ci/Cast Linux ARM64",
     ],
     os = os.LINUX_BIONIC,
     main_list_view = "try",
+    reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
     tryjob = try_.job(
         location_filters = [
             "chromecast/.+",
@@ -102,8 +101,8 @@ try_.builder(
 
 try_.builder(
     name = "linux-dcheck-off-rel",
-    goma_backend = goma.backend.RBE_PROD,
     mirrors = builder_config.copy_from("linux-rel"),
+    reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
 )
 
 try_.builder(
@@ -130,14 +129,14 @@ try_.builder(
 
 try_.builder(
     name = "linux-inverse-fieldtrials-fyi-rel",
-    goma_backend = goma.backend.RBE_PROD,
     mirrors = builder_config.copy_from("linux-rel"),
+    reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
 )
 
 try_.builder(
     name = "linux-fieldtrial-rel",
-    goma_backend = goma.backend.RBE_PROD,
     mirrors = ["ci/linux-fieldtrial-rel"],
+    reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
 )
 
 try_.builder(
@@ -148,8 +147,8 @@ try_.builder(
 
 try_.builder(
     name = "linux-mbi-mode-per-site-instance-rel",
-    goma_backend = goma.backend.RBE_PROD,
     mirrors = builder_config.copy_from("linux-rel"),
+    reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
 )
 
 try_.builder(
@@ -176,12 +175,12 @@ try_.builder(
             target_bits = 64,
         ),
     ),
-    goma_backend = goma.backend.RBE_PROD,
+    reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
 )
 
 try_.builder(
     name = "linux-libfuzzer-asan-rel",
-    branch_selector = branches.STANDARD_MILESTONE,
+    branch_selector = branches.selector.LINUX_BRANCHES,
     executable = "recipe:chromium_libfuzzer_trybot",
     builderless = not settings.is_main,
     main_list_view = "try",
@@ -205,8 +204,7 @@ try_.builder(
 
 try_.orchestrator_builder(
     name = "linux-rel",
-    branch_selector = branches.STANDARD_MILESTONE,
-    compilator = "linux-rel-compilator",
+    branch_selector = branches.selector.LINUX_BRANCHES,
     mirrors = [
         "ci/Linux Builder",
         "ci/Linux Tests",
@@ -218,12 +216,13 @@ try_.orchestrator_builder(
             condition = builder_config.rts_condition.QUICK_RUN_ONLY,
         ),
     ),
-    main_list_view = "try",
     check_for_flakiness = True,
+    compilator = "linux-rel-compilator",
     coverage_test_types = ["unit", "overall"],
     experiments = {
         "chromium_rts.inverted_rts": 100,
     },
+    main_list_view = "try",
     tryjob = try_.job(),
     use_clang_coverage = True,
     # TODO(crbug.com/1372179): Use orchestrator pool once overloaded test pools
@@ -233,16 +232,15 @@ try_.orchestrator_builder(
 
 try_.compilator_builder(
     name = "linux-rel-compilator",
-    branch_selector = branches.STANDARD_MILESTONE,
-    main_list_view = "try",
+    branch_selector = branches.selector.LINUX_BRANCHES,
     check_for_flakiness = True,
+    main_list_view = "try",
 )
 
 # TODO(crbug.com/1394755): Remove this builder after burning down failures
 # and measuring performance to see if we can roll UBSan into ASan.
 try_.builder(
     name = "linux-ubsan-fyi-rel",
-    branch_selector = branches.MAIN,
     mirrors = [
         "ci/linux-ubsan-fyi-rel",
     ],
@@ -250,8 +248,8 @@ try_.builder(
 )
 
 try_.orchestrator_builder(
-    name = "linux-wayland-rel-inverse-fyi",
-    compilator = "linux-wayland-rel-compilator",
+    name = "linux-wayland-rel",
+    branch_selector = branches.selector.LINUX_BRANCHES,
     mirrors = [
         "ci/Linux Builder (Wayland)",
         "ci/Linux Tests (Wayland)",
@@ -261,44 +259,25 @@ try_.orchestrator_builder(
             condition = builder_config.rts_condition.QUICK_RUN_ONLY,
         ),
     ),
+    compilator = "linux-wayland-rel-compilator",
     experiments = {
         "chromium_rts.inverted_rts": 100,
-        "chromium_rts.inverted_rts_bail_early": 100,
     },
-    use_orchestrator_pool = True,
-)
-
-try_.orchestrator_builder(
-    name = "linux-wayland-rel",
-    branch_selector = branches.STANDARD_MILESTONE,
-    compilator = "linux-wayland-rel-compilator",
-    mirrors = [
-        "ci/Linux Builder (Wayland)",
-        "ci/Linux Tests (Wayland)",
-    ],
-    try_settings = builder_config.try_settings(
-        rts_config = builder_config.rts_config(
-            condition = builder_config.rts_condition.QUICK_RUN_ONLY,
-        ),
-    ),
     main_list_view = "try",
     tryjob = try_.job(),
-    experiments = {
-        "chromium_rts.inverted_rts": 100,
-    },
 )
 
 try_.compilator_builder(
     name = "linux-wayland-rel-compilator",
-    branch_selector = branches.STANDARD_MILESTONE,
+    branch_selector = branches.selector.LINUX_BRANCHES,
     ssd = True,
     main_list_view = "try",
 )
 
 try_.builder(
     name = "linux-viz-rel",
-    goma_backend = goma.backend.RBE_PROD,
     mirrors = ["ci/Linux Viz"],
+    reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
 )
 
 try_.builder(
@@ -306,24 +285,24 @@ try_.builder(
     mirrors = [
         "ci/WebKit Linux MSAN",
     ],
-    reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
     os = os.LINUX_FOCAL,
+    reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
 )
 
 try_.builder(
     name = "linux-wpt-content-shell-fyi-rel",
-    goma_backend = goma.backend.RBE_PROD,
     mirrors = [
         "ci/linux-wpt-content-shell-fyi-rel",
     ],
+    reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
 )
 
 try_.builder(
     name = "linux-wpt-content-shell-leak-detection",
-    goma_backend = goma.backend.RBE_PROD,
     mirrors = [
         "ci/linux-wpt-content-shell-leak-detection",
     ],
+    reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
 )
 
 try_.builder(
@@ -346,32 +325,32 @@ try_.builder(
 
 try_.builder(
     name = "linux-x64-castos",
-    branch_selector = branches.STANDARD_MILESTONE,
+    branch_selector = branches.selector.LINUX_BRANCHES,
     mirrors = [
         "ci/Cast Linux",
     ],
     builderless = not settings.is_main,
-    goma_backend = goma.backend.RBE_PROD,
     main_list_view = "try",
+    reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
     tryjob = try_.job(),
 )
 
 try_.builder(
     name = "linux-x64-castos-audio",
-    goma_backend = goma.backend.RBE_PROD,
     mirrors = [
         "ci/Cast Audio Linux",
     ],
+    reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
 )
 
 try_.builder(
     name = "linux-x64-castos-dbg",
-    branch_selector = branches.STANDARD_MILESTONE,
-    goma_backend = goma.backend.RBE_PROD,
+    branch_selector = branches.selector.LINUX_BRANCHES,
     mirrors = [
         "ci/Cast Linux Debug",
     ],
     main_list_view = "try",
+    reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
     tryjob = try_.job(
         location_filters = [
             "chromecast/.+",
@@ -389,8 +368,7 @@ try_.builder(
 
 try_.orchestrator_builder(
     name = "linux_chromium_asan_rel_ng",
-    branch_selector = branches.STANDARD_MILESTONE,
-    compilator = "linux_chromium_asan_rel_ng-compilator",
+    branch_selector = branches.selector.LINUX_BRANCHES,
     mirrors = [
         "ci/Linux ASan LSan Builder",
         "ci/Linux ASan LSan Tests (1)",
@@ -400,38 +378,20 @@ try_.orchestrator_builder(
             condition = builder_config.rts_condition.QUICK_RUN_ONLY,
         ),
     ),
-    main_list_view = "try",
-    tryjob = try_.job(),
+    compilator = "linux_chromium_asan_rel_ng-compilator",
     experiments = {
         "chromium_rts.inverted_rts": 100,
     },
+    main_list_view = "try",
+    tryjob = try_.job(),
     # TODO (crbug.com/1372179): Use orchestrator pool once overloaded test pools
     # are addressed
     # use_orchestrator_pool = True,
 )
 
-try_.orchestrator_builder(
-    name = "linux_chromium_asan_rel_ng-inverse-fyi",
-    compilator = "linux_chromium_asan_rel_ng-compilator",
-    mirrors = [
-        "ci/Linux ASan LSan Builder",
-        "ci/Linux ASan LSan Tests (1)",
-    ],
-    try_settings = builder_config.try_settings(
-        rts_config = builder_config.rts_config(
-            condition = builder_config.rts_condition.QUICK_RUN_ONLY,
-        ),
-    ),
-    experiments = {
-        "chromium_rts.inverted_rts": 100,
-        "chromium_rts.inverted_rts_bail_early": 100,
-    },
-    use_orchestrator_pool = True,
-)
-
 try_.compilator_builder(
     name = "linux_chromium_asan_rel_ng-compilator",
-    branch_selector = branches.STANDARD_MILESTONE,
+    branch_selector = branches.selector.LINUX_BRANCHES,
     main_list_view = "try",
 )
 
@@ -466,9 +426,9 @@ try_.builder(
         "ci/Linux ChromiumOS MSan Tests",
     ],
     cores = 16,
+    os = os.LINUX_FOCAL,
     ssd = True,
     reclient_jobs = reclient.jobs.HIGH_JOBS_FOR_CQ,
-    os = os.LINUX_FOCAL,
 )
 
 try_.builder(
@@ -480,7 +440,6 @@ try_.builder(
 
 try_.builder(
     name = "linux_chromium_clobber_rel_ng",
-    goma_backend = goma.backend.RBE_PROD,
     mirrors = [
         "ci/linux-archive-rel",
     ],
@@ -488,24 +447,25 @@ try_.builder(
         include_all_triggered_testers = True,
         is_compile_only = True,
     ),
+    goma_backend = goma.backend.RBE_PROD,
 )
 
 try_.builder(
     name = "linux_chromium_compile_dbg_ng",
-    branch_selector = branches.STANDARD_MILESTONE,
+    branch_selector = branches.selector.LINUX_BRANCHES,
     mirrors = ["ci/Linux Builder (dbg)"],
     try_settings = builder_config.try_settings(
         include_all_triggered_testers = True,
         is_compile_only = True,
     ),
     builderless = not settings.is_main,
-    main_list_view = "try",
     caches = [
         swarming.cache(
             name = "builder",
             path = "linux_debug",
         ),
     ],
+    main_list_view = "try",
     reclient_jobs = reclient.jobs.HIGH_JOBS_FOR_CQ,
     tryjob = try_.job(),
 )
@@ -524,18 +484,18 @@ try_.builder(
 
 try_.builder(
     name = "linux_chromium_dbg_ng",
-    branch_selector = branches.STANDARD_MILESTONE,
+    branch_selector = branches.selector.LINUX_BRANCHES,
     mirrors = [
         "ci/Linux Builder (dbg)",
         "Linux Tests (dbg)(1)",
     ],
-    main_list_view = "try",
     caches = [
         swarming.cache(
             name = "builder",
             path = "linux_debug",
         ),
     ],
+    main_list_view = "try",
     reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
     tryjob = try_.job(
         location_filters = [
@@ -557,8 +517,7 @@ try_.builder(
 
 try_.orchestrator_builder(
     name = "linux_chromium_tsan_rel_ng",
-    branch_selector = branches.STANDARD_MILESTONE,
-    compilator = "linux_chromium_tsan_rel_ng-compilator",
+    branch_selector = branches.selector.LINUX_BRANCHES,
     mirrors = [
         "ci/Linux TSan Builder",
         "ci/Linux TSan Tests",
@@ -568,38 +527,20 @@ try_.orchestrator_builder(
             condition = builder_config.rts_condition.QUICK_RUN_ONLY,
         ),
     ),
-    main_list_view = "try",
-    tryjob = try_.job(),
+    compilator = "linux_chromium_tsan_rel_ng-compilator",
     experiments = {
         "chromium_rts.inverted_rts": 100,
     },
+    main_list_view = "try",
+    tryjob = try_.job(),
     # TODO (crbug.com/1372179): Use orchestrator pool once overloaded test pools
     # are addressed
     # use_orchestrator_pool = True,
 )
 
-try_.orchestrator_builder(
-    name = "linux_chromium_tsan_rel_ng-inverse-fyi",
-    compilator = "linux_chromium_tsan_rel_ng-compilator",
-    mirrors = [
-        "ci/Linux TSan Builder",
-        "ci/Linux TSan Tests",
-    ],
-    try_settings = builder_config.try_settings(
-        rts_config = builder_config.rts_config(
-            condition = builder_config.rts_condition.QUICK_RUN_ONLY,
-        ),
-    ),
-    experiments = {
-        "chromium_rts.inverted_rts": 100,
-        "chromium_rts.inverted_rts_bail_early": 100,
-    },
-    use_orchestrator_pool = True,
-)
-
 try_.compilator_builder(
     name = "linux_chromium_tsan_rel_ng-compilator",
-    branch_selector = branches.STANDARD_MILESTONE,
+    branch_selector = branches.selector.LINUX_BRANCHES,
     main_list_view = "try",
 )
 
@@ -636,7 +577,7 @@ try_.builder(
 
 try_.builder(
     name = "linux_vr",
-    branch_selector = branches.STANDARD_MILESTONE,
+    branch_selector = branches.selector.LINUX_BRANCHES,
     mirrors = [
         "ci/VR Linux",
     ],
@@ -652,10 +593,10 @@ try_.builder(
 
 try_.builder(
     name = "network_service_linux",
-    goma_backend = goma.backend.RBE_PROD,
     mirrors = [
         "ci/Network Service Linux",
     ],
+    goma_backend = goma.backend.RBE_PROD,
 )
 
 try_.builder(
@@ -675,7 +616,7 @@ try_.builder(
 
 try_.gpu.optional_tests_builder(
     name = "linux_optional_gpu_tests_rel",
-    branch_selector = branches.STANDARD_MILESTONE,
+    branch_selector = branches.selector.LINUX_BRANCHES,
     builder_spec = builder_config.builder_spec(
         gclient_config = builder_config.gclient_config(
             config = "chromium",
@@ -746,31 +687,6 @@ try_.builder(
     name = "linux-js-code-coverage",
     mirrors = ["ci/linux-js-code-coverage"],
     execution_timeout = 20 * time.hour,
-)
-
-# RTS builders
-try_.orchestrator_builder(
-    name = "linux-rel-inverse-fyi",
-    compilator = "linux-rel-compilator",
-    mirrors = [
-        "ci/Linux Builder",
-        "ci/Linux Tests",
-        "ci/GPU Linux Builder",
-        "ci/Linux Release (NVIDIA)",
-    ],
-    try_settings = builder_config.try_settings(
-        rts_config = builder_config.rts_config(
-            condition = builder_config.rts_condition.QUICK_RUN_ONLY,
-        ),
-    ),
-    check_for_flakiness = True,
-    coverage_test_types = ["unit", "overall"],
-    experiments = {
-        "chromium_rts.inverted_rts": 100,
-        "chromium_rts.inverted_rts_bail_early": 100,
-    },
-    use_clang_coverage = True,
-    use_orchestrator_pool = True,
 )
 
 # ML experimental builder, modifies RTS itself to use a ml model

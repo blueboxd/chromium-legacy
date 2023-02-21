@@ -47,8 +47,23 @@ class COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_DEVICE_ACTIVITY)
   // Updates the |value_| to reflect current month is active.
   absl::optional<std::bitset<kChurnBitSize>> UpdateValue(base::Time ts);
 
+  // Initialize the underlying |value_| field.
+  // This method should be called if the device loses the |value_| over restarts
+  // and powerwash. Value can be initialized after being recovered from the
+  // local_state or preserved file active status value.
+  void InitializeValue(int value);
+
+  // Returns the base::Time object representing the defined inception date.
+  const base::Time GetInceptionMonth() const;
+
   // Returns the int representation of the known months since inception.
-  int GetMonthsSinceInception();
+  int GetMonthsSinceInception() const;
+
+  // Uses the inception month and months since inception in order to return
+  // a new timestamp representing the current active month.
+  // TODO(hirthanan): Compare against UpdateValue parameter ts month and year to
+  // see accuracy and correctness of this method.
+  const base::Time GetCurrentActiveMonth() const;
 
   // Returns the int representation of the known active months in |value_|.
   int GetActiveMonthBits();
@@ -57,6 +72,11 @@ class COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_DEVICE_ACTIVITY)
   void SetValueForTesting(std::bitset<kChurnBitSize> val);
 
   const base::Time GetFirstActiveWeek() const;
+
+  // Method is used to test the ActivateDate VPD field is able to get translated
+  // to the correct base::Time object.
+  base::Time GetFirstActiveWeekForTesting(const std::string& year,
+                                          const std::string& weeks);
 
  private:
   // Set |first_active_week_|, which is at the week granularity.
@@ -75,7 +95,11 @@ class COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_DEVICE_ACTIVITY)
   // callback logic exists in the device activity controller.
   // The |first_active_week_| stores the UTC based ActivateDate VPD field, which
   // specifies the date (week granularity) when the device was first activated.
-  base::Time first_active_week_;
+  // Note: The exact first active month cannot be determined because of the
+  // week granularity, but the overall calculation for first active
+  // should be accurate since most weeks fall within the month.
+  // Initialized to UnixEpoch().
+  base::Time first_active_week_ = base::Time::UnixEpoch();
 };
 
 }  // namespace device_activity

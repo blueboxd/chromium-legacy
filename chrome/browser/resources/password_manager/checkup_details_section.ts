@@ -40,7 +40,7 @@ export interface CheckupDetailsSectionElement {
     moreActionsMenu: CrActionMenuElement,
     menuShowPassword: HTMLButtonElement,
     menuEditPassword: HTMLButtonElement,
-    menuRemovePassword: HTMLButtonElement,
+    menuDeletePassword: HTMLButtonElement,
     subtitle: HTMLElement,
   };
 }
@@ -102,6 +102,7 @@ export class CheckupDetailsSectionElement extends
       chrome.passwordsPrivate.PasswordUiEntry[];
   private activeListItem_: CheckupListItemElement|null;
   private clickedChangePasswordIds_: Set<number>;
+  private activeCredential_: chrome.passwordsPrivate.PasswordUiEntry|undefined;
   private insecureCredentialsChangedListener_: CredentialsChangedListener|null =
       null;
 
@@ -229,6 +230,20 @@ export class CheckupDetailsSectionElement extends
     this.activeListItem_ = null;
     PasswordManagerImpl.getInstance().recordPasswordCheckInteraction(
         PasswordCheckInteraction.SHOW_PASSWORD);
+  }
+
+  private async onMenuEditPasswordClick_() {
+    this.activeListItem_?.showEditDialog();
+    this.$.moreActionsMenu.close();
+    this.activeListItem_ = null;
+    PasswordManagerImpl.getInstance().recordPasswordCheckInteraction(
+        PasswordCheckInteraction.EDIT_PASSWORD);
+  }
+
+  private async onMenuDeletePasswordClick_() {
+    this.activeListItem_?.showDeleteDialog();
+    this.$.moreActionsMenu.close();
+    this.activeListItem_ = null;
   }
 
   private getShowHideTitle_(): string {

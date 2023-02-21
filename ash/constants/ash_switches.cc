@@ -303,6 +303,11 @@ const char kCrosRegion[] = "cros-region";
 // flow.
 const char kCryptohomeRecoveryReauthUrl[] = "cryptohome-recovery-reauth-url";
 
+// Forces cryptohome recovery process to use test environment (test keys /
+// URLs).
+const char kCryptohomeRecoveryUseTestEnvironment[] =
+    "cryptohome-recovery-use-test-env";
+
 // Controls if AuthSession API should be used when interacting with cryptohomed.
 const char kCryptohomeUseAuthSession[] = "cryptohome-use-authsession";
 
@@ -870,6 +875,11 @@ const char kSkipForceOnlineSignInForTesting[] =
 // the nudge is considered as shown.
 const char kSkipReorderNudgeShowThresholdDurationForTest[] =
     "skip-reorder-nudge-show-threshold-duration";
+
+// Used to force software cursors on specific devices that do not have enough
+// planes to display a hardware cursor when connected to displays with higher
+// widths in pixels.
+const char kSwCursorOnWideDisplays[] = "sw-cursor-on-wide-displays";
 
 // If set, the device will be forced to stay in clamshell UI mode but screen
 // auto rotation will be supported. E.g, chromebase device Dooly.

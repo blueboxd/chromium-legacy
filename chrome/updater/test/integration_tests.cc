@@ -426,6 +426,13 @@ TEST_F(IntegrationTest, OverinstallBroken) {
   ASSERT_NO_FATAL_FAILURE(ExpectVersionActive(kUpdaterVersion));
 
   ASSERT_NO_FATAL_FAILURE(Uninstall());
+
+  // Cleanup the older version by reinstalling and uninstalling.
+  ASSERT_NO_FATAL_FAILURE(SetupRealUpdaterLowerVersion());
+  ASSERT_TRUE(WaitForUpdaterExit());
+  ASSERT_NO_FATAL_FAILURE(Install());
+  ASSERT_TRUE(WaitForUpdaterExit());
+  ASSERT_NO_FATAL_FAILURE(Uninstall());
 }
 #endif  // !BUILDFLAG(IS_LINUX)
 
@@ -833,6 +840,36 @@ TEST_F(IntegrationTest, SelfUpdateFromOldReal) {
   ASSERT_NO_FATAL_FAILURE(Uninstall());
 }
 
+TEST_F(IntegrationTest, UninstallIfUnusedSelfAndOldReal) {
+  ScopedServer test_server(test_commands_);
+
+  ASSERT_NO_FATAL_FAILURE(SetupRealUpdaterLowerVersion());
+  ASSERT_NO_FATAL_FAILURE(ExpectVersionNotActive(kUpdaterVersion));
+
+  // Trigger an old instance update check.
+  ASSERT_NO_FATAL_FAILURE(ExpectSelfUpdateSequence(&test_server));
+  ASSERT_NO_FATAL_FAILURE(RunWakeActive(0));
+
+  // Qualify the new instance.
+  ASSERT_NO_FATAL_FAILURE(
+      ExpectUpdateSequence(&test_server, kQualificationAppId, "",
+                           base::Version("0.1"), base::Version("0.2")));
+  ASSERT_NO_FATAL_FAILURE(RunWake(0));
+  ASSERT_TRUE(WaitForUpdaterExit());
+
+  // Activate the new instance. (It should not check itself for updates.)
+  ASSERT_NO_FATAL_FAILURE(RunWake(0));
+  ASSERT_TRUE(WaitForUpdaterExit());
+
+  ASSERT_NO_FATAL_FAILURE(ExpectVersionActive(kUpdaterVersion));
+
+  ASSERT_NO_FATAL_FAILURE(SetServerStarts(24));
+  ASSERT_NO_FATAL_FAILURE(RunWake(0));
+  ASSERT_TRUE(WaitForUpdaterExit());
+
+  // Expect that the updater uninstalled itself as well as the lower version.
+}
+
 // Tests that installing and uninstalling an old version of the updater from
 // CIPD is possible.
 TEST_F(IntegrationTest, InstallLowerVersion) {
@@ -947,6 +984,7 @@ TEST_F(IntegrationTest, InstallDataIndex) {
 TEST_F(IntegrationTest, MigrateLegacyUpdater) {
   ASSERT_NO_FATAL_FAILURE(SetupFakeLegacyUpdaterData());
   ASSERT_NO_FATAL_FAILURE(Install());
+  ASSERT_TRUE(WaitForUpdaterExit());
   ASSERT_NO_FATAL_FAILURE(ExpectInstalled());
   ASSERT_NO_FATAL_FAILURE(ExpectLegacyUpdaterDataMigrated());
   ASSERT_NO_FATAL_FAILURE(Uninstall());

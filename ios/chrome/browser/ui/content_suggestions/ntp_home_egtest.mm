@@ -110,7 +110,7 @@ id<GREYMatcher> OmniboxWidthBetween(CGFloat width, CGFloat margin) {
 // visible, but not actually zero, probably due to some sort of floating
 // point calculation.
 id<GREYMatcher> notPracticallyVisible() {
-  return grey_not(grey_minimumVisiblePercent(0.001));
+  return grey_not(grey_minimumVisiblePercent(0.01));
 }
 }
 
@@ -150,6 +150,10 @@ id<GREYMatcher> notPracticallyVisible() {
   AppLaunchConfiguration config = [super appConfigurationForTestCase];
   config.additional_args.push_back(std::string("--") +
                                    switches::kEnableDiscoverFeed);
+  // Show doodle to make sure tests cover async callback logic updating logo.
+  config.additional_args.push_back(
+      std::string("-google-doodle-url=https://www.gstatic.com/chrome/ntp/"
+                  "doodle_test/ddljson_android0.json"));
   config.features_disabled.push_back(kEnableFeedAblation);
   // TODO(crbug.com/1403077): Scrolling issues when promo is enabled.
   config.features_disabled.push_back(kEnableDiscoverFeedTopSyncPromo);

@@ -66,6 +66,8 @@
 
 namespace {
 
+const int kMinimumHomeTabIconSizeInPx = 16;
+
 #if BUILDFLAG(IS_CHROMEOS)
 constexpr char kRelationship[] = "delegate_permission/common.handle_all_urls";
 #endif
@@ -365,14 +367,17 @@ gfx::ImageSkia WebAppBrowserController::GetHomeTabIcon() const {
     if (const auto* params =
             absl::get_if<blink::Manifest::HomeTabParams>(&tab_strip.home_tab)) {
       if (!params->icons.empty()) {
-        provider_->icon_manager().ReadAllHomeTabIcons(
-            app_id(), params->icons,
+        provider_->icon_manager().ReadBestHomeTabIcon(
+            app_id(), params->icons, kMinimumHomeTabIconSizeInPx,
             base::BindOnce(&WebAppBrowserController::OnReadHomeTabIcon,
                            weak_ptr_factory_.GetWeakPtr()));
       }
     }
   }
   if (!home_tab_icon_) {
+    home_tab_icon_ = provider_->icon_manager().GetMonochromeFavicon(app_id());
+  }
+  if (home_tab_icon_->width() == 0 || home_tab_icon_->height() == 0) {
     home_tab_icon_ = *(GetWindowAppIcon().GetImage().ToImageSkia());
   }
   return *home_tab_icon_;
@@ -630,14 +635,13 @@ void WebAppBrowserController::OnLoadIcon(apps::IconValuePtr icon_value) {
 }
 
 void WebAppBrowserController::OnReadHomeTabIcon(
-    HomeTabIconBitmaps home_tab_icon_bitmaps) const {
-  if (home_tab_icon_bitmaps.empty()) {
+    SkBitmap home_tab_icon_bitmap) const {
+  if (home_tab_icon_bitmap.empty()) {
     DLOG(ERROR) << "Failed to read icon for the pinned home tab";
     return;
   }
-  // TODO (crbug.com/1381377): Select the most appropriate icon instead of just
-  // picking the first one
-  home_tab_icon_ = gfx::ImageSkia::CreateFrom1xBitmap(home_tab_icon_bitmaps[0]);
+
+  home_tab_icon_ = gfx::ImageSkia::CreateFrom1xBitmap(home_tab_icon_bitmap);
   if (auto* contents = web_contents()) {
     contents->NotifyNavigationStateChanged(content::INVALIDATE_TYPE_TAB);
   }

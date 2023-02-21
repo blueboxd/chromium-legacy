@@ -216,7 +216,7 @@ SimpleFeature::SimpleFeature()
       is_internal_(false),
       disallow_for_service_workers_(false) {}
 
-SimpleFeature::~SimpleFeature() {}
+SimpleFeature::~SimpleFeature() = default;
 
 Feature::Availability SimpleFeature::IsAvailableToManifest(
     const HashedExtensionId& hashed_id,
@@ -513,6 +513,10 @@ bool SimpleFeature::MatchesSessionTypes(
   // rejecting session type that is not present in |session_types_|
   return session_type == mojom::FeatureSessionType::kAutolaunchedKiosk &&
          base::Contains(session_types_, mojom::FeatureSessionType::kKiosk);
+}
+
+bool SimpleFeature::RequiresDelegatedAvailabilityCheck() const {
+  return requires_delegated_availability_check_;
 }
 
 Feature::Availability SimpleFeature::CheckDependencies(

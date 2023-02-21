@@ -38,6 +38,9 @@ void AddMaterialUiColorMixer(ColorProvider* provider,
   mixer[kColorButtonForegroundDisabled] = {kColorSysStateDisabled};
   mixer[kColorButtonForegroundProminent] = {kColorSysOnPrimary};
   mixer[kColorButtonForegroundUnchecked] = {kColorSysOnSurfaceVariant};
+  mixer[kColorComboboxBackground] = {kColorSysSurface};
+  mixer[kColorComboboxBackgroundDisabled] = {GetResultingPaintColor(
+      {kColorSysStateDisabledContainer}, {kColorComboboxBackground})};
   mixer[kColorFocusableBorderFocused] = {kColorSysStateFocusRing};
   mixer[kColorFocusableBorderUnfocused] = {kColorSysOutline};
   mixer[kColorFrameActive] = {kColorSysHeader};
@@ -58,10 +61,13 @@ void AddMaterialUiColorMixer(ColorProvider* provider,
   mixer[kColorTextfieldInvalidOutline] = {kColorTextfieldForegroundInvalid};
   mixer[kColorToggleButtonShadow] = {kColorSysOutline};
   mixer[kColorToggleButtonThumbOff] = {kColorSysOutline};
+  mixer[kColorToggleButtonThumbOffDisabled] = {kColorSysStateDisabled};
   mixer[kColorToggleButtonThumbOn] = {kColorSysOnPrimary};
+  mixer[kColorToggleButtonThumbOnDisabled] = {kColorSysSurface};
+  mixer[kColorToggleButtonThumbOnIcon] = {kColorSysOnPrimaryContainer};
   mixer[kColorToggleButtonTrackOff] = {kColorSysSurfaceVariant};
   mixer[kColorToggleButtonTrackOn] = {kColorSysPrimary};
-  mixer[kColorToggleButtonThumbOnIcon] = {kColorSysOnPrimaryContainer};
+  mixer[kColorToggleButtonTrackOnDisabled] = {kColorSysStateDisabledContainer};
 }
 
 }  // namespace ui

@@ -816,6 +816,10 @@ class CommonFieldsGenerationInfoEnabled {
   // the code more complicated, and there's a benefit in having the sizes of
   // raw_hash_set in sanitizer mode and non-sanitizer mode a bit more different,
   // which is that tests are less likely to rely on the size remaining the same.
+  // TODO(b/254649633): Currently, we can't detect when end iterators from
+  // different empty tables are compared. If we allocate generations separately
+  // from control bytes, then we could do so. Another option would be to have N
+  // empty generations and use a random one for empty hashtables.
   GenerationType* generation_ = EmptyGeneration();
 };
 
@@ -1037,10 +1041,10 @@ size_t SelectBucketCountForIterRange(InputIter first, InputIter last,
 #define ABSL_INTERNAL_ASSERT_IS_FULL(ctrl, generation, generation_ptr,         \
                                      operation)                                \
   do {                                                                         \
-    ABSL_HARDENING_ASSERT(                                                     \
-        (ctrl != nullptr) && operation                                         \
-        " called on invalid iterator. The iterator might be an end() "         \
-        "iterator or may have been default constructed.");                     \
+    ABSL_HARDENING_ASSERT((ctrl != nullptr) && operation                       \
+                          " called on end() iterator.");                       \
+    ABSL_HARDENING_ASSERT((ctrl != EmptyGroup()) && operation                  \
+                          " called on default-constructed iterator.");         \
     if (SwisstableGenerationsEnabled() && generation != *generation_ptr)       \
       ABSL_INTERNAL_LOG(FATAL, operation                                       \
                         " called on invalidated iterator. The table could "    \
@@ -1055,9 +1059,10 @@ size_t SelectBucketCountForIterRange(InputIter first, InputIter last,
 inline void AssertIsValidForComparison(const ctrl_t* ctrl,
                                        GenerationType generation,
                                        const GenerationType* generation_ptr) {
-  ABSL_HARDENING_ASSERT((ctrl == nullptr || IsFull(*ctrl)) &&
-                        "Invalid iterator comparison. The element might have "
-                        "been erased or the table might have rehashed.");
+  ABSL_HARDENING_ASSERT(
+      (ctrl == nullptr || ctrl == EmptyGroup() || IsFull(*ctrl)) &&
+      "Invalid iterator comparison. The element might have "
+      "been erased or the table might have rehashed.");
   if (SwisstableGenerationsEnabled() && generation != *generation_ptr) {
     ABSL_INTERNAL_LOG(FATAL,
                       "Invalid iterator comparison. The table could have "
@@ -1087,12 +1092,44 @@ inline bool AreItersFromSameContainer(const ctrl_t* ctrl_a,
 // Asserts that two iterators come from the same container.
 // Note: we take slots by reference so that it's not UB if they're uninitialized
 // as long as we don't read them (when ctrl is null).
-// TODO(b/254649633): when generations are enabled, we can detect more cases of
-// different containers by comparing the pointers to the generations - this
-// can cover cases of end iterators that we would otherwise miss.
 inline void AssertSameContainer(const ctrl_t* ctrl_a, const ctrl_t* ctrl_b,
                                 const void* const& slot_a,
-                                const void* const& slot_b) {
+                                const void* const& slot_b,
+                                const GenerationType* generation_ptr_a,
+                                const GenerationType* generation_ptr_b) {
+#if defined(ABSL_SWISSTABLE_ENABLE_GENERATIONS) || \
+    ABSL_OPTION_HARDENED == 1 || !defined(NDEBUG)
+  const bool a_is_default = ctrl_a == EmptyGroup();
+  const bool b_is_default = ctrl_b == EmptyGroup();
+  if (a_is_default != b_is_default) {
+    ABSL_INTERNAL_LOG(
+        FATAL,
+        "Invalid iterator comparison. Comparing default-constructed iterator "
+        "with non-default-constructed iterator.");
+  }
+  if (a_is_default && b_is_default) return;
+#endif
+
+  if (SwisstableGenerationsEnabled() && generation_ptr_a != generation_ptr_b) {
+    const bool a_is_empty = generation_ptr_a == EmptyGeneration();
+    const bool b_is_empty = generation_ptr_b == EmptyGeneration();
+    if (a_is_empty != b_is_empty) {
+      ABSL_INTERNAL_LOG(FATAL,
+                        "Invalid iterator comparison. Comparing iterator from "
+                        "a non-empty hashtable with an iterator from an empty "
+                        "hashtable.");
+    }
+    const bool a_is_end = ctrl_a == nullptr;
+    const bool b_is_end = ctrl_b == nullptr;
+    if (a_is_end || b_is_end) {
+      ABSL_INTERNAL_LOG(FATAL,
+                        "Invalid iterator comparison. Comparing iterator with "
+                        "an end() iterator from a different hashtable.");
+    }
+    ABSL_INTERNAL_LOG(FATAL,
+                      "Invalid iterator comparison. Comparing non-end() "
+                      "iterators from different hashtables.");
+  }
   ABSL_HARDENING_ASSERT(
       AreItersFromSameContainer(ctrl_a, ctrl_b, slot_a, slot_b) &&
       "Invalid iterator comparison. The iterators may be from different "
@@ -1463,9 +1500,10 @@ class raw_hash_set {
     }
 
     friend bool operator==(const iterator& a, const iterator& b) {
-      AssertSameContainer(a.ctrl_, b.ctrl_, a.slot_, b.slot_);
       AssertIsValidForComparison(a.ctrl_, a.generation(), a.generation_ptr());
       AssertIsValidForComparison(b.ctrl_, b.generation(), b.generation_ptr());
+      AssertSameContainer(a.ctrl_, b.ctrl_, a.slot_, b.slot_,
+                          a.generation_ptr(), b.generation_ptr());
       return a.ctrl_ == b.ctrl_;
     }
     friend bool operator!=(const iterator& a, const iterator& b) {
@@ -1484,7 +1522,7 @@ class raw_hash_set {
     }
     // For end() iterators.
     explicit iterator(const GenerationType* generation_ptr)
-        : HashSetIteratorGenerationInfo(generation_ptr) {}
+        : HashSetIteratorGenerationInfo(generation_ptr), ctrl_(nullptr) {}
 
     // Fixes up `ctrl_` to point to a full by advancing it and `slot_` until
     // they reach one.
@@ -1499,7 +1537,9 @@ class raw_hash_set {
       if (ABSL_PREDICT_FALSE(*ctrl_ == ctrl_t::kSentinel)) ctrl_ = nullptr;
     }
 
-    ctrl_t* ctrl_ = nullptr;
+    // We use EmptyGroup() for default-constructed iterators so that they can
+    // be distinguished from end iterators, which have nullptr ctrl_.
+    ctrl_t* ctrl_ = EmptyGroup();
     // To avoid uninitialized member warnings, put slot_ in an anonymous union.
     // The member is not initialized on singleton and end iterators.
     union {

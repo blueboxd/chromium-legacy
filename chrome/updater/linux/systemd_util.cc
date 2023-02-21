@@ -96,8 +96,6 @@ void LaunchWithRemaps(base::CommandLine command) {
   base::ScopedFD null_fd(HANDLE_EINTR(open("/dev/null", O_RDWR)));
   if (null_fd.is_valid()) {
     options.fds_to_remap.emplace_back(null_fd.get(), STDIN_FILENO);
-    options.fds_to_remap.emplace_back(null_fd.get(), STDOUT_FILENO);
-    options.fds_to_remap.emplace_back(null_fd.get(), STDERR_FILENO);
   }
 
   base::Process proc = base::LaunchProcess(command, options);
@@ -210,6 +208,8 @@ bool InstallSystemdUnits(UpdaterScope scope) {
 
   ReloadUnitFiles(scope);
   EnableSocketUnit(scope);
+  LOG_IF(ERROR, !base::PathExists(GetActivationSocketPath(scope)))
+      << "Activation socket file is missing post-install.";
   return true;
 }
 

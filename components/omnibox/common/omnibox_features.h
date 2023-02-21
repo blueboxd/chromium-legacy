@@ -19,14 +19,11 @@ BASE_DECLARE_FEATURE(kOmniboxRemoveSuggestionsFromClipboard);
 
 // Flags that affect the "twiddle" step of AutocompleteResult, e.g.,
 // `SortAndCull()`.
-BASE_DECLARE_FEATURE(kAutocompleteStability);
-BASE_DECLARE_FEATURE(kDocumentProviderDedupingOptimization);
 BASE_DECLARE_FEATURE(kGroupingFramework);
 BASE_DECLARE_FEATURE(kOmniboxDemoteByType);
 BASE_DECLARE_FEATURE(kOmniboxRemoveExcessiveRecycledViewClearCalls);
 BASE_DECLARE_FEATURE(kPreserveDefault);
 BASE_DECLARE_FEATURE(kSingleSortAndCullPass);
-BASE_DECLARE_FEATURE(kStrippedGurlOptimization);
 BASE_DECLARE_FEATURE(kUpdateResultDebounce);
 
 // Features below this line should be sorted alphabetically by their comments.
@@ -82,7 +79,6 @@ BASE_DECLARE_FEATURE(kHistoryQuickProviderSpecificityScoreCountUniqueHosts);
 
 // Document provider and domain suggestions
 BASE_DECLARE_FEATURE(kDocumentProvider);
-BASE_DECLARE_FEATURE(kDocumentProviderAso);
 BASE_DECLARE_FEATURE(kDomainSuggestions);
 
 // Suggestions UI - these affect the UI or function of the suggestions popup.
@@ -104,6 +100,7 @@ BASE_DECLARE_FEATURE(kWebUIOmniboxPopup);
 // Omnibox UI - these affect the UI or function of the location bar (not the
 // popup).
 BASE_DECLARE_FEATURE(kOmniboxAssistantVoiceSearch);
+BASE_DECLARE_FEATURE(kOmniboxSteadyStateHeight);
 
 // Omnibox & Suggestions UI - these affect both the omnibox and the suggestions
 // popup.

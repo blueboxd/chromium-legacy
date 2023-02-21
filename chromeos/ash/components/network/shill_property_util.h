@@ -32,7 +32,7 @@ std::string GetSSIDFromProperties(const base::Value::Dict& properties,
                                   bool* unknown_encoding);
 
 // Returns the GUID (if available), SSID, or Name from |properties|. Only used
-// for logging and debugging. |properties| must be type DICTIONARY.
+// for logging and debugging.
 COMPONENT_EXPORT(CHROMEOS_NETWORK)
 std::string GetNetworkIdFromProperties(const base::Value::Dict& properties);
 
@@ -40,7 +40,7 @@ std::string GetNetworkIdFromProperties(const base::Value::Dict& properties);
 // WiFi it refers to the HexSSID.
 COMPONENT_EXPORT(CHROMEOS_NETWORK)
 std::string GetNameFromProperties(const std::string& service_path,
-                                  const base::Value& properties);
+                                  const base::Value::Dict& properties);
 
 // Returns the UIData specified by |value|. Returns NULL if the value cannot be
 // parsed.
@@ -50,7 +50,7 @@ std::unique_ptr<NetworkUIData> GetUIDataFromValue(const base::Value& value);
 // |shill_dictionary|. If parsing fails or the field doesn't exist, returns
 // NULL.
 std::unique_ptr<NetworkUIData> GetUIDataFromProperties(
-    const base::Value& shill_dictionary);
+    const base::Value::Dict& shill_dictionary);
 
 // Sets the UIData property in |shill_dictionary| to the serialization of
 // |ui_data|. Sets the ONCSource property in |shill_dictionary|,

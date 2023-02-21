@@ -303,6 +303,9 @@ class ComputedStyle : public ComputedStyleBase,
   PositionFallbackStyleCache& EnsurePositionFallbackStyleCache(
       unsigned ensure_size) const;
 
+  CORE_EXPORT base::RefCountedData<Vector<AppliedTextDecoration, 1>>*
+  EnsureAppliedTextDecorationsCache() const;
+
  private:
   // TODO(sashab): Move these private members to the bottom of ComputedStyle.
   ALWAYS_INLINE ComputedStyle();
@@ -1836,9 +1839,46 @@ class ComputedStyle : public ComputedStyleBase,
 
   // Text decoration utility functions.
   bool TextDecorationVisualOverflowEqual(const ComputedStyle& o) const;
-  CORE_EXPORT const Vector<AppliedTextDecoration>& AppliedTextDecorations()
-      const;
   CORE_EXPORT TextDecorationLine TextDecorationsInEffect() const;
+  CORE_EXPORT const Vector<AppliedTextDecoration, 1>& AppliedTextDecorations()
+      const;
+  CORE_EXPORT base::RefCountedData<Vector<AppliedTextDecoration, 1>>*
+  AppliedTextDecorationData() const {
+    return IsDecoratingBox() ? EnsureAppliedTextDecorationsCache()
+                             : BaseTextDecorationDataInternal().get();
+  }
+
+  // Returns true if this a "decorating box".
+  // https://drafts.csswg.org/css-text-decor-3/#decorating-box
+  bool IsDecoratingBox() const {
+    if (GetTextDecorationLine() == TextDecorationLine::kNone) {
+      return false;
+    }
+    if (Display() == EDisplay::kContents) {
+      return false;
+    }
+    return true;
+  }
+
+  // Returns true if there are any text decorations.
+  bool HasAppliedTextDecorations() const {
+    if (IsDecoratingBox()) {
+      return true;
+    }
+    if (BaseTextDecorationDataInternal()) {
+      DCHECK(!BaseTextDecorationDataInternal()->data.empty());
+      return true;
+    }
+    return false;
+  }
+
+  // Returns (by value) the last text decoration, if any.
+  absl::optional<AppliedTextDecoration> LastAppliedTextDecoration() const {
+    if (HasAppliedTextDecorations()) {
+      return AppliedTextDecorations().back();
+    }
+    return absl::nullopt;
+  }
 
   // Overflow utility functions.
 
@@ -2197,30 +2237,26 @@ class ComputedStyle : public ComputedStyleBase,
   // `white-space` property may become a shorthand in future.
   // https://drafts.csswg.org/css-text-4/#white-space-property
   static bool DeprecatedAutoWrap(EWhiteSpace ws) {
-    // Nowrap and pre don't automatically wrap.
-    return IsNot(ws, EWhiteSpace::kNowrap | EWhiteSpace::kPre);
+    return blink::ShouldWrapLine(ws);
   }
   static bool DeprecatedPreserveNewline(EWhiteSpace ws) {
-    // Normal and nowrap do not preserve newlines.
-    return IsNot(ws, EWhiteSpace::kNormal | EWhiteSpace::kNowrap);
+    return ShouldPreserveBreaks(ws);
   }
   static bool DeprecatedCollapseWhiteSpace(EWhiteSpace ws) {
-    // Pre and prewrap do not collapse whitespace.
-    return IsNot(ws, EWhiteSpace::kPre | EWhiteSpace::kPreWrap |
-                         EWhiteSpace::kBreakSpaces);
+    return blink::ShouldCollapseSpacesAndTabs(ws);
   }
 
   bool ShouldWrapLine() const { return DeprecatedAutoWrap(WhiteSpace()); }
   bool ShouldWrapLineBreakingSpaces() const {
-    // `ShouldWrapLine` should be `true` if `break-spaces`.
-    DCHECK(WhiteSpace() != EWhiteSpace::kBreakSpaces || ShouldWrapLine());
-    return WhiteSpace() == EWhiteSpace::kBreakSpaces;
+    return blink::ShouldWrapLineBreakingSpaces(WhiteSpace());
   }
   bool ShouldWrapLineTrailingSpaces() const {
-    return IsNot(WhiteSpace(), EWhiteSpace::kNowrap | EWhiteSpace::kPre |
-                                   EWhiteSpace::kBreakSpaces);
+    return blink::ShouldWrapLineTrailingSpaces(WhiteSpace());
   }
 
+  bool ShouldPreserveSpacesAndTabs() const {
+    return blink::ShouldPreserveSpacesAndTabs(WhiteSpace());
+  }
   bool PreserveNewline() const {
     return DeprecatedPreserveNewline(WhiteSpace());
   }
@@ -2239,8 +2275,7 @@ class ComputedStyle : public ComputedStyleBase,
   }
 
   bool BreakOnlyAfterWhiteSpace() const {
-    return Is(WhiteSpace(),
-              EWhiteSpace::kPreWrap | EWhiteSpace::kBreakSpaces) ||
+    return (ShouldPreserveSpacesAndTabs() && ShouldWrapLine()) ||
            GetLineBreak() == LineBreak::kAfterWhiteSpace;
   }
   bool NeedsTrailingSpace() const {
@@ -2355,6 +2390,9 @@ class ComputedStyle : public ComputedStyleBase,
     if (pseudo == kPseudoIdMarker) {
       return Display() == EDisplay::kListItem;
     }
+    if (pseudo == kPseudoIdBackdrop && TopLayer() == ETopLayer::kNone) {
+      return false;
+    }
     if (!HasPseudoElementStyle(pseudo)) {
       return false;
     }
@@ -2366,6 +2404,10 @@ class ComputedStyle : public ComputedStyleBase,
     // elements with an actual layout object.
     return pseudo == kPseudoIdBefore || pseudo == kPseudoIdAfter;
   }
+
+  // Returns true if the element is a top layer candidate whose top-layer
+  // property computes to 'browser'.
+  bool IsInTopLayer(const Element& element) const;
 
   // Load the images of CSS properties that were deferred by LazyLoad.
   void LoadDeferredImages(Document&) const;
@@ -2480,12 +2522,6 @@ class ComputedStyle : public ComputedStyleBase,
            display == EDisplay::kTableCell ||
            display == EDisplay::kTableCaption;
   }
-
-  // Whitespace utility functions.
-  static bool Is(EWhiteSpace a, EWhiteSpace b) {
-    return static_cast<unsigned>(a) & static_cast<unsigned>(b);
-  }
-  static bool IsNot(EWhiteSpace a, EWhiteSpace b) { return !Is(a, b); }
 
   bool InternalVisitedBorderLeftColorHasNotChanged(
       const ComputedStyle& other) const {
@@ -2763,6 +2799,7 @@ class ComputedStyleBuilder final : public ComputedStyleBuilderBase {
       const ComputedStyle& inherit_parent,
       IsAtShadowBoundary is_at_shadow_boundary = kNotAtShadowBoundary) {
     EUserModify current_user_modify = UserModify();
+    EUserSelect current_user_select = UserSelect();
     ComputedStyleBuilderBase::InheritFrom(inherit_parent,
                                           is_at_shadow_boundary);
 
@@ -2771,6 +2808,14 @@ class ComputedStyleBuilder final : public ComputedStyleBuilderBase {
     if (is_at_shadow_boundary == kAtShadowBoundary) {
       SetUserModify(current_user_modify);
     }
+
+    // TODO(crbug.com/1410068): Once `user-select` isn't inherited, we should
+    // get rid of following if-statement.
+    if (inherit_parent.UserSelect() == EUserSelect::kContain) {
+      SetUserSelect(current_user_select);
+    }
+
+    SetBaseTextDecorationData(inherit_parent.AppliedTextDecorationData());
   }
 
   void CopyNonInheritedFromCached(const ComputedStyle& other) {
@@ -3421,16 +3466,7 @@ class ComputedStyleBuilder final : public ComputedStyleBuilderBase {
                          static_cast<unsigned>(ViewportUnitFlag::kDynamic));
   }
 
-  // Text decoration
-  void ApplyTextDecorations(const blink::Color& parent_text_decoration_color,
-                            bool override_existing_colors);
-  void ClearAppliedTextDecorations();
-  void RestoreParentTextDecorations(const ComputedStyle& parent_style);
-
  private:
-  void AddAppliedTextDecoration(const AppliedTextDecoration&);
-  void OverrideTextDecorationColors(blink::Color propagated_color);
-
   scoped_refptr<ComputedStyle> style_;
 };
 

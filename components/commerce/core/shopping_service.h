@@ -21,6 +21,7 @@
 #include "base/supports_user_data.h"
 #include "components/commerce/core/account_checker.h"
 #include "components/commerce/core/proto/commerce_subscription_db_content.pb.h"
+#include "components/commerce/core/subscriptions/commerce_subscription.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/optimization_guide/core/optimization_guide_decision.h"
 #include "services/data_decoder/public/cpp/data_decoder.h"
@@ -130,8 +131,8 @@ struct ProductInfo {
 // Information returned by the merchant info APIs.
 struct MerchantInfo {
   MerchantInfo();
-  MerchantInfo(const MerchantInfo&) = delete;
-  MerchantInfo& operator=(const MerchantInfo&) = delete;
+  MerchantInfo(const MerchantInfo&);
+  MerchantInfo& operator=(const MerchantInfo&);
   MerchantInfo(MerchantInfo&&);
   MerchantInfo& operator=(MerchantInfo&&) = default;
   ~MerchantInfo();
@@ -216,10 +217,25 @@ class ShoppingService : public KeyedService, public base::SupportsUserData {
       std::unique_ptr<std::vector<CommerceSubscription>> subscriptions,
       base::OnceCallback<void(bool)> callback);
 
+  // Gets all subscriptions for the specified type. The list of subscriptions
+  // will be provided as input to the |callback| passed to this function.
+  virtual void GetAllSubscriptions(
+      SubscriptionType type,
+      base::OnceCallback<void(std::vector<CommerceSubscription>)> callback);
+
   // Methods to register or remove SubscriptionsObserver, which will be notified
   // when a (un)subscribe request has finished.
   void AddSubscriptionsObserver(SubscriptionsObserver* observer);
   void RemoveSubscriptionsObserver(SubscriptionsObserver* observer);
+
+  // Check if the specified subscription exists.
+  virtual void IsSubscribed(CommerceSubscription subscription,
+                            base::OnceCallback<void(bool)> callback);
+
+  // Checks if a subscription exists from the in-memory cache. Use of the the
+  // callback-based version |IsSubscribed| is preferred. Information provided
+  // by this API is not guaranteed to be correct.
+  virtual bool IsSubscribedFromCache(const CommerceSubscription& subscription);
 
   // Fetch users' pref from server on whether to receive price tracking emails.
   void FetchPriceEmailPref();
@@ -241,6 +257,11 @@ class ShoppingService : public KeyedService, public base::SupportsUserData {
   virtual void IsClusterIdTrackedByUser(
       uint64_t cluster_id,
       base::OnceCallback<void(bool)> callback);
+
+  // This is a feature check for the "merchant viewer", which will return true
+  // if the user has the feature flag enabled or (if applicable) is in an
+  // enabled country and locale.
+  virtual bool IsMerchantViewerEnabled();
 
   // Get a weak pointer for this service instance.
   base::WeakPtr<ShoppingService> AsWeakPtr();
@@ -294,10 +315,6 @@ class ShoppingService : public KeyedService, public base::SupportsUserData {
       bool is_off_the_record,
       optimization_guide::OptimizationGuideDecision decision,
       const optimization_guide::OptimizationMetadata& metadata);
-
-  // Whether APIs like |GetMerchantInfoForURL| are enabled and allowed to be
-  // used.
-  bool IsMerchantInfoApiEnabled();
 
   void HandleOptGuideProductInfoResponse(
       const GURL& url,

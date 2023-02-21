@@ -327,6 +327,7 @@
 <translation id="4110686435123617899">Seleziona l'album <ph name="TITLE" /> <ph name="DESC" /></translation>
 <translation id="4111761024568264522">Touchpad USB</translation>
 <translation id="4117637339509843559">Modalità Buio</translation>
+<translation id="4130035430755296270">Continua a passare il mouse sopra per altre opzioni di layout</translation>
 <translation id="4131410914670010031">In bianco e nero</translation>
 <translation id="4145784616224233563">Firewall HTTP</translation>
 <translation id="4147897805161313378">Google Foto</translation>
@@ -346,7 +347,7 @@
 <translation id="4258281355379922695">Latenza HTTP</translation>
 <translation id="4271957103967917607">Visualizza a schermo intero</translation>
 <translation id="4289540628985791613">Panoramica</translation>
-<translation id="4289849978083912975">Slideshow</translation>
+<translation id="4289849978083912975">Presentazione</translation>
 <translation id="4297501883039923494">Operazione interrotta - Errore sconosciuto</translation>
 <translation id="4300073214558989"><ph name="IMAGE_COUNT" /> immagini</translation>
 <translation id="4311195029067684288">Completo</translation>
@@ -415,6 +416,7 @@
 <translation id="484790837831576105">(Android) risoluzione DNS</translation>
 <translation id="4848429997038228357">IN ESECUZIONE</translation>
 <translation id="4854586501323951986">Touchscreen integrato</translation>
+<translation id="4855250849489639581">Scorri verso il basso per visualizzare altre opzioni di layout</translation>
 <translation id="4861758251032006121">{ATTEMPTS_LEFT,plural, =1{<ph name="ERROR_MESSAGE" /> {0} tentativo rimanente}other{<ph name="ERROR_MESSAGE" /> {0} tentativi rimanenti}}</translation>
 <translation id="4873827928179867585">Algoritmo di autenticazione</translation>
 <translation id="4880328057631981605">Nome punto di accesso</translation>
@@ -674,6 +676,7 @@
 <translation id="7172721935181587524">1 immagine</translation>
 <translation id="7177485034254901881">Questo dispositivo <ph name="DEVICE_TYPE" /> è gestito da <ph name="MANAGER" />. Gli amministratori possono configurarlo da remoto.</translation>
 <translation id="7180611975245234373">Aggiorna</translation>
+<translation id="7180865173735832675">Personalizza</translation>
 <translation id="7212734716605298123">Aggiornamenti del firmware per dispositivi esterni</translation>
 <translation id="7216409898977639127">Fornitore del servizio di telefonia mobile</translation>
 <translation id="725133483556299729">Seleziona email</translation>

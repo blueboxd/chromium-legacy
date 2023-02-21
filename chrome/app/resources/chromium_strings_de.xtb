@@ -10,7 +10,6 @@
 <translation id="1131805035311359397">Wenn du prüfen möchtest, ob deine Passwörter von Datenpannen und anderen Sicherheitsproblemen betroffen sind, <ph name="BEGIN_LINK" />melde dich in Chromium an<ph name="END_LINK" />.</translation>
 <translation id="1185134272377778587">Über Chromium</translation>
 <translation id="1203500561924088507">Vielen Dank für die Installation. Du musst deinen Browser neu starten, bevor du <ph name="BUNDLE_NAME" /> verwenden kannst.</translation>
-<translation id="1231839967188101156">Wenn diese Option aktiviert ist, gibt Chromium von inaktiven Tabs belegten Arbeitsspeicher frei. Dadurch können aktive Tabs und andere Apps auf mehr Ressourcen zugreifen und Chromium bleibt schnell. Deine inaktiven Tabs werden automatisch wieder aktiviert, sobald du sie aufrufst. <ph name="BEGIN_LINK" />Weitere Informationen<ph name="END_LINK" /></translation>
 <translation id="1261119230216066228">Dank Arbeitsspeicher-Sparmodus ist Chromium jetzt noch schneller</translation>
 <translation id="1315551408014407711">Neues Chromium-Profil erstellen</translation>
 <translation id="1396446129537741364">Chromium versucht, Passwörter anzuzeigen.</translation>
@@ -122,7 +121,6 @@ Berechtigungen, die du Websites und Apps bereits gewährt hast, gelten mögliche
 <translation id="3702352323269013324">Weitere Informationen zur Personalisierung von Werbung in Chromium</translation>
 <translation id="370962675267501463">{COUNT,plural, =0{Laut deinem Administrator solltest du Chromium neu starten, um dieses Update durchzuführen}=1{Laut deinem Administrator solltest du Chromium neu starten, um dieses Update durchzuführen. Dein Inkognitofenster wird nicht wieder geöffnet.}other{Laut deinem Administrator solltest du Chromium neu starten, um dieses Update durchzuführen. Deine # Inkognitofenster werden nicht wieder geöffnet.}}</translation>
 <translation id="3713809861844741608">Link in neuem Chromium-Tab öffnen</translation>
-<translation id="3728336900324680424">Chromium greift auf Google Drive zu, um in der Adressleiste Vorschläge zu machen</translation>
 <translation id="378917192836375108">In Chromium kannst du auf eine Telefonnummer im Web klicken und diese mit Skype anrufen.</translation>
 <translation id="3830894615770080216">Chromium OS-System</translation>
 <translation id="3848258323044014972"><ph name="PAGE_TITLE" /> - Chromium</translation>
@@ -218,6 +216,7 @@ Berechtigungen, die du Websites und Apps bereits gewährt hast, gelten mögliche
 <translation id="6072463441809498330">Chromium noch schneller machen</translation>
 <translation id="608006075545470555">Arbeitsprofil zu diesem Browser hinzufügen</translation>
 <translation id="6096348254544841612">Chromium anpassen und Einstellungen festlegen. Ein Update ist verfügbar.</translation>
+<translation id="6102072151902574948">Wenn die Option aktiviert ist, reduziert Chromium den Akkuverbrauch, indem Hintergrundaktivitäten und visuelle Effekte wie optimiertes Scrollen und Video-Framerates eingeschränkt werden.</translation>
 <translation id="6119438414301547735">Zulassen, dass die Erweiterung Zugriffsanfragen in der Chromium-Symbolleiste anzeigt</translation>
 <translation id="6120345080069858279">Chromium speichert dieses Passwort in deinem Google-Konto. Du musst es dir also nicht merken.</translation>
 <translation id="6129621093834146363"><ph name="FILE_NAME" /> ist schädlich und wurde daher von Chromium blockiert.</translation>
@@ -277,6 +276,7 @@ Einige Funktionen stehen möglicherweise nicht zur Verfügung. Gib bitte ein and
 <translation id="6940431691900807093">Wenn du eine Website besuchst, kann diese von Chromium dann deine Interessen anfordern, um die dir gezeigte Werbung zu personalisieren. Chromium kann bis zu drei Interessen teilen.</translation>
 <translation id="6964305034639999644">Link in Chromium-Inkognitofenster öffnen</translation>
 <translation id="6978145336957848883">Schwache Passwörter sind einfach zu erraten. Erlaube Chromium, ein <ph name="BEGIN_LINK" />sicheres Passwort für deine Onlinekonten zu erstellen und zu speichern<ph name="END_LINK" />.</translation>
+<translation id="6981396265751285733">Wenn diese Option aktiviert ist, gibt Chromium von inaktiven Tabs belegten Arbeitsspeicher frei. Dadurch können aktive Tabs und andere Apps auf mehr Ressourcen zugreifen und Chromium bleibt schnell. Deine inaktiven Tabs werden automatisch wieder aktiviert, sobald du sie aufrufst.</translation>
 <translation id="6984667024406244807">Chromium ist inaktiv</translation>
 <translation id="6985329841647292029">Chromium OS-Nutzungsbedingungen</translation>
 <translation id="6990124437352146030">Chromium benötigt für diese Website die Berechtigung, auf dein Mikrofon zuzugreifen</translation>
@@ -350,7 +350,6 @@ Chromium kann deine Einstellungen nicht wiederherstellen.</translation>
 <translation id="8550334526674375523">Dieses Arbeitsprofil wird getrennt von deinem persönlichen Profil verwaltet.</translation>
 <translation id="8558383651099478961">Dein Elternteil hat "Berechtigungen für Websites, Apps und Erweiterungen" für Chromium deaktiviert. Das Hinzufügen dieser <ph name="EXTENSION_TYPE_PARAMETER" /> ist nicht zulässig.</translation>
 <translation id="8568283329061645092">Chromium kann deine Passwörter prüfen, wenn du dich mit deinem Google-Konto anmeldest</translation>
-<translation id="8574036838419011058">Wenn die Option aktiviert ist, reduziert Chromium den Akkuverbrauch, indem Hintergrundaktivitäten und visuelle Effekte wie optimiertes Scrollen und Video-Framerates eingeschränkt werden. <ph name="BEGIN_LINK" />Weitere Informationen<ph name="END_LINK" /></translation>
 <translation id="8586442755830160949">Copyright <ph name="YEAR" /> Die Chromium-Autoren. Alle Rechte vorbehalten.</translation>
 <translation id="8608079656141766906"><ph name="BEGIN_BOLD" />So verwenden wir diese Daten<ph name="END_BOLD" />: Websites können Daten zu deinen Interessen bei Chromium speichern. Wenn du beispielsweise im Internet Schuhe für einen Marathon kaufst, definiert die Website möglicherweise Marathons als eines deiner Interessen. Wenn du dann später eine andere Website besuchst, um dich für ein Wettrennen anzumelden, kann dir auf Grundlage deiner Interessen Werbung zu Laufschuhen angezeigt werden.</translation>
 <translation id="8619360774459241877">Chromium wird gestartet…</translation>

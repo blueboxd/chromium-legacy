@@ -450,6 +450,7 @@ Med private tilstandstokener får du bedre personvern på nettet, og de kan ikke
 <translation id="3421726884497337397">Velg når informasjonskapsler fra tredjeparter skal blokkeres</translation>
 <translation id="3428747202529429621">Holder deg trygg i Chrome og kan brukes til å øke sikkerheten din i andre Google-apper når du er pålogget</translation>
 <translation id="3429160811076349561">Prøvefunksjoner er avslått</translation>
+<translation id="3432973700170747422">Slett de siste 15 minuttene</translation>
 <translation id="3435465986463792564">Har du mange vinduer? Du kan administrere dem her</translation>
 <translation id="3435738964857648380">Sikkerhet</translation>
 <translation id="3443221991560634068">Last inn den aktive siden på nytt</translation>
@@ -516,7 +517,6 @@ Med private tilstandstokener får du bedre personvern på nettet, og de kan ikke
 <translation id="3830886834687455630">Oppdater Google Play-tjenester for å sjekke passordene dine</translation>
 <translation id="3845098929839618392">Åpne i inkognitofane</translation>
 <translation id="3856096718352044181">Verifiser at dette er en gyldig leverandør, eller prøv på nytt senere</translation>
-<translation id="3858127568696903256">Se innholdet du følger, her</translation>
 <translation id="3858860766373142691">Navn</translation>
 <translation id="3861633093716975811">Populære videoer</translation>
 <translation id="3874520961715512166">Nettsted fjernet</translation>
@@ -1242,6 +1242,7 @@ Noen nettsteder kan for eksempel svare på denne forespørselen ved å vise deg 
 <translation id="7682724950699840886">Prøv dette: Sørg for at det er nok plass på enheten, og prøv å eksportere på nytt.</translation>
 <translation id="7686086654630106285">Mer om annonser som foreslås på nettstedet</translation>
 <translation id="768618399695552958">Noen av sidene du besøker, er forhåndslastede. Sider kan bli forhåndslastet via Googles tjenere når de er linket på Google-nettsteder.</translation>
+<translation id="7691043218961417207">Utforsk innhold du kan følge</translation>
 <translation id="7698359219371678927">Opprett en e-post i <ph name="APP_NAME" /></translation>
 <translation id="7707922173985738739">Bruk mobildata</translation>
 <translation id="7709094866268987903">Interesser du fjerner, vises her</translation>

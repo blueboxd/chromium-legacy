@@ -213,23 +213,24 @@ size_t TranslateUIDelegate::GetNumberOfLanguages() const {
 }
 
 void TranslateUIDelegate::UpdateSourceLanguageIndex(size_t language_index) {
+  DCHECK_LT(language_index, GetNumberOfLanguages());
   if (source_language_index_ == language_index)
     return;
 
   UMA_HISTOGRAM_BOOLEAN(kModifySourceLang, true);
   source_language_index_ = language_index;
 
-  std::string language_code = kUnknownLanguageCode;
-  if (language_index < GetNumberOfLanguages())
-    language_code = GetLanguageCodeAt(language_index);
   if (translate_manager_) {
     translate_manager_->GetActiveTranslateMetricsLogger()->LogSourceLanguage(
-        language_code);
+        GetLanguageCodeAt(language_index));
   }
 }
 
 void TranslateUIDelegate::UpdateSourceLanguage(
     const std::string& language_code) {
+  if (GetSourceLanguageCode() == language_code) {
+    return;
+  }
   for (size_t i = 0; i < languages_.size(); ++i) {
     if (languages_[i].first.compare(language_code) == 0) {
       UpdateSourceLanguageIndex(i);
@@ -243,10 +244,10 @@ void TranslateUIDelegate::UpdateSourceLanguage(
 }
 
 void TranslateUIDelegate::UpdateTargetLanguageIndex(size_t language_index) {
+  DCHECK_LT(language_index, GetNumberOfLanguages());
   if (target_language_index_ == language_index)
     return;
 
-  DCHECK_LT(language_index, GetNumberOfLanguages());
   UMA_HISTOGRAM_BOOLEAN(kModifyTargetLang, true);
   target_language_index_ = language_index;
 
@@ -259,6 +260,9 @@ void TranslateUIDelegate::UpdateTargetLanguageIndex(size_t language_index) {
 
 void TranslateUIDelegate::UpdateTargetLanguage(
     const std::string& language_code) {
+  if (GetTargetLanguageCode() == language_code) {
+    return;
+  }
   for (size_t i = 0; i < languages_.size(); ++i) {
     if (languages_[i].first.compare(language_code) == 0) {
       UpdateTargetLanguageIndex(i);

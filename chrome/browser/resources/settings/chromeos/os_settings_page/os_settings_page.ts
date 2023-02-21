@@ -37,7 +37,7 @@ import {castExists} from '../assert_extras.js';
 import {MainPageMixin} from '../main_page_mixin.js';
 import {AndroidAppsBrowserProxyImpl, AndroidAppsInfo} from '../os_apps_page/android_apps_browser_proxy.js';
 import {OsPageVisibility} from '../os_page_visibility.js';
-import {routes} from '../os_route.js';
+import {routes} from '../os_settings_routes.js';
 import {Route, Router} from '../router.js';
 
 import {getTemplate} from './os_settings_page.html.js';
@@ -167,7 +167,7 @@ class OsSettingsPageElement extends OsSettingsPageElementBase {
   override connectedCallback() {
     super.connectedCallback();
 
-    this.currentRoute_ = Router.getInstance().getCurrentRoute();
+    this.currentRoute_ = Router.getInstance().currentRoute;
 
     this.allowCrostini_ = loadTimeData.valueExists('allowCrostini') &&
         loadTimeData.getBoolean('allowCrostini');

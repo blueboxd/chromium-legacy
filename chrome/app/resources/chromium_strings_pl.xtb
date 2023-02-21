@@ -10,7 +10,6 @@
 <translation id="1131805035311359397">Aby sprawdzić, czy Twoje hasła są chronione przed naruszeniami bezpieczeństwa danych i innymi zagrożeniami tego typu, <ph name="BEGIN_LINK" />zaloguj się w Chromium<ph name="END_LINK" />.</translation>
 <translation id="1185134272377778587">Chromium – informacje</translation>
 <translation id="1203500561924088507">Dziękujemy za instalację. Przed rozpoczęciem korzystania z programu <ph name="BUNDLE_NAME" /> musisz ponownie uruchomić przeglądarkę.</translation>
-<translation id="1231839967188101156">Gdy to ustawienie jest włączone, Chromium zwalnia pamięć z nieaktywnych kart. Dzięki temu aktywne karty i inne aplikacje mają więcej zasobów komputerowych, a Chromium działa szybciej. Nieaktywne karty zostaną automatycznie włączone, gdy ponownie je otworzysz. <ph name="BEGIN_LINK" />Więcej informacji<ph name="END_LINK" /></translation>
 <translation id="1261119230216066228">Oszczędzanie pamięci przyspieszyło działanie Chromium</translation>
 <translation id="1315551408014407711">Skonfiguruj nowy profil w Chromium</translation>
 <translation id="1396446129537741364">Chromium próbuje pokazać hasła.</translation>
@@ -32,6 +31,7 @@ Na tym koncie mogą obowiązywać uprawnienia przyznane stronom i aplikacjom. K
 <translation id="185970820835152459">Możesz zarządzać kontami Google, na które się logujesz. Kont Google możesz używać w przeglądarce Chromium, Sklepie Play, Gmailu i innych usługach. Jeśli chcesz dodać konto innej osoby, np. kogoś z rodziny, zamiast tego dodaj nową osobę do urządzenia <ph name="DEVICE_TYPE" />. <ph name="LINK_BEGIN" />Więcej informacji<ph name="LINK_END" /></translation>
 <translation id="1863308913976887472">W Chromium witryny mogą przechowywać informacje o Twoich zainteresowaniach. Na przykład jeśli odwiedzasz stronę internetową, żeby kupić buty na maraton, strona może zidentyfikować bieganie w maratonach jako Twoje zainteresowanie. Jeśli później odwiedzisz inną witrynę, żeby zapisać się na jakiś bieg, witryna ta może wyświetlić reklamę butów do biegania na podstawie Twoich zainteresowań.</translation>
 <translation id="1881322772814446296">Logujesz się na zarządzane konto i przekazujesz jego administratorowi kontrolę nad swoim profilem Chromium. Twoje dane Chromium, takie jak aplikacje, zakładki, historia, hasła i inne ustawienia, zostaną trwale powiązane z użytkownikiem <ph name="USER_NAME" />. Będzie można je usunąć w Panelu kont Google, ale nie będzie można ich powiązać z innym kontem. Możesz też utworzyć nowy profil, by przechowywać swoje dotychczasowe dane Chromium osobno. <ph name="LEARN_MORE" /></translation>
+<translation id="1906696617298807388">Gdy piszesz na pasku adresu lub w polu wyszukiwania, Chromium wysyła to, co wpisujesz, na Dysk Google, aby uzyskać sugestie dotyczące elementów. Ta funkcja jest wyłączona w trybie incognito.</translation>
 <translation id="1911763535808217981">Jeśli wyłączysz tę opcję, możesz logować się na stronach Google takich jak Gmail bez logowania się w Chromium</translation>
 <translation id="1929939181775079593">Chromium nie odpowiada. Uruchomić go teraz ponownie?</translation>
 <translation id="193439633299369377">Zastosowanie aktualizacji wymaga ponownego uruchomienia systemu operacyjnego Chromium.</translation>
@@ -120,7 +120,6 @@ Na tym koncie mogą obowiązywać uprawnienia przyznane stronom i aplikacjom. K
 <translation id="3702352323269013324">Więcej informacji o personalizacji reklam w Chromium</translation>
 <translation id="370962675267501463">{COUNT,plural, =0{Administrator prosi o ponowne uruchomienie Chromium, by przeglądarka mogła zainstalować tę aktualizację}=1{Administrator prosi o ponowne uruchomienie Chromium, by przeglądarka mogła zainstalować tę aktualizację. Okno incognito nie otworzy się ponownie.}few{Administrator prosi o ponowne uruchomienie Chromium, by przeglądarka mogła zainstalować tę aktualizację. # okna incognito nie otworzą się ponownie.}many{Administrator prosi o ponowne uruchomienie Chromium, by przeglądarka mogła zainstalować tę aktualizację. # okien incognito nie otworzy się ponownie.}other{Administrator prosi o ponowne uruchomienie Chromium, by przeglądarka mogła zainstalować tę aktualizację. # okna incognito nie otworzy się ponownie.}}</translation>
 <translation id="3713809861844741608">O&amp;twórz link w nowej karcie Chromium</translation>
-<translation id="3728336900324680424">Chromium będzie mieć dostęp do Dysku, by wyświetlać podpowiedzi na pasku adresu</translation>
 <translation id="378917192836375108">W Chromium możesz kliknąć numer telefonu zamieszczony w sieci i zadzwonić pod niego przez Skype.</translation>
 <translation id="3830894615770080216">System operacyjny Chromium</translation>
 <translation id="3848258323044014972"><ph name="PAGE_TITLE" /> – Chromium</translation>
@@ -216,6 +215,7 @@ Na tym koncie mogą obowiązywać uprawnienia przyznane stronom i aplikacjom. K
 <translation id="6072463441809498330">Przyspiesz działanie Chromium</translation>
 <translation id="608006075545470555">Dodaj profil służbowy w tej przeglądarce</translation>
 <translation id="6096348254544841612">Dostosowywanie i kontrolowanie Chromium. Dostępna jest aktualizacja.</translation>
+<translation id="6102072151902574948">Gdy ta funkcja jest włączona, Chromium oszczędza baterię, ograniczając aktywność w tle i efekty wizualne, takie jak płynne przewijanie i liczba klatek w filmie.</translation>
 <translation id="6119438414301547735">Zezwalaj rozszerzeniu na wyświetlanie próśb o dostęp na pasku narzędzi Chromium</translation>
 <translation id="6120345080069858279">Chromium zapisze to hasło na Twoim koncie Google. Nie musisz go pamiętać.</translation>
 <translation id="6129621093834146363">Plik <ph name="FILE_NAME" /> jest niebezpieczny, dlatego został zablokowany przez Chromium.</translation>
@@ -275,6 +275,7 @@ Niektóre funkcje mogą być niedostępne. Podaj inny katalog z profilem lub uż
 <translation id="6940431691900807093">Witryna, którą później odwiedzisz, może zapytać o Twoje zainteresowania i na tej podstawie spersonalizować wyświetlane reklamy. Chromium może udostępnić do 3 zainteresowań.</translation>
 <translation id="6964305034639999644">Otwórz link w oknie inco&amp;gnito Chromium</translation>
 <translation id="6978145336957848883">Słabe hasła są łatwe do odgadnięcia. Pozwól Chromium <ph name="BEGIN_LINK" />utworzyć i zapamiętać silne hasła<ph name="END_LINK" />.</translation>
+<translation id="6981396265751285733">Gdy to ustawienie jest włączone, Chromium zwalnia pamięć z nieaktywnych kart. Dzięki temu aktywne karty i inne aplikacje mają więcej zasobów komputerowych, a Chromium działa szybciej. Nieaktywne karty zostaną automatycznie włączone, gdy ponownie je otworzysz.</translation>
 <translation id="6984667024406244807">Aplikacja Chromium jest nieaktywna</translation>
 <translation id="6985329841647292029">Warunki korzystania z systemu operacyjnego Chromium</translation>
 <translation id="6990124437352146030">Chromium potrzebuje uprawnień dostępu do mikrofonu na tej stronie</translation>
@@ -348,7 +349,6 @@ Chromium nie może odzyskać ustawień.</translation>
 <translation id="8550334526674375523">Ten profil służbowy jest całkowicie oddzielony od Twojego profilu osobistego.</translation>
 <translation id="8558383651099478961">Rodzic wyłączył „Uprawnienia stron, aplikacji i rozszerzeń” dla Chromium. Dodanie elementu <ph name="EXTENSION_TYPE_PARAMETER" /> jest niedozwolone.</translation>
 <translation id="8568283329061645092">Chromium może sprawdzić Twoje hasła, gdy zalogujesz się na swoje konto Google</translation>
-<translation id="8574036838419011058">Gdy ta funkcja jest włączona, Chromium oszczędza baterię, ograniczając aktywność w tle i efekty wizualne, takie jak płynne przewijanie i liczba klatek w filmie. <ph name="BEGIN_LINK" />Więcej informacji<ph name="END_LINK" /></translation>
 <translation id="8586442755830160949">Copyright <ph name="YEAR" /> Autorzy Chromium. Wszelkie prawa zastrzeżone.</translation>
 <translation id="8608079656141766906"><ph name="BEGIN_BOLD" />Jak używamy tych danych:<ph name="END_BOLD" /> w Chromium witryny mogą przechowywać informacje o Twoich zainteresowaniach Na przykład jeśli odwiedzasz stronę internetową, żeby kupić buty na maraton, strona może zidentyfikować bieganie w maratonach jako Twoje zainteresowanie. Jeśli później odwiedzisz inną witrynę, żeby zapisać się na jakiś bieg, witryna ta może wyświetlić reklamę butów do biegania na podstawie Twoich zainteresowań.</translation>
 <translation id="8619360774459241877">Uruchamiam Chromium…</translation>

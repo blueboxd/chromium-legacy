@@ -511,6 +511,15 @@
       "use_remoteexec": true
     }
   },
+  "ios-blink-dbg-fyi": {
+    "gn_args": {
+      "enable_run_ios_unittests_with_xctest": true,
+      "is_debug": true,
+      "target_environment": "simulator",
+      "target_os": "ios",
+      "use_blink": true
+    }
+  },
   "ios-fieldtrial-rel": {
     "gn_args": {
       "enable_run_ios_unittests_with_xctest": true,
@@ -616,6 +625,7 @@
       "target_cpu": "x64",
       "target_environment": "simulator",
       "target_os": "ios",
+      "use_lld": false,
       "use_remoteexec": true
     }
   },
@@ -1081,6 +1091,15 @@
       "is_component_build": false,
       "is_debug": false,
       "symbol_level": 1,
+      "use_remoteexec": true
+    }
+  },
+  "mac13-arm64-wpt-content-shell-fyi-rel": {
+    "gn_args": {
+      "dcheck_always_on": false,
+      "is_component_build": false,
+      "is_debug": false,
+      "target_cpu": "arm64",
       "use_remoteexec": true
     }
   },

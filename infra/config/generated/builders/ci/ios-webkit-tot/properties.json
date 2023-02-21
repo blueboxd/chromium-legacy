@@ -45,7 +45,8 @@
   "$build/reclient": {
     "instance": "rbe-chromium-trusted",
     "jobs": 250,
-    "metrics_project": "chromium-reclient-metrics"
+    "metrics_project": "chromium-reclient-metrics",
+    "scandeps_server": true
   },
   "$recipe_engine/resultdb/test_presentation": {
     "column_keys": [],
@@ -56,5 +57,5 @@
   },
   "builder_group": "chromium.fyi",
   "recipe": "chromium",
-  "xcode_build_version": "13a1030dwk"
+  "xcode_build_version": "14c18wk"
 }

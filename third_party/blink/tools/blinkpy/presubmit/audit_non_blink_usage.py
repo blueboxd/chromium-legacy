@@ -477,6 +477,7 @@ _CONFIG = [
             "gfx::KeyframedColorAnimationCurve",
             "gfx::KeyframedFloatAnimationCurve",
             "gfx::KeyframedTransformAnimationCurve",
+            "gfx::LinearEasingPoint",
             "gfx::TransformKeyframe",
             "gfx::TransformOperations",
 
@@ -1167,6 +1168,7 @@ _CONFIG = [
             'viz::ReleaseCallback',
             'viz::ResourceFormat',
             'viz::ResourceFormatToClosestSkColorType',
+            'viz::ToClosestSkColorType',
             'viz::TransferableResource',
         ],
     },

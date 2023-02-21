@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ash/platform_keys/platform_keys_service_test_util.h"
 
-#include "chrome/browser/ash/platform_keys/chaps_util.h"
+#include "chrome/browser/chromeos/platform_keys/chaps_util.h"
 #include "crypto/nss_key_util.h"
 
 namespace ash::platform_keys::test_util {
@@ -31,20 +31,6 @@ const net::CertificateList& GetCertificatesExecutionWaiter::matches() {
 
 Status GetCertificatesExecutionWaiter::status() {
   return Get<1>();
-}
-
-const absl::optional<std::string>&
-GetAttributeForKeyExecutionWaiter::attribute_value() {
-  return Get<0>();
-}
-
-Status GetAttributeForKeyExecutionWaiter::status() {
-  return Get<1>();
-}
-
-base::OnceCallback<void(const absl::optional<std::string>&, Status)>
-GetAttributeForKeyExecutionWaiter::GetCallback() {
-  return TestFuture::GetCallback<const absl::optional<std::string>&, Status>();
 }
 
 absl::optional<bool> IsKeyOnTokenExecutionWaiter::on_slot() {
@@ -89,15 +75,17 @@ bool FakeChapsUtil::GenerateSoftwareBackedRSAKey(
 }
 
 ScopedChapsUtilOverride::ScopedChapsUtilOverride() {
-  ChapsUtil::SetFactoryForTesting(base::BindRepeating(
+  chromeos::platform_keys::ChapsUtil::SetFactoryForTesting(base::BindRepeating(
       &ScopedChapsUtilOverride::CreateChapsUtil, base::Unretained(this)));
 }
 
 ScopedChapsUtilOverride::~ScopedChapsUtilOverride() {
-  ChapsUtil::SetFactoryForTesting(ChapsUtil::FactoryCallback());
+  chromeos::platform_keys::ChapsUtil::SetFactoryForTesting(
+      chromeos::platform_keys::ChapsUtil::FactoryCallback());
 }
 
-std::unique_ptr<ChapsUtil> ScopedChapsUtilOverride::CreateChapsUtil() {
+std::unique_ptr<chromeos::platform_keys::ChapsUtil>
+ScopedChapsUtilOverride::CreateChapsUtil() {
   return std::make_unique<FakeChapsUtil>(
       base::BindRepeating(&ScopedChapsUtilOverride::OnKeyGenerated,
                           weak_ptr_factory_.GetWeakPtr()));

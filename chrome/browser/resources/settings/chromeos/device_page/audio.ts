@@ -20,7 +20,7 @@ import {assert} from 'chrome://resources/js/assert_ts.js';
 import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {AudioDevice, AudioDeviceType, AudioEffectState, AudioSystemProperties, AudioSystemPropertiesObserverReceiver, MuteState} from '../../mojom-webui/cros_audio_config.mojom-webui.js';
-import {routes} from '../os_route.js';
+import {routes} from '../os_settings_routes.js';
 import {RouteObserverMixin} from '../route_observer_mixin.js';
 import {Route} from '../router.js';
 
@@ -318,6 +318,25 @@ class SettingsAudioElement extends SettingsAudioElementBase {
         return this.i18n('audioDeviceRearMicLabel');
       default:
         return audioDevice.displayName;
+    }
+  }
+
+  /**
+   * Returns the appropriate tooltip for output and input device mute buttons
+   * based on `muteState`.
+   */
+  private getMuteTooltip_(muteState: MuteState): string {
+    switch (muteState) {
+      case MuteState.kNotMuted:
+        return this.i18n('audioToggleToMuteTooltip');
+      case MuteState.kMutedByUser:
+        return this.i18n('audioToggleToUnmuteTooltip');
+      case MuteState.kMutedByPolicy:
+        return this.i18n('audioMutedByPolicyTooltip');
+      case MuteState.kMutedExternally:
+        return this.i18n('audioMutedExternallyTooltip');
+      default:
+        return '';
     }
   }
 }

@@ -31,7 +31,8 @@
 #import "ios/chrome/browser/ui/bookmarks/editor/bookmarks_editor_coordinator_delegate.h"
 #import "ios/chrome/browser/ui/bookmarks/folder_chooser/bookmarks_folder_chooser_coordinator.h"
 #import "ios/chrome/browser/ui/bookmarks/folder_chooser/bookmarks_folder_chooser_coordinator_delegate.h"
-#import "ios/chrome/browser/ui/bookmarks/folder_editor/bookmarks_folder_editor_view_controller.h"
+#import "ios/chrome/browser/ui/bookmarks/folder_editor/bookmarks_folder_editor_coordinator.h"
+#import "ios/chrome/browser/ui/bookmarks/folder_editor/bookmarks_folder_editor_coordinator_delegate.h"
 #import "ios/chrome/browser/ui/bookmarks/home/bookmarks_home_view_controller.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/commands/command_dispatcher.h"
@@ -70,7 +71,7 @@ enum class PresentedState {
 }  // namespace
 
 @interface BookmarksCoordinator () <BookmarksEditorCoordinatorDelegate,
-                                    BookmarksFolderEditorViewControllerDelegate,
+                                    BookmarksFolderEditorCoordinatorDelegate,
                                     BookmarksFolderChooserCoordinatorDelegate,
                                     BookmarksHomeViewControllerDelegate,
                                     UIAdaptivePresentationControllerDelegate> {
@@ -97,8 +98,7 @@ enum class PresentedState {
     BookmarksEditorCoordinator* bookmarkEditorCoordinator;
 
 // The navigation controller that is being presented, if any.
-// `self.bookmarkBrowser`, `bookmarkEditorCoordinator`, and `self.folderEditor`
-// are children of this navigation controller.
+// `self.bookmarkBrowser` is a child of this navigation controller.
 @property(nonatomic, strong)
     UINavigationController* bookmarkNavigationController;
 
@@ -111,7 +111,8 @@ enum class PresentedState {
 
 // A reference to the potentially presented folder editor. This will be non-nil
 // when `currentPresentedState` is FOLDER_EDITOR.
-@property(nonatomic, strong) BookmarksFolderEditorViewController* folderEditor;
+@property(nonatomic, strong)
+    BookmarksFolderEditorCoordinator* folderEditorCoordinator;
 
 // A reference to the potentially presented folder chooser. This will be
 // non-nil when `currentPresentedState` is FOLDER_SELECTION.
@@ -131,19 +132,6 @@ enum class PresentedState {
 @property(nonatomic, readonly, weak) id<SnackbarCommands>
     snackbarCommandsHandler;
 
-// Dismisses the bookmark browser.  If `urlsToOpen` is not empty, then the user
-// has selected to navigate to those URLs with specified tab mode.
-- (void)dismissBookmarkBrowserAnimated:(BOOL)animated
-                            urlsToOpen:(const std::vector<GURL>&)urlsToOpen
-                           inIncognito:(BOOL)inIncognito
-                                newTab:(BOOL)newTab;
-
-// Dismisses the bookmark editor.
-- (void)dismissBookmarkEditorAnimated:(BOOL)animated;
-
-// Dismisses the folder editor.
-- (void)dismissFolderEditorAnimated:(BOOL)animated;
-
 @end
 
 @implementation BookmarksCoordinator
@@ -155,7 +143,6 @@ enum class PresentedState {
 @synthesize bookmarkNavigationController = _bookmarkNavigationController;
 @synthesize currentPresentedState = _currentPresentedState;
 @synthesize delegate = _delegate;
-@synthesize folderEditor = _folderEditor;
 @synthesize mediator = _mediator;
 
 - (instancetype)initWithBrowser:(Browser*)browser {
@@ -192,6 +179,14 @@ enum class PresentedState {
   _bookmarkEditorCoordinator.delegate = nil;
   [_bookmarkEditorCoordinator stop];
   _bookmarkEditorCoordinator = nil;
+
+  [_folderChooserCoordinator stop];
+  _folderChooserCoordinator.delegate = nil;
+  _folderChooserCoordinator = nil;
+
+  [_folderEditorCoordinator stop];
+  _folderEditorCoordinator.delegate = nil;
+  _folderEditorCoordinator = nil;
 }
 
 - (id<ApplicationCommands>)applicationCommandsHandler {
@@ -246,29 +241,8 @@ enum class PresentedState {
 }
 
 - (void)presentBookmarks {
-  DCHECK_EQ(PresentedState::NONE, self.currentPresentedState);
-  DCHECK(!self.bookmarkNavigationController);
-
-  self.bookmarkBrowser =
-      [[BookmarksHomeViewController alloc] initWithBrowser:_browser];
-  self.bookmarkBrowser.homeDelegate = self;
-  self.bookmarkBrowser.applicationCommandsHandler =
-      self.applicationCommandsHandler;
-  self.bookmarkBrowser.snackbarCommandsHandler = self.snackbarCommandsHandler;
-
-  NSArray<BookmarksHomeViewController*>* replacementViewControllers = nil;
-  if (self.bookmarkModel->loaded()) {
-    // Set the root node if the model has been loaded. If the model has not been
-    // loaded yet, the root node will be set in BookmarksHomeViewController
-    // after the model is finished loading.
-    [self.bookmarkBrowser setRootNode:self.bookmarkModel->root_node()];
-    replacementViewControllers =
-        [self.bookmarkBrowser cachedViewControllerStack];
-  }
-
-  [self presentTableViewController:self.bookmarkBrowser
-      withReplacementViewControllers:replacementViewControllers];
-  self.currentPresentedState = PresentedState::BOOKMARK_BROWSER;
+  [self presentBookmarksAtRootNode:self.bookmarkModel->root_node()
+                 selectingBookmark:nil];
 }
 
 - (void)presentFolderChooser {
@@ -309,18 +283,16 @@ enum class PresentedState {
   DCHECK_EQ(node->type(), BookmarkNode::FOLDER);
 
   [self dismissSnackbar];
+  // `self.baseViewController` is part of a navigation view controller.
+  // Therefore, the bookmark folder view needs to be presented by
+  // `self.baseViewController.navigationController`.
+  _folderEditorCoordinator = [[BookmarksFolderEditorCoordinator alloc]
+      initWithBaseViewController:self.baseViewController.navigationController
+                         browser:_browser
+                      folderNode:node];
+  _folderEditorCoordinator.delegate = self;
+  [_folderEditorCoordinator start];
   self.currentPresentedState = PresentedState::FOLDER_EDITOR;
-  BookmarksFolderEditorViewController* folderEditor =
-      [BookmarksFolderEditorViewController
-          folderEditorWithBookmarkModel:self.bookmarkModel
-                                 folder:node
-                                browser:_browser];
-  folderEditor.delegate = self;
-  folderEditor.snackbarCommandsHandler = self.snackbarCommandsHandler;
-  self.folderEditor = folderEditor;
-
-  [self presentTableViewController:folderEditor
-      withReplacementViewControllers:nil];
 }
 
 - (void)dismissBookmarkBrowserAnimated:(BOOL)animated
@@ -349,15 +321,15 @@ enum class PresentedState {
     [self openUrls:urlsToOpen inIncognito:inIncognito newTab:newTab];
   }
 
+  __weak __typeof(self) weakSelf = self;
   ProceduralBlock completion = ^{
-    [self bookmarkBrowserDismissed];
-
+    [weakSelf bookmarkBrowserDismissed];
     if (!openUrlsAfterDismissal) {
       return;
     }
-    [self openUrls:urlsToOpenAfterDismissal
-        inIncognito:inIncognito
-             newTab:newTab];
+    [weakSelf openUrls:urlsToOpenAfterDismissal
+           inIncognito:inIncognito
+                newTab:newTab];
   };
 
   if (self.baseViewController.presentedViewController) {
@@ -370,6 +342,12 @@ enum class PresentedState {
 }
 
 - (void)bookmarkBrowserDismissed {
+  for (UIViewController* controller in self.bookmarkNavigationController
+           .viewControllers) {
+    BookmarksHomeViewController* bookmarksHomeViewController =
+        base::mac::ObjCCast<BookmarksHomeViewController>(controller);
+    [bookmarksHomeViewController shutdown];
+  }
   // TODO(crbug.com/940856): Make sure navigaton
   // controller doesn't keep any controllers. Without
   // this there's a memory leak of (almost) every BHVC
@@ -381,7 +359,7 @@ enum class PresentedState {
   self.bookmarkNavigationController = nil;
 }
 
-- (void)dismissBookmarkEditorAnimated:(BOOL)animated {
+- (void)dismissBookmarksEditorAnimated:(BOOL)animated {
   if (self.currentPresentedState != PresentedState::BOOKMARK_EDITOR) {
     return;
   }
@@ -393,29 +371,13 @@ enum class PresentedState {
   self.currentPresentedState = PresentedState::NONE;
 }
 
-- (void)dismissFolderEditorAnimated:(BOOL)animated {
-  if (self.currentPresentedState != PresentedState::FOLDER_EDITOR) {
-    return;
-  }
-  DCHECK(self.bookmarkNavigationController);
-
-  [self.bookmarkNavigationController
-      dismissViewControllerAnimated:animated
-                         completion:^{
-                           self.folderEditor.delegate = nil;
-                           self.folderEditor = nil;
-                           self.bookmarkNavigationController = nil;
-                         }];
-  self.currentPresentedState = PresentedState::NONE;
-}
-
 - (void)dismissBookmarkModalControllerAnimated:(BOOL)animated {
   // No urls to open.  So it does not care about inIncognito and newTab.
   [self dismissBookmarkBrowserAnimated:animated
                             urlsToOpen:std::vector<GURL>()
                            inIncognito:NO
                                 newTab:NO];
-  [self dismissBookmarkEditorAnimated:animated];
+  [self dismissBookmarksEditorAnimated:animated];
 }
 
 - (void)dismissSnackbar {
@@ -436,7 +398,7 @@ enum class PresentedState {
     case PresentedState::FOLDER_SELECTION:
       return [self.folderChooserCoordinator canDismiss];
     case PresentedState::FOLDER_EDITOR:
-      return [self.folderEditor canDismiss];
+      return [self.folderEditorCoordinator canDismiss];
   }
 }
 
@@ -444,7 +406,7 @@ enum class PresentedState {
 
 - (void)bookmarksEditorCoordinatorShouldStop:
     (BookmarksEditorCoordinator*)coordinator {
-  [self dismissBookmarkEditorAnimated:YES];
+  [self dismissBookmarksEditorAnimated:YES];
 }
 
 - (void)bookmarkEditorWillCommitTitleOrURLChange:
@@ -452,26 +414,23 @@ enum class PresentedState {
   [self.delegate bookmarksCoordinatorWillCommitTitleOrURLChange:self];
 }
 
-#pragma mark - BookmarksFolderEditorViewControllerDelegate
+#pragma mark - BookmarksFolderEditorCoordinatorDelegate
 
-- (void)bookmarkFolderEditor:(BookmarksFolderEditorViewController*)folderEditor
-      didFinishEditingFolder:(const BookmarkNode*)folder {
+- (void)bookmarksFolderEditorCoordinator:
+            (BookmarksFolderEditorCoordinator*)folderEditor
+              didFinishEditingFolderNode:
+                  (const bookmarks::BookmarkNode*)folder {
   DCHECK(folder);
-  [self dismissFolderEditorAnimated:YES];
+  [self stopBookmarksFolderEditorCoordinator];
 }
 
-- (void)bookmarkFolderEditorDidDeleteEditedFolder:
-    (BookmarksFolderEditorViewController*)folderEditor {
-  [self dismissFolderEditorAnimated:YES];
+- (void)bookmarksFolderEditorCoordinatorShouldStop:
+    (BookmarksFolderEditorCoordinator*)coordinator {
+  [self stopBookmarksFolderEditorCoordinator];
 }
 
-- (void)bookmarkFolderEditorDidCancel:
-    (BookmarksFolderEditorViewController*)folderEditor {
-  [self dismissFolderEditorAnimated:YES];
-}
-
-- (void)bookmarkFolderEditorWillCommitTitleChange:
-    (BookmarksFolderEditorViewController*)controller {
+- (void)bookmarksFolderEditorWillCommitTitleChange:
+    (BookmarksFolderEditorCoordinator*)coordinator {
   [self.delegate bookmarksCoordinatorWillCommitTitleOrURLChange:self];
 }
 
@@ -481,31 +440,18 @@ enum class PresentedState {
             (BookmarksFolderChooserCoordinator*)coordinator
                                  withSelectedFolder:
                                      (const bookmarks::BookmarkNode*)folder {
-  if (self.currentPresentedState != PresentedState::FOLDER_SELECTION) {
-    return;
-  }
-  DCHECK(_folderChooserCoordinator);
   DCHECK(folder);
   DCHECK(_URLs);
 
-  [_folderChooserCoordinator stop];
-  _folderChooserCoordinator.delegate = nil;
-  _folderChooserCoordinator = nil;
-
+  [self stopBookmarksFolderChooserCoordinator];
   [self.snackbarCommandsHandler
       showSnackbarMessage:[self.mediator addBookmarks:_URLs toFolder:folder]];
   _URLs = nil;
-  self.currentPresentedState = PresentedState::NONE;
 }
 
 - (void)bookmarksFolderChooserCoordinatorDidCancel:
     (BookmarksFolderChooserCoordinator*)coordinator {
-  DCHECK(_folderChooserCoordinator);
-  [_folderChooserCoordinator stop];
-  _folderChooserCoordinator.delegate = nil;
-  _folderChooserCoordinator = nil;
-  _URLs = nil;
-  self.currentPresentedState = PresentedState::NONE;
+  [self stopBookmarksFolderChooserCoordinator];
 }
 
 #pragma mark - BookmarksHomeViewControllerDelegate
@@ -599,7 +545,36 @@ enum class PresentedState {
   [self presentFolderChooser];
 }
 
+- (void)openToExternalBookmark:(BookmarkAddCommand*)command {
+  if (!self.bookmarkModel->loaded() || command.URLs.count != 1 ||
+      command.presentFolderChooser) {
+    return;
+  }
+
+  const BookmarkNode* existingBookmark =
+      self.bookmarkModel->GetMostRecentlyAddedUserNodeForURL(
+          command.URLs.firstObject.URL);
+  [self presentBookmarksAtRootNode:self.bookmarkModel->mobile_node()
+                 selectingBookmark:existingBookmark];
+}
+
 #pragma mark - Private
+
+- (void)stopBookmarksFolderChooserCoordinator {
+  DCHECK(_folderChooserCoordinator);
+  [_folderChooserCoordinator stop];
+  _folderChooserCoordinator.delegate = nil;
+  _folderChooserCoordinator = nil;
+  self.currentPresentedState = PresentedState::NONE;
+}
+
+- (void)stopBookmarksFolderEditorCoordinator {
+  DCHECK(_folderEditorCoordinator);
+  [_folderEditorCoordinator stop];
+  _folderEditorCoordinator.delegate = nil;
+  _folderEditorCoordinator = nil;
+  self.currentPresentedState = PresentedState::NONE;
+}
 
 // Presents `viewController` using the appropriate presentation and styling,
 // depending on whether the UIRefresh experiment is enabled or disabled. Sets
@@ -613,6 +588,7 @@ enum class PresentedState {
         (NSArray<ChromeTableViewController*>*)replacementViewControllers {
   TableViewNavigationController* navController =
       [[TableViewNavigationController alloc] initWithTable:viewController];
+  [navController setModalPresentationStyle:UIModalPresentationFormSheet];
   self.bookmarkNavigationController = navController;
   if (replacementViewControllers) {
     [navController setViewControllers:replacementViewControllers];
@@ -620,8 +596,6 @@ enum class PresentedState {
 
   navController.toolbarHidden = YES;
   navController.presentationController.delegate = self;
-
-  [navController setModalPresentationStyle:UIModalPresentationFormSheet];
 
   [self.baseViewController presentViewController:navController
                                         animated:YES
@@ -649,11 +623,52 @@ enum class PresentedState {
   UrlLoadingBrowserAgent::FromBrowser(_browser)->Load(params);
 }
 
+// Presents the bookmarks browser modally. If `selectingBookmark` is non-nil,
+// then the bookmarks modal is changed to edit mode and `selectingBookmark` is
+// identified in the list of bookmarks and selected.
+- (void)presentBookmarksAtRootNode:(const BookmarkNode*)rootNode
+                 selectingBookmark:(const BookmarkNode*)bookmarkNode {
+  DCHECK_EQ(PresentedState::NONE, self.currentPresentedState);
+  DCHECK(!self.bookmarkNavigationController);
+
+  self.bookmarkBrowser =
+      [[BookmarksHomeViewController alloc] initWithBrowser:_browser];
+  self.bookmarkBrowser.homeDelegate = self;
+  self.bookmarkBrowser.applicationCommandsHandler =
+      self.applicationCommandsHandler;
+  self.bookmarkBrowser.snackbarCommandsHandler = self.snackbarCommandsHandler;
+
+  NSArray<BookmarksHomeViewController*>* replacementViewControllers = nil;
+  if (self.bookmarkModel->loaded()) {
+    // Set the root node if the model has been loaded. If the model has not been
+    // loaded yet, the root node will be set in BookmarksHomeViewController
+    // after the model is finished loading.
+    [self.bookmarkBrowser setRootNode:rootNode];
+    [self.bookmarkBrowser setExternalBookmark:bookmarkNode];
+    if (rootNode == self.bookmarkModel->root_node()) {
+      replacementViewControllers =
+          [self.bookmarkBrowser cachedViewControllerStack];
+    }
+  }
+
+  [self presentTableViewController:self.bookmarkBrowser
+      withReplacementViewControllers:replacementViewControllers];
+  self.currentPresentedState = PresentedState::BOOKMARK_BROWSER;
+}
+
 #pragma mark - UIAdaptivePresentationControllerDelegate
 
 - (BOOL)presentationControllerShouldDismiss:
     (UIPresentationController*)presentationController {
   return [self canDismiss];
+}
+
+- (void)presentationControllerDidDismiss:
+    (UIPresentationController*)presentationController {
+  base::RecordAction(
+      base::UserMetricsAction("IOSBookmarkManagerCloseWithSwipe"));
+  self.currentPresentedState = PresentedState::NONE;
+  [self bookmarkBrowserDismissed];
 }
 
 @end

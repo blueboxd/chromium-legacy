@@ -450,6 +450,7 @@
 <translation id="3421726884497337397">サードパーティの Cookie をどのようなときにブロックするかを選択する</translation>
 <translation id="3428747202529429621">ログイン時に、Chrome を安全に利用できるようにするほか、他の Google アプリのセキュリティ強化に使用されることがあります</translation>
 <translation id="3429160811076349561">試用版機能はオフになっています</translation>
+<translation id="3432973700170747422">過去 15 分の履歴を削除</translation>
 <translation id="3435465986463792564">ウィンドウの数が多くてお困りの場合も、ここで管理できます</translation>
 <translation id="3435738964857648380">セキュリティ</translation>
 <translation id="3443221991560634068">現在のページを再読み込みする</translation>
@@ -516,7 +517,6 @@
 <translation id="3830886834687455630">Google Play 開発者サービスを更新してパスワードを確認する</translation>
 <translation id="3845098929839618392">シークレット タブで開く</translation>
 <translation id="3856096718352044181">有効なプロバイダであることを確認するか、しばらくしてからもう一度お試しください</translation>
-<translation id="3858127568696903256">フォロー中のコンテンツがここに表示されます</translation>
 <translation id="3858860766373142691">名前</translation>
 <translation id="3861633093716975811">人気の動画</translation>
 <translation id="3874520961715512166">サイトを削除しました</translation>
@@ -1242,6 +1242,7 @@
 <translation id="7682724950699840886">推奨される対策: デバイスに十分な空き容量があることを確認し、再度エクスポートを試します。</translation>
 <translation id="7686086654630106285">サイト提案広告の詳細</translation>
 <translation id="768618399695552958">アクセスしたページの一部はプリロードされています。ページが Google サイトからリンクされている場合、Google サーバーを介してプリロードされる可能性があります。</translation>
+<translation id="7691043218961417207">フォローするコンテンツを探しましょう</translation>
 <translation id="7698359219371678927"><ph name="APP_NAME" /> でメールを作成</translation>
 <translation id="7707922173985738739">モバイルデータを使用します</translation>
 <translation id="7709094866268987903">削除した興味 / 関心がここに表示されます</translation>

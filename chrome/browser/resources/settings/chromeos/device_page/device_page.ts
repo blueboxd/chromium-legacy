@@ -11,6 +11,7 @@ import './audio.js';
 import './display.js';
 import './keyboard.js';
 import './per_device_keyboard.js';
+import './per_device_keyboard_remap_keys.js';
 import './per_device_mouse.js';
 import './per_device_pointing_stick.js';
 import './per_device_touchpad.js';
@@ -30,7 +31,7 @@ import {WebUiListenerMixin} from 'chrome://resources/cr_elements/web_ui_listener
 import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
 import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
-import {routes} from '../os_route.js';
+import {routes} from '../os_settings_routes.js';
 import {RouteObserverMixin} from '../route_observer_mixin.js';
 import {Router} from '../router.js';
 
@@ -146,6 +147,11 @@ class SettingsDevicePageElement extends SettingsDevicePageElementBase {
           }
           if (routes.PER_DEVICE_KEYBOARD) {
             map.set(routes.PER_DEVICE_KEYBOARD.path, '#perDeviceKeyboardRow');
+          }
+          if (routes.PER_DEVICE_KEYBOARD_REMAP_KEYS) {
+            map.set(
+                routes.PER_DEVICE_KEYBOARD_REMAP_KEYS.path,
+                '#perDeviceKeyboardRemapKeysRow');
           }
           if (routes.KEYBOARD) {
             map.set(routes.KEYBOARD.path, '#keyboardRow');
@@ -333,21 +339,21 @@ class SettingsDevicePageElement extends SettingsDevicePageElementBase {
 
   private mouseChanged_(hasMouse: boolean) {
     if (hasMouse === false &&
-        Router.getInstance().getCurrentRoute() === routes.PER_DEVICE_MOUSE) {
+        Router.getInstance().currentRoute === routes.PER_DEVICE_MOUSE) {
       Router.getInstance().navigateTo(routes.DEVICE);
     }
   }
 
   private touchpadChanged_(hasTouchpad: boolean) {
     if (hasTouchpad === false &&
-        Router.getInstance().getCurrentRoute() === routes.PER_DEVICE_TOUCHPAD) {
+        Router.getInstance().currentRoute === routes.PER_DEVICE_TOUCHPAD) {
       Router.getInstance().navigateTo(routes.DEVICE);
     }
   }
 
   private pointingStickChanged_(hasPointingStick: boolean) {
     if (hasPointingStick === false &&
-        Router.getInstance().getCurrentRoute() ===
+        Router.getInstance().currentRoute ===
             routes.PER_DEVICE_POINTING_STICK) {
       Router.getInstance().navigateTo(routes.DEVICE);
     }
@@ -372,7 +378,7 @@ class SettingsDevicePageElement extends SettingsDevicePageElementBase {
     // Check that the properties have explicitly been set to false.
     if (this.hasMouse_ === false && this.hasPointingStick_ === false &&
         this.hasTouchpad_ === false &&
-        Router.getInstance().getCurrentRoute() === routes.POINTERS) {
+        Router.getInstance().currentRoute === routes.POINTERS) {
       Router.getInstance().navigateTo(routes.DEVICE);
     }
   }

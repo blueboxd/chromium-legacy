@@ -70,6 +70,10 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoRequestHandlerBase
     // list.
     bool has_empty_allow_list = false;
 
+    // is_only_hybrid_or_internal is true if credentials in the allow-list only
+    // contain the hybrid or internal transports.
+    bool is_only_hybrid_or_internal = false;
+
     // The intersection of transports supported by the client and allowed by the
     // relying party.
     base::flat_set<FidoTransportProtocol> available_transports;
@@ -330,7 +334,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoRequestHandlerBase
   // and whether it has responsive credentials at all.
   void OnHavePlatformCredentialStatus(
       std::vector<DiscoverableCredentialMetadata> user_entities,
-      bool have_credential);
+      RecognizedCredential has_credentials);
 
  private:
   friend class FidoRequestHandlerTest;

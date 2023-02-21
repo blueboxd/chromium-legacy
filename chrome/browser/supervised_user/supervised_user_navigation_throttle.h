@@ -44,25 +44,23 @@ class SupervisedUserNavigationThrottle : public content::NavigationThrottle {
   // URL.
   ThrottleCheckResult CheckURL();
 
-  void ShowInterstitial(
-      const GURL& url,
-      supervised_user_error_page::FilteringBehaviorReason reason);
+  void ShowInterstitial(const GURL& url,
+                        supervised_user::FilteringBehaviorReason reason);
 
-  void ShowInterstitialAsync(
-      supervised_user_error_page::FilteringBehaviorReason reason);
+  void ShowInterstitialAsync(supervised_user::FilteringBehaviorReason reason);
 
   void OnCheckDone(const GURL& url,
                    SupervisedUserURLFilter::FilteringBehavior behavior,
-                   supervised_user_error_page::FilteringBehaviorReason reason,
+                   supervised_user::FilteringBehaviorReason reason,
                    bool uncertain);
 
   void OnInterstitialResult(CallbackActions continue_request,
                             bool already_requested_permission,
                             bool is_main_frame);
 
-  raw_ptr<const SupervisedUserURLFilter> url_filter_;
+  raw_ptr<SupervisedUserURLFilter> url_filter_;
   bool deferred_;
-  supervised_user_error_page::FilteringBehaviorReason reason_;
+  supervised_user::FilteringBehaviorReason reason_;
   SupervisedUserURLFilter::FilteringBehavior behavior_;
   base::WeakPtrFactory<SupervisedUserNavigationThrottle> weak_ptr_factory_{
       this};

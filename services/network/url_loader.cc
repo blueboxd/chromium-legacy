@@ -6,14 +6,13 @@
 
 #include <algorithm>
 #include <limits>
+#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
 
 #include "base/command_line.h"
 #include "base/containers/fixed_flat_set.h"
-#include "base/debug/alias.h"
-#include "base/debug/dump_without_crashing.h"
 #include "base/files/file.h"
 #include "base/functional/bind.h"
 #include "base/functional/callback_helpers.h"
@@ -63,6 +62,7 @@
 #include "net/url_request/redirect_info.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
+#include "services/network/attribution/attribution_request_helper.h"
 #include "services/network/cache_transparency_settings.h"
 #include "services/network/chunked_data_pipe_upload_data_stream.h"
 #include "services/network/data_pipe_element_reader.h"
@@ -492,7 +492,8 @@ URLLoader::URLLoader(
     mojo::PendingRemote<mojom::AcceptCHFrameObserver> accept_ch_frame_observer,
     bool third_party_cookies_enabled,
     net::CookieSettingOverrides cookie_setting_overrides,
-    const CacheTransparencySettings* cache_transparency_settings)
+    const CacheTransparencySettings* cache_transparency_settings,
+    std::unique_ptr<AttributionRequestHelper> attribution_request_helper)
     : url_request_context_(context.GetUrlRequestContext()),
       network_context_client_(context.GetNetworkContextClient()),
       delete_callback_(std::move(delete_callback)),
@@ -531,6 +532,7 @@ URLLoader::URLLoader(
           factory_params_->client_security_state.get(),
           options_),
       trust_token_helper_factory_(std::move(trust_token_helper_factory)),
+      attribution_request_helper_(std::move(attribution_request_helper)),
       origin_access_list_(context.GetOriginAccessList()),
       cookie_observer_remote_(std::move(cookie_observer)),
       cookie_observer_(PtrOrFallback(cookie_observer_remote_,
@@ -919,10 +921,23 @@ void URLLoader::SetUpUpload(const ResourceRequest& request,
   BeginTrustTokenOperationIfNecessaryAndThenScheduleStart(request);
 }
 
+// TODO(https://crbug.com/1410256): Parallelize Private State Tokens and
+// Attribution operations.
+void URLLoader::BeginAttributionIfNecessaryAndThenScheduleStart() {
+  if (!attribution_request_helper_) {
+    ScheduleStart();
+    return;
+  }
+
+  attribution_request_helper_->Begin(
+      *url_request_, base::BindOnce(&URLLoader::ScheduleStart,
+                                    weak_ptr_factory_.GetWeakPtr()));
+}
+
 void URLLoader::BeginTrustTokenOperationIfNecessaryAndThenScheduleStart(
     const ResourceRequest& request) {
   if (!request.trust_token_params) {
-    ScheduleStart();
+    BeginAttributionIfNecessaryAndThenScheduleStart();
     return;
   }
 
@@ -1017,7 +1032,7 @@ void URLLoader::OnDoneBeginningTrustTokenOperation(
           header_pair.key, header_pair.value, /*overwrite=*/true);
     }
 
-    ScheduleStart();
+    BeginAttributionIfNecessaryAndThenScheduleStart();
   } else if (status == mojom::TrustTokenOperationStatus::kAlreadyExists ||
              status == mojom::TrustTokenOperationStatus::
                            kOperationSuccessfullyFulfilledLocally) {
@@ -1304,12 +1319,6 @@ mojom::URLResponseHeadPtr URLLoader::BuildResponseHead() const {
     response->ct_policy_compliance =
         url_request_->ssl_info().ct_policy_compliance;
     response->cert_status = url_request_->ssl_info().cert_status;
-    net::SSLVersion ssl_version = net::SSLConnectionStatusToVersion(
-        url_request_->ssl_info().connection_status);
-    response->is_legacy_tls_version =
-        ssl_version == net::SSLVersion::SSL_CONNECTION_VERSION_TLS1 ||
-        ssl_version == net::SSLVersion::SSL_CONNECTION_VERSION_TLS1_1;
-
     if ((options_ & mojom::kURLLoadOptionSendSSLInfoWithResponse) ||
         (net::IsCertStatusError(url_request_->ssl_info().cert_status) &&
          (options_ & mojom::kURLLoadOptionSendSSLInfoForCertificateError))) {
@@ -1411,6 +1420,28 @@ void URLLoader::OnReceivedRedirect(net::URLRequest* url_request,
   // Ensure that the redirect target is not treated as a pervasive payload.
   url_request_->set_expected_response_checksum(std::string());
 
+  RedirectAttributionIfNecessaryAndThenContinueOnReceiveRedirect(
+      redirect_info, std::move(response));
+}
+
+void URLLoader::RedirectAttributionIfNecessaryAndThenContinueOnReceiveRedirect(
+    const net::RedirectInfo& redirect_info,
+    mojom::URLResponseHeadPtr response) {
+  if (!attribution_request_helper_) {
+    ContinueOnReceiveRedirect(redirect_info, std::move(response));
+    return;
+  }
+
+  attribution_request_helper_->OnReceiveRedirect(
+      *url_request_, std::move(response), redirect_info,
+      base::BindOnce(&URLLoader::ContinueOnReceiveRedirect,
+                     weak_ptr_factory_.GetWeakPtr(), redirect_info));
+}
+
+void URLLoader::ContinueOnReceiveRedirect(
+    const net::RedirectInfo& redirect_info,
+    mojom::URLResponseHeadPtr response) {
+  DCHECK(response);
   url_loader_client_.Get()->OnReceiveRedirect(redirect_info,
                                               std::move(response));
 }
@@ -1524,6 +1555,18 @@ void URLLoader::OnSSLCertificateError(net::URLRequest* request,
                      weak_ptr_factory_.GetWeakPtr(), ssl_info));
 }
 
+void URLLoader::
+    FinalizeAttributionIfNecessaryAndThenContinueOnResponseStarted() {
+  if (!attribution_request_helper_) {
+    ContinueOnResponseStarted();
+    return;
+  }
+
+  attribution_request_helper_->Finalize(
+      *response_, base::BindOnce(&URLLoader::ContinueOnResponseStarted,
+                                 weak_ptr_factory_.GetWeakPtr()));
+}
+
 void URLLoader::OnResponseStarted(net::URLRequest* url_request, int net_error) {
   DCHECK(url_request == url_request_.get());
   has_received_response_ = true;
@@ -1556,7 +1599,7 @@ void URLLoader::OnResponseStarted(net::URLRequest* url_request, int net_error) {
         url_request_.get(), request_destination_, transport_info_, response_);
   }
 
-  ContinueOnResponseStarted();
+  FinalizeAttributionIfNecessaryAndThenContinueOnResponseStarted();
 }
 
 void URLLoader::OnDoneFinalizingTrustTokenOperation(
@@ -1570,7 +1613,8 @@ void URLLoader::OnDoneFinalizingTrustTokenOperation(
     // |this| may have been deleted.
     return;
   }
-  ContinueOnResponseStarted();
+
+  FinalizeAttributionIfNecessaryAndThenContinueOnResponseStarted();
 }
 
 void URLLoader::MaybeSendTrustTokenOperationResultToDevTools() {

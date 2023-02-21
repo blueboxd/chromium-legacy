@@ -136,23 +136,23 @@ OSExchangeDataProviderMac::CreateProviderWrappingPasteboard(
 }
 
 void OSExchangeDataProviderMac::MarkOriginatedFromRenderer() {
-  NOTIMPLEMENTED();
+  [GetPasteboard() setData:[NSData data]
+                   forType:kUTTypeChromiumRendererInitiatedDrag];
 }
 
 bool OSExchangeDataProviderMac::DidOriginateFromRenderer() const {
-  // TODO(crbug.com/1288599): Implement this method.
-  NOTIMPLEMENTED();
-  return false;
+  return [GetPasteboard().types
+      containsObject:kUTTypeChromiumRendererInitiatedDrag];
 }
 
 void OSExchangeDataProviderMac::MarkAsFromPrivileged() {
-  NOTIMPLEMENTED();
+  [GetPasteboard() setData:[NSData data]
+                   forType:kUTTypeChromiumPrivilegedInitiatedDrag];
 }
 
 bool OSExchangeDataProviderMac::IsFromPrivileged() const {
-  // TODO(crbug.com/1288601): Implement this method.
-  NOTIMPLEMENTED();
-  return false;
+  return [GetPasteboard().types
+      containsObject:kUTTypeChromiumPrivilegedInitiatedDrag];
 }
 
 void OSExchangeDataProviderMac::SetString(const std::u16string& string) {

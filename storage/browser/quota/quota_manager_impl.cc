@@ -2168,7 +2168,7 @@ void QuotaManagerImpl::MaybeRunStoragePressureCallback(
 }
 
 void QuotaManagerImpl::SimulateStoragePressure(const url::Origin& origin_url) {
-  StorageKey key(origin_url);
+  const StorageKey key = StorageKey::CreateFirstParty(origin_url);
   storage_pressure_callback_.Run(key);
 }
 
@@ -2604,6 +2604,8 @@ void QuotaManagerImpl::DidGetStorageCapacity(
 
 void QuotaManagerImpl::DidDatabaseWork(bool success, bool is_bootstrap_work) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  base::UmaHistogramBoolean("Quota.QuotaDatabaseResultSuccess", success);
+
   if (success)
     return;
 

@@ -1525,6 +1525,8 @@ static_library("ui") {
       "webui/history/history_ui.h",
       "webui/history/navigation_handler.cc",
       "webui/history/navigation_handler.h",
+      "webui/history_clusters/history_cluster_type_utils.cc",
+      "webui/history_clusters/history_cluster_type_utils.h",
       "webui/history_clusters/history_clusters_handler.cc",
       "webui/history_clusters/history_clusters_handler.h",
       "webui/identity_internals_ui.cc",
@@ -1772,7 +1774,6 @@ static_library("ui") {
       "//chrome/browser:browser_themes",
       "//chrome/browser:theme_properties",
       "//chrome/browser/apps/app_service",
-      "//chrome/browser/ash/system_web_apps/types:types",
       "//chrome/browser/browsing_data:constants",
       "//chrome/browser/cart:mojo_bindings",
       "//chrome/browser/headless:command_processor",
@@ -1938,7 +1939,6 @@ static_library("ui") {
   }
 
   if (enable_supervised_users && enable_extensions) {
-    assert(is_chromeos)
     sources += [
       "supervised_user/parent_permission_dialog.h",
       "views/supervised_user/extension_install_blocked_by_parent_dialog.cc",
@@ -2128,6 +2128,8 @@ static_library("ui") {
       "../ash/app_list/search/local_images/image_annotation_worker.h",
       "../ash/app_list/search/local_images/local_image_search_provider.cc",
       "../ash/app_list/search/local_images/local_image_search_provider.h",
+      "../ash/app_list/search/local_images/sql_database.cc",
+      "../ash/app_list/search/local_images/sql_database.h",
       "../ash/app_list/search/omnibox/omnibox_answer_result.cc",
       "../ash/app_list/search/omnibox/omnibox_answer_result.h",
       "../ash/app_list/search/omnibox/omnibox_lacros_provider.cc",
@@ -2556,6 +2558,8 @@ static_library("ui") {
       "views/borealis/borealis_splash_screen_view.h",
       "views/bruschetta/bruschetta_installer_view.cc",
       "views/bruschetta/bruschetta_installer_view.h",
+      "views/bruschetta/bruschetta_uninstaller_view.cc",
+      "views/bruschetta/bruschetta_uninstaller_view.h",
       "views/chrome_views_delegate_chromeos.cc",
       "views/crostini/crostini_ansible_software_config_view.cc",
       "views/crostini/crostini_ansible_software_config_view.h",
@@ -2687,6 +2691,8 @@ static_library("ui") {
       "webui/ash/enterprise_reporting/enterprise_reporting_ui.h",
       "webui/ash/guest_os_installer/guest_os_installer_dialog.cc",
       "webui/ash/guest_os_installer/guest_os_installer_dialog.h",
+      "webui/ash/healthd_internals/healthd_internals_ui.cc",
+      "webui/ash/healthd_internals/healthd_internals_ui.h",
       "webui/ash/human_presence_internals_ui.cc",
       "webui/ash/human_presence_internals_ui.h",
       "webui/ash/image_source.cc",
@@ -2705,6 +2711,8 @@ static_library("ui") {
       "webui/ash/internet_config_dialog.h",
       "webui/ash/internet_detail_dialog.cc",
       "webui/ash/internet_detail_dialog.h",
+      "webui/ash/kerberos/kerberos_in_browser_dialog.cc",
+      "webui/ash/kerberos/kerberos_in_browser_dialog.h",
       "webui/ash/launcher_internals/launcher_internals_handler.cc",
       "webui/ash/launcher_internals/launcher_internals_handler.h",
       "webui/ash/launcher_internals/launcher_internals_ui.cc",
@@ -3040,6 +3048,8 @@ static_library("ui") {
       "webui/settings/ash/guest_os_handler.h",
       "webui/settings/ash/hierarchy.cc",
       "webui/settings/ash/hierarchy.h",
+      "webui/settings/ash/input_device_settings/input_device_settings_provider.cc",
+      "webui/settings/ash/input_device_settings/input_device_settings_provider.h",
       "webui/settings/ash/internet_handler.cc",
       "webui/settings/ash/internet_handler.h",
       "webui/settings/ash/internet_section.cc",
@@ -3148,6 +3158,7 @@ static_library("ui") {
       "//ash/public/cpp",
       "//ash/public/cpp/app_list/vector_icons",
       "//ash/public/cpp/resources:ash_public_unscaled_resources",
+      "//ash/public/mojom",
       "//ash/quick_pair/common",
       "//ash/quick_pair/keyed_service",
       "//ash/quick_pair/proto:fastpair_proto",
@@ -3185,6 +3196,7 @@ static_library("ui") {
       "//ash/webui/scanning",
       "//ash/webui/shimless_rma",
       "//ash/webui/shortcut_customization_ui",
+      "//ash/webui/system_apps/public:system_web_app_type",
       "//ash/webui/system_extensions_internals_ui",
       "//ash/webui/web_applications",
       "//build:chromeos_buildflags",
@@ -3192,10 +3204,12 @@ static_library("ui") {
       "//chrome/browser/ash",
       "//chrome/browser/ash/app_list/search/ranking:proto",
       "//chrome/browser/ash/app_list/search/util:proto",
+      "//chrome/browser/ash/app_list/vector_icons",
       "//chrome/browser/ash/crosapi",
       "//chrome/browser/ash/crostini:crostini_installer_types_mojom",
       "//chrome/browser/ash/login/oobe_quick_start",
       "//chrome/browser/ash/system_web_apps",
+      "//chrome/browser/ash/system_web_apps/types",
       "//chrome/browser/ash/video_conference",
       "//chrome/browser/chromeos/extensions/vpn_provider",
       "//chrome/browser/chromeos/extensions/wm",
@@ -3231,6 +3245,7 @@ static_library("ui") {
       "//chrome/browser/ui/webui/ash/parent_access:proto",
       "//chrome/browser/ui/webui/ash/vm:mojo_bindings",
       "//chrome/browser/ui/webui/nearby_share:mojom",
+      "//chrome/browser/ui/webui/settings/ash/input_device_settings:mojom",
       "//chrome/browser/ui/webui/settings/ash/os_apps_page/mojom",
       "//chrome/browser/ui/webui/settings/ash/search:mojo_bindings",
       "//chrome/browser/web_applications",
@@ -3315,6 +3330,7 @@ static_library("ui") {
       "//chromeos/dbus/tpm_manager:tpm_manager_proto",
       "//chromeos/printing",
       "//chromeos/services/assistant/public/shared",
+      "//chromeos/services/machine_learning/public/cpp",
       "//chromeos/services/network_config/public/cpp",
       "//chromeos/services/network_config/public/mojom",
       "//chromeos/services/network_health/public/mojom",
@@ -3352,7 +3368,6 @@ static_library("ui") {
       "//google_apis/drive",
       "//media/capture:capture_lib",
       "//mojo/public/js:resources_grit",
-      "//net:extras",
       "//services/audio/public/mojom",
       "//services/data_decoder/public/cpp",
       "//services/device/public/cpp:device_features",
@@ -3433,8 +3448,6 @@ static_library("ui") {
       "views/platform_keys_certificate_selector_chromeos.h",
       "views/tabs/tab_scrubber_chromeos.cc",
       "views/tabs/tab_scrubber_chromeos.h",
-      "webui/ash/kerberos/kerberos_in_browser_dialog.cc",
-      "webui/ash/kerberos/kerberos_in_browser_dialog.h",
       "webui/certificate_provisioning_ui_handler.cc",
       "webui/certificate_provisioning_ui_handler.h",
       "webui/version/version_handler_chromeos.cc",
@@ -4386,6 +4399,10 @@ static_library("ui") {
       "views/autofill/payments/virtual_card_manual_fallback_icon_view.h",
       "views/autofill/popup/popup_base_view.cc",
       "views/autofill/popup/popup_base_view.h",
+      "views/autofill/popup/popup_cell_view.cc",
+      "views/autofill/popup/popup_cell_view.h",
+      "views/autofill/popup/popup_row_strategy.cc",
+      "views/autofill/popup/popup_row_strategy.h",
       "views/autofill/popup/popup_row_view.cc",
       "views/autofill/popup/popup_row_view.h",
       "views/autofill/popup/popup_separator_view.cc",
@@ -4425,6 +4442,8 @@ static_library("ui") {
       "views/bookmarks/saved_tab_groups/saved_tab_group_bar.h",
       "views/bookmarks/saved_tab_groups/saved_tab_group_button.cc",
       "views/bookmarks/saved_tab_groups/saved_tab_group_button.h",
+      "views/bookmarks/saved_tab_groups/saved_tab_group_overflow_button.cc",
+      "views/bookmarks/saved_tab_groups/saved_tab_group_overflow_button.h",
       "views/browser_commands_views.cc",
       "views/browser_dialogs_views.cc",
       "views/bubble/bubble_contents_wrapper.cc",
@@ -5634,7 +5653,6 @@ static_library("ui") {
       "//apps",
       "//chrome/browser/apps/platform_apps",  # TODO(loyso): Remove this dep.
       "//chrome/browser/apps/platform_apps/api",
-      "//chrome/browser/ash/system_web_apps/types:types",
       "//chrome/browser/extensions",
       "//chrome/browser/web_share_target",
       "//chrome/common/extensions/api",
@@ -5772,7 +5790,10 @@ static_library("ui") {
     ]
 
     if (is_chromeos_ash) {
-      deps += [ "//chrome/browser/ui/ash/system_web_apps" ]
+      deps += [
+        "//chrome/browser/ash/system_web_apps/types",
+        "//chrome/browser/ui/ash/system_web_apps",
+      ]
       allow_circular_includes_from +=
           [ "//chrome/browser/ui/ash/system_web_apps" ]
     }
@@ -6109,6 +6130,7 @@ static_library("test_support") {
     ]
     deps += [
       "//ash/public/cpp",
+      "//ash/public/mojom",
       "//chrome/browser/ui/webui/settings/chromeos/constants:mojom",
       "//chromeos/ash/components/dbus",
       "//chromeos/ui/base",

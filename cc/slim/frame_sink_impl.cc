@@ -15,9 +15,11 @@
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "cc/slim/frame_sink_impl_client.h"
+#include "components/viz/common/features.h"
 #include "components/viz/common/resources/platform_color.h"
 #include "components/viz/common/resources/resource_format_utils.h"
 #include "components/viz/common/resources/resource_id.h"
+#include "components/viz/common/resources/shared_image_format.h"
 #include "gpu/command_buffer/client/shared_image_interface.h"
 #include "gpu/command_buffer/common/gpu_memory_buffer_support.h"
 #include "gpu/command_buffer/common/shared_image_usage.h"
@@ -41,12 +43,14 @@ FrameSinkImpl::FrameSinkImpl(
         compositor_frame_sink_associated_remote,
     mojo::PendingReceiver<viz::mojom::CompositorFrameSinkClient>
         client_receiver,
-    scoped_refptr<viz::ContextProvider> context_provider)
+    scoped_refptr<viz::ContextProvider> context_provider,
+    base::PlatformThreadId io_thread_id)
     : task_runner_(std::move(task_runner)),
       pending_compositor_frame_sink_associated_remote_(
           std::move(compositor_frame_sink_associated_remote)),
       pending_client_receiver_(std::move(client_receiver)),
-      context_provider_(std::move(context_provider)) {}
+      context_provider_(std::move(context_provider)),
+      io_thread_id_(io_thread_id) {}
 
 FrameSinkImpl::~FrameSinkImpl() {
   resource_provider_.ShutdownAndReleaseAllResources();
@@ -81,13 +85,17 @@ bool FrameSinkImpl::BindToClient(FrameSinkImplClient* client) {
       base::BindOnce(&FrameSinkImpl::OnContextLost, base::Unretained(this)));
   client_receiver_.Bind(std::move(pending_client_receiver_), task_runner_);
 
-  frame_sink_remote_->InitializeCompositorFrameSinkType(
+  frame_sink_ = frame_sink_remote_.get();
+  frame_sink_->InitializeCompositorFrameSinkType(
       viz::mojom::CompositorFrameSinkType::kLayerTree);
 
 #if BUILDFLAG(IS_ANDROID)
   std::vector<int32_t> thread_ids;
   thread_ids.push_back(base::PlatformThread::CurrentId());
-  frame_sink_remote_->SetThreadIds(thread_ids);
+  if (io_thread_id_ != base::kInvalidThreadId) {
+    thread_ids.push_back(io_thread_id_);
+  }
+  frame_sink_->SetThreadIds(thread_ids);
 #endif
   return true;
 }
@@ -101,7 +109,7 @@ void FrameSinkImpl::SetNeedsBeginFrame(bool needs_begin_frame) {
     return;
   }
   needs_begin_frame_ = needs_begin_frame;
-  frame_sink_remote_->SetNeedsBeginFrame(needs_begin_frame);
+  frame_sink_->SetNeedsBeginFrame(needs_begin_frame);
 }
 
 void FrameSinkImpl::UploadUIResource(cc::UIResourceId resource_id,
@@ -113,16 +121,16 @@ void FrameSinkImpl::UploadUIResource(cc::UIResourceId resource_id,
     LOG(ERROR) << "Size exceeds max texture size";
     return;
   }
-  viz::ResourceFormat format = viz::ResourceFormat::RGBA_8888;
+  viz::SharedImageFormat format = viz::SinglePlaneFormat::kRGBA_8888;
   switch (resource_bitmap.GetFormat()) {
     case cc::UIResourceBitmap::RGBA8:
       format = viz::PlatformColor::BestSupportedTextureFormat(caps);
       break;
     case cc::UIResourceBitmap::ALPHA_8:
-      format = viz::ALPHA_8;
+      format = viz::SinglePlaneFormat::kALPHA_8;
       break;
     case cc::UIResourceBitmap::ETC1:
-      format = viz::ETC1;
+      format = viz::SinglePlaneFormat::kETC1;
       break;
   }
 
@@ -138,7 +146,7 @@ void FrameSinkImpl::UploadUIResource(cc::UIResourceId resource_id,
   gpu::SyncToken sync_token = sii->GenUnverifiedSyncToken();
 
   GLenum texture_target = gpu::GetBufferTextureTarget(
-      gfx::BufferUsage::SCANOUT, BufferFormat(format), caps);
+      gfx::BufferUsage::SCANOUT, BufferFormat(format.resource_format()), caps);
   uploaded_resource.viz_resource_id = resource_provider_.ImportResource(
       viz::TransferableResource::MakeGpu(
           uploaded_resource.mailbox, GL_LINEAR, texture_target, sync_token,
@@ -202,13 +210,23 @@ void FrameSinkImpl::DidReceiveCompositorFrameAck(
 
 void FrameSinkImpl::OnBeginFrame(
     const viz::BeginFrameArgs& begin_frame_args,
-    const viz::FrameTimingDetailsMap& timing_details) {
+    const viz::FrameTimingDetailsMap& timing_details,
+    bool frame_ack,
+    std::vector<viz::ReturnedResource> resources) {
+  if (features::IsOnBeginFrameAcksEnabled()) {
+    if (frame_ack) {
+      DidReceiveCompositorFrameAck(std::move(resources));
+    } else if (!resources.empty()) {
+      ReclaimResources(std::move(resources));
+    }
+  }
+
   for (const auto& pair : timing_details) {
     client_->DidPresentCompositorFrame(pair.first, pair.second);
   }
 
   if (!local_surface_id_.is_valid()) {
-    frame_sink_remote_->DidNotProduceFrame(
+    frame_sink_->DidNotProduceFrame(
         viz::BeginFrameAck(begin_frame_args, false));
     return;
   }
@@ -218,9 +236,17 @@ void FrameSinkImpl::OnBeginFrame(
   viz::HitTestRegionList hit_test_region_list;
   if (!client_->BeginFrame(begin_frame_args, frame, viz_resource_ids,
                            hit_test_region_list)) {
-    frame_sink_remote_->DidNotProduceFrame(
+    frame_sink_->DidNotProduceFrame(
         viz::BeginFrameAck(begin_frame_args, false));
     return;
+  }
+
+  if (local_surface_id_ == last_submitted_local_surface_id_) {
+    DCHECK_EQ(last_submitted_device_scale_factor_, frame.device_scale_factor());
+    DCHECK_EQ(last_submitted_size_in_pixels_.height(),
+              frame.size_in_pixels().height());
+    DCHECK_EQ(last_submitted_size_in_pixels_.width(),
+              frame.size_in_pixels().width());
   }
 
   resource_provider_.PrepareSendToParent(std::move(viz_resource_ids).extract(),
@@ -237,7 +263,7 @@ void FrameSinkImpl::OnBeginFrame(
 
   {
     TRACE_EVENT0("cc", "SubmitCompositorFrame");
-    frame_sink_remote_->SubmitCompositorFrame(
+    frame_sink_->SubmitCompositorFrame(
         local_surface_id_, std::move(frame),
         send_new_hit_test_region_list ? hit_test_region_list_ : absl::nullopt,
         0);

@@ -251,6 +251,20 @@ _BANNED_JAVA_FUNCTIONS : Sequence[BanRule] = (
           'ui/android/java/src/org/chromium/ui/base/ViewUtils.java',
       ),
     ),
+    BanRule(
+      'Profile.getLastUsedRegularProfile()',
+      (
+       'Prefer passing in the Profile reference instead of relying on the '
+       'static getLastUsedRegularProfile() call. Only top level entry points '
+       '(e.g. Activities) should call this method. Otherwise, the Profile '
+       'should either be passed in explicitly or retreived from an existing '
+       'entity with a reference to the Profile (e.g. WebContents).',
+      ),
+      False,
+      excluded_paths=(
+        r'.*Test[A-Z]?.*\.java',
+      ),
+    ),
 )
 
 _BANNED_JAVASCRIPT_FUNCTIONS : Sequence [BanRule] = (
@@ -651,76 +665,18 @@ _BANNED_CPP_FUNCTIONS : Sequence[BanRule] = (
       ['third_party/abseil-cpp/.*_benchmark.cc'],
     ),
     BanRule(
-      r'/\bstd::stoi\b',
+      r'/\bstd::sto(i|l|ul|ll|ull)\b',
       (
-        'std::stoi uses exceptions to communicate results. ',
-        'Use base::StringToInt() instead.',
+        'std::sto{i,l,ul,ll,ull}() use exceptions to communicate results. ',
+        'Use base::StringTo[U]Int[64]() instead.',
       ),
       True,
       [_THIRD_PARTY_EXCEPT_BLINK],  # Don't warn in third_party folders.
     ),
     BanRule(
-      r'/\bstd::stol\b',
+      r'/\bstd::sto(f|d|ld)\b',
       (
-        'std::stol uses exceptions to communicate results. ',
-        'Use base::StringToInt() instead.',
-      ),
-      True,
-      [_THIRD_PARTY_EXCEPT_BLINK],  # Don't warn in third_party folders.
-    ),
-    BanRule(
-      r'/\bstd::stoul\b',
-      (
-        'std::stoul uses exceptions to communicate results. ',
-        'Use base::StringToUint() instead.',
-      ),
-      True,
-      [_THIRD_PARTY_EXCEPT_BLINK],  # Don't warn in third_party folders.
-    ),
-    BanRule(
-      r'/\bstd::stoll\b',
-      (
-        'std::stoll uses exceptions to communicate results. ',
-        'Use base::StringToInt64() instead.',
-      ),
-      True,
-      [_THIRD_PARTY_EXCEPT_BLINK],  # Don't warn in third_party folders.
-    ),
-    BanRule(
-      r'/\bstd::stoull\b',
-      (
-        'std::stoull uses exceptions to communicate results. ',
-        'Use base::StringToUint64() instead.',
-      ),
-      True,
-      [_THIRD_PARTY_EXCEPT_BLINK],  # Don't warn in third_party folders.
-    ),
-    BanRule(
-      r'/\bstd::stof\b',
-      (
-        'std::stof uses exceptions to communicate results. ',
-        'For locale-independent values, e.g. reading numbers from disk',
-        'profiles, use base::StringToDouble().',
-        'For user-visible values, parse using ICU.',
-      ),
-      True,
-      [_THIRD_PARTY_EXCEPT_BLINK],  # Don't warn in third_party folders.
-    ),
-    BanRule(
-      r'/\bstd::stod\b',
-      (
-        'std::stod uses exceptions to communicate results. ',
-        'For locale-independent values, e.g. reading numbers from disk',
-        'profiles, use base::StringToDouble().',
-        'For user-visible values, parse using ICU.',
-      ),
-      True,
-      [_THIRD_PARTY_EXCEPT_BLINK],  # Don't warn in third_party folders.
-    ),
-    BanRule(
-      r'/\bstd::stold\b',
-      (
-        'std::stold uses exceptions to communicate results. ',
+        'std::sto{f,d,ld}() use exceptions to communicate results. ',
         'For locale-independent values, e.g. reading numbers from disk',
         'profiles, use base::StringToDouble().',
         'For user-visible values, parse using ICU.',
@@ -731,7 +687,7 @@ _BANNED_CPP_FUNCTIONS : Sequence[BanRule] = (
     BanRule(
       r'/\bstd::to_string\b',
       (
-        'std::to_string is locale dependent and slower than alternatives.',
+        'std::to_string() is locale dependent and slower than alternatives.',
         'For locale-independent strings, e.g. writing numbers to disk',
         'profiles, use base::NumberToString().',
         'For user-visible strings, use base::FormatNumber() and',
@@ -743,7 +699,7 @@ _BANNED_CPP_FUNCTIONS : Sequence[BanRule] = (
     BanRule(
       r'/\bstd::shared_ptr\b',
       (
-        'std::shared_ptr should not be used. Use scoped_refptr instead.',
+        'std::shared_ptr is banned. Use scoped_refptr instead.',
       ),
       True,
       [
@@ -778,7 +734,7 @@ _BANNED_CPP_FUNCTIONS : Sequence[BanRule] = (
     BanRule(
       r'/\bstd::weak_ptr\b',
       (
-        'std::weak_ptr should not be used. Use base::WeakPtr instead.',
+        'std::weak_ptr is banned. Use base::WeakPtr instead.',
       ),
       True,
       [_THIRD_PARTY_EXCEPT_BLINK],  # Not an error in third_party folders.
@@ -786,7 +742,7 @@ _BANNED_CPP_FUNCTIONS : Sequence[BanRule] = (
     BanRule(
       r'/\blong long\b',
       (
-        'long long is banned. Use stdint.h if you need a 64 bit number.',
+        'long long is banned. Use [u]int64_t instead.',
       ),
       False,  # Only a warning since it is already used.
       [_THIRD_PARTY_EXCEPT_BLINK],  # Don't warn in third_party folders.
@@ -794,7 +750,8 @@ _BANNED_CPP_FUNCTIONS : Sequence[BanRule] = (
     BanRule(
       r'/\b(absl|std)::any\b',
       (
-        'absl::any / std::any are not safe to use in a component build.',
+        '{absl,std}::any are banned due to incompatibility with the component ',
+        'build.',
       ),
       True,
       # Not an error in third party folders, though it probably should be :)
@@ -803,8 +760,8 @@ _BANNED_CPP_FUNCTIONS : Sequence[BanRule] = (
     BanRule(
       r'/\bstd::bind\b',
       (
-        'std::bind is banned because of lifetime risks.',
-        'Use base::BindOnce or base::BindRepeating instead.',
+        'std::bind() is banned because of lifetime risks. Use ',
+        'base::Bind{Once,Repeating}() instead.',
       ),
       True,
       [_THIRD_PARTY_EXCEPT_BLINK],  # Not an error in third_party folders.
@@ -870,10 +827,10 @@ _BANNED_CPP_FUNCTIONS : Sequence[BanRule] = (
       ],
     ),
     BanRule(
-      r'/\babsl::bind_front\b',
+      r'/\b(absl,std)::bind_front\b',
       (
-        'absl::bind_front is banned. Use base::BindOnce() or '
-        'base::BindRepeating() instead.',
+        '{absl,std}::bind_front() are banned. Use base::Bind{Once,Repeating}() '
+        'instead.',
       ),
       True,
       [_THIRD_PARTY_EXCEPT_BLINK],  # Not an error in third_party folders.
@@ -889,7 +846,7 @@ _BANNED_CPP_FUNCTIONS : Sequence[BanRule] = (
     BanRule(
       r'/\babsl::c_',
       (
-        'Abseil container utilities are banned. Use base/ranges/algorithm.h',
+        'Abseil container utilities are banned. Use base/ranges/algorithm.h ',
         'instead.',
       ),
       True,
@@ -922,9 +879,10 @@ _BANNED_CPP_FUNCTIONS : Sequence[BanRule] = (
       [_THIRD_PARTY_EXCEPT_BLINK],  # Not an error in third_party folders.
     ),
     BanRule(
-      r'/\babsl::Span\b',
+      r'/(\babsl::Span\b|#include <span>)',
       (
-        'absl::Span is banned. Use base::span instead.',
+        'absl::Span is banned and <span> is not allowed yet ',
+        '(https://crbug.com/1414652). Use base::span instead.',
       ),
       True,
       [
@@ -950,15 +908,17 @@ _BANNED_CPP_FUNCTIONS : Sequence[BanRule] = (
     BanRule(
       r'/\babsl::StrFormat\b',
       (
-        'absl::StrFormat is banned for now. Use base::StringPrintf instead.',
+        'absl::StrFormat() is not allowed yet (https://crbug.com/1371963). ',
+        'Use base::StringPrintf() instead.',
       ),
       True,
       [_THIRD_PARTY_EXCEPT_BLINK],  # Not an error in third_party folders.
     ),
     BanRule(
-      r'/\babsl::string_view\b',
+      r'/\b(absl|std)::(u16)?string_view\b',
       (
-        'absl::string_view is banned. Use base::StringPiece instead.',
+        'absl::string_view is banned and std::[u16]string_view are not allowed',
+        ' yet (https://crbug.com/691162). Use base::StringPiece[16] instead.',
       ),
       True,
       [
@@ -1002,22 +962,22 @@ _BANNED_CPP_FUNCTIONS : Sequence[BanRule] = (
     BanRule(
       r'/\bstd::optional\b',
       (
-        'std::optional is banned. Use absl::optional instead.',
+        'std::optional is not allowed yet (https://crbug.com/1373619). Use ',
+        'absl::optional instead.',
       ),
       True,
       [_THIRD_PARTY_EXCEPT_BLINK],  # Not an error in third_party folders.
     ),
     BanRule(
-      r'/\b#include <chrono>\b',
+      r'/#include <chrono>',
       (
-        '<chrono> overlaps with Time APIs in base. Keep using',
-        'base classes.',
+        '<chrono> is banned. Use base/time instead.',
       ),
       True,
       [_THIRD_PARTY_EXCEPT_BLINK],  # Not an error in third_party folders.
     ),
     BanRule(
-      r'/\b#include <exception>\b',
+      r'/#include <exception>',
       (
         'Exceptions are banned and disabled in Chromium.',
       ),
@@ -1027,9 +987,7 @@ _BANNED_CPP_FUNCTIONS : Sequence[BanRule] = (
     BanRule(
       r'/\bstd::function\b',
       (
-        'std::function is banned. Instead use base::OnceCallback or ',
-        'base::RepeatingCallback, which directly support Chromium\'s weak ',
-        'pointers, ref counting and more.',
+        'std::function is banned. Use base::{Once,Repeating}Callback instead.',
       ),
       True,
       [
@@ -1113,16 +1071,15 @@ _BANNED_CPP_FUNCTIONS : Sequence[BanRule] = (
       ],
     ),
     BanRule(
-      r'/\b#include <random>\b',
+      r'/#include <random>',
       (
-        'Do not use any random number engines from <random>. Instead',
-        'use base::RandomBitGenerator.',
+        '<random> is banned. Use base::RandomBitGenerator instead.',
       ),
       True,
       [_THIRD_PARTY_EXCEPT_BLINK],  # Not an error in third_party folders.
     ),
     BanRule(
-      r'/\b#include <X11/',
+      r'/#include <X11/',
       (
         'Do not use Xlib. Use xproto (from //ui/gfx/x:xproto) instead.',
       ),
@@ -1140,44 +1097,92 @@ _BANNED_CPP_FUNCTIONS : Sequence[BanRule] = (
     BanRule(
       r'/\bstd::aligned_alloc\b',
       (
-        'std::aligned_alloc() is not yet approved for use (crbug.com/1412818).',
-        ' Use base::AlignedAlloc() instead.',
+        'std::aligned_alloc() is not yet allowed (crbug.com/1412818). Use ',
+        'base::AlignedAlloc() instead.',
       ),
       True,
       [_THIRD_PARTY_EXCEPT_BLINK],  # Don't warn in third_party folders.
     ),
     BanRule(
-      r'/\bstd::invoke\b',
+      r'/\bstd::(u16)?string_view\b',
       (
-        'std::invoke() is not yet approved for use (crbug.com/1412520). Use ',
-        'base::invoke() instead.',
+        'std::[u16]string_view is not yet allowed (crbug.com/691162). Use ',
+        'base::StringPiece[16] instead.',
       ),
       True,
       [_THIRD_PARTY_EXCEPT_BLINK],  # Don't warn in third_party folders.
     ),
     BanRule(
-      r'/\bstd::not_fn\b',
+      r'/#include <(barrier|latch|semaphore|stop_token)>',
       (
-        'std::not_fn() is not yet approved for use (crbug.com/1412529). Use ',
-        'base::not_fn() instead.',
+        'The thread support library is banned. Use base/synchronization '
+        'instead.',
       ),
       True,
       [_THIRD_PARTY_EXCEPT_BLINK],  # Don't warn in third_party folders.
     ),
     BanRule(
-      r'/\bstd::string_view\b',
+      r'/\bstd::(c8rtomb|mbrtoc8)\b',
       (
-        'std::string_view is not yet approved for use (crbug.com/691162). Use ',
-        'base::StringPiece instead.',
+        'std::c8rtomb() and std::mbrtoc8() are banned.',
       ),
       True,
       [_THIRD_PARTY_EXCEPT_BLINK],  # Don't warn in third_party folders.
     ),
     BanRule(
-      r'/\bstd::u16string_view\b',
+      r'/\bchar8_t|std::u8string\b',
       (
-        'std::u16string_view is not yet approved for use (crbug.com/691162). ',
-        'Use base::StringPiece16 instead.',
+        'char8_t and std::u8string are not yet allowed. Can you use [unsigned]',
+        ' char and std::string instead?',
+      ),
+      True,
+      [_THIRD_PARTY_EXCEPT_BLINK],  # Don't warn in third_party folders.
+    ),
+    BanRule(
+      r'/(\b(co_await|co_return|co_yield)\b|#include <coroutine>)',
+      (
+        'Coroutines are not yet allowed (https://crbug.com/1403840).',
+      ),
+      True,
+      [_THIRD_PARTY_EXCEPT_BLINK],  # Don't warn in third_party folders.
+    ),
+    BanRule(
+      r'/\[\[(un)?likely\]\]',
+      (
+        '[[likely]] and [[unlikely]] are not yet allowed ',
+        '(https://crbug.com/1414620). Use [UN]LIKELY instead.',
+      ),
+      True,
+      [_THIRD_PARTY_EXCEPT_BLINK],  # Don't warn in third_party folders.
+    ),
+    BanRule(
+      r'/#include <format>',
+      (
+        '<format> is not yet allowed. Use base::StringPrintf() instead.',
+      ),
+      True,
+      [_THIRD_PARTY_EXCEPT_BLINK],  # Don't warn in third_party folders.
+    ),
+    BanRule(
+      r'/#include <ranges>',
+      (
+        '<ranges> is not yet allowed. Use base/ranges/algorithm.h instead.',
+      ),
+      True,
+      [_THIRD_PARTY_EXCEPT_BLINK],  # Don't warn in third_party folders.
+    ),
+    BanRule(
+      r'/#include <source_location>',
+      (
+        '<source_location> is not yet allowed. Use base/location.h instead.',
+      ),
+      True,
+      [_THIRD_PARTY_EXCEPT_BLINK],  # Don't warn in third_party folders.
+    ),
+    BanRule(
+      r'/#include <syncstream>',
+      (
+        '<syncstream> is banned.',
       ),
       True,
       [_THIRD_PARTY_EXCEPT_BLINK],  # Don't warn in third_party folders.
@@ -2934,6 +2939,8 @@ def CheckSpamLogging(input_api, output_api):
             r"^base/logging\.cc$",
             r"^base/task/thread_pool/task_tracker\.cc$",
             r"^chrome/app/chrome_main_delegate\.cc$",
+            r"^chrome/browser/ash/arc/enterprise/cert_store/arc_cert_installer\.cc$",
+            r"^chrome/browser/ash/policy/remote_commands/user_command_arc_job\.cc$",
             r"^chrome/browser/chrome_browser_main\.cc$",
             r"^chrome/browser/ui/startup/startup_browser_creator\.cc$",
             r"^chrome/browser/browser_switcher/bho/.*",
@@ -2957,7 +2964,7 @@ def CheckSpamLogging(input_api, output_api):
             r"^extensions/renderer/logging_native_handler\.cc$",
             r"^fuchsia_web/common/init_logging\.cc$",
             r"^fuchsia_web/runners/common/web_component\.cc$",
-            r"^fuchsia_web/shell/.*_shell\.cc$",
+            r"^fuchsia_web/shell/.*\.cc$",
             r"^headless/app/headless_shell\.cc$",
             r"^ipc/ipc_logging\.cc$",
             r"^native_client_sdk/",

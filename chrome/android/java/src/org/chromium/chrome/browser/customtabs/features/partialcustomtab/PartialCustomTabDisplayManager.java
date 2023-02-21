@@ -15,6 +15,7 @@ import androidx.annotation.VisibleForTesting;
 
 import org.chromium.chrome.browser.customtabs.features.partialcustomtab.PartialCustomTabBaseStrategy.PartialCustomTabType;
 import org.chromium.chrome.browser.customtabs.features.toolbar.CustomTabToolbar;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.fullscreen.FullscreenManager;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.lifecycle.ConfigurationChangedObserver;
@@ -31,6 +32,7 @@ public class PartialCustomTabDisplayManager
 
     private final Activity mActivity;
     private final int mBreakPointDp;
+    private final int mDecorationType;
     private final @Px int mUnclampedInitialHeight;
     private final @Px int mUnclampedInitialWidth;
     private final boolean mIsFixedHeight;
@@ -61,7 +63,7 @@ public class PartialCustomTabDisplayManager
             @Px int initialWidth, int breakPointDp, boolean isFixedHeight,
             OnResizedCallback onResizedCallback, ActivityLifecycleDispatcher lifecycleDispatcher,
             FullscreenManager fullscreenManager, boolean isTablet, boolean interactWithBackground,
-            boolean showMaximizeButton) {
+            boolean showMaximizeButton, int decorationType) {
         mActivity = activity;
         mUnclampedInitialHeight = initialHeight;
         mUnclampedInitialWidth = initialWidth;
@@ -72,6 +74,7 @@ public class PartialCustomTabDisplayManager
         mIsTablet = isTablet;
         mInteractWithBackground = interactWithBackground;
         mShowMaximizeButton = showMaximizeButton;
+        mDecorationType = decorationType;
 
         mActivityLifecycleDispatcher = lifecycleDispatcher;
         lifecycleDispatcher.register(this);
@@ -200,13 +203,17 @@ public class PartialCustomTabDisplayManager
         }
 
         if (mUnclampedInitialWidth > 0 && mUnclampedInitialHeight > 0) {
-            return displayWidthDp < mBreakPointDp ? PartialCustomTabType.BOTTOM_SHEET
-                                                  : PartialCustomTabType.SIDE_SHEET;
+            return displayWidthDp < mBreakPointDp
+                            || !ChromeFeatureList.sCctResizableSideSheetForThirdParties.isEnabled()
+                    ? PartialCustomTabType.BOTTOM_SHEET
+                    : PartialCustomTabType.SIDE_SHEET;
         }
 
         if (mUnclampedInitialWidth > 0) {
-            return displayWidthDp < mBreakPointDp ? PartialCustomTabType.FULL_SIZE
-                                                  : PartialCustomTabType.SIDE_SHEET;
+            return displayWidthDp < mBreakPointDp
+                            || !ChromeFeatureList.sCctResizableSideSheetForThirdParties.isEnabled()
+                    ? PartialCustomTabType.FULL_SIZE
+                    : PartialCustomTabType.SIDE_SHEET;
         }
 
         if (mUnclampedInitialHeight > 0) {
@@ -228,7 +235,7 @@ public class PartialCustomTabDisplayManager
             case PartialCustomTabType.SIDE_SHEET: {
                 return new PartialCustomTabSideSheetStrategy(mActivity, mUnclampedInitialWidth,
                         mOnResizedCallback, mFullscreenManager, mIsTablet, mInteractWithBackground,
-                        mShowMaximizeButton, maximized, mHandleStrategyFactory);
+                        mShowMaximizeButton, maximized, mHandleStrategyFactory, mDecorationType);
             }
             case PartialCustomTabType.FULL_SIZE: {
                 return new PartialCustomTabFullSizeStrategy(mActivity, mOnResizedCallback,

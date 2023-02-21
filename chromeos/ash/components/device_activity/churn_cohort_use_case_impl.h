@@ -7,6 +7,7 @@
 
 #include "base/component_export.h"
 #include "base/time/time.h"
+#include "chromeos/ash/components/device_activity/churn_active_status.h"
 #include "chromeos/ash/components/device_activity/device_active_use_case.h"
 
 class PrefService;
@@ -25,6 +26,7 @@ class COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_DEVICE_ACTIVITY)
     ChurnCohortUseCaseImpl : public DeviceActiveUseCase {
  public:
   ChurnCohortUseCaseImpl(
+      ChurnActiveStatus* churn_active_status_ptr,
       const std::string& psm_device_active_secret,
       const ChromeDeviceMetadataParameters& chrome_passed_device_params,
       PrefService* local_state,
@@ -33,22 +35,15 @@ class COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_DEVICE_ACTIVITY)
   ChurnCohortUseCaseImpl& operator=(const ChurnCohortUseCaseImpl&) = delete;
   ~ChurnCohortUseCaseImpl() override;
 
-  // The Churn Cohort window identifier is the year-month when the device
-  // report its cohort active request to Fresnel.
-  //
-  // For example, if the device has reported its active on `20221202`,
-  // then the Churn Cohort window identifier is `202212`
+  // DeviceActiveUseCase:
   std::string GenerateWindowIdentifier(base::Time ts) const override;
-
   absl::optional<FresnelImportDataRequest> GenerateImportRequestBody() override;
-
-  // Whether current device active use case check-in is enabled or not.
   bool IsEnabledCheckIn() override;
-
-  // Whether current device active use case check membership is enabled or not.
   bool IsEnabledCheckMembership() override;
-
   private_computing::ActiveStatus GenerateActiveStatus() override;
+
+ private:
+  ChurnActiveStatus* const churn_active_status_ptr_;
 };
 
 }  // namespace ash::device_activity

@@ -1908,11 +1908,13 @@ bool PaintLayerScrollableArea::ShouldOverflowControlsPaintAsOverlay() const {
   if (HasOverlayOverflowControls())
     return true;
 
-  // The global root scrollbars and corner also paint as overlay so that they
-  // appear on top of all content within the viewport. This is important since
-  // these scrollbar's transform state is
+  // Frame and global root scroller (which can be a non-frame) scrollbars and
+  // corner also paint as overlay so that they appear on top of all content
+  // within their viewport. This is important for global root scrollers since
+  // these scrollbars' transform state is
   // VisualViewport::TransformNodeForViewportScrollbars().
-  return GetLayoutBox() && GetLayoutBox()->IsGlobalRootScroller();
+  return layer_->IsRootLayer() ||
+         (GetLayoutBox() && GetLayoutBox()->IsGlobalRootScroller());
 }
 
 void PaintLayerScrollableArea::PositionOverflowControls() {
@@ -2422,15 +2424,6 @@ bool PaintLayerScrollableArea::ShouldScrollOnMainThread() const {
   if (HasBeenDisposed())
     return true;
 
-  // TODO(crbug.com/985127, crbug.com/1015833): We should just use the main
-  // thread scrolling reasons on the scroll node which should have all required
-  // reasons. If it was not, we would have inconsistent results here and
-  // ScrollNode::GetMainThreadScrollingReasons().
-  if (LocalFrame* frame = GetLayoutBox()->GetFrame()) {
-    if (frame->View()->GetMainThreadScrollingReasons())
-      return true;
-  }
-
   // Property tree state is not available until the PrePaint lifecycle stage.
   // PaintPropertyTreeBuilder needs to get the old status during PrePaint.
   DCHECK_GE(GetDocument()->Lifecycle().GetState(),
@@ -2493,16 +2486,6 @@ bool PaintLayerScrollableArea::ComputeNeedsCompositedScrollingInternal(
     return false;
 
   const auto* box = GetLayoutBox();
-
-  // Although trivial 3D transforms are not always a direct compositing reason
-  // (see CompositingReasonFinder::RequiresCompositingFor3DTransform), we treat
-  // them as one for composited scrolling. This is because of the amount of
-  // content that depends on this optimization, and because of the long-term
-  // desire to use composited scrolling whenever possible.
-  if (box->HasTransformRelatedProperty() &&
-      box->StyleRef().Has3DTransformOperation()) {
-    return true;
-  }
 
   if (!force_prefer_compositing_to_lcd_text &&
       (RuntimeEnabledFeatures::PreferNonCompositedScrollingEnabled() ||

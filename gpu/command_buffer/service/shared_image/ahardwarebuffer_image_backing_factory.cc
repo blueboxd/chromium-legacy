@@ -134,6 +134,16 @@ GLuint CreateAndBindTexture(EGLImage image, GLenum target) {
 
   return service_id;
 }
+
+constexpr uint32_t kSupportedUsage =
+    SHARED_IMAGE_USAGE_GLES2 | SHARED_IMAGE_USAGE_GLES2_FRAMEBUFFER_HINT |
+    SHARED_IMAGE_USAGE_DISPLAY_WRITE | SHARED_IMAGE_USAGE_DISPLAY_READ |
+    SHARED_IMAGE_USAGE_RASTER | SHARED_IMAGE_USAGE_OOP_RASTERIZATION |
+    SHARED_IMAGE_USAGE_SCANOUT | SHARED_IMAGE_USAGE_WEBGPU |
+    SHARED_IMAGE_USAGE_VIDEO_DECODE |
+    SHARED_IMAGE_USAGE_WEBGPU_SWAP_CHAIN_TEXTURE |
+    SHARED_IMAGE_USAGE_HIGH_PERFORMANCE_GPU;
+
 }  // namespace
 
 // Implementation of SharedImageBacking that holds an AHardwareBuffer. This
@@ -422,10 +432,16 @@ AHardwareBufferImageBacking::ProduceSkia(
   DCHECK(hardware_buffer_handle_.is_valid());
 
   std::unique_ptr<GLTextureImageRepresentationBase> gl_representation;
-  if (use_passthrough_)
+  if (use_passthrough_) {
     gl_representation = ProduceGLTexturePassthrough(manager, tracker);
-  else
+  } else {
     gl_representation = ProduceGLTexture(manager, tracker);
+  }
+
+  if (!gl_representation) {
+    LOG(ERROR) << "Unable produce gl texture!";
+    return nullptr;
+  }
 
   return SkiaGLImageRepresentation::Create(std::move(gl_representation),
                                            std::move(context_state), manager,
@@ -508,7 +524,8 @@ void AHardwareBufferImageBacking::EndOverlayAccess() {
 AHardwareBufferImageBackingFactory::AHardwareBufferImageBackingFactory(
     const gles2::FeatureInfo* feature_info,
     const GpuPreferences& gpu_preferences)
-    : use_passthrough_(gpu_preferences.use_passthrough_cmd_decoder &&
+    : SharedImageBackingFactory(kSupportedUsage),
+      use_passthrough_(gpu_preferences.use_passthrough_cmd_decoder &&
                        gl::PassthroughCommandDecoderSupported()) {
   DCHECK(base::AndroidHardwareBufferCompat::IsSupportAvailable());
   const gles2::Validators* validators = feature_info->validators();

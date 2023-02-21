@@ -755,6 +755,15 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
            IsStackingContext(style);
   }
 
+  // Returns true if the LayoutObject is rendered in the top layer.
+  bool IsInTopLayer() const {
+    NOT_DESTROYED();
+    if (Element* element = DynamicTo<Element>(GetNode())) {
+      return StyleRef().IsInTopLayer(*element);
+    }
+    return false;
+  }
+
   void NotifyPriorityScrollAnchorStatusChanged();
 
  private:
@@ -3537,9 +3546,6 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
     NOT_DESTROYED();
     return bitfields_.DescendantNeedsPaintPropertyUpdate();
   }
-  // Called when some change needs paint property update of all ancestors (not
-  // crossing frame boundaries).
-  void ForceAllAncestorsNeedPaintPropertyUpdate();
 
   void SetIsScrollAnchorObject() {
     NOT_DESTROYED();

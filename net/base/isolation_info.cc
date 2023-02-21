@@ -178,33 +178,6 @@ IsolationInfo IsolationInfo::Create(
                        site_for_cookies, nonce, std::move(party_context));
 }
 
-IsolationInfo IsolationInfo::CreatePartial(
-    RequestType request_type,
-    const net::NetworkIsolationKey& network_isolation_key) {
-  if (!network_isolation_key.IsFullyPopulated())
-    return IsolationInfo();
-
-  // TODO(https://crbug.com/1148927): Use null origins in this case.
-  url::Origin top_frame_origin =
-      network_isolation_key.GetTopFrameSite()->site_as_origin_;
-  absl::optional<url::Origin> frame_origin;
-  if (IsFrameSiteEnabled() &&
-      network_isolation_key.GetFrameSite().has_value()) {
-    frame_origin = network_isolation_key.GetFrameSite()->site_as_origin_;
-  } else {
-    frame_origin = absl::nullopt;
-  }
-
-  const base::UnguessableToken* nonce =
-      network_isolation_key.GetNonce()
-          ? &network_isolation_key.GetNonce().value()
-          : nullptr;
-
-  return IsolationInfo(request_type, top_frame_origin, frame_origin,
-                       SiteForCookies(), nonce,
-                       absl::nullopt /* party_context */);
-}
-
 IsolationInfo IsolationInfo::DoNotUseCreatePartialFromNak(
     const net::NetworkAnonymizationKey& network_anonymization_key) {
   if (!network_anonymization_key.IsFullyPopulated()) {
@@ -334,6 +307,68 @@ std::string IsolationInfo::Serialize() const {
 bool IsolationInfo::IsFrameSiteEnabled() {
   return !base::FeatureList::IsEnabled(
       net::features::kForceIsolationInfoFrameOriginToTopLevelFrame);
+}
+
+std::string IsolationInfo::DebugString() const {
+  std::string s;
+  s += "request_type: ";
+  switch (request_type_) {
+    case IsolationInfo::RequestType::kMainFrame:
+      s += "kMainFrame";
+      break;
+    case IsolationInfo::RequestType::kSubFrame:
+      s += "kSubFrame";
+      break;
+    case IsolationInfo::RequestType::kOther:
+      s += "kOther";
+      break;
+  }
+
+  s += "; top_frame_origin: ";
+  if (top_frame_origin_) {
+    s += top_frame_origin_.value().GetDebugString(true);
+  } else {
+    s += "(none)";
+  }
+
+  if (IsFrameSiteEnabled()) {
+    s += "; frame_origin: ";
+    if (frame_origin_) {
+      s += frame_origin_.value().GetDebugString(true);
+    } else {
+      s += "(none)";
+    }
+  }
+
+  s += "; network_anonymization_key: ";
+  s += network_anonymization_key_.ToDebugString();
+
+  s += "; network_isolation_key: ";
+  s += network_isolation_key_.ToDebugString();
+
+  s += "; party_context: ";
+  if (party_context_) {
+    s += "{";
+    for (auto& site : party_context_.value()) {
+      s += site.GetDebugString();
+      s += ", ";
+    }
+    s += "}";
+  } else {
+    s += "(none)";
+  }
+
+  s += "; nonce: ";
+  if (nonce_) {
+    s += nonce_.value().ToString();
+  } else {
+    s += "(none)";
+  }
+
+  s += "; site_for_cookies: ";
+  s += site_for_cookies_.ToDebugString();
+
+  return s;
 }
 
 NetworkAnonymizationKey

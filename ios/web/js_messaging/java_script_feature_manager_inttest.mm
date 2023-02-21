@@ -83,7 +83,7 @@ TEST_F(JavaScriptFeatureManagerPageContentWorldIntTest,
 
   __block std::set<WebFrame*> web_frames;
   ASSERT_TRUE(WaitUntilConditionOrTimeout(kWaitForPageLoadTimeout, ^{
-    web_frames = web_state()->GetWebFramesManager()->GetAllWebFrames();
+    web_frames = web_state()->GetPageWorldWebFramesManager()->GetAllWebFrames();
     return web_frames.size() == 2;
   }));
 
@@ -121,7 +121,7 @@ class JavaScriptFeatureManagerAnyContentWorldIntTest
  protected:
   JavaScriptFeatureManagerAnyContentWorldIntTest()
       : WebTestWithWebState(std::make_unique<web::FakeWebClient>()),
-        feature_(ContentWorld::kAnyContentWorld) {}
+        feature_(ContentWorld::kIsolatedWorld) {}
 
   void SetUp() override {
     WebTestWithWebState::SetUp();
@@ -170,7 +170,7 @@ TEST_F(JavaScriptFeatureManagerAnyContentWorldIntTest,
 
   __block std::set<WebFrame*> web_frames;
   ASSERT_TRUE(WaitUntilConditionOrTimeout(kWaitForPageLoadTimeout, ^{
-    web_frames = web_state()->GetWebFramesManager()->GetAllWebFrames();
+    web_frames = web_state()->GetPageWorldWebFramesManager()->GetAllWebFrames();
     return web_frames.size() == 2;
   }));
 

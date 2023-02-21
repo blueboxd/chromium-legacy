@@ -4,6 +4,7 @@
 
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/pinned_tabs/pinned_cell.h"
 
+#import <MaterialComponents/MaterialActivityIndicator.h>
 #import <ostream>
 
 #import "base/check.h"
@@ -15,6 +16,7 @@
 #import "ios/chrome/browser/ui/util/rtl_geometry.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
 #import "ios/chrome/common/ui/elements/gradient_view.h"
+#import "ui/gfx/ios/uikit_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -84,6 +86,9 @@ UIColor* GetInterfaceStyleDarkColor(UIColor* dynamicColor) {
 @property(nonatomic, strong) NSLayoutConstraint* snapshotViewTopConstraint;
 // Header view's height constraint.
 @property(nonatomic, strong) NSLayoutConstraint* headerViewHeightConstraint;
+// Favicon container view's center Y constraint.
+@property(nonatomic, strong)
+    NSLayoutConstraint* faviconContainerViewCenterYConstraint;
 @end
 
 @implementation PinnedCell {
@@ -91,10 +96,20 @@ UIColor* GetInterfaceStyleDarkColor(UIColor* dynamicColor) {
   UIView* _faviconContainerView;
   // View for displaying the favicon.
   UIImageView* _faviconView;
+  // Activity Indicator view that animates while WebState is loading.
+  MDCActivityIndicator* _activityIndicator;
   // Title label's fader leading constraint.
   NSLayoutConstraint* _titleLabelFaderLeadingConstraint;
   // Title label's fader trailing constraint.
   NSLayoutConstraint* _titleLabelFaderTrailingConstraint;
+}
+
++ (instancetype)transitionSelectionCellFromCell:(PinnedCell*)cell {
+  PinnedCell* transitionSelectionCell =
+      [[self alloc] initWithFrame:cell.bounds];
+  transitionSelectionCell.selected = YES;
+  transitionSelectionCell.contentView.hidden = YES;
+  return transitionSelectionCell;
 }
 
 - (instancetype)initWithFrame:(CGRect)frame {
@@ -114,6 +129,7 @@ UIColor* GetInterfaceStyleDarkColor(UIColor* dynamicColor) {
     [self setupHeaderView];
     [self setupFaviconContainerView];
     [self setupFaviconView];
+    [self setupActivityIndicator];
     [self setupTitleLabel];
     [self setupTitleLabelFader];
   }
@@ -169,6 +185,18 @@ UIColor* GetInterfaceStyleDarkColor(UIColor* dynamicColor) {
   UIDragPreviewParameters* params = [[UIDragPreviewParameters alloc] init];
   params.visiblePath = visiblePath;
   return params;
+}
+
+- (void)showActivityIndicator {
+  [_activityIndicator startAnimating];
+  [_activityIndicator setHidden:NO];
+  [_faviconContainerView setHidden:YES];
+}
+
+- (void)hideActivityIndicator {
+  [_activityIndicator stopAnimating];
+  [_activityIndicator setHidden:YES];
+  [_faviconContainerView setHidden:NO];
 }
 
 #pragma mark - Private
@@ -232,7 +260,7 @@ UIColor* GetInterfaceStyleDarkColor(UIColor* dynamicColor) {
     [snapshotView.trailingAnchor
         constraintEqualToAnchor:contentView.trailingAnchor],
     [snapshotView.bottomAnchor
-        constraintEqualToAnchor:contentView.bottomAnchor],
+        constraintGreaterThanOrEqualToAnchor:contentView.bottomAnchor],
   ];
   [NSLayoutConstraint activateConstraints:constraints];
 }
@@ -266,11 +294,15 @@ UIColor* GetInterfaceStyleDarkColor(UIColor* dynamicColor) {
 // Sets up the `_faviconContainerView` view.
 - (void)setupFaviconContainerView {
   UIView* faviconContainerView = [[UIView alloc] init];
+  faviconContainerView.translatesAutoresizingMaskIntoConstraints = NO;
   [_headerView addSubview:faviconContainerView];
 
-  faviconContainerView.translatesAutoresizingMaskIntoConstraints = NO;
+  _faviconContainerViewCenterYConstraint = [faviconContainerView.centerYAnchor
+      constraintEqualToAnchor:_headerView.topAnchor
+                     constant:kPinnedCellHeight / 2];
 
   [NSLayoutConstraint activateConstraints:@[
+    _faviconContainerViewCenterYConstraint,
     [faviconContainerView.leadingAnchor
         constraintEqualToAnchor:_headerView.leadingAnchor
                        constant:kPinnedCellHorizontalPadding],
@@ -278,8 +310,6 @@ UIColor* GetInterfaceStyleDarkColor(UIColor* dynamicColor) {
         constraintEqualToConstant:kPinnedCellFaviconContainerWidth],
     [faviconContainerView.heightAnchor
         constraintEqualToAnchor:faviconContainerView.widthAnchor],
-    [faviconContainerView.centerYAnchor
-        constraintEqualToAnchor:_headerView.centerYAnchor]
   ]];
 
   _faviconContainerView = faviconContainerView;
@@ -306,6 +336,27 @@ UIColor* GetInterfaceStyleDarkColor(UIColor* dynamicColor) {
   ]];
 
   _faviconView = faviconView;
+}
+
+- (void)setupActivityIndicator {
+  CGRect indicatorFrame =
+      CGRectMake(0, 0, kPinnedCellFaviconWidth, kPinnedCellFaviconWidth);
+  MDCActivityIndicator* activityIndicator =
+      [[MDCActivityIndicator alloc] initWithFrame:indicatorFrame];
+  activityIndicator.translatesAutoresizingMaskIntoConstraints = NO;
+  activityIndicator.cycleColors = @[ [UIColor colorNamed:kBlueColor] ];
+  activityIndicator.radius =
+      ui::AlignValueToUpperPixel(kPinnedCellFaviconWidth / 2);
+  [_headerView addSubview:activityIndicator];
+
+  [NSLayoutConstraint activateConstraints:@[
+    [activityIndicator.centerYAnchor
+        constraintEqualToAnchor:_faviconView.centerYAnchor],
+    [activityIndicator.centerXAnchor
+        constraintEqualToAnchor:_faviconView.centerXAnchor],
+  ]];
+
+  _activityIndicator = activityIndicator;
 }
 
 // Sets up the title label.
@@ -512,6 +563,8 @@ UIColor* GetInterfaceStyleDarkColor(UIColor* dynamicColor) {
 
   self.snapshotViewTopConstraint.constant = self.topTabView.frame.size.height;
   self.headerViewHeightConstraint.constant = self.topTabView.frame.size.height;
+  self.faviconContainerViewCenterYConstraint.constant =
+      self.topTabView.frame.size.height / 2;
 
   [self setNeedsUpdateConstraints];
   [self layoutIfNeeded];
@@ -534,7 +587,7 @@ UIColor* GetInterfaceStyleDarkColor(UIColor* dynamicColor) {
   [self scaleTabViews];
 
   self.snapshotViewTopConstraint.constant = kPinnedCellSnapshotTopPadding;
-  self.headerViewHeightConstraint.constant = kPinnedCellHeight;
+  self.faviconContainerViewCenterYConstraint.constant = kPinnedCellHeight / 2;
 
   [self setNeedsUpdateConstraints];
   [self layoutIfNeeded];

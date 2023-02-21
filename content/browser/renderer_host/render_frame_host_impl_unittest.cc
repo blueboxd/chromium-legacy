@@ -8,6 +8,7 @@
 #include "base/memory/raw_ptr.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/buildflag.h"
+#include "content/browser/renderer_host/input/timeout_monitor.h"
 #include "content/browser/renderer_host/navigation_controller_impl.h"
 #include "content/browser/renderer_host/render_frame_host_impl.h"
 #include "content/public/browser/cors_origin_pattern_setter.h"
@@ -88,8 +89,9 @@ TEST_F(RenderFrameHostImplTest, ExpectedMainWorldOrigin) {
             get_expected_main_world_origin(main_rfh()));
   EXPECT_EQ(url::Origin::Create(initial_url),
             main_rfh()->GetLastCommittedOrigin());
-  EXPECT_EQ(blink::StorageKey(url::Origin::Create(initial_url)),
-            main_test_rfh()->storage_key());
+  EXPECT_EQ(
+      blink::StorageKey::CreateFirstParty(url::Origin::Create(initial_url)),
+      main_test_rfh()->storage_key());
 
   // Verify expected main world origin when a pending navigation was started but
   // hasn't yet reached the ready-to-commit state.
@@ -108,8 +110,9 @@ TEST_F(RenderFrameHostImplTest, ExpectedMainWorldOrigin) {
             get_expected_main_world_origin(main_rfh()));
   EXPECT_EQ(url::Origin::Create(initial_url),
             main_rfh()->GetLastCommittedOrigin());
-  EXPECT_EQ(blink::StorageKey(url::Origin::Create(initial_url)),
-            main_test_rfh()->storage_key());
+  EXPECT_EQ(
+      blink::StorageKey::CreateFirstParty(url::Origin::Create(initial_url)),
+      main_test_rfh()->storage_key());
 
   // Verify expected main world origin once we are again in a steady state -
   // after a commit.
@@ -118,7 +121,7 @@ TEST_F(RenderFrameHostImplTest, ExpectedMainWorldOrigin) {
             get_expected_main_world_origin(main_rfh()));
   EXPECT_EQ(url::Origin::Create(final_url),
             main_rfh()->GetLastCommittedOrigin());
-  EXPECT_EQ(blink::StorageKey(url::Origin::Create(final_url)),
+  EXPECT_EQ(blink::StorageKey::CreateFirstParty(url::Origin::Create(final_url)),
             main_test_rfh()->storage_key());
 
   // As a test correctness check, verify that there was no RFH swap (the bug
@@ -163,10 +166,9 @@ TEST_F(RenderFrameHostImplTest, CrossSiteAncestorInFrameTree) {
 
   // Constructing expected values.
   url::Origin expected_final_origin = url::Origin::Create(parent_url);
-  blink::StorageKey expected_final_storage_key =
-      blink::StorageKey::CreateWithOptionalNonce(
-          expected_final_origin, net::SchemefulSite(expected_final_origin),
-          nullptr, blink::mojom::AncestorChainBit::kCrossSite);
+  blink::StorageKey expected_final_storage_key = blink::StorageKey::Create(
+      expected_final_origin, net::SchemefulSite(expected_final_origin),
+      blink::mojom::AncestorChainBit::kCrossSite);
   // Set should contain the set of sites between the current and top frame.
   std::set<net::SchemefulSite> party_context = {
       net::SchemefulSite(child_url_1)};
@@ -192,8 +194,8 @@ TEST_F(RenderFrameHostImplTest, CrossSiteAncestorInFrameTree) {
 TEST_F(RenderFrameHostImplTest, IsolationInfoDuringCommit) {
   GURL initial_url = GURL("https://initial.example.test/");
   url::Origin expected_initial_origin = url::Origin::Create(initial_url);
-  blink::StorageKey expected_initial_storage_key =
-      blink::StorageKey(expected_initial_origin);
+  const blink::StorageKey expected_initial_storage_key =
+      blink::StorageKey::CreateFirstParty(expected_initial_origin);
   net::IsolationInfo expected_initial_isolation_info =
       net::IsolationInfo::Create(
           net::IsolationInfo::RequestType::kOther, expected_initial_origin,
@@ -203,8 +205,8 @@ TEST_F(RenderFrameHostImplTest, IsolationInfoDuringCommit) {
 
   GURL final_url = GURL("https://final.example.test/");
   url::Origin expected_final_origin = url::Origin::Create(final_url);
-  blink::StorageKey expected_final_storage_key =
-      blink::StorageKey(expected_final_origin);
+  const blink::StorageKey expected_final_storage_key =
+      blink::StorageKey::CreateFirstParty(expected_final_origin);
   net::IsolationInfo expected_final_isolation_info = net::IsolationInfo::Create(
       net::IsolationInfo::RequestType::kOther, expected_final_origin,
       expected_final_origin,
@@ -568,9 +570,9 @@ TEST_F(RenderFrameHostImplTest, CalculateStorageKey) {
   // With no host permissions the grandchild document should have a cross-site
   // storage key with the `initial_url_ext` as it's top level origin.
   blink::StorageKey expected_grandchild_no_permissions_storage_key =
-      blink::StorageKey::CreateWithOptionalNonce(
+      blink::StorageKey::Create(
           grandchild_frame->GetLastCommittedOrigin(),
-          net::SchemefulSite(url::Origin::Create(initial_url_ext)), nullptr,
+          net::SchemefulSite(url::Origin::Create(initial_url_ext)),
           blink::mojom::AncestorChainBit::kCrossSite);
 
   EXPECT_EQ(expected_grandchild_no_permissions_storage_key,
@@ -616,18 +618,18 @@ TEST_F(RenderFrameHostImplTest, CalculateStorageKey) {
   // Child host should now have a storage key that is same site and uses the
   // `child_origin` as the `top_level_site`.
   blink::StorageKey expected_child_with_permissions_storage_key =
-      blink::StorageKey::CreateWithOptionalNonce(
+      blink::StorageKey::Create(
           child_frame->GetLastCommittedOrigin(),
-          net::SchemefulSite(child_frame->GetLastCommittedOrigin()), nullptr,
+          net::SchemefulSite(child_frame->GetLastCommittedOrigin()),
           blink::mojom::AncestorChainBit::kSameSite);
   EXPECT_EQ(expected_child_with_permissions_storage_key,
             child_frame->CalculateStorageKey(
                 child_frame->GetLastCommittedOrigin(), nullptr));
 
   blink::StorageKey expected_grandchild_with_permissions_storage_key =
-      blink::StorageKey::CreateWithOptionalNonce(
+      blink::StorageKey::Create(
           grandchild_frame->GetLastCommittedOrigin(),
-          net::SchemefulSite(child_frame->GetLastCommittedOrigin()), nullptr,
+          net::SchemefulSite(child_frame->GetLastCommittedOrigin()),
           blink::mojom::AncestorChainBit::kCrossSite);
   EXPECT_EQ(expected_grandchild_with_permissions_storage_key,
             grandchild_frame->CalculateStorageKey(
@@ -671,9 +673,9 @@ TEST_F(RenderFrameHostImplTest,
   // level document should be excluded from storage key calculations and a first
   // party, same-site storage key is expected.
   blink::StorageKey expected_child_with_permissions_storage_key =
-      blink::StorageKey::CreateWithOptionalNonce(
+      blink::StorageKey::Create(
           child_frame->GetLastCommittedOrigin(),
-          net::SchemefulSite(child_frame->GetLastCommittedOrigin()), nullptr,
+          net::SchemefulSite(child_frame->GetLastCommittedOrigin()),
           blink::mojom::AncestorChainBit::kSameSite);
   EXPECT_EQ(expected_child_with_permissions_storage_key,
             child_frame->CalculateStorageKey(
@@ -685,9 +687,9 @@ TEST_F(RenderFrameHostImplTest,
   // calculation.
   GURL no_host_permissions_url = GURL("https://noHostPermissions.com/");
   blink::StorageKey expected_storage_key_no_permissions =
-      blink::StorageKey::CreateWithOptionalNonce(
+      blink::StorageKey::Create(
           url::Origin::Create(no_host_permissions_url),
-          net::SchemefulSite(url::Origin::Create(initial_url_ext)), nullptr,
+          net::SchemefulSite(url::Origin::Create(initial_url_ext)),
           blink::mojom::AncestorChainBit::kCrossSite);
   EXPECT_EQ(expected_storage_key_no_permissions,
             child_frame->CalculateStorageKey(
@@ -989,22 +991,24 @@ TEST_P(RenderFrameHostImplThirdPartyStorageTest,
 
   // Top level storage key should not change if third party partitioning is on
   // or off
-  EXPECT_EQ(blink::StorageKey(url::Origin::Create(initial_url)),
-            main_test_rfh()->storage_key());
+  EXPECT_EQ(
+      blink::StorageKey::CreateFirstParty(url::Origin::Create(initial_url)),
+      main_test_rfh()->storage_key());
 
   if (ThirdPartyStoragePartitioningEnabled()) {
     // child frame storage key should contain child_origin + top_level_origin if
     // third party partitioning is on.
-    EXPECT_EQ(blink::StorageKey::CreateWithOptionalNonce(
+    EXPECT_EQ(blink::StorageKey::Create(
                   url::Origin::Create(child_url),
-                  net::SchemefulSite(url::Origin::Create(initial_url)), nullptr,
+                  net::SchemefulSite(url::Origin::Create(initial_url)),
                   blink::mojom::AncestorChainBit::kCrossSite),
               child_frame->storage_key());
   } else {
     // child frame storage key should only be partitioned by child origin if
     // third party partitioning is off.
-    EXPECT_EQ(blink::StorageKey(url::Origin::Create(child_url)),
-              child_frame->storage_key());
+    EXPECT_EQ(
+        blink::StorageKey::CreateFirstParty(url::Origin::Create(child_url)),
+        child_frame->storage_key());
   }
 }
 
@@ -1061,5 +1065,73 @@ TEST_F(RenderFrameHostImplTest, GetVirtualAuthenticatorManagerWhenInactiveRFH) {
   }
 }
 #endif
+
+namespace {
+
+class MockWebContentsDelegate : public WebContentsDelegate {
+ public:
+  MOCK_METHOD(void, CloseContents, (WebContents*));
+};
+
+}  // namespace
+
+// Ensure that a close request from the renderer process is ignored if a
+// navigation causes a different RenderFrameHost to commit first. See
+// https://crbug.com/1406023.
+TEST_F(RenderFrameHostImplTest,
+       RendererInitiatedCloseIsCancelledIfPageIsntPrimary) {
+  MockWebContentsDelegate delegate;
+  contents()->SetDelegate(&delegate);
+
+  RenderFrameHostImpl* rfh = main_test_rfh();
+  EXPECT_CALL(delegate, CloseContents(contents())).Times(0);
+
+  // Have the renderer request to close the page.
+  rfh->ClosePage(RenderFrameHostImpl::ClosePageSource::kRenderer);
+
+  // The close timeout should be running.
+  EXPECT_TRUE(rfh->close_timeout_ && rfh->close_timeout_->IsRunning());
+
+  // Simulate the rfh going into the back-forward cache before the close timeout
+  // fires.
+  rfh->lifecycle_state_ =
+      RenderFrameHostImpl::LifecycleStateImpl::kInBackForwardCache;
+
+  // Simulate the close timer firing.
+  rfh->ClosePageTimeout(RenderFrameHostImpl::ClosePageSource::kRenderer);
+
+  // The page should not close since it's no longer the primary page.
+  testing::Mock::VerifyAndClearExpectations(&delegate);
+}
+
+// Ensure that a close request from the browser process cannot be ignored even
+// if a navigation causes a different RenderFrameHost to commit first. See
+// https://crbug.com/1406023.
+TEST_F(RenderFrameHostImplTest,
+       BrowserInitiatedCloseIsNotCancelledIfPageIsntPrimary) {
+  MockWebContentsDelegate delegate;
+  contents()->SetDelegate(&delegate);
+
+  RenderFrameHostImpl* rfh = main_test_rfh();
+  EXPECT_CALL(delegate, CloseContents(contents()));
+
+  // Have the browser request to close the page.
+  rfh->ClosePage(RenderFrameHostImpl::ClosePageSource::kBrowser);
+
+  // The close timeout should be running.
+  EXPECT_TRUE(rfh->close_timeout_ && rfh->close_timeout_->IsRunning());
+
+  // Simulate the rfh going into the back-forward cache before the close timeout
+  // fires.
+  rfh->lifecycle_state_ =
+      RenderFrameHostImpl::LifecycleStateImpl::kInBackForwardCache;
+
+  // Simulate the close timer firing.
+  rfh->ClosePageTimeout(RenderFrameHostImpl::ClosePageSource::kBrowser);
+
+  // The page should close regardless of it not being primary since the browser
+  // requested it.
+  testing::Mock::VerifyAndClearExpectations(&delegate);
+}
 
 }  // namespace content

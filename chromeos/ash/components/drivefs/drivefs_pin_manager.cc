@@ -284,7 +284,8 @@ std::ostream& operator<<(std::ostream& out, const Stage stage) {
 }
 
 std::ostream& PinManager::File::PrintTo(std::ostream& out) const {
-  return out << "{transferred: " << HumanReadableSize(transferred)
+  return out << "{path: " << Quote(path)
+             << ", transferred: " << HumanReadableSize(transferred)
              << ", total: " << HumanReadableSize(total)
              << ", pinned: " << pinned << ", in_progress: " << in_progress
              << "}";
@@ -334,17 +335,25 @@ bool PinManager::CanPin(const mojom::FileMetadata& md, const Path& path) {
   return true;
 }
 
-bool PinManager::Add(const Id id,
-                     const Path& path,
-                     const int64_t size,
-                     const bool pinned,
-                     const bool available_offline) {
+bool PinManager::Add(const mojom::FileMetadata& md, const Path& path) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  const Id id = Id(md.stable_id);
+  VLOG(3) << "Considering " << id << " " << Quote(path) << " " << Quote(md);
+
+  if (!CanPin(md, path)) {
+    progress_.skipped_files++;
+    return false;
+  }
+
+  const int64_t size = GetSize(md);
   DCHECK_GE(size, 0) << " for " << id << " " << Quote(path);
 
-  const auto [it, ok] = files_to_track_.try_emplace(
-      id,
-      File{.path = path, .total = size, .pinned = pinned, .in_progress = true});
+  const auto [it, ok] =
+      files_to_track_.try_emplace(id, File{.path = path,
+                                           .total = size,
+                                           .pinned = md.pinned,
+                                           .in_progress = true});
   DCHECK_EQ(id, it->first);
   File& file = it->second;
   if (!ok) {
@@ -360,7 +369,7 @@ bool PinManager::Add(const Id id,
   progress_.files_to_pin++;
   progress_.bytes_to_pin += size;
 
-  if (pinned) {
+  if (md.pinned) {
     progress_.syncing_files++;
     DCHECK_EQ(progress_.syncing_files, CountPinnedFiles());
   } else {
@@ -369,7 +378,7 @@ bool PinManager::Add(const Id id,
               static_cast<size_t>(progress_.files_to_pin));
   }
 
-  if (available_offline) {
+  if (md.available_offline) {
     file.transferred = size;
     progress_.pinned_bytes += size;
   } else {
@@ -377,27 +386,14 @@ bool PinManager::Add(const Id id,
     progress_.required_space += RoundToBlockSize(size);
   }
 
-  VLOG_IF(1, pinned && !available_offline)
+  VLOG_IF(1, md.pinned && !md.available_offline)
       << "Already pinned but not available offline yet: " << id << " "
       << Quote(path);
-  VLOG_IF(1, !pinned && available_offline)
+  VLOG_IF(1, !md.pinned && md.available_offline)
       << "Not pinned yet but already available offline: " << id << " "
       << Quote(path);
 
   return true;
-}
-
-bool PinManager::Add(const mojom::FileMetadata& md, const Path& path) {
-  const Id id = Id(md.stable_id);
-  VLOG(3) << "Considering " << id << " " << Quote(path) << " " << Quote(md);
-
-  if (!CanPin(md, path)) {
-    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-    progress_.skipped_files++;
-    return false;
-  }
-
-  return Add(id, path, GetSize(md), md.pinned, md.available_offline);
 }
 
 bool PinManager::Remove(const Id id,
@@ -776,6 +772,12 @@ void PinManager::OnSyncingStatusUpdate(const mojom::SyncingStatus& status) {
 
   for (const mojom::ItemEventPtr& event : status.item_events) {
     DCHECK(event);
+
+    if (!InProgress(progress_.stage)) {
+      VLOG(2) << "Ignored " << Quote(*event);
+      continue;
+    }
+
     if (OnSyncingEvent(*event)) {
       progress_.useful_events++;
     } else {
@@ -818,8 +820,8 @@ bool PinManager::OnSyncingEvent(mojom::ItemEvent& event) {
         return false;
       }
 
-      VLOG(3) << "Synced " << id << " " << Quote(path) << ": " << Quote(event);
-      VLOG_IF(2, !VLOG_IS_ON(3)) << "Synced " << id << " " << Quote(path);
+      VLOG(2) << "Synced " << id << " " << Quote(path) << ": " << Quote(event);
+      VLOG_IF(1, !VLOG_IS_ON(2)) << "Synced " << id << " " << Quote(path);
       progress_.pinned_files++;
       return true;
 
@@ -880,6 +882,13 @@ void PinManager::OnFilesChanged(const std::vector<mojom::FileChange>& changes) {
 
 void PinManager::OnFileCreated(const mojom::FileChange& event) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK_EQ(event.type, mojom::FileChange::Type::kCreate);
+
+  if (!InProgress(progress_.stage)) {
+    VLOG(2) << "Ignored " << Quote(event) << ": PinManager is currently "
+            << progress_.stage;
+    return;
+  }
 
   const Id id = Id(event.stable_id);
   const Path& path = event.path;
@@ -901,6 +910,7 @@ void PinManager::OnFileCreated(const mojom::FileChange& event) {
 
 void PinManager::OnFileDeleted(const mojom::FileChange& event) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK_EQ(event.type, mojom::FileChange::Type::kDelete);
 
   VLOG(1) << "Got " << Quote(event);
   const Path& path = event.path;
@@ -924,6 +934,7 @@ void PinManager::OnFileDeleted(const mojom::FileChange& event) {
 
 void PinManager::OnFileModified(const mojom::FileChange& event) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK_EQ(event.type, mojom::FileChange::Type::kModify);
 
   const Id id = Id(event.stable_id);
   const Path& path = event.path;

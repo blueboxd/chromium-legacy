@@ -48,10 +48,6 @@
         {
           "builder": "ios-simulator-inverse-fieldtrials-fyi",
           "group": "tryserver.chromium.mac"
-        },
-        {
-          "builder": "ios-simulator-rts",
-          "group": "tryserver.chromium.mac"
         }
       ]
     }
@@ -59,7 +55,8 @@
   "$build/reclient": {
     "instance": "rbe-chromium-trusted",
     "jobs": 250,
-    "metrics_project": "chromium-reclient-metrics"
+    "metrics_project": "chromium-reclient-metrics",
+    "scandeps_server": true
   },
   "$recipe_engine/resultdb/test_presentation": {
     "column_keys": [],

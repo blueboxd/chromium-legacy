@@ -54,6 +54,11 @@ void AddUiColorMixer(ColorProvider* provider,
       GetColorWithMaxContrast(kColorButtonBackgroundProminent);
   mixer[kColorButtonForegroundTonal] = {kColorSysOnPrimaryContainer};
   mixer[kColorButtonForegroundUnchecked] = {kColorSecondaryForeground};
+  mixer[kColorMultitaskFeedbackButtonLabelBackground] = {
+      dark_mode ? SetAlpha(SK_ColorWHITE, 0x1A)
+                : SetAlpha(SK_ColorBLACK, 0x0D)};
+  mixer[kColorMultitaskFeedbackButtonLabelForeground] = {
+      dark_mode ? gfx::kGoogleGrey200 : gfx::kGoogleGrey900};
   mixer[kColorCustomFrameCaptionForeground] = {SK_ColorWHITE};
   mixer[kColorDebugBoundsOutline] = SetAlpha(SK_ColorRED, 0x30);
   mixer[kColorDebugContentOutline] = SetAlpha(SK_ColorBLUE, 0x30);
@@ -158,20 +163,6 @@ void AddUiColorMixer(ColorProvider* provider,
                gfx::kGoogleGreyAlpha500);
   mixer[kColorProgressBarPaused] = {kColorDisabledForeground};
   mixer[kColorProgressBar] = {kColorAccent};
-  mixer[kColorReadAnythingBackground] = {
-      dark_mode ? kColorReadAnythingBackgroundDark
-                : kColorReadAnythingBackgroundLight};
-  mixer[kColorReadAnythingBackgroundBlue] = {gfx::kGoogleBlue200};
-  mixer[kColorReadAnythingBackgroundDark] = {gfx::kGoogleGrey900};
-  mixer[kColorReadAnythingBackgroundLight] = {gfx::kGoogleGrey050};
-  mixer[kColorReadAnythingBackgroundYellow] = {gfx::kGoogleYellow200};
-  mixer[kColorReadAnythingForeground] = {
-      dark_mode ? kColorReadAnythingForegroundDark
-                : kColorReadAnythingForegroundLight};
-  mixer[kColorReadAnythingForegroundBlue] = {gfx::kGoogleGrey900};
-  mixer[kColorReadAnythingForegroundDark] = {gfx::kGoogleGrey200};
-  mixer[kColorReadAnythingForegroundLight] = {gfx::kGoogleGrey800};
-  mixer[kColorReadAnythingForegroundYellow] = {gfx::kGoogleGrey800};
   mixer[kColorScrollbarArrowBackgroundHovered] = {
       dark_mode ? SkColorSetRGB(0x4F, 0x4F, 0x4F)
                 : SkColorSetRGB(0xD2, 0xD2, 0xD2)};

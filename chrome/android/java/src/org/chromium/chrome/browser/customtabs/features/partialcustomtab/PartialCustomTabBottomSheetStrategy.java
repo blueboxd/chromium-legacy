@@ -453,7 +453,11 @@ public class PartialCustomTabBottomSheetStrategy extends PartialCustomTabBaseStr
 
     @Override
     protected boolean isFullHeight() {
-        return isLandscape() || MultiWindowUtils.getInstance().isInMultiWindowMode(mActivity);
+        if (ChromeFeatureList.sCctResizableSideSheet.isEnabled()) {
+            return MultiWindowUtils.getInstance().isInMultiWindowMode(mActivity);
+        } else {
+            return isLandscape() || MultiWindowUtils.getInstance().isInMultiWindowMode(mActivity);
+        }
     }
 
     private boolean isLandscape() {
@@ -744,9 +748,8 @@ public class PartialCustomTabBottomSheetStrategy extends PartialCustomTabBaseStr
         int bottomY = mDisplayHeight - mNavbarHeight;
 
         if (finalY < initialY) { // Move up
-            animateTabTo(Math.abs(topY - finalY) < Math.abs(finalY - initialY)
-                            ? HeightStatus.TOP
-                            : HeightStatus.INITIAL_HEIGHT,
+            boolean toTop = Math.abs(topY - finalY) < Math.abs(finalY - initialY);
+            animateTabTo(toTop && !isFixedHeight() ? HeightStatus.TOP : HeightStatus.INITIAL_HEIGHT,
                     /*autoResize=*/false);
             return true;
         } else { // Move down

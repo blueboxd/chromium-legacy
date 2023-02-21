@@ -133,11 +133,13 @@
 <translation id="163517899691012366">ખલેલ પાડશો નહીં સુવિધા ચાલુ હોય ત્યારે નોટિફિકેશન મ્યૂટ કરેલા હોય છે</translation>
 <translation id="1637505162081889933"><ph name="NUM_DEVICES" /> ડિવાઇસ</translation>
 <translation id="1639239467298939599">લોડ થઇ રહી છે</translation>
+<translation id="1647986356840967552">પાછલું પેજ</translation>
 <translation id="1654477262762802994">વૉઇસ ક્વેરી શરૂ કરો</translation>
 <translation id="1668469839109562275">બિલ્ટ-ઇન VPN</translation>
 <translation id="1677472565718498478"><ph name="TIME" /> બાકી</translation>
 <translation id="1677507110654891115"><ph name="FEATURE_NAME" /> કનેક્ટ કરેલું નથી.</translation>
 <translation id="1677582821739292812">કોઈ વ્યક્તિ તમારી સ્ક્રીન જોઈ રહી છે</translation>
+<translation id="1683399938733266832">CPUનો હાલનો વપરાશ: <ph name="CPU_USEAGE" />%</translation>
 <translation id="169515659049020177">Shift</translation>
 <translation id="1698080062160024910"><ph name="TOTAL_TIME" /> ટાઇમર · <ph name="LABEL" /></translation>
 <translation id="1698760176351776263">IPv6 સરનામું: <ph name="ADDRESS" /></translation>
@@ -380,6 +382,7 @@
 <translation id="3051189971848907985">પ્રોફાઇલનું નામ બદલી રહ્યાં છીએ. થોડીવાર રાહ જુઓ.</translation>
 <translation id="3055162170959710888">આજે તમે <ph name="USED_TIME" /> માટે આ ડિવાઇસનો ઉપયોગ કર્યો છે</translation>
 <translation id="3062298103034426069">સપોર્ટ કરવામાં આવતી નથી</translation>
+<translation id="3068622547379332530">વર્ઝન <ph name="VERSION_NAME" /> (<ph name="OFFICIAL_STATUS" />) <ph name="CHANNEL_NAME" /> <ph name="PROCESSOR_VARIATION" /></translation>
 <translation id="3068711042108640621">શેલ્ફ ડાબી બાજુએ છે</translation>
 <translation id="3077734595579995578">shift</translation>
 <translation id="3081696990447829002">મેનૂ વિસ્તૃત કરો</translation>
@@ -555,6 +558,7 @@
 <translation id="397105322502079400">ગણના કરી રહ્યું છે...</translation>
 <translation id="397726367135689299">બૅટરી ચાર્જ કરવાની સુવિધા અવિશ્વસનીય હોઈ શકે છે.</translation>
 <translation id="3977512764614765090">બૅટરી <ph name="PERCENTAGE" />% પર છે અને ચાર્જ થઈ રહી છે.</translation>
+<translation id="3984536049089846927">આગલું પેજ</translation>
 <translation id="3986082989454912832">કૉલનો જવાબ આપો</translation>
 <translation id="3995138139523574647">USB-C ડિવાઇસ (જમણી બાજુનું પાછળનું પોર્ટ)</translation>
 <translation id="40062176907008878">હસ્તલેખન</translation>
@@ -577,7 +581,7 @@
 <translation id="4123259114412175274">તમારા Chromebookને અનલૉક કરવા માટે, તમારા ફોનનું બ્લૂટૂથ ચાલુ હોવાની ખાતરી કરો</translation>
 <translation id="4125970834901680537">ટૅબ્લેટ મોડમાં ઍપમાંનું કન્ટેન્ટ સ્ટ્રીમ કરી શકાતું નથી. લૅપટૉપ મોડમાં ફરી પ્રયાસ કરો.</translation>
 <translation id="4129129681837227511">તમારી લૉક સ્ક્રીન પર નોટિફિકેશન જોવા માટે, સેટિંગને બદલવા માટે અનલૉક કરો</translation>
-<translation id="4130035430755296270">લેઆઉટના વધુ વિકલ્પો માટે માઉસ ફેરવતા રહો</translation>
+<translation id="4131973331381812765">તાપમાન: <ph name="TEMPERATURE" />°C - હાલની ગતિ: <ph name="CPU_AVERAGE_CURRENT_FREQUENCY_GHZ" />GHz</translation>
 <translation id="4136724716305260864">સૂર્યોદય સુધી ચાલુ રાખો</translation>
 <translation id="4146833061457621061">મ્યુઝિક વગાડો</translation>
 <translation id="4150201353443180367">ડિસ્પ્લે</translation>
@@ -732,6 +736,7 @@
 <translation id="4895488851634969361">બેટરી સંપૂર્ણ છે.</translation>
 <translation id="490375751687810070">વર્ટિકલ</translation>
 <translation id="490788395437447240">બૅટરી <ph name="BATTERY_PERCENTAGE" />%</translation>
+<translation id="491504982845934899">ડિવાઇસના સેટઅપ બાદ, <ph name="NETWORK_NAME" />ને સક્રિય કરો</translation>
 <translation id="4917385247580444890">સશક્ત</translation>
 <translation id="4918086044614829423">સ્વીકારો</translation>
 <translation id="4919841137949306064"><ph name="APP_NAME" /> હાલમાં તમારા કૅમેરાનો ઉપયોગ કરી રહી છે</translation>
@@ -1328,6 +1333,7 @@
 <translation id="8131740175452115882">પુષ્ટિ કરો</translation>
 <translation id="8131994907636310308">સૉર્ટ કરવાનું ટોસ્ટ બંધ કરો</translation>
 <translation id="8132793192354020517"><ph name="NAME" /> થી કનેક્ટેડ છે</translation>
+<translation id="8138705869659070104">ડિવાઇસના સેટઅપ બાદ સક્રિય કરો</translation>
 <translation id="813913629614996137">પ્રારંભ કરી રહ્યું છે...</translation>
 <translation id="8142441511840089262">ડબલ ક્લિક કરો</translation>
 <translation id="8142699993796781067">ખાનગી નેટવર્ક</translation>

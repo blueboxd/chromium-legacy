@@ -5,11 +5,13 @@
 import 'chrome://webui-test/mojo_webui_test_support.js';
 import 'chrome://apps/app_list.js';
 import 'chrome://apps/app_item.js';
+import 'chrome://apps/deprecated_apps_link.js';
 
 import {AppInfo, PageRemote, RunOnOsLoginMode} from 'chrome://apps/app_home.mojom-webui.js';
 import {AppHomeUserAction} from 'chrome://apps/app_home_utils.js';
 import {AppListElement} from 'chrome://apps/app_list.js';
 import {BrowserProxy} from 'chrome://apps/browser_proxy.js';
+import {DeprecatedAppsLinkElement} from 'chrome://apps/deprecated_apps_link.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 import {assertEquals, assertFalse, assertTrue} from 'chrome://webui-test/chai_assert.js';
 import {waitAfterNextRender} from 'chrome://webui-test/polymer_test_util.js';
@@ -42,6 +44,7 @@ suite('AppListTest', () => {
   let testBrowserProxy: TestAppHomeBrowserProxy;
   let callbackRouterRemote: PageRemote;
   let testAppInfo: AppInfo;
+  let deprecatedAppInfo: AppInfo;
   let metricsPrivateMock: MetricsPrivateMock;
 
   setup(async () => {
@@ -52,8 +55,7 @@ suite('AppListTest', () => {
           startUrl: {url: 'https://test.google.com/testapp1'},
           name: 'Test App 1',
           iconUrl: {
-            url:
-                'chrome://extension-icon/ahfgeienlihckogmohjhadlkjgocpleb/128/1',
+            url: 'chrome://app-icon/ahfgeienlihckogmohjhadlkjgocpleb/128/1',
           },
           mayShowRunOnOsLoginMode: true,
           mayToggleRunOnOsLoginMode: true,
@@ -61,14 +63,14 @@ suite('AppListTest', () => {
           isLocallyInstalled: true,
           mayUninstall: true,
           openInWindow: false,
+          isDeprecatedApp: false,
         },
         {
           id: 'ahfgeienlihckogmotestdlkjgocpleb',
           startUrl: {url: 'https://test.google.com/testapp2'},
           name: 'Test App 2',
           iconUrl: {
-            url:
-                'chrome://extension-icon/ahfgeienlihckogmotestdlkjgocpleb/128/1',
+            url: 'chrome://app-icon/ahfgeienlihckogmotestdlkjgocpleb/128/1',
           },
           mayShowRunOnOsLoginMode: false,
           mayToggleRunOnOsLoginMode: false,
@@ -76,6 +78,7 @@ suite('AppListTest', () => {
           isLocallyInstalled: false,
           mayUninstall: false,
           openInWindow: false,
+          isDeprecatedApp: false,
         },
       ],
     };
@@ -85,7 +88,7 @@ suite('AppListTest', () => {
       startUrl: {url: 'https://test.google.com/testapp3'},
       name: 'Test App 3',
       iconUrl: {
-        url: 'chrome://extension-icon/mmfbcljfglbokpmkimbfghdkjmjhdgbg/128/1',
+        url: 'chrome://app-icon/mmfbcljfglbokpmkimbfghdkjmjhdgbg/128/1',
       },
       mayShowRunOnOsLoginMode: false,
       mayToggleRunOnOsLoginMode: false,
@@ -93,6 +96,25 @@ suite('AppListTest', () => {
       isLocallyInstalled: true,
       openInWindow: false,
       mayUninstall: true,
+      isDeprecatedApp: false,
+    };
+    deprecatedAppInfo = {
+      id: 'mplpmdejoamenolpcojgegminhcnmibo',
+      startUrl: {url: 'https://test.google.com/deprecated_app'},
+      name: 'Deprecated App',
+      iconUrl: {
+        url: 'chrome://extension-icon/mplpmdejoamenolpcojgegminhcnmibo/128/1',
+      },
+      mayShowRunOnOsLoginMode: false,
+      mayToggleRunOnOsLoginMode: false,
+      runOnOsLoginMode: RunOnOsLoginMode.kNotRun,
+      isLocallyInstalled: true,
+      openInWindow: true,
+      mayUninstall: true,
+      isDeprecatedApp: true,
+      storePageUrl: {
+        url: '',
+      },
     };
     metricsPrivateMock = new MetricsPrivateMock();
     chrome.metricsPrivate =
@@ -117,19 +139,19 @@ suite('AppListTest', () => {
     assertEquals(apps.appList.length, appItems.length);
 
     assertEquals(
-        appItems[0]!.shadowRoot!.querySelector('.text-container')!.textContent,
+        appItems[0]!.shadowRoot!.querySelector('#textContainer')!.textContent,
         apps.appList[0]!.name);
     assertEquals(
-        appItems[0]!.shadowRoot!
-            .querySelector<HTMLImageElement>('.icon-container img')!.src,
+        appItems[0]!.shadowRoot!.querySelector<HTMLImageElement>(
+                                    '#iconImage')!.src,
         apps.appList[0]!.iconUrl.url);
 
     assertEquals(
-        appItems[1]!.shadowRoot!.querySelector('.text-container')!.textContent,
+        appItems[1]!.shadowRoot!.querySelector('#textContainer')!.textContent,
         apps.appList[1]!.name);
     assertEquals(
-        appItems[1]!.shadowRoot!
-            .querySelector<HTMLImageElement>('.icon-container img')!.src,
+        appItems[1]!.shadowRoot!.querySelector<HTMLImageElement>(
+                                    '#iconImage')!.src,
         apps.appList[1]!.iconUrl.url + '?grayscale=true');
   });
 
@@ -141,8 +163,8 @@ suite('AppListTest', () => {
     let appItemList =
         Array.from(appListElement.shadowRoot!.querySelectorAll('app-item'));
     assertTrue(!!appItemList.find(
-        appItem => appItem.shadowRoot!.querySelector(
-                                          '.text-container')!.textContent ===
+        appItem =>
+            appItem.shadowRoot!.querySelector('#textContainer')!.textContent ===
             testAppInfo.name));
 
     // Test removing an app
@@ -152,8 +174,8 @@ suite('AppListTest', () => {
     appItemList =
         Array.from(appListElement.shadowRoot!.querySelectorAll('app-item'));
     assertFalse(!!appItemList.find(
-        appItem => appItem.shadowRoot!.querySelector(
-                                          '.text-container')!.textContent ===
+        appItem =>
+            appItem.shadowRoot!.querySelector('#textContainer')!.textContent ===
             testAppInfo.name));
   });
 
@@ -177,7 +199,7 @@ suite('AppListTest', () => {
     const appInfo = apps.appList[0]!;
 
     const openInWindow =
-        contextMenu.querySelector<HTMLElement>('#open-in-window');
+        contextMenu.querySelector<HTMLElement>('#openInWindow');
     assertTrue(!!openInWindow);
     assertEquals(openInWindow.hidden, !appInfo.isLocallyInstalled);
     assertEquals(
@@ -185,7 +207,7 @@ suite('AppListTest', () => {
         appInfo.openInWindow);
 
     const launchOnStartup =
-        contextMenu.querySelector<HTMLElement>('#launch-on-startup');
+        contextMenu.querySelector<HTMLElement>('#launchOnStartup');
     assertTrue(!!launchOnStartup);
     assertEquals(launchOnStartup.hidden, !appInfo.mayShowRunOnOsLoginMode);
 
@@ -196,20 +218,19 @@ suite('AppListTest', () => {
         launchOnStartup.querySelector('cr-checkbox')!.disabled,
         !appInfo.mayToggleRunOnOsLoginMode);
 
-    assertTrue(!!contextMenu.querySelector('#create-shortcut'));
+    assertTrue(!!contextMenu.querySelector('#createShortcut'));
     assertTrue(!!contextMenu.querySelector('#uninstall'));
-    assertTrue(!!contextMenu.querySelector('#app-settings'));
-    assertTrue(!!contextMenu.querySelector('#install-locally'));
+    assertTrue(!!contextMenu.querySelector('#appSettings'));
+    assertTrue(!!contextMenu.querySelector('#installLocally'));
 
     assertFalse(
-        contextMenu.querySelector<HTMLElement>('#create-shortcut')!.hidden);
+        contextMenu.querySelector<HTMLElement>('#createShortcut')!.hidden);
     assertFalse(contextMenu.querySelector<HTMLElement>('#uninstall')!.hidden);
     assertFalse(
         contextMenu.querySelector<HTMLButtonElement>('#uninstall')!.disabled);
-    assertFalse(
-        contextMenu.querySelector<HTMLElement>('#app-settings')!.hidden);
+    assertFalse(contextMenu.querySelector<HTMLElement>('#appSettings')!.hidden);
     assertTrue(
-        contextMenu.querySelector<HTMLElement>('#install-locally')!.hidden);
+        contextMenu.querySelector<HTMLElement>('#installLocally')!.hidden);
   });
 
   test('context menu not locally installed', () => {
@@ -230,18 +251,17 @@ suite('AppListTest', () => {
     appItem.dispatchEvent(new CustomEvent('contextmenu'));
     assertTrue(contextMenu.open);
 
+    assertTrue(contextMenu.querySelector<HTMLElement>('#openInWindow')!.hidden);
     assertTrue(
-        contextMenu.querySelector<HTMLElement>('#open-in-window')!.hidden);
+        contextMenu.querySelector<HTMLElement>('#launchOnStartup')!.hidden);
     assertTrue(
-        contextMenu.querySelector<HTMLElement>('#launch-on-startup')!.hidden);
-    assertTrue(
-        contextMenu.querySelector<HTMLElement>('#create-shortcut')!.hidden);
-    assertTrue(contextMenu.querySelector<HTMLElement>('#app-settings')!.hidden);
+        contextMenu.querySelector<HTMLElement>('#createShortcut')!.hidden);
+    assertTrue(contextMenu.querySelector<HTMLElement>('#appSettings')!.hidden);
     assertFalse(contextMenu.querySelector<HTMLElement>('#uninstall')!.hidden);
     assertTrue(
         contextMenu.querySelector<HTMLButtonElement>('#uninstall')!.disabled);
     assertFalse(
-        contextMenu.querySelector<HTMLElement>('#install-locally')!.hidden);
+        contextMenu.querySelector<HTMLElement>('#installLocally')!.hidden);
   });
 
   test('toggle open in window', async () => {
@@ -254,7 +274,7 @@ suite('AppListTest', () => {
     const contextMenu = appItem.shadowRoot!.querySelector('cr-action-menu');
     assertTrue(!!contextMenu);
     const openInWindow =
-        contextMenu.querySelector<HTMLElement>('#open-in-window');
+        contextMenu.querySelector<HTMLElement>('#openInWindow');
     assertTrue(!!openInWindow);
     const checkbox = openInWindow.querySelector('cr-checkbox');
     assertTrue(!!checkbox);
@@ -313,7 +333,7 @@ suite('AppListTest', () => {
     const contextMenu = appItem.shadowRoot!.querySelector('cr-action-menu');
     assertTrue(!!contextMenu);
     const launchOnStartup =
-        contextMenu.querySelector<HTMLElement>('#launch-on-startup');
+        contextMenu.querySelector<HTMLElement>('#launchOnStartup');
     assertTrue(!!launchOnStartup);
     const checkbox = launchOnStartup.querySelector('cr-checkbox');
     assertTrue(!!checkbox);
@@ -373,7 +393,7 @@ suite('AppListTest', () => {
     const contextMenu = appItem.shadowRoot!.querySelector('cr-action-menu');
     assertTrue(!!contextMenu);
     const launchOnStartup =
-        contextMenu.querySelector<HTMLElement>('#launch-on-startup');
+        contextMenu.querySelector<HTMLElement>('#launchOnStartup');
     assertTrue(!!launchOnStartup);
     const checkbox = launchOnStartup.querySelector('cr-checkbox');
     assertTrue(!!checkbox);
@@ -432,7 +452,7 @@ suite('AppListTest', () => {
     appItem.dispatchEvent(new CustomEvent('contextmenu'));
 
     const appSettings =
-        appItem.shadowRoot!.querySelector<HTMLElement>('#app-settings');
+        appItem.shadowRoot!.querySelector<HTMLElement>('#appSettings');
     assertTrue(!!appSettings);
 
     appSettings.click();
@@ -451,7 +471,7 @@ suite('AppListTest', () => {
     appItem.dispatchEvent(new CustomEvent('contextmenu'));
 
     const createShortcut =
-        appItem.shadowRoot!.querySelector<HTMLElement>('#create-shortcut');
+        appItem.shadowRoot!.querySelector<HTMLElement>('#createShortcut');
     assertTrue(!!createShortcut);
 
     createShortcut.click();
@@ -468,8 +488,7 @@ suite('AppListTest', () => {
     assertTrue(!!appItem);
 
     assertEquals(
-        appItem.shadowRoot!
-            .querySelector<HTMLImageElement>('.icon-container img')!.src,
+        appItem.shadowRoot!.querySelector<HTMLImageElement>('#iconImage')!.src,
         apps.appList[1]!.iconUrl.url + '?grayscale=true');
 
     appItem.dispatchEvent(new CustomEvent('contextmenu'));
@@ -477,15 +496,14 @@ suite('AppListTest', () => {
     const contextMenu = appItem.shadowRoot!.querySelector('cr-action-menu');
     assertTrue(!!contextMenu);
 
+    assertTrue(contextMenu.querySelector<HTMLElement>('#openInWindow')!.hidden);
     assertTrue(
-        contextMenu.querySelector<HTMLElement>('#open-in-window')!.hidden);
-    assertTrue(
-        contextMenu.querySelector<HTMLElement>('#create-shortcut')!.hidden);
-    assertTrue(contextMenu.querySelector<HTMLElement>('#app-settings')!.hidden);
+        contextMenu.querySelector<HTMLElement>('#createShortcut')!.hidden);
+    assertTrue(contextMenu.querySelector<HTMLElement>('#appSettings')!.hidden);
     assertFalse(contextMenu.querySelector<HTMLElement>('#uninstall')!.hidden);
 
     const installLocally =
-        appItem.shadowRoot!.querySelector<HTMLElement>('#install-locally');
+        appItem.shadowRoot!.querySelector<HTMLElement>('#installLocally');
     assertTrue(!!installLocally);
     assertFalse(installLocally.hidden);
 
@@ -496,21 +514,19 @@ suite('AppListTest', () => {
     await callbackRouterRemote.$.flushForTesting();
     flush();
     assertEquals(
-        appItem.shadowRoot!
-            .querySelector<HTMLImageElement>('.icon-container img')!.src,
+        appItem.shadowRoot!.querySelector<HTMLImageElement>('#iconImage')!.src,
         apps.appList[1]!.iconUrl.url);
 
     appItem.dispatchEvent(new CustomEvent('contextmenu'));
 
     assertFalse(
-        contextMenu.querySelector<HTMLElement>('#open-in-window')!.hidden);
+        contextMenu.querySelector<HTMLElement>('#openInWindow')!.hidden);
     assertFalse(
-        contextMenu.querySelector<HTMLElement>('#create-shortcut')!.hidden);
-    assertFalse(
-        contextMenu.querySelector<HTMLElement>('#app-settings')!.hidden);
+        contextMenu.querySelector<HTMLElement>('#createShortcut')!.hidden);
+    assertFalse(contextMenu.querySelector<HTMLElement>('#appSettings')!.hidden);
     assertFalse(contextMenu.querySelector<HTMLElement>('#uninstall')!.hidden);
     assertTrue(
-        contextMenu.querySelector<HTMLElement>('#install-locally')!.hidden);
+        contextMenu.querySelector<HTMLElement>('#installLocally')!.hidden);
     assertEquals(
         1,
         metricsPrivateMock.getUserActionCount(
@@ -588,4 +604,134 @@ suite('AppListTest', () => {
     assertFalse(contextMenu.open);
   });
 
+  test('navigate with arrow keys', async () => {
+    appListElement.shadowRoot!.getElementById(
+                                  'container')!.style.gridTemplateColumns =
+        'repeat(2, max(100% / 2, 112px))';
+    callbackRouterRemote.addApp(testAppInfo);
+    await callbackRouterRemote.$.flushForTesting();
+    flush();
+    document.dispatchEvent(new KeyboardEvent('keydown', {key: 'ArrowRight'}));
+    assertEquals(
+        apps.appList[0]!.id, appListElement.shadowRoot!.activeElement?.id);
+    document.dispatchEvent(new KeyboardEvent('keydown', {key: 'ArrowRight'}));
+    assertEquals(
+        apps.appList[1]!.id, appListElement.shadowRoot!.activeElement?.id);
+    document.dispatchEvent(new KeyboardEvent('keydown', {key: 'ArrowDown'}));
+    assertEquals(
+        apps.appList[1]!.id, appListElement.shadowRoot!.activeElement?.id);
+    document.dispatchEvent(new KeyboardEvent('keydown', {key: 'ArrowLeft'}));
+    assertEquals(
+        apps.appList[0]!.id, appListElement.shadowRoot!.activeElement?.id);
+    document.dispatchEvent(new KeyboardEvent('keydown', {key: 'ArrowLeft'}));
+    assertEquals(
+        apps.appList[0]!.id, appListElement.shadowRoot!.activeElement?.id);
+    document.dispatchEvent(new KeyboardEvent('keydown', {key: 'ArrowDown'}));
+    assertEquals(
+        apps.appList[2]!.id, appListElement.shadowRoot!.activeElement?.id);
+    document.dispatchEvent(new KeyboardEvent('keydown', {key: 'ArrowDown'}));
+    assertEquals(
+        apps.appList[2]!.id, appListElement.shadowRoot!.activeElement?.id);
+    document.dispatchEvent(new KeyboardEvent('keydown', {key: 'ArrowUp'}));
+    assertEquals(
+        apps.appList[0]!.id, appListElement.shadowRoot!.activeElement?.id);
+    document.dispatchEvent(new KeyboardEvent('keydown', {key: 'ArrowUp'}));
+    assertEquals(
+        apps.appList[0]!.id, appListElement.shadowRoot!.activeElement?.id);
+  });
+
+  test('enter when focused on app launches app', async () => {
+    document.dispatchEvent(new KeyboardEvent('keydown', {key: 'ArrowRight'}));
+    assertEquals(
+        apps.appList[0]!.id, appListElement.shadowRoot!.activeElement?.id);
+
+    document.dispatchEvent(new KeyboardEvent('keydown', {key: 'Enter'}));
+    const [appId, clickEvent] =
+        await testBrowserProxy.fakeHandler.whenCalled('launchApp');
+    assertEquals(appId, apps.appList[0]!.id);
+    assertEquals(clickEvent, null);
+  });
+
+  test('No deprecated apps means no deprecated app ux', async () => {
+    const deprecatedAppsLink: DeprecatedAppsLinkElement =
+        document.createElement('deprecated-apps-link');
+    document.body.appendChild(deprecatedAppsLink);
+    await waitAfterNextRender(deprecatedAppsLink);
+
+    assertTrue(!!deprecatedAppsLink);
+    const linkContainer: HTMLElement =
+        deprecatedAppsLink.shadowRoot!.querySelector<HTMLImageElement>(
+            '#container')!;
+    assertTrue(linkContainer!.hidden, 'Deprecation link is not hidden');
+
+    const appItems = appListElement.shadowRoot!.querySelectorAll('app-item');
+    assertTrue(!!appItems, 'No apps.');
+
+    appItems.forEach((item) => {
+      const deprecatedIcon: HTMLElement =
+          item!.shadowRoot!.querySelector<HTMLImageElement>('#deprecatedIcon')!;
+      assertTrue(
+          deprecatedIcon.hidden,
+          'Non-deprecated app should not have deprecation icon');
+    });
+  });
+
+  test('Deprecated app means deprecation ux', async () => {
+    // Test adding an app.
+    callbackRouterRemote.addApp(deprecatedAppInfo);
+    testBrowserProxy.fakeHandler.addAppToList(deprecatedAppInfo);
+    await callbackRouterRemote.$.flushForTesting();
+    flush();
+
+    const deprecatedAppsLink: DeprecatedAppsLinkElement =
+        document.createElement('deprecated-apps-link');
+    document.body.appendChild(deprecatedAppsLink);
+    await waitAfterNextRender(deprecatedAppsLink);
+
+    assertTrue(!!deprecatedAppsLink);
+    const linkContainer: HTMLElement =
+        deprecatedAppsLink.shadowRoot!.querySelector<HTMLImageElement>(
+            '#container')!;
+    assertFalse(
+        linkContainer.hidden, 'Removal link is hidden when it shouldn\'t be.');
+
+    const appItems = appListElement.shadowRoot!.querySelectorAll('app-item');
+    assertTrue(!!appItems, 'No apps.');
+
+    appItems.forEach((item) => {
+      const deprecatedIcon: HTMLElement =
+          item!.shadowRoot!.querySelector<HTMLImageElement>('#deprecatedIcon')!;
+      if (item.id === deprecatedAppInfo.id) {
+        assertFalse(
+            deprecatedIcon.hidden,
+            'Deprecated app should have deprecated icon visible');
+      } else {
+        assertTrue(
+            deprecatedIcon.hidden,
+            'Non-deprecated app should not have deprecation icon');
+      }
+    });
+  });
+
+  test('Clicking deprecation link calls handler', async () => {
+    // Test adding an app.
+    callbackRouterRemote.addApp(deprecatedAppInfo);
+    testBrowserProxy.fakeHandler.addAppToList(deprecatedAppInfo);
+    await callbackRouterRemote.$.flushForTesting();
+    flush();
+
+    const deprecatedAppsLink: DeprecatedAppsLinkElement =
+        document.createElement('deprecated-apps-link');
+    document.body.appendChild(deprecatedAppsLink);
+    await waitAfterNextRender(deprecatedAppsLink);
+
+    assertTrue(!!deprecatedAppsLink);
+    const link: HTMLElement =
+        deprecatedAppsLink.shadowRoot!.querySelector<HTMLImageElement>(
+            '#deprecated-apps-link')!;
+
+    link.click();
+
+    await testBrowserProxy.fakeHandler.whenCalled('launchDeprecatedAppDialog');
+  });
 });

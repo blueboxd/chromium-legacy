@@ -16,6 +16,7 @@
 #import "components/autofill/core/browser/test_personal_data_manager.h"
 #import "components/autofill/ios/browser/autofill_agent.h"
 #import "components/autofill/ios/browser/autofill_driver_ios.h"
+#import "components/autofill/ios/browser/autofill_driver_ios_factory.h"
 #import "components/autofill/ios/form_util/unique_id_data_tab_helper.h"
 #import "components/prefs/pref_service.h"
 #import "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
@@ -86,7 +87,7 @@ class PaymentRequestFullCardRequesterTest : public PlatformTest {
     frames_manager->AddWebFrame(std::move(main_frame));
     web_state()->SetWebFramesManager(std::move(frames_manager));
     web_state()->OnWebFrameDidBecomeAvailable(
-        web_state()->GetWebFramesManager()->GetMainWebFrame());
+        web_state()->GetPageWorldWebFramesManager()->GetMainWebFrame());
 
     UniqueIDDataTabHelper::CreateForWebState(web_state());
 
@@ -102,9 +103,8 @@ class PaymentRequestFullCardRequesterTest : public PlatformTest {
         /*password_generation_manager=*/nullptr));
 
     std::string locale("en");
-    autofill::AutofillDriverIOS::PrepareForWebStateWebFrameAndDelegate(
-        web_state(), autofill_client_.get(), nil, locale,
-        autofill::AutofillManager::EnableDownloadManager(false));
+    autofill::AutofillDriverIOSFactory::CreateForWebState(
+        web_state(), autofill_client_.get(), nil, locale);
   }
 
   void TearDown() override {
@@ -112,7 +112,7 @@ class PaymentRequestFullCardRequesterTest : public PlatformTest {
     // AutofillClient.
     web::FakeWebFramesManager* frames_manager =
         static_cast<web::FakeWebFramesManager*>(
-            web_state()->GetWebFramesManager());
+            web_state()->GetPageWorldWebFramesManager());
     std::string frame_id = frames_manager->GetMainWebFrame()->GetFrameId();
     frames_manager->RemoveWebFrame(frame_id);
 
@@ -162,7 +162,7 @@ TEST_F(PaymentRequestFullCardRequesterTest, PresentAndDismissLegacyPrompt) {
 
   EXPECT_EQ(nil, base_view_controller.presentedViewController);
   web::WebFrame* main_frame =
-      web_state()->GetWebFramesManager()->GetMainWebFrame();
+      web_state()->GetPageWorldWebFramesManager()->GetMainWebFrame();
   autofill::BrowserAutofillManager* autofill_manager =
       autofill::AutofillDriverIOS::FromWebStateAndWebFrame(web_state(),
                                                            main_frame)
@@ -212,7 +212,7 @@ TEST_F(PaymentRequestFullCardRequesterTest, PresentAndDismissNewPrompt) {
 
   EXPECT_EQ(nil, base_view_controller.presentedViewController);
   web::WebFrame* main_frame =
-      web_state()->GetWebFramesManager()->GetMainWebFrame();
+      web_state()->GetPageWorldWebFramesManager()->GetMainWebFrame();
   autofill::BrowserAutofillManager* autofill_manager =
       autofill::AutofillDriverIOS::FromWebStateAndWebFrame(web_state(),
                                                            main_frame)

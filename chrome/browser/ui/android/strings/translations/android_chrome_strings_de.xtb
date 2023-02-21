@@ -450,6 +450,7 @@ Private Stake Tokens verbessern den Datenschutz im Web und können nicht dazu ve
 <translation id="3421726884497337397">Lege fest, wann Drittanbieter-Cookies blockiert werden sollen</translation>
 <translation id="3428747202529429621">Schützt dich in Chrome und erhöht möglicherweise die Sicherheit in anderen Google-Apps, wenn du angemeldet bist</translation>
 <translation id="3429160811076349561">Testfunktionen sind deaktiviert</translation>
+<translation id="3432973700170747422">Letzte 15 Minuten löschen</translation>
 <translation id="3435465986463792564">Du verwendest viele Fenster? Du kannst sie hier verwalten.</translation>
 <translation id="3435738964857648380">Sicherheit</translation>
 <translation id="3443221991560634068">Aktuelle Seite neu laden</translation>
@@ -516,7 +517,6 @@ Private Stake Tokens verbessern den Datenschutz im Web und können nicht dazu ve
 <translation id="3830886834687455630">Aktualisiere die Google Play-Dienste, um deine Passwörter zu prüfen</translation>
 <translation id="3845098929839618392">In Inkognitotab öffnen</translation>
 <translation id="3856096718352044181">Vergewissere dich, dass dies ein gültiger Provider ist, oder versuche es später noch einmal</translation>
-<translation id="3858127568696903256">Hier siehst du Inhalte, denen du folgst</translation>
 <translation id="3858860766373142691">Name</translation>
 <translation id="3861633093716975811">Beliebte Videos</translation>
 <translation id="3874520961715512166">Website entfernt</translation>
@@ -1114,7 +1114,7 @@ Einige Websites schalten möglicherweise Werbeanzeigen, deren Auswahl nicht dara
 <translation id="6978717888677691380">Von dir blockierte Websites</translation>
 <translation id="6979737339423435258">Gesamte Zeit</translation>
 <translation id="6987047470128880212">Der Inkognitomodus ist auf diesem Gerät nicht verfügbar</translation>
-<translation id="6995899638241819463">Warnen, wenn Passwörter durch eine Datenpanne preisgegeben werden</translation>
+<translation id="6995899638241819463">Warnen, wenn Passwörter durch eine Datenpanne preisgegeben wurden</translation>
 <translation id="7020741890149022655">Zur Leseliste hinzufügen <ph name="BEGIN_NEW" />Neu<ph name="END_NEW" /></translation>
 <translation id="7022756207310403729">Im Browser öffnen</translation>
 <translation id="7027549951530753705">Wiederhergestellt: <ph name="ITEM_TITLE" /></translation>

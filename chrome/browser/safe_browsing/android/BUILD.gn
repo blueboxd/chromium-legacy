@@ -11,6 +11,9 @@ generate_jni("jni_headers") {
 
 source_set("android") {
   sources = [ "safe_browsing_bridge.cc" ]
+
+  configs += [ "//build/config/compiler:wexit_time_destructors" ]
+
   deps = [
     ":jni_headers",
     "//components/password_manager/core/browser/leak_detection",
@@ -55,6 +58,7 @@ android_library("java") {
     "//chrome/browser/settings:java",
     "//components/browser_ui/modaldialog/android:java",
     "//components/browser_ui/settings/android:java",
+    "//components/browser_ui/util/android:java",
     "//components/browser_ui/widget/android:java",
     "//components/prefs/android:java",
     "//components/user_prefs/android:java",

@@ -78,10 +78,12 @@
 #import "ios/chrome/browser/promos_manager/features.h"
 #import "ios/chrome/browser/screen_time/screen_time_buildflags.h"
 #import "ios/chrome/browser/tabs/features.h"
+#import "ios/chrome/browser/tabs/inactive_tabs/features.h"
 #import "ios/chrome/browser/text_selection/text_selection_util.h"
 #import "ios/chrome/browser/ui/app_store_rating/features.h"
 #import "ios/chrome/browser/ui/autofill/features.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_feature.h"
+#import "ios/chrome/browser/ui/content_suggestions/field_trial_constants.h"
 #import "ios/chrome/browser/ui/default_promo/default_browser_utils.h"
 #import "ios/chrome/browser/ui/download/features.h"
 #import "ios/chrome/browser/ui/first_run/trending_queries_field_trial.h"
@@ -94,7 +96,6 @@
 #import "ios/chrome/browser/ui/popup_menu/overflow_menu/feature_flags.h"
 #import "ios/chrome/browser/ui/post_restore_signin/features.h"
 #import "ios/chrome/browser/ui/start_surface/start_surface_features.h"
-#import "ios/chrome/browser/ui/tab_switcher/tab_grid/inactive_tabs/features.h"
 #import "ios/chrome/browser/ui/toolbar_container/toolbar_container_features.h"
 #import "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/browser/ui/whats_new/feature_flags.h"
@@ -254,6 +255,22 @@ const FeatureEntry::FeatureVariation kDiscoverFeedTopSyncPromoVariations[] = {
      std::size(kDiscoverFeedTopSyncPromoFullWithTitle), nullptr},
     {"Compact", kDiscoverFeedTopSyncPromoCompact,
      std::size(kDiscoverFeedTopSyncPromoCompact), nullptr}};
+
+const FeatureEntry::FeatureParam kFeedHeaderSettingDisabledStickyHeader[] = {
+    {kDisableStickyHeaderForFollowingFeed, "true"}};
+const FeatureEntry::FeatureParam kFeedHeaderSettingReducedHeight[] = {
+    {kOverrideFeedHeaderHeight, "43"}};
+const FeatureEntry::FeatureParam kFeedHeaderSettingAllImprovements[] = {
+    {kDisableStickyHeaderForFollowingFeed, "true"},
+    {kOverrideFeedHeaderHeight, "43"}};
+
+const FeatureEntry::FeatureVariation kFeedHeaderSettingsVariations[] = {
+    {"Disable sticky header", kFeedHeaderSettingDisabledStickyHeader,
+     std::size(kFeedHeaderSettingDisabledStickyHeader), nullptr},
+    {"Reduced header height", kFeedHeaderSettingReducedHeight,
+     std::size(kFeedHeaderSettingReducedHeight), nullptr},
+    {"All improvements", kFeedHeaderSettingAllImprovements,
+     std::size(kFeedHeaderSettingAllImprovements), nullptr}};
 
 const FeatureEntry::FeatureParam kStartSurfaceTenSecondsShrinkLogo[] = {
     {kStartSurfaceShrinkLogoParam, "true"},
@@ -462,20 +479,12 @@ const FeatureEntry::FeatureVariation kOpenInDownloadVariations[] = {
      nullptr},
 };
 
-const FeatureEntry::FeatureParam kEnablePinnedTabsBottomPosition[] = {
-    {kEnablePinnedTabsParameterName, kEnablePinnedTabsBottomParam}};
-const FeatureEntry::FeatureParam kEnablePinnedTabsOverflowBottomPosition[] = {
-    {kEnablePinnedTabsParameterName, kEnablePinnedTabsOverflowBottomParam}};
-const FeatureEntry::FeatureParam kEnablePinnedTabsOverflowTopPosition[] = {
-    {kEnablePinnedTabsParameterName, kEnablePinnedTabsOverflowTopParam}};
+const FeatureEntry::FeatureParam kEnablePinnedTabsOverflow[] = {
+    {kEnablePinnedTabsOverflowParam, "true"}};
 
 const FeatureEntry::FeatureVariation kEnablePinnedTabsVariations[] = {
-    {"bottom pinned tabs", kEnablePinnedTabsBottomPosition,
-     std::size(kEnablePinnedTabsBottomPosition), nullptr},
-    {"overflow + bottom pinned tabs", kEnablePinnedTabsOverflowBottomPosition,
-     std::size(kEnablePinnedTabsOverflowBottomPosition), nullptr},
-    {"overflow + top pinned tabs", kEnablePinnedTabsOverflowTopPosition,
-     std::size(kEnablePinnedTabsOverflowTopPosition), nullptr},
+    {"+ overflow entry", kEnablePinnedTabsOverflow,
+     std::size(kEnablePinnedTabsOverflow), nullptr},
 };
 
 const FeatureEntry::FeatureParam kAutofillBrandingIOSMonotone[] = {
@@ -540,6 +549,13 @@ const FeatureEntry::FeatureVariation kTabInactivityThresholdVariations[] = {
     {"Three weeks", kTabInactivityThresholdThreeWeeks,
      std::size(kTabInactivityThresholdThreeWeeks), nullptr},
 };
+
+const FeatureEntry::FeatureParam kTileAblationMVTOnlyForNewUsers[] = {
+    {kTileAblationMVTAndShortcutsForNewUsersParam, "true"}};
+const FeatureEntry::FeatureVariation
+    kTileAblationMVTAndShortcutsForNewUsersVariations[] = {
+        {"Hide Only Most Visited", kTileAblationMVTOnlyForNewUsers,
+         std::size(kTileAblationMVTOnlyForNewUsers), nullptr}};
 
 const FeatureEntry::FeatureParam
     kCredentialProviderExtensionPromoOnPasswordSaved[] = {
@@ -843,11 +859,19 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      FEATURE_WITH_PARAMS_VALUE_TYPE(kEnableDiscoverFeedTopSyncPromo,
                                     kDiscoverFeedTopSyncPromoVariations,
                                     "EnableDiscoverFeedTopSyncPromo")},
+    {"feed-header-settings", flag_descriptions::kEnableFeedHeaderSettingsName,
+     flag_descriptions::kEnableFeedHeaderSettingsDescription, flags_ui::kOsIos,
+     FEATURE_WITH_PARAMS_VALUE_TYPE(kFeedHeaderSettings,
+                                    kFeedHeaderSettingsVariations,
+                                    "FeedHeaderSettings")},
     {"enable-hiding-mvt-shortcuts",
-     flag_descriptions::kHideMVTAndShortcutsForNewUsersName,
-     flag_descriptions::kHideMVTAndShortcutsForNewUsersDescription,
-     flags_ui::kOsIos, FEATURE_VALUE_TYPE(kHideMVTAndShortcutsForNewUsers)},
-
+     flag_descriptions::kTileAblationMVTAndShortcutsForNewUsersName,
+     flag_descriptions::kTileAblationMVTAndShortcutsForNewUsersDescription,
+     flags_ui::kOsIos,
+     FEATURE_WITH_PARAMS_VALUE_TYPE(
+         kTileAblationMVTAndShortcutsForNewUsers,
+         kTileAblationMVTAndShortcutsForNewUsersVariations,
+         "TileAblationMVTAndShortcutsForNewUser")},
     {"shared-highlighting-amp",
      flag_descriptions::kIOSSharedHighlightingAmpName,
      flag_descriptions::kIOSSharedHighlightingAmpDescription, flags_ui::kOsIos,
@@ -933,6 +957,11 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kOptimizationGuideDebugLogsDescription,
      flags_ui::kOsIos,
      SINGLE_VALUE_TYPE(optimization_guide::switches::kDebugLoggingEnabled)},
+    {"optimization-guide-push-notifications",
+     flag_descriptions::kOptimizationGuidePushNotificationClientName,
+     flag_descriptions::kOptimizationGuidePushNotificationClientDescription,
+     flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(optimization_guide::features::kPushNotifications)},
     {"optimization-guide-model-downloading",
      flag_descriptions::kOptimizationGuideModelDownloadingName,
      flag_descriptions::kOptimizationGuideModelDownloadingDescription,
@@ -965,7 +994,7 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(kCalendarExperienceKit)},
     {"intents-on-phone-number", flag_descriptions::kPhoneNumberName,
      flag_descriptions::kPhoneNumberDescription, flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(kEnablePhoneNumbers)},
+     FEATURE_VALUE_TYPE(web::features::kEnablePhoneNumbers)},
     {"experience-kit-apple-calendar",
      flag_descriptions::kAppleCalendarExperienceKitName,
      flag_descriptions::kAppleCalendarExperienceKitDescription,
@@ -987,6 +1016,9 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kLongPressSurroundingTextName,
      flag_descriptions::kLongPressSurroundingTextDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(web::features::kLongPressSurroundingText)},
+    {"one-tap-experience-maps", flag_descriptions::kOneTapForMapsName,
+     flag_descriptions::kOneTapForMapsDescription, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(web::features::kOneTapForMaps)},
     {"https-only-mode", flag_descriptions::kHttpsOnlyModeName,
      flag_descriptions::kHttpsOnlyModeDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(security_interstitials::features::kHttpsOnlyMode)},
@@ -1229,6 +1261,9 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      FEATURE_WITH_PARAMS_VALUE_TYPE(kEnablePinnedTabs,
                                     kEnablePinnedTabsVariations,
                                     "EnablePinnedTabs")},
+    {"enable-pinned-tabs-ipad", flag_descriptions::kEnablePinnedTabsIpadName,
+     flag_descriptions::kEnablePinnedTabsIpadDescription, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(kEnablePinnedTabsIpad)},
     {"remove-crash-infobar", flag_descriptions::kRemoveCrashInfobarName,
      flag_descriptions::kRemoveCrashInfobarDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(kRemoveCrashInfobar)},
@@ -1276,7 +1311,7 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
                                     "NativeFindInPage")},
     {"intents-on-email", flag_descriptions::kEmailName,
      flag_descriptions::kEmailDescription, flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(kEnableEmails)},
+     FEATURE_VALUE_TYPE(web::features::kEnableEmails)},
     {"ios-password-checkup", flag_descriptions::kIOSPasswordCheckupName,
      flag_descriptions::kIOSPasswordCheckupDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(password_manager::features::kIOSPasswordCheckup)},
@@ -1290,9 +1325,6 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
     {"shopping-list", commerce::flag_descriptions::kShoppingListName,
      commerce::flag_descriptions::kShoppingListDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(commerce::kShoppingList)},
-    {"ios-tabstrip-context-menu", flag_descriptions::kTabStripContextMenuName,
-     flag_descriptions::kTabStripContextMenuDescription, flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(kTabStripContextMenu)},
     {"tab-inactivity-threshold", flag_descriptions::kTabInactivityThresholdName,
      flag_descriptions::kTabInactivityThresholdDescription, flags_ui::kOsIos,
      FEATURE_WITH_PARAMS_VALUE_TYPE(kTabInactivityThreshold,
@@ -1306,16 +1338,30 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableFeedSyntheticCapabilitiesName,
      flag_descriptions::kEnableFeedSyntheticCapabilitiesDescription,
      flags_ui::kOsIos, FEATURE_VALUE_TYPE(kEnableFeedSyntheticCapabilities)},
-    {"close-all-tabs-confirmation",
-     flag_descriptions::kCloseAllTabsConfirmationName,
-     flag_descriptions::kCloseAllTabsConfirmationDescription, flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(kCloseAllTabsConfirmation)},
     {"ios-show-password-storage-in-save-infobar",
      flag_descriptions::kIOSShowPasswordStorageInSaveInfobarName,
      flag_descriptions::kIOSShowPasswordStorageInSaveInfobarDescription,
      flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(
          password_manager::features::kIOSShowPasswordStorageInSaveInfobar)},
+    {"show-inactive-tabs-count", flag_descriptions::kShowInactiveTabsCountName,
+     flag_descriptions::kShowInactiveTabsCountDescription, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(kShowInactiveTabsCount)},
+    {"ios-edit-menu-partial-translate",
+     flag_descriptions::kIOSEditMenuPartialTranslateName,
+     flag_descriptions::kIOSEditMenuPartialTranslateDescription,
+     flags_ui::kOsIos, FEATURE_VALUE_TYPE(kIOSEditMenuPartialTranslate)},
+    {"ios-custom-browser-edit-menu",
+     flag_descriptions::kIOSCustomBrowserEditMenuName,
+     flag_descriptions::kIOSCustomBrowserEditMenuDescription, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(kIOSCustomBrowserEditMenu)},
+    {"password-notes", flag_descriptions::kPasswordNotesWithBackupName,
+     flag_descriptions::kPasswordNotesWithBackupDescription, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(syncer::kPasswordNotesWithBackup)},
+    {"feed-experiment-tagging-ios",
+     flag_descriptions::kFeedExperimentTaggingName,
+     flag_descriptions::kFeedExperimentTaggingDescription, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(kEnableFeedExperimentTagging)},
 };
 
 bool SkipConditionalFeatureEntry(const flags_ui::FeatureEntry& entry) {
@@ -1361,8 +1407,6 @@ NSMutableDictionary* CreateExperimentalTestingPolicies() {
       base::SysUTF8ToNSString(policy::key::kEditBookmarksEnabled) : @NO,
 
       base::SysUTF8ToNSString(policy::key::kNTPContentSuggestionsEnabled) : @NO,
-
-      base::SysUTF8ToNSString(policy::key::kPasswordManagerEnabled) : @NO,
 
       base::SysUTF8ToNSString(policy::key::kTranslateEnabled) : @NO,
 
@@ -1464,6 +1508,13 @@ NSMutableDictionary* CreateExperimentalTestingPolicies() {
         base::SysUTF8ToNSString(policy::key::kAllowChromeDataInBackups);
     [testing_policies addEntriesFromDictionary:@{allow_backups_key : @NO}];
     [allowed_experimental_policies addObject:allow_backups_key];
+  }
+
+  if ([defaults boolForKey:@"DisablePasswordManagerPolicy"]) {
+    NSString* password_manager_key =
+        base::SysUTF8ToNSString(policy::key::kPasswordManagerEnabled);
+    [testing_policies addEntriesFromDictionary:@{password_manager_key : @NO}];
+    [allowed_experimental_policies addObject:password_manager_key];
   }
 
   // If any experimental policy was allowed, set the EnableExperimentalPolicies

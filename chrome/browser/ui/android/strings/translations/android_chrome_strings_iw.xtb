@@ -450,6 +450,7 @@
 <translation id="3421726884497337397">‏אפשר לקבוע מתי קובצי cookie של צד שלישי ייחסמו</translation>
 <translation id="3428747202529429621">‏מגן עליך ב-Chrome וייתכן שייעשה בו שימוש לשיפור האבטחה באפליקציות אחרות של Google שבהן נכנסת לחשבון</translation>
 <translation id="3429160811076349561">התכונות הניסיוניות מושבתות</translation>
+<translation id="3432973700170747422">מחיקה של 15 הדקות האחרונות</translation>
 <translation id="3435465986463792564">פתוחים אצלך הרבה חלונות? יש לך אפשרות לנהל את כולם מכאן.</translation>
 <translation id="3435738964857648380">אבטחה</translation>
 <translation id="3443221991560634068">טעינה מחדש של הדף הנוכחי</translation>
@@ -516,7 +517,6 @@
 <translation id="3830886834687455630">‏כדי לבדוק את הסיסמאות, יש לעדכן את Google Play Services</translation>
 <translation id="3845098929839618392">לפתיחה בכרטיסיית מצב אנונימי</translation>
 <translation id="3856096718352044181">יש לאמת שהספק הזה חוקי או לנסות שוב מאוחר יותר</translation>
-<translation id="3858127568696903256">כאן יוצג התוכן שבמעקב</translation>
 <translation id="3858860766373142691">שם</translation>
 <translation id="3861633093716975811">סרטונים פופולריים</translation>
 <translation id="3874520961715512166">האתר הוסר</translation>
@@ -961,7 +961,7 @@
 <translation id="6277522088822131679">אירעה בעיה בעת הדפסת הדף. יש לנסות שוב.</translation>
 <translation id="6277722725779679269">לא ניתן היה לעדכן את המחיר שבמעקב</translation>
 <translation id="6278428485366576908">עיצוב</translation>
-<translation id="6294610283659775533">‏אפשר לשלוח כרטיסיות ממכשיר למכשיר, כל עוד נכנסת במכשירים לאותו חשבון Google.</translation>
+<translation id="6294610283659775533">‏אפשר לשלוח כרטיסיות ממכשיר למכשיר אם נכנסת במכשירים לאותו חשבון Google.</translation>
 <translation id="6295158916970320988">כל האתרים</translation>
 <translation id="6297765934698848803">המצלמה הושבתה במכשיר, בהתאם להגדרות שנקבעו על ידי הארגון שמנהל את המכשיר.</translation>
 <translation id="6301525844455696527">רוצה להתקדם ברשימת הקריאה שלך?</translation>

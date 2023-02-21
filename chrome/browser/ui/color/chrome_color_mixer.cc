@@ -125,28 +125,9 @@ void AddChromeColorMixer(ui::ColorProvider* provider,
   mixer[kColorBookmarkBarBackground] = {kColorToolbar};
   mixer[kColorBookmarkBarForeground] = {kColorToolbarText};
   mixer[kColorBookmarkButtonIcon] = {kColorToolbarButtonIcon};
-  // If the custom theme supplies a specific color for the bookmark text, use
-  // that color to derive folder icon color. We don't actually use the color
-  // returned, rather we use the color provider color transform corresponding to
-  // that color.
-  SkColor color;
-  const bool custom_icon_color =
-      key.custom_theme &&
-      key.custom_theme->GetColor(ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON,
-                                 &color);
-  if (custom_icon_color) {
-    mixer[kColorBookmarkFavicon] = ui::ColorTransform(kColorToolbarButtonIcon);
-  } else {
-    mixer[kColorBookmarkFavicon] = ui::PickGoogleColor(
-        gfx::kGoogleGrey500, kColorBookmarkBarBackground, 6.0f);
-  }
-  const bool custom_text_color =
-      key.custom_theme &&
-      key.custom_theme->GetColor(ThemeProperties::COLOR_BOOKMARK_TEXT, &color);
-  mixer[kColorBookmarkFolderIcon] =
-      custom_text_color
-          ? ui::DeriveDefaultIconColor(kColorBookmarkBarForeground)
-          : ui::ColorTransform(ui::kColorIcon);
+  mixer[kColorBookmarkFavicon] = ui::PickGoogleColor(
+      gfx::kGoogleGrey500, kColorBookmarkBarBackground, 6.0f);
+  mixer[kColorBookmarkFolderIcon] = {ui::kColorIcon};
   mixer[kColorBookmarkBarSeparator] = {kColorToolbarSeparator};
   mixer[kColorBookmarkDragImageBackground] = {ui::kColorAccent};
   mixer[kColorBookmarkDragImageCountBackground] = {ui::kColorAlertHighSeverity};
@@ -274,21 +255,10 @@ void AddChromeColorMixer(ui::ColorProvider* provider,
       ui::GetResultingPaintColor(kColorLocationBarBorder, kColorToolbar);
   mixer[kColorMediaRouterIconActive] = {ui::kColorAccent};
   mixer[kColorMediaRouterIconWarning] = {ui::kColorAlertMediumSeverity};
-  {
-    int result = 0;
-    if (!key.custom_theme ||
-        !key.custom_theme->GetDisplayProperty(
-            ThemeProperties::SHOULD_FILL_BACKGROUND_TAB_COLOR, &result) ||
-        result) {
-      mixer[kColorNewTabButtonBackgroundFrameActive] = {
-          kColorTabBackgroundInactiveFrameActive};
-      mixer[kColorNewTabButtonBackgroundFrameInactive] = {
-          kColorTabBackgroundInactiveFrameInactive};
-    } else {
-      mixer[kColorNewTabButtonBackgroundFrameActive] = {SK_ColorTRANSPARENT};
-      mixer[kColorNewTabButtonBackgroundFrameInactive] = {SK_ColorTRANSPARENT};
-    }
-  }
+  mixer[kColorNewTabButtonBackgroundFrameActive] = {
+      kColorTabBackgroundInactiveFrameActive};
+  mixer[kColorNewTabButtonBackgroundFrameInactive] = {
+      kColorTabBackgroundInactiveFrameInactive};
   mixer[kColorNewTabButtonFocusRing] = PickGoogleColorTwoBackgrounds(
       ui::kColorFocusableBorderFocused,
       ui::GetResultingPaintColor(kColorNewTabButtonBackgroundFrameActive,
@@ -666,6 +636,36 @@ void AddChromeColorMixer(ui::ColorProvider* provider,
   mixer[kColorWindowControlButtonBackgroundActive] = {ui::kColorFrameActive};
   mixer[kColorWindowControlButtonBackgroundInactive] = {
       ui::kColorFrameInactive};
+
+  mixer[kColorReadAnythingBackground] = {
+      dark_mode ? kColorReadAnythingBackgroundDark
+                : kColorReadAnythingBackgroundLight};
+  mixer[kColorReadAnythingBackgroundBlue] = {gfx::kGoogleBlue200};
+  mixer[kColorReadAnythingBackgroundDark] = {gfx::kGoogleGrey900};
+  mixer[kColorReadAnythingBackgroundLight] = {gfx::kGoogleGrey050};
+  mixer[kColorReadAnythingBackgroundYellow] = {gfx::kGoogleYellow200};
+  mixer[kColorReadAnythingForeground] = {
+      dark_mode ? kColorReadAnythingForegroundDark
+                : kColorReadAnythingForegroundLight};
+  mixer[kColorReadAnythingForegroundBlue] = ui::PickGoogleColor(
+      kColorReadAnythingForegroundLight, kColorReadAnythingBackgroundBlue,
+      color_utils::kMinimumReadableContrastRatio);
+  mixer[kColorReadAnythingForegroundDark] = {gfx::kGoogleGrey200};
+  mixer[kColorReadAnythingForegroundLight] = {gfx::kGoogleGrey900};
+  mixer[kColorReadAnythingForegroundYellow] = ui::PickGoogleColor(
+      kColorReadAnythingForegroundLight, kColorReadAnythingBackgroundYellow,
+      color_utils::kMinimumReadableContrastRatio);
+  mixer[kColorReadAnythingSeparator] = {dark_mode
+                                            ? kColorReadAnythingSeparatorDark
+                                            : kColorReadAnythingSeparatorLight};
+  mixer[kColorReadAnythingSeparatorBlue] = ui::PickGoogleColor(
+      kColorReadAnythingForegroundLight, kColorReadAnythingBackgroundBlue,
+      color_utils::kMinimumVisibleContrastRatio);
+  mixer[kColorReadAnythingSeparatorDark] = {gfx::kGoogleGrey800};
+  mixer[kColorReadAnythingSeparatorLight] = {gfx::kGoogleGrey300};
+  mixer[kColorReadAnythingSeparatorYellow] = ui::PickGoogleColor(
+      kColorReadAnythingForegroundLight, kColorReadAnythingBackgroundYellow,
+      color_utils::kMinimumVisibleContrastRatio);
 
   // Apply high contrast recipes if necessary.
   if (!ShouldApplyHighContrastColors(key))

@@ -54,6 +54,13 @@
     "expires": "Jul 1, 2023"
   },
   {
+    "prefix": "pna-allow-secure-same-origin",
+    "platforms": ["Linux", "Mac", "Win"],
+    "bases": ["external/wpt/fetch/private-network-access"],
+    "args": ["--enable-features=PrivateNetworkAccessAllowSecureSameOrigin"],
+    "expires": "Jul 1, 2023"
+  },
+  {
     "prefix": "reduce-accept-language",
     "platforms": ["Linux", "Mac", "Win"],
     "bases": ["http/tests/navigation/language",
@@ -964,7 +971,7 @@
       "wpt_internal/file-system-api",
       "wpt_internal/storage/quota/partitioned-webkitTemporaryStorage-usage-details.tentative.sub.html",
       "wpt_internal/storage/quota/partitioned-webkitPersistentStorage-quota-usage-details.tentative.sub.html",
-      "wpt_internal/storage/quota/partitioned-webkitStorageInfo-temporary-quota-usage-details.tentative.sub.html",
+      "wpt_internal/web-locks/storage-deprecation-trial-enabled.https.html",
       "wpt_internal/webstorage/storage-cross-origin-redirect-local.sub.https.html",
       "wpt_internal/webstorage/storage-cross-origin-redirect-session.sub.https.html",
       "wpt_internal/webstorage/storage-deprecation-trial-disabled-local.sub.https.html",
@@ -1093,7 +1100,7 @@
       "external/wpt/speculation-rules/prerender/csp-script-src-inline-speculation-rules.tentative.html"
     ],
     "args": [
-      "--enable-features=SameSiteCrossOriginForSpeculationRulesPrerender,Prerender2ContentSecurityPolicyExtensions"
+      "--enable-features=SameSiteCrossOriginForSpeculationRulesPrerender,Prerender2ContentSecurityPolicyExtensions,Prerender2MainFrameNavigation"
     ],
     "expires": "Jul 1, 2023"
   },
@@ -1473,6 +1480,14 @@
   },
 
   {
+    "prefix": "strict-ipv4-embedded-ipv6",
+    "platforms": ["Linux"],
+    "bases": [ "external/wpt/url", "fast/url"],
+    "args": ["--enable-features=StrictIPv4EmbeddedIPv6AddressParsing"],
+    "expires": "Jul 1, 2023"
+  },
+
+  {
     "prefix": "origin-agent-cluster-default-warning",
     "platforms": ["Linux", "Mac", "Win"],
     "bases": [ "wpt_internal/origin-agent-cluster-default-warning" ],
@@ -1618,24 +1633,6 @@
       "http/tests/origin_trials/webexposed/pending-beacon-origin-trial-interfaces.html"
     ],
     "args": ["--enable-features=PendingBeaconAPI:requires_origin_trial/true"],
-    "expires": "Jul 1, 2023"
-  },
-  {
-    "prefix": "pretokenize-css",
-    "platforms": ["Linux", "Mac", "Win"],
-    "bases": [
-      "external/wpt/css/css-syntax/charset",
-      "external/wpt/subresource-integrity",
-      "fast/css/cached-sheet-restore-crash.html",
-      "fast/css/link-alternate-stylesheet-1.html",
-      "fast/css/link-alternate-stylesheet-2.html",
-      "fast/css/link-alternate-stylesheet-3.html",
-      "fast/css/link-alternate-stylesheet-4.html",
-      "fast/css/link-alternate-stylesheet-5.html",
-      "fast/css/sheet-collection-link.html",
-      "fast/encoding/css-charset-default.xhtml"
-    ],
-    "args": ["--enable-features=PretokenizeCSS"],
     "expires": "Jul 1, 2023"
   },
   {

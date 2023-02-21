@@ -7,6 +7,9 @@
 #include <vector>
 
 #include "base/files/file_util.h"
+#include "base/strings/strcat.h"
+#include "base/strings/string_number_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/test_future.h"
 #include "chrome/browser/profiles/profile.h"
@@ -28,18 +31,23 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
+#if BUILDFLAG(IS_WIN)
+#include "chrome/browser/web_applications/os_integration/web_app_shortcuts_menu_win.h"
+#endif
+
+using ::testing::ElementsAreArray;
+using ::testing::Eq;
+
 namespace web_app {
 
 namespace {
 
-class ShortcutMenuHandlingSubManagerTest
-    : public WebAppTest,
-      public ::testing::WithParamInterface<OsIntegrationSubManagersState> {
+class ShortcutMenuHandlingSubManagerTestBase : public WebAppTest {
  public:
   const GURL kWebAppUrl = GURL("https://example.com/path/index.html");
 
-  ShortcutMenuHandlingSubManagerTest() = default;
-  ~ShortcutMenuHandlingSubManagerTest() override = default;
+  ShortcutMenuHandlingSubManagerTestBase() = default;
+  ~ShortcutMenuHandlingSubManagerTestBase() override = default;
 
   void SetUp() override {
     WebAppTest::SetUp();
@@ -47,14 +55,6 @@ class ShortcutMenuHandlingSubManagerTest
       base::ScopedAllowBlockingForTesting allow_blocking;
       test_override_ =
           OsIntegrationTestOverride::OverrideForTesting(base::GetHomeDir());
-    }
-    if (GetParam() == OsIntegrationSubManagersState::kSaveStateToDB) {
-      scoped_feature_list_.InitAndEnableFeatureWithParameters(
-          features::kOsIntegrationSubManagers, {{"stage", "write_config"}});
-    } else {
-      scoped_feature_list_.InitWithFeatures(
-          /*enabled_features=*/{},
-          /*disabled_features=*/{features::kOsIntegrationSubManagers});
     }
 
     provider_ = FakeWebAppProvider::Get(profile());
@@ -108,6 +108,48 @@ class ShortcutMenuHandlingSubManagerTest
     return shortcuts_menu_icons;
   }
 
+  std::vector<WebAppShortcutsMenuItemInfo>
+  CreateShortcutMenuItemInfoFromBitmaps(
+      const ShortcutsMenuIconBitmaps& menu_bitmaps) {
+    std::vector<WebAppShortcutsMenuItemInfo> item_infos;
+    int index = 0;
+    for (const auto& icon_bitmap : menu_bitmaps) {
+      WebAppShortcutsMenuItemInfo shortcut_info;
+      shortcut_info.name = base::UTF8ToUTF16(
+          base::StrCat({"shortcut_name", base::NumberToString(index)}));
+      shortcut_info.url =
+          GURL(base::StrCat({kWebAppUrl.spec(), base::NumberToString(index)}));
+
+      // The URLs used do not matter because Execute() does not take the urls
+      // into account, but we still need those to initialize the mock data
+      // structure so that the GURL checks in WebAppDatabase can pass.
+      for (const auto& [size, data] : icon_bitmap.any) {
+        WebAppShortcutsMenuItemInfo::Icon icon_data;
+        icon_data.square_size_px = size;
+        icon_data.url = GURL("https://icon.any/");
+        shortcut_info.any.push_back(std::move(icon_data));
+      }
+
+      for (const auto& [size, data] : icon_bitmap.maskable) {
+        WebAppShortcutsMenuItemInfo::Icon icon_data;
+        icon_data.square_size_px = size;
+        icon_data.url = GURL("https://icon.maskable/");
+        shortcut_info.maskable.push_back(std::move(icon_data));
+      }
+
+      for (const auto& [size, data] : icon_bitmap.monochrome) {
+        WebAppShortcutsMenuItemInfo::Icon icon_data;
+        icon_data.square_size_px = size;
+        icon_data.url = GURL("https://icon.monochrome/");
+        shortcut_info.monochrome.push_back(std::move(icon_data));
+      }
+
+      item_infos.push_back(std::move(shortcut_info));
+      index++;
+    }
+    return item_infos;
+  }
+
   web_app::AppId InstallWebAppWithShortcutMenuIcons(
       ShortcutsMenuIconBitmaps shortcuts_menu_icons) {
     std::unique_ptr<WebAppInstallInfo> info =
@@ -116,6 +158,8 @@ class ShortcutMenuHandlingSubManagerTest
     info->title = u"Test App";
     info->user_display_mode = web_app::mojom::UserDisplayMode::kStandalone;
     info->shortcuts_menu_icon_bitmaps = shortcuts_menu_icons;
+    info->shortcuts_menu_item_infos =
+        CreateShortcutMenuItemInfoFromBitmaps(shortcuts_menu_icons);
     base::test::TestFuture<const AppId&, webapps::InstallResultCode> result;
     // InstallFromInfoWithParams is used instead of InstallFromInfo, because
     // InstallFromInfo doesn't register OS integration.
@@ -138,12 +182,32 @@ class ShortcutMenuHandlingSubManagerTest
 
  private:
   raw_ptr<FakeWebAppProvider> provider_;
-  base::test::ScopedFeatureList scoped_feature_list_;
   std::unique_ptr<OsIntegrationTestOverride::BlockingRegistration>
       test_override_;
 };
 
-TEST_P(ShortcutMenuHandlingSubManagerTest, TestConfigure) {
+// Synchronize tests only. Tests here should only verify DB updates.
+class ShortcutMenuHandlingSubManagerConfigureTest
+    : public ShortcutMenuHandlingSubManagerTestBase,
+      public ::testing::WithParamInterface<OsIntegrationSubManagersState> {
+ public:
+  void SetUp() override {
+    if (GetParam() == OsIntegrationSubManagersState::kSaveStateToDB) {
+      scoped_feature_list_.InitAndEnableFeatureWithParameters(
+          features::kOsIntegrationSubManagers, {{"stage", "write_config"}});
+    } else {
+      scoped_feature_list_.InitWithFeatures(
+          /*enabled_features=*/{},
+          /*disabled_features=*/{features::kOsIntegrationSubManagers});
+    }
+    ShortcutMenuHandlingSubManagerTestBase::SetUp();
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+TEST_P(ShortcutMenuHandlingSubManagerConfigureTest, TestConfigure) {
   const int num_menu_items = 2;
 
   const std::vector<int> sizes = {icon_size::k64, icon_size::k128};
@@ -163,16 +227,21 @@ TEST_P(ShortcutMenuHandlingSubManagerTest, TestConfigure) {
         os_integration_state.shortcut_menus().shortcut_menu_info_size() ==
         num_menu_items);
 
-    EXPECT_TRUE(os_integration_state.shortcut_menus()
-                    .shortcut_menu_info(0)
-                    .app_title() == "Test App");
-    EXPECT_TRUE(os_integration_state.shortcut_menus()
-                    .shortcut_menu_info(0)
-                    .app_launch_url() == "https://example.com/path/index.html");
-
     int num_sizes = static_cast<int>(sizes.size());
 
     for (int menu_index = 0; menu_index < num_menu_items; menu_index++) {
+      EXPECT_THAT(os_integration_state.shortcut_menus()
+                      .shortcut_menu_info(menu_index)
+                      .shortcut_name(),
+                  testing::Eq(base::StrCat(
+                      {"shortcut_name", base::NumberToString(menu_index)})));
+
+      EXPECT_THAT(os_integration_state.shortcut_menus()
+                      .shortcut_menu_info(menu_index)
+                      .shortcut_launch_url(),
+                  testing::Eq(base::StrCat(
+                      {kWebAppUrl.spec(), base::NumberToString(menu_index)})));
+
       EXPECT_TRUE(os_integration_state.shortcut_menus()
                       .shortcut_menu_info(menu_index)
                       .icon_data_any_size() == num_sizes);
@@ -217,8 +286,206 @@ TEST_P(ShortcutMenuHandlingSubManagerTest, TestConfigure) {
 
 INSTANTIATE_TEST_SUITE_P(
     All,
-    ShortcutMenuHandlingSubManagerTest,
+    ShortcutMenuHandlingSubManagerConfigureTest,
     ::testing::Values(OsIntegrationSubManagersState::kSaveStateToDB,
+                      OsIntegrationSubManagersState::kDisabled),
+    test::GetOsIntegrationSubManagersTestName);
+
+// Synchronize and Execute tests from here onwards. Tests here should
+// verify both DB updates as well as OS registrations/unregistrations.
+class ShortcutMenuHandlingSubManagerExecuteTest
+    : public ShortcutMenuHandlingSubManagerTestBase,
+      public ::testing::WithParamInterface<OsIntegrationSubManagersState> {
+ public:
+  ShortcutMenuHandlingSubManagerExecuteTest() = default;
+  ~ShortcutMenuHandlingSubManagerExecuteTest() override = default;
+
+  void SetUp() override {
+    if (GetParam() == OsIntegrationSubManagersState::kSaveStateAndExecute) {
+      scoped_feature_list_.InitAndEnableFeatureWithParameters(
+          features::kOsIntegrationSubManagers,
+          {{"stage", "execute_and_write_config"}});
+    } else {
+      scoped_feature_list_.InitWithFeatures(
+          /*enabled_features=*/{},
+          /*disabled_features=*/{features::kOsIntegrationSubManagers});
+    }
+    ShortcutMenuHandlingSubManagerTestBase::SetUp();
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+TEST_P(ShortcutMenuHandlingSubManagerExecuteTest, InstallWritesCorrectData) {
+  const int num_menu_items = 2;
+
+  const std::vector<int> sizes = {icon_size::k64, icon_size::k128};
+  const std::vector<SkColor> colors = {SK_ColorRED, SK_ColorRED};
+  const AppId& app_id = InstallWebAppWithShortcutMenuIcons(
+      MakeIconBitmaps({{IconPurpose::ANY, sizes, colors},
+                       {IconPurpose::MASKABLE, sizes, colors},
+                       {IconPurpose::MONOCHROME, sizes, colors}},
+                      num_menu_items));
+
+  auto state =
+      provider().registrar_unsafe().GetAppCurrentOsIntegrationState(app_id);
+  ASSERT_TRUE(state.has_value());
+  const proto::WebAppOsIntegrationState& os_integration_state = state.value();
+
+  if (AreSubManagersExecuteEnabled()) {
+#if BUILDFLAG(IS_WIN)
+    const std::wstring app_user_model_id =
+        web_app::GenerateAppUserModelId(profile()->GetPath(), app_id);
+    ASSERT_TRUE(GetOsIntegrationTestOverride()->IsShortcutsMenuRegisteredForApp(
+        app_user_model_id));
+    EXPECT_THAT(GetOsIntegrationTestOverride()->GetCountOfShortcutIconsCreated(
+                    app_user_model_id),
+                testing::Eq(num_menu_items));
+    EXPECT_THAT(GetOsIntegrationTestOverride()->GetIconColorsForShortcutsMenu(
+                    app_user_model_id),
+                testing::ElementsAreArray(colors));
+#else
+    ASSERT_FALSE(GetOsIntegrationTestOverride()->AreShortcutsMenuRegistered());
+#endif
+  } else {
+    ASSERT_FALSE(os_integration_state.has_shortcut_menus());
+  }
+}
+
+TEST_P(ShortcutMenuHandlingSubManagerExecuteTest,
+       UninstallRemovesShortcutMenuItems) {
+  const int num_menu_items = 3;
+
+  const std::vector<int> sizes = {icon_size::k64, icon_size::k128,
+                                  icon_size::k256};
+  const std::vector<SkColor> colors = {SK_ColorBLUE, SK_ColorBLUE,
+                                       SK_ColorBLUE};
+  const AppId& app_id = InstallWebAppWithShortcutMenuIcons(
+      MakeIconBitmaps({{IconPurpose::ANY, sizes, colors},
+                       {IconPurpose::MASKABLE, sizes, colors},
+                       {IconPurpose::MONOCHROME, sizes, colors}},
+                      num_menu_items));
+
+  auto state =
+      provider().registrar_unsafe().GetAppCurrentOsIntegrationState(app_id);
+  ASSERT_TRUE(state.has_value());
+  const proto::WebAppOsIntegrationState& os_integration_state = state.value();
+
+  if (AreSubManagersExecuteEnabled()) {
+#if BUILDFLAG(IS_WIN)
+    const std::wstring app_user_model_id =
+        web_app::GenerateAppUserModelId(profile()->GetPath(), app_id);
+    ASSERT_TRUE(GetOsIntegrationTestOverride()->IsShortcutsMenuRegisteredForApp(
+        app_user_model_id));
+    EXPECT_THAT(GetOsIntegrationTestOverride()->GetCountOfShortcutIconsCreated(
+                    app_user_model_id),
+                testing::Eq(num_menu_items));
+    EXPECT_THAT(GetOsIntegrationTestOverride()->GetIconColorsForShortcutsMenu(
+                    app_user_model_id),
+                testing::ElementsAreArray(colors));
+#else
+    ASSERT_FALSE(GetOsIntegrationTestOverride()->AreShortcutsMenuRegistered());
+#endif
+  } else {
+    ASSERT_FALSE(os_integration_state.has_shortcut_menus());
+  }
+
+  test::UninstallAllWebApps(profile());
+
+  if (AreSubManagersExecuteEnabled()) {
+#if BUILDFLAG(IS_WIN)
+    const std::wstring app_user_model_id =
+        web_app::GenerateAppUserModelId(profile()->GetPath(), app_id);
+    ASSERT_TRUE(os_integration_state.has_shortcut_menus());
+    ASSERT_FALSE(
+        GetOsIntegrationTestOverride()->IsShortcutsMenuRegisteredForApp(
+            app_user_model_id));
+#else
+    ASSERT_FALSE(GetOsIntegrationTestOverride()->AreShortcutsMenuRegistered());
+#endif
+  } else {
+    ASSERT_FALSE(os_integration_state.has_shortcut_menus());
+  }
+}
+
+TEST_P(ShortcutMenuHandlingSubManagerExecuteTest, UpdateShortcutMenuItems) {
+  const int num_menu_items = 2;
+  const std::vector<int> sizes = {icon_size::k32, icon_size::k48};
+  const std::vector<SkColor> colors = {SK_ColorCYAN, SK_ColorCYAN};
+  const AppId& app_id = InstallWebAppWithShortcutMenuIcons(
+      MakeIconBitmaps({{IconPurpose::ANY, sizes, colors},
+                       {IconPurpose::MASKABLE, sizes, colors},
+                       {IconPurpose::MONOCHROME, sizes, colors}},
+                      num_menu_items));
+
+  auto state =
+      provider().registrar_unsafe().GetAppCurrentOsIntegrationState(app_id);
+  ASSERT_TRUE(state.has_value());
+  const proto::WebAppOsIntegrationState& os_integration_state = state.value();
+
+  if (AreSubManagersExecuteEnabled()) {
+#if BUILDFLAG(IS_WIN)
+    const std::wstring app_user_model_id =
+        web_app::GenerateAppUserModelId(profile()->GetPath(), app_id);
+    ASSERT_TRUE(GetOsIntegrationTestOverride()->IsShortcutsMenuRegisteredForApp(
+        app_user_model_id));
+    EXPECT_THAT(GetOsIntegrationTestOverride()->GetCountOfShortcutIconsCreated(
+                    app_user_model_id),
+                testing::Eq(num_menu_items));
+    EXPECT_THAT(GetOsIntegrationTestOverride()->GetIconColorsForShortcutsMenu(
+                    app_user_model_id),
+                testing::ElementsAreArray(colors));
+#else
+    ASSERT_FALSE(GetOsIntegrationTestOverride()->AreShortcutsMenuRegistered());
+#endif
+  } else {
+    ASSERT_FALSE(os_integration_state.has_shortcut_menus());
+  }
+
+  const int updated_num_menu_items = 3;
+  const std::vector<int> updated_sizes = {icon_size::k64, icon_size::k128,
+                                          icon_size::k256};
+  const std::vector<SkColor> updated_colors = {SK_ColorYELLOW, SK_ColorYELLOW,
+                                               SK_ColorYELLOW};
+  const AppId& updated_app_id =
+      InstallWebAppWithShortcutMenuIcons(MakeIconBitmaps(
+          {{IconPurpose::ANY, updated_sizes, updated_colors},
+           {IconPurpose::MASKABLE, updated_sizes, updated_colors},
+           {IconPurpose::MONOCHROME, updated_sizes, updated_colors}},
+          updated_num_menu_items));
+  ASSERT_THAT(updated_app_id, testing::Eq(app_id));
+
+  state = provider().registrar_unsafe().GetAppCurrentOsIntegrationState(
+      updated_app_id);
+  ASSERT_TRUE(state.has_value());
+  const proto::WebAppOsIntegrationState& updated_os_integration_state =
+      state.value();
+
+  if (AreSubManagersExecuteEnabled()) {
+#if BUILDFLAG(IS_WIN)
+    const std::wstring updated_model_id =
+        web_app::GenerateAppUserModelId(profile()->GetPath(), updated_app_id);
+    ASSERT_TRUE(GetOsIntegrationTestOverride()->IsShortcutsMenuRegisteredForApp(
+        updated_model_id));
+    EXPECT_THAT(GetOsIntegrationTestOverride()->GetCountOfShortcutIconsCreated(
+                    updated_model_id),
+                testing::Eq(updated_num_menu_items));
+    EXPECT_THAT(GetOsIntegrationTestOverride()->GetIconColorsForShortcutsMenu(
+                    updated_model_id),
+                testing::ElementsAreArray(updated_colors));
+#else
+    ASSERT_FALSE(GetOsIntegrationTestOverride()->AreShortcutsMenuRegistered());
+#endif
+  } else {
+    ASSERT_FALSE(updated_os_integration_state.has_shortcut_menus());
+  }
+}
+
+INSTANTIATE_TEST_SUITE_P(
+    All,
+    ShortcutMenuHandlingSubManagerExecuteTest,
+    ::testing::Values(OsIntegrationSubManagersState::kSaveStateAndExecute,
                       OsIntegrationSubManagersState::kDisabled),
     test::GetOsIntegrationSubManagersTestName);
 

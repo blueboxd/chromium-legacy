@@ -12,14 +12,13 @@
 #include "base/functional/bind.h"
 #include "base/location.h"
 #include "base/memory/ptr_util.h"
+#include "base/strings/strcat.h"
 #include "base/task/single_thread_task_runner.h"
 #include "build/branding_buildflags.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/about_flags.h"
 #include "chrome/browser/accessibility/accessibility_ui.h"
-#include "chrome/browser/ash/extensions/url_constants.h"
-#include "chrome/browser/ash/web_applications/files_internals_ui_delegate.h"
 #include "chrome/browser/buildflags.h"
 #include "chrome/browser/devtools/devtools_ui_bindings.h"
 #include "chrome/browser/history/history_service_factory.h"
@@ -113,6 +112,7 @@
 #include "ui/gfx/favicon_size.h"
 #include "ui/web_dialogs/web_dialog_ui.h"
 #include "url/gurl.h"
+#include "url/url_constants.h"
 
 #if BUILDFLAG(ENABLE_NACL)
 #include "chrome/browser/ui/webui/nacl_ui.h"
@@ -133,7 +133,6 @@
 #include "components/feed/buildflags.h"
 #include "components/feed/feed_feature_list.h"
 #else  // BUILDFLAG(IS_ANDROID)
-#include "chrome/browser/ash/system_web_apps/system_web_app_manager.h"
 #include "chrome/browser/media/router/discovery/access_code/access_code_cast_feature.h"
 #include "chrome/browser/media/router/media_router_feature.h"
 #include "chrome/browser/ui/side_panel/customize_chrome/customize_chrome_utils.h"
@@ -232,6 +231,7 @@
 #include "chrome/browser/ash/arc/arc_util.h"
 #include "chrome/browser/ash/device_sync/device_sync_client_factory.h"
 #include "chrome/browser/ash/eche_app/eche_app_manager_factory.h"
+#include "chrome/browser/ash/extensions/url_constants.h"
 #include "chrome/browser/ash/guest_os/public/installer_delegate_factory.h"
 #include "chrome/browser/ash/login/easy_unlock/easy_unlock_service.h"
 #include "chrome/browser/ash/login/easy_unlock/easy_unlock_service_factory.h"
@@ -246,8 +246,10 @@
 #include "chrome/browser/ash/scanning/scan_service.h"
 #include "chrome/browser/ash/scanning/scan_service_factory.h"
 #include "chrome/browser/ash/shimless_rma/chrome_shimless_rma_delegate.h"
+#include "chrome/browser/ash/system_web_apps/system_web_app_manager.h"
 #include "chrome/browser/ash/web_applications/chrome_file_manager_ui_delegate.h"
 #include "chrome/browser/ash/web_applications/face_ml/chrome_face_ml_user_provider.h"
+#include "chrome/browser/ash/web_applications/files_internals_ui_delegate.h"
 #include "chrome/browser/ash/web_applications/help_app/help_app_ui_delegate.h"
 #include "chrome/browser/ash/web_applications/media_app/chrome_media_app_ui_delegate.h"
 #include "chrome/browser/ash/web_applications/personalization_app/personalization_app_utils.h"
@@ -1023,7 +1025,6 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
     return &NewWebUI<ash::TrustedProjectorUI>;
   }
   if (url.host_piece() == ash::kChromeUIProjectorAnnotatorHost &&
-      ash::features::IsProjectorAnnotatorEnabled() &&
       IsProjectorAppEnabled(profile)) {
     return &NewWebUI<ash::TrustedProjectorAnnotatorUI>;
   }
@@ -1504,6 +1505,7 @@ std::vector<GURL> ChromeWebUIControllerFactory::GetListOfAcceptableURLs() {
         GURL(ash::file_manager::kChromeUIFileManagerURL),
         GURL(ash::kChromeUIFilesInternalsURL), GURL(chrome::kChromeUIFlagsURL),
         GURL(chrome::kOsUIFlagsURL), GURL(chrome::kOsUIGpuURL),
+        GURL(chrome::kChromeUIHealthdInternalsURL),
         GURL(chrome::kOsUIHistogramsURL),
         GURL(chrome::kChromeUIHumanPresenceInternalsURL),
         GURL(chrome::kChromeUIInternetConfigDialogURL),
@@ -1528,28 +1530,45 @@ std::vector<GURL> ChromeWebUIControllerFactory::GetListOfAcceptableURLs() {
         GURL(chrome::kOsUIConnectivityDiagnosticsAppURL),
         GURL(chrome::kOsUIDiagnosticsAppURL),
         GURL(chrome::kOsUIFirmwareUpdaterAppURL),
-        GURL(chrome::kOsUIPrintManagementAppURL), GURL(chrome::kOsUIRestartURL),
+        GURL(chrome::kOsUIPrintManagementAppURL),
         GURL(chrome::kOsUIScanningAppURL), GURL(chrome::kChromeUISetTimeURL),
         GURL(chrome::kChromeUIOSSettingsURL), GURL(chrome::kOsUISettingsURL),
-        GURL(chrome::kOsUISettingsURL), GURL(chrome::kOsUISignInInternalsURL),
-        GURL(chrome::kChromeUISlowURL), GURL(chrome::kChromeUISmbShareURL),
-        GURL(chrome::kOsUISyncInternalsURL), GURL(chrome::kOsUISysInternalsUrl),
-        GURL(chrome::kChromeUITermsURL), GURL(chrome::kOsUITermsURL),
-        GURL(chrome::kChromeUIUserImageURL), GURL(chrome::kChromeUIVersionURL),
-        GURL(chrome::kOsUIVersionURL), GURL(chrome::kChromeUIVmUrl),
-        GURL(chrome::kOsUISystemURL), GURL(chrome::kOsUIHelpAppURL),
-        GURL(chrome::kOsUINetExportURL),
+        GURL(chrome::kOsUISignInInternalsURL), GURL(chrome::kChromeUISlowURL),
+        GURL(chrome::kChromeUISmbShareURL), GURL(chrome::kOsUISyncInternalsURL),
+        GURL(chrome::kOsUISysInternalsUrl), GURL(chrome::kChromeUITermsURL),
+        GURL(chrome::kOsUITermsURL), GURL(chrome::kChromeUIUserImageURL),
+        GURL(chrome::kChromeUIVersionURL), GURL(chrome::kOsUIVersionURL),
+        GURL(chrome::kChromeUIVmUrl), GURL(chrome::kOsUISystemURL),
+        GURL(chrome::kOsUIHelpAppURL), GURL(chrome::kOsUINetExportURL),
         GURL(chrome::kOsUILauncherInternalsURL),
         GURL(chrome::kOsUIExtensionsInternalsURL),
+
 #if BUILDFLAG(ENABLE_EXTENSIONS)
-        // IME extension's Japanese options page. Opened in an Ash app window by
-        // InputMethodPrivateOpenOptionsPageFunction when Lacros is the only
+        // IME extension's Japanese options page. Opened via OS_URL_HANDLER SWA
+        // by InputMethodPrivateOpenOptionsPageFunction when Lacros is the only
         // browser.
         // TODO(b/250997017): Remove this once the Japanese options are
         // in-settings.
-        GURL(extensions::kIMEJPOptionsURL)
+        GURL(extensions::kIMEJPOptionsURL),
+
+        // Option pages of accessibility extensions. Opened via OS_URL_HANDLER
+        // SWA by ash::settings::AccessibilityHandler when Lacros is the only
+        // browser.
+        GURL(base::StrCat({extensions::kExtensionScheme,
+                           url::kStandardSchemeSeparator,
+                           extension_misc::kChromeVoxExtensionId,
+                           extension_misc::kChromeVoxOptionsPath})),
+        GURL(base::StrCat({extensions::kExtensionScheme,
+                           url::kStandardSchemeSeparator,
+                           extension_misc::kEspeakSpeechSynthesisExtensionId,
+                           extension_misc::kEspeakSpeechSynthesisOptionsPath})),
+        GURL(base::StrCat({extensions::kExtensionScheme,
+                           url::kStandardSchemeSeparator,
+                           extension_misc::kGoogleSpeechSynthesisExtensionId,
+                           extension_misc::kGoogleSpeechSynthesisOptionsPath})),
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
   };
+
 #elif BUILDFLAG(IS_CHROMEOS_LACROS)
   return std::vector<GURL>{GURL(chrome::kChromeUIAboutURL),
                            GURL(chrome::kChromeUIComponentsUrl),

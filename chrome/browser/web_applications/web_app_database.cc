@@ -16,7 +16,7 @@
 #include "base/functional/overloaded.h"
 #include "base/pickle.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/ash/system_web_apps/types/system_web_app_type.h"
+#include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_location.h"
 #include "chrome/browser/web_applications/mojom/user_display_mode.mojom.h"
 #include "chrome/browser/web_applications/os_integration/web_app_file_handler_manager.h"
 #include "chrome/browser/web_applications/proto/web_app.pb.h"
@@ -47,6 +47,10 @@
 #include "third_party/blink/public/mojom/manifest/manifest.mojom.h"
 #include "url/gurl.h"
 #include "url/origin.h"
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "ash/webui/system_apps/public/system_web_app_type.h"
+#endif
 
 namespace web_app {
 
@@ -660,6 +664,14 @@ std::unique_ptr<WebAppProto> WebAppDatabase::CreateWebAppProto(
     url_handler_proto->set_has_origin_wildcard(url_handler.has_origin_wildcard);
   }
 
+  for (const auto& scope_extension : web_app.scope_extensions()) {
+    WebAppScopeExtensionProto* scope_extension_proto =
+        local_data->add_scope_extensions();
+    scope_extension_proto->set_origin(scope_extension.origin.Serialize());
+    scope_extension_proto->set_has_origin_wildcard(
+        scope_extension.has_origin_wildcard);
+  }
+
   if (web_app.lock_screen_start_url().is_valid()) {
     local_data->set_lock_screen_start_url(
         web_app.lock_screen_start_url().spec());
@@ -781,21 +793,21 @@ std::unique_ptr<WebAppProto> WebAppDatabase::CreateWebAppProto(
     auto* mutable_data = local_data->mutable_isolation_data();
     absl::visit(
         base::Overloaded{
-            [&mutable_data](const IsolationData::InstalledBundle& bundle) {
+            [&mutable_data](const InstalledBundle& bundle) {
               mutable_data->mutable_installed_bundle()->set_path(
                   FilePathToProto(bundle.path));
             },
-            [&mutable_data](const IsolationData::DevModeBundle& bundle) {
+            [&mutable_data](const DevModeBundle& bundle) {
               mutable_data->mutable_dev_mode_bundle()->set_path(
                   FilePathToProto(bundle.path));
             },
-            [&mutable_data](const IsolationData::DevModeProxy& proxy) {
+            [&mutable_data](const DevModeProxy& proxy) {
               DCHECK(!proxy.proxy_url.opaque());
               mutable_data->mutable_dev_mode_proxy()->set_proxy_url(
                   proxy.proxy_url.Serialize());
             },
         },
-        web_app.isolation_data().value().content);
+        web_app.isolation_data().value().location);
   }
 
   return local_data;
@@ -1270,6 +1282,25 @@ std::unique_ptr<WebApp> WebAppDatabase::CreateWebApp(
   }
   web_app->SetUrlHandlers(std::move(url_handlers));
 
+  std::vector<ScopeExtensionInfo> scope_extensions;
+  for (const auto& scope_extension_proto : local_data.scope_extensions()) {
+    ScopeExtensionInfo scope_extension;
+
+    url::Origin origin =
+        url::Origin::Create(GURL(scope_extension_proto.origin()));
+    if (origin.opaque()) {
+      DLOG(ERROR) << "WebApp ScopeExtension proto url parse error: "
+                  << origin.GetDebugString();
+      return nullptr;
+    }
+    scope_extension.origin = std::move(origin);
+    scope_extension.has_origin_wildcard =
+        scope_extension_proto.has_origin_wildcard();
+
+    scope_extensions.push_back(std::move(scope_extension));
+  }
+  web_app->SetScopeExtensions(std::move(scope_extensions));
+
   if (local_data.has_lock_screen_start_url()) {
     web_app->SetLockScreenStartUrl(GURL(local_data.lock_screen_start_url()));
   }
@@ -1427,8 +1458,8 @@ std::unique_ptr<WebApp> WebAppDatabase::CreateWebApp(
   }
 
   if (local_data.has_isolation_data()) {
-    switch (local_data.isolation_data().content_case()) {
-      case IsolationDataProto::ContentCase::kInstalledBundle: {
+    switch (local_data.isolation_data().location_case()) {
+      case IsolationDataProto::LocationCase::kInstalledBundle: {
         absl::optional<base::FilePath> path = ProtoToFilePath(
             local_data.isolation_data().installed_bundle().path());
         if (!path.has_value()) {
@@ -1437,11 +1468,11 @@ std::unique_ptr<WebApp> WebAppDatabase::CreateWebApp(
           return nullptr;
         }
         web_app->SetIsolationData(
-            IsolationData(IsolationData::InstalledBundle{.path = *path}));
+            WebApp::IsolationData(InstalledBundle{.path = *path}));
         break;
       }
 
-      case IsolationDataProto::ContentCase::kDevModeBundle: {
+      case IsolationDataProto::LocationCase::kDevModeBundle: {
         absl::optional<base::FilePath> path = ProtoToFilePath(
             local_data.isolation_data().dev_mode_bundle().path());
         if (!path.has_value()) {
@@ -1450,11 +1481,11 @@ std::unique_ptr<WebApp> WebAppDatabase::CreateWebApp(
           return nullptr;
         }
         web_app->SetIsolationData(
-            IsolationData(IsolationData::DevModeBundle{.path = *path}));
+            WebApp::IsolationData(DevModeBundle{.path = *path}));
         break;
       }
 
-      case IsolationDataProto::ContentCase::kDevModeProxy: {
+      case IsolationDataProto::LocationCase::kDevModeProxy: {
         GURL gurl_proxy_url =
             GURL(local_data.isolation_data().dev_mode_proxy().proxy_url());
         url::Origin proxy_url = url::Origin::Create(gurl_proxy_url);
@@ -1466,13 +1497,13 @@ std::unique_ptr<WebApp> WebAppDatabase::CreateWebApp(
           return nullptr;
         }
         web_app->SetIsolationData(
-            IsolationData(IsolationData::DevModeProxy{.proxy_url = proxy_url}));
+            WebApp::IsolationData(DevModeProxy{.proxy_url = proxy_url}));
         break;
       }
 
-      case IsolationDataProto::ContentCase::CONTENT_NOT_SET:
+      case IsolationDataProto::LocationCase::LOCATION_NOT_SET:
         DLOG(ERROR) << "WebApp proto isolation_data parse error: "
-                    << "content not set";
+                    << "location not set";
         return nullptr;
     }
   }

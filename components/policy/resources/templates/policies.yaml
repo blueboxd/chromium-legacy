@@ -1073,9 +1073,11 @@ policies:
   1072: MixedContentAutoupgradeEnabled
   1073: ChromeAppsWebViewPermissiveBehaviorAllowed
   1074: ExtensionExtendedBackgroundLifetimeForPortConnectionsToUrls
-  1075: AutomatedKeyRotationEnabled
-  1076: DeviceActivityHeartbeatEnabled
-  1077: DeviceActivityHeartbeatCollectionRateMs
+  1075: DeviceActivityHeartbeatEnabled
+  1076: DeviceActivityHeartbeatCollectionRateMs
+  1077: WallpaperGooglePhotosIntegrationEnabled
+  1078: WebRtcTextLogCollectionAllowed
+  1079: EnforceLocalAnchorConstraintsEnabled
 atomic_groups:
   1: Homepage
   2: RemoteAccess

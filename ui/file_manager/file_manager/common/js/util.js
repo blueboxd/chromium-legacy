@@ -340,7 +340,7 @@ util.isSharedDriveEntry = entry => {
 
 /**
  * Extracts Shared Drive name from entry path.
- * @param {(!Entry|!FakeEntry)} entry Entry or a fake entry.
+ * @param {(!Entry|!FakeEntry|!FilesAppEntry)} entry Entry or a fake entry.
  * @return {string} The name of Shared Drive. Empty string if |entry| is not
  *     under Shared Drives.
  */
@@ -1527,5 +1527,16 @@ class UserCanceledError extends Error {}
  * @returns {boolean}
  */
 util.isNullOrUndefined = (value) => value === null || value === undefined;
+
+/**
+ * @param {?VolumeInfo} volumeInfo
+ * @return {boolean}
+ */
+util.isOneDrive = (volumeInfo) => {
+  if (volumeInfo?.providerId === 'ajdgmkbkgifbokednjgbmieaemeighkg') {
+    return true;
+  }
+  return false;
+};
 
 export {util, UserCanceledError};

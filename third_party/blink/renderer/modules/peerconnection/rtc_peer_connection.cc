@@ -666,11 +666,17 @@ RTCPeerConnection::~RTCPeerConnection() {
 }
 
 void RTCPeerConnection::Dispose() {
-  // Promptly clears the handler
-  // so that content/ doesn't access it in a lazy sweeping phase.
-  // Other references to the handler use a weak pointer, preventing access.
+  // Promptly clears the handler so that content doesn't access it in a lazy
+  // sweeping phase. Other references to the handler use a weak pointer,
+  // preventing access.
   if (peer_handler_) {
     peer_handler_.reset();
+  }
+  // Memory owned by RTCPeerConnection must not be touched after Dispose().
+  // Shut down the cache to cancel any in-flight tasks that may otherwise have
+  // used the cache.
+  if (rtp_contributing_source_cache_.has_value()) {
+    rtp_contributing_source_cache_.value().Shutdown();
   }
 }
 
@@ -1706,9 +1712,12 @@ ScriptPromise RTCPeerConnection::PromiseBasedGetStats(
       // while leaving the associated promise pending as specified.
       resolver->Detach();
     } else {
+      bool is_track_stats_deprecation_trial_enabled =
+          RuntimeEnabledFeatures::RTCLegacyTrackStatsEnabled(context);
       peer_handler_->GetStats(WTF::BindOnce(WebRTCStatsReportCallbackResolver,
                                             WrapPersistent(resolver)),
-                              GetExposedGroupIds(script_state));
+                              GetExposedGroupIds(script_state),
+                              is_track_stats_deprecation_trial_enabled);
     }
     return promise;
   }

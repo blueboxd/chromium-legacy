@@ -11,6 +11,7 @@
 #include "third_party/blink/public/mojom/direct_sockets/direct_sockets.mojom-blink.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_socket_dns_query_type.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_udp_socket_open_info.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_udp_socket_options.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
@@ -65,17 +66,24 @@ mojom::blink::DirectUDPSocketOptionsPtr CreateUDPSocketOptions(
 
   absl::optional<net::IPEndPoint> local_addr;
   if (options->hasLocalAddress()) {
-    if (net::IPAddress address;
-        address.AssignFromIPLiteral(options->localAddress().Utf8())) {
-      // Port 0 allows the OS to pick an available port on its own.
-      local_addr =
-          net::IPEndPoint(std::move(address),
-                          options->hasLocalPort() ? options->localPort() : 0U);
-    } else {
+    net::IPAddress address;
+    if (!address.AssignFromIPLiteral(options->localAddress().Utf8())) {
       exception_state.ThrowTypeError(
           "localAddress must be a valid IP address.");
       return {};
     }
+
+    if (options->hasLocalPort() && options->localPort() == 0) {
+      exception_state.ThrowTypeError(
+          "localPort must be greater than zero. Leave this field unassigned to "
+          "allow the OS to pick a port on its own.");
+      return {};
+    }
+
+    // Port 0 allows the OS to pick an available port on its own.
+    local_addr =
+        net::IPEndPoint(std::move(address),
+                        options->hasLocalPort() ? options->localPort() : 0U);
   } else if (options->hasLocalPort()) {
     exception_state.ThrowTypeError(
         "localPort cannot be specified without localAddress.");
@@ -90,13 +98,37 @@ mojom::blink::DirectUDPSocketOptionsPtr CreateUDPSocketOptions(
     exception_state.ThrowTypeError(
         "neither remoteAddress nor localAddress specified.");
     return {};
-  } else {
-    socket_options->remote_addr = std::move(remote_addr);
-    socket_options->local_addr = std::move(local_addr);
+  }
+
+  if (options->hasDnsQueryType()) {
+    if (!options->hasRemoteAddress()) {
+      exception_state.ThrowTypeError(
+          "dnsQueryType is only relevant when remoteAddress is specified.");
+      return {};
+    }
+    switch (options->dnsQueryType().AsEnum()) {
+      case V8SocketDnsQueryType::Enum::kIpv4:
+        socket_options->dns_query_type = net::DnsQueryType::A;
+        break;
+      case V8SocketDnsQueryType::Enum::kIpv6:
+        socket_options->dns_query_type = net::DnsQueryType::AAAA;
+        break;
+    }
   }
 
   if (!CheckSendReceiveBufferSize(options, exception_state)) {
     return {};
+  }
+
+  if (options->hasIpv6Only()) {
+    if (!local_addr ||
+        local_addr->address() != net::IPAddress::IPv6AllZeros()) {
+      exception_state.ThrowTypeError(
+          "ipv6Only can only be specified when localAddress is [::] or "
+          "equivalent.");
+      return {};
+    }
+    // TODO(crbug.com/1413161): Implement ipv6_only support.
   }
 
   if (options->hasSendBufferSize()) {
@@ -105,6 +137,9 @@ mojom::blink::DirectUDPSocketOptionsPtr CreateUDPSocketOptions(
   if (options->hasReceiveBufferSize()) {
     socket_options->receive_buffer_size = options->receiveBufferSize();
   }
+
+  socket_options->remote_addr = std::move(remote_addr);
+  socket_options->local_addr = std::move(local_addr);
 
   return socket_options;
 }

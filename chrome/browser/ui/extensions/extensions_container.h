@@ -30,22 +30,22 @@ class ExtensionsContainer {
 
   // Called when a context menu is shown so the container can perform any
   // necessary setup.
-  virtual void OnContextMenuShown(ToolbarActionViewController* extension) {}
+  virtual void OnContextMenuShown(const std::string& action_id) {}
 
   // Called when a context menu is closed so the container can perform any
   // necessary cleanup.
-  virtual void OnContextMenuClosed(ToolbarActionViewController* extension) {}
+  virtual void OnContextMenuClosed() {}
 
   // Whether the container supports showing extensions on the toolbar.
   virtual bool CanShowActionsInToolbar() const = 0;
 
-  // Returns true if the given |action| is visible on the toolbar.
-  virtual bool IsActionVisibleOnToolbar(
-      const ToolbarActionViewController* action) const = 0;
+  // Returns true if the action pointed by `action_id` is visible on the
+  // toolbar.
+  virtual bool IsActionVisibleOnToolbar(const std::string& action_id) const = 0;
 
   // Returns the action's toolbar button visibility.
   virtual extensions::ExtensionContextMenuModel::ButtonVisibility
-  GetActionVisibility(const ToolbarActionViewController* action) const = 0;
+  GetActionVisibility(const std::string& action_id) const = 0;
 
   // Undoes the current "pop out"; i.e., moves the popped out action back into
   // overflow.

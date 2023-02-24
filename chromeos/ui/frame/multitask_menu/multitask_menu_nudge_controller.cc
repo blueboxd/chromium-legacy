@@ -50,6 +50,7 @@ bool g_suppress_nudge_for_testing = false;
 // Clock that can be overridden for testing.
 base::Clock* g_clock_override = nullptr;
 
+// May be null in tests.
 MultitaskMenuNudgeController::Delegate* g_delegate_instance = nullptr;
 
 base::Time GetTime() {
@@ -172,6 +173,15 @@ void MultitaskMenuNudgeController::DismissNudge() {
   }
 }
 
+void MultitaskMenuNudgeController::OnMenuOpened(bool tablet_mode) {
+  DismissNudge();
+
+  if (g_delegate_instance) {
+    g_delegate_instance->SetNudgePreferences(tablet_mode, kNudgeMaxShownCount,
+                                             GetTime());
+  }
+}
+
 void MultitaskMenuNudgeController::OnWindowParentChanged(aura::Window* window,
                                                          aura::Window* parent) {
   if (!parent) {
@@ -264,11 +274,6 @@ void MultitaskMenuNudgeController::OnGetPreferences(
   if (tablet_mode != TabletState::Get()->InTabletMode()) {
     return;
   }
-
-  // TODO(b/267787811): When the multitask menu has been opened in tablet
-  // mode, don't show the tablet nudge anymore.
-  // TODO(sammiequon|hewer): When the multitask menu has been opened in
-  // clamshell mode, don't show the clamshell nudge anymore.
 
   // Nudge has already been shown three times. No need to educate anymore.
   if (shown_count >= kNudgeMaxShownCount) {
@@ -387,13 +392,35 @@ void MultitaskMenuNudgeController::UpdateWidgetAndPulse() {
   }
 
   // The nudge is placed right below the anchor.
-  // TODO(crbug.com/1329233): Determine what to do if the nudge is offscreen.
   const gfx::Rect anchor_bounds_in_screen = anchor_view_->GetBoundsInScreen();
-  const gfx::Rect bounds_in_screen(
+  gfx::Rect bounds_in_screen(
       anchor_bounds_in_screen.CenterPoint().x() - size.width() / 2,
       anchor_bounds_in_screen.bottom() + kNudgeDistanceFromAnchor, size.width(),
       size.height());
+  bool adjust_to_fit = false;
+  const display::Display display =
+      display::Screen::GetScreen()->GetDisplayNearestView(window_);
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  // Lacros always needs adjustment since the child cannot go outside the
+  // parents bounds currently. See https://crbug.com/1416919.
+  adjust_to_fit = true;
+#elif BUILDFLAG(IS_CHROMEOS_ASH)
+  // If the nudge is going to be offscreen, make sure it is within the window
+  // bounds.
+  adjust_to_fit = !display.work_area().Contains(bounds_in_screen);
+#endif
+  if (adjust_to_fit) {
+    // The nudge should be within the window bounds.
+    bounds_in_screen.AdjustToFit(window_->GetBoundsInScreen());
+  }
   nudge_widget_->SetBounds(bounds_in_screen);
+
+  // If setting bounds on the nudge causes it to move to another display (this
+  // can happen while dragging across displays), dismiss the nudge.
+  if (nudge_widget_->GetNativeWindow()->parent() != window_->parent()) {
+    DismissNudge();
+    return;
+  }
 
   // The circular pulse should be a square that matches the smaller dimension of
   // `anchor_view_`. We use rounded corners to make it look like a circle.

@@ -73,6 +73,11 @@ const char kIncognitoModeAvailability[] = "incognito.mode_availability";
 const char kIncognitoInterstitialEnabled[] =
     "ios.settings.incognito_interstitial_enabled";
 
+// Integer that maps to IOSCredentialProviderPromoSource, the enum type of the
+// event that leads to the credential provider promo's display.
+const char kIosCredentialProviderPromoSource[] =
+    "ios.credential_provider_promo.source";
+
 // Caches the folder id of user's position in the bookmark hierarchy navigator.
 const char kIosBookmarkCachedFolderId[] = "ios.bookmark.cached_folder_id";
 
@@ -95,6 +100,11 @@ const char kIosBookmarkSigninPromoDisplayedCount[] =
 // the promo for the user.
 const char kIosCredentialProviderPromoStopPromo[] =
     "ios.credential_provider_promo.stop_promo";
+
+// Boolean to represent if the Credential Provider Promo has registered with
+// Promo Manager.
+const char kIosCredentialProviderPromoHasRegisteredWithPromoManager[] =
+    "ios.credential_provider_promo.has_registered_with_promo_manager";
 
 // The time when the DiscoverFeed was last refreshed while the feed was visible
 // to the user.

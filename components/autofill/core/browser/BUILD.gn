@@ -99,6 +99,8 @@ static_library("browser") {
     "autofill_manager.h",
     "autofill_observer.cc",
     "autofill_observer.h",
+    "autofill_optimization_guide.cc",
+    "autofill_optimization_guide.h",
     "autofill_profile_import_process.cc",
     "autofill_profile_import_process.h",
     "autofill_profile_sync_util.cc",
@@ -569,6 +571,7 @@ static_library("browser") {
     "//components/infobars/core",
     "//components/keyed_service/core",
     "//components/language/core/browser",
+    "//components/optimization_guide/core",
     "//components/os_crypt",
     "//components/policy/core/browser",
     "//components/policy/core/common",
@@ -630,22 +633,6 @@ static_library("browser") {
       "//ui/native_theme",
       "//ui/native_theme:native_theme_browser",
     ]
-  }
-}
-
-if (is_android) {
-  java_cpp_enum("java_enum_srcjar") {
-    # External code should depend on ":card_unmask_challenge_option_type_java" instead.
-    visibility = [ ":*" ]
-    sources = [ "payments/card_unmask_challenge_option.h" ]
-  }
-
-  android_library("card_unmask_challenge_option_type_java") {
-    srcjar_deps = [ ":java_enum_srcjar" ]
-
-    # Important: the generated enum uses the @IntDef annotation provided by
-    # this dependency.
-    deps = [ "//third_party/androidx:androidx_annotation_annotation_java" ]
   }
 }
 
@@ -849,6 +836,7 @@ source_set("unit_tests") {
     "autofill_feedback_data_unittest.cc",
     "autofill_manager_unittest.cc",
     "autofill_merge_unittest.cc",
+    "autofill_optimization_guide_unittest.cc",
     "autofill_profile_import_process_unittest.cc",
     "autofill_profile_sync_util_unittest.cc",
     "autofill_subject_unittest.cc",
@@ -913,6 +901,7 @@ source_set("unit_tests") {
     "manual_testing_profile_import_unittest.cc",
     "merchant_promo_code_manager_unittest.cc",
     "metrics/autofill_metrics_unittest.cc",
+    "metrics/form_events/address_form_event_logger_unittest.cc",
     "metrics/form_events/form_event_logger_base_unittest.cc",
     "metrics/payments/iban_metrics_unittest.cc",
     "metrics/payments/offers_metrics_unittest.cc",
@@ -1023,6 +1012,7 @@ source_set("unit_tests") {
     "//components/image_fetcher/core:core",
     "//components/image_fetcher/core:test_support",
     "//components/leveldb_proto",
+    "//components/optimization_guide/core",
     "//components/os_crypt",
     "//components/os_crypt:test_support",
     "//components/policy/core/common",

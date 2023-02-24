@@ -253,7 +253,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Cookie.DaysSinceRefreshForRetrieval" units="days"
-    expires_after="2023-07-02">
+    expires_after="2024-02-20">
   <owner>arichiv@chromium.org</owner>
   <owner>bingler@chromium.org</owner>
   <summary>
@@ -301,7 +301,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Cookie.ExpirationDuration400DaysGT" units="days"
-    expires_after="M114">
+    expires_after="2024-02-20">
   <owner>arichiv@chromium.org</owner>
   <owner>bingler@chromium.org</owner>
   <summary>
@@ -311,7 +311,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Cookie.ExpirationDuration400DaysLTE" units="days"
-    expires_after="M114">
+    expires_after="2024-02-20">
   <owner>arichiv@chromium.org</owner>
   <owner>bingler@chromium.org</owner>
   <summary>
@@ -321,14 +321,16 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Cookie.ExpirationDurationMinutesNonSecure" units="minutes"
-    expires_after="M114">
+    expires_after="2024-02-20">
+  <owner>arichiv@chromium.org</owner>
   <owner>kaustubhag@chromium.org</owner>
   <owner>bingler@chromium.org</owner>
   <summary>Number of minutes until non-Secure cookie expires when set.</summary>
 </histogram>
 
 <histogram name="Cookie.ExpirationDurationMinutesSecure" units="minutes"
-    expires_after="M114">
+    expires_after="2024-02-20">
+  <owner>arichiv@chromium.org</owner>
   <owner>kaustubhag@chromium.org</owner>
   <owner>bingler@chromium.org</owner>
   <summary>Number of minutes until Secure cookie expires when set.</summary>
@@ -518,6 +520,19 @@ chromium-metrics-reviews@google.com.
     the client may record this metric more than once. This metric is recorded
     for a profile even when First-Party Sets is disabled globally or for this
     profile, and is recorded for all kinds of profiles.
+  </summary>
+</histogram>
+
+<histogram name="Cookie.FirstPartySets.ProcessedEntireComponent"
+    enum="BooleanSuccess" expires_after="M124">
+  <owner>cfredric@chromium.org</owner>
+  <owner>chrome-first-party-sets@chromium.org</owner>
+  <summary>
+    This histogram tracks whether the First-Party Sets component was able to
+    process all sets while starting up, or if it had to abort during the process
+    due to encountering a fatal error.
+
+    The metric will be recorded at most once each time the client starts up.
   </summary>
 </histogram>
 

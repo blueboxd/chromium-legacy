@@ -27,6 +27,8 @@ namespace policy {
 
 class RebootNotificationsSchedulerTest : public testing::Test {
  public:
+  using Requester = RebootNotificationsScheduler::Requester;
+
   RebootNotificationsSchedulerTest()
       : task_environment_(base::test::TaskEnvironment::TimeSource::MOCK_TIME),
         prefs_(std::make_unique<TestingPrefServiceSimple>()),
@@ -80,33 +82,13 @@ class RebootNotificationsSchedulerTest : public testing::Test {
   std::unique_ptr<NotificationDisplayServiceTester> display_service_tester_;
 };
 
-TEST_F(RebootNotificationsSchedulerTest, ApplyingGraceTime) {
-  base::Time now = task_environment_.GetMockClock()->Now();
-
-  // Set uptime to 10 minutes and schedule reboot in 15 minutes. Apply grace
-  // time.
-  base::Time reboot_time = now + base::Minutes(15);
-  notifications_scheduler_->SetUptime(base::Minutes(10));
-  EXPECT_EQ(notifications_scheduler_->ShouldApplyGraceTime(reboot_time), true);
-
-  // Schedule reboot in 5 hours. Don't apply grace time.
-  reboot_time += base::Hours(5);
-  EXPECT_EQ(notifications_scheduler_->ShouldApplyGraceTime(reboot_time), false);
-
-  // Set uptime to 2 hours and schedule reboot in 15 minutes. Don't apply grace
-  // time.
-  reboot_time -= base::Hours(5);
-  notifications_scheduler_->SetUptime(base::Hours(2));
-  EXPECT_EQ(notifications_scheduler_->ShouldApplyGraceTime(reboot_time), false);
-}
-
 TEST_F(RebootNotificationsSchedulerTest, ShowNotificationAndDialogOnSchedule) {
   // Schedule reboot in 3 minutes. Expect dialog and notification to be shown
   // immediately.
   base::Time reboot_time =
       task_environment_.GetMockClock()->Now() + base::Minutes(3);
   notifications_scheduler_->SchedulePendingRebootNotifications(
-      base::NullCallback(), reboot_time);
+      base::NullCallback(), reboot_time, Requester::kScheduledRebootPolicy);
   EXPECT_EQ(notifications_scheduler_->GetShowDialogCalls(), 1);
   EXPECT_EQ(notifications_scheduler_->GetShowNotificationCalls(), 1);
 }
@@ -118,7 +100,7 @@ TEST_F(RebootNotificationsSchedulerTest,
   base::Time reboot_time =
       task_environment_.GetMockClock()->Now() + base::Minutes(30);
   notifications_scheduler_->SchedulePendingRebootNotifications(
-      base::NullCallback(), reboot_time);
+      base::NullCallback(), reboot_time, Requester::kScheduledRebootPolicy);
   EXPECT_EQ(notifications_scheduler_->GetShowDialogCalls(), 0);
   EXPECT_EQ(notifications_scheduler_->GetShowNotificationCalls(), 1);
 
@@ -133,7 +115,7 @@ TEST_F(RebootNotificationsSchedulerTest, ScheduleNotificationAndDialogTimer) {
   base::Time reboot_time =
       task_environment_.GetMockClock()->Now() + base::Hours(2);
   notifications_scheduler_->SchedulePendingRebootNotifications(
-      base::NullCallback(), reboot_time);
+      base::NullCallback(), reboot_time, Requester::kScheduledRebootPolicy);
   EXPECT_EQ(notifications_scheduler_->GetShowDialogCalls(), 0);
   EXPECT_EQ(notifications_scheduler_->GetShowNotificationCalls(), 0);
 
@@ -147,28 +129,14 @@ TEST_F(RebootNotificationsSchedulerTest, ScheduleNotificationAndDialogTimer) {
   EXPECT_EQ(notifications_scheduler_->GetShowDialogCalls(), 1);
 }
 
-TEST_F(RebootNotificationsSchedulerTest, DoNotScheduleOrShowNotifications) {
-  // Set uptime to 5 minutes and schedule reboot in 10 minutes. Apply grace time
-  // and don't show notification or dialog.
-  base::Time reboot_time =
-      task_environment_.GetMockClock()->Now() + base::Minutes(10);
-  notifications_scheduler_->SetUptime(base::Minutes(5));
-  notifications_scheduler_->SchedulePendingRebootNotifications(
-      base::NullCallback(), reboot_time);
-  EXPECT_EQ(notifications_scheduler_->GetShowDialogCalls(), 0);
-  EXPECT_EQ(notifications_scheduler_->GetShowNotificationCalls(), 0);
-  task_environment_.FastForwardBy(base::Hours(1));
-  EXPECT_EQ(notifications_scheduler_->GetShowNotificationCalls(), 0);
-  EXPECT_EQ(notifications_scheduler_->GetShowDialogCalls(), 0);
-}
-
-TEST_F(RebootNotificationsSchedulerTest, RescheduleNotifications) {
+TEST_F(RebootNotificationsSchedulerTest,
+       RescheduleNotificationsForTheSameRequester) {
   // Schedule reboot in 30 minutes. Expect notification to be shown immediately.
   // Schedule timer for showing dialog.
   base::Time reboot_time =
       task_environment_.GetMockClock()->Now() + base::Minutes(30);
   notifications_scheduler_->SchedulePendingRebootNotifications(
-      base::NullCallback(), reboot_time);
+      base::NullCallback(), reboot_time, Requester::kScheduledRebootPolicy);
   EXPECT_EQ(notifications_scheduler_->GetShowDialogCalls(), 0);
   EXPECT_EQ(notifications_scheduler_->GetShowNotificationCalls(), 1);
 
@@ -176,7 +144,7 @@ TEST_F(RebootNotificationsSchedulerTest, RescheduleNotifications) {
   // notification or dialog at this moment.
   reboot_time += base::Hours(2);
   notifications_scheduler_->SchedulePendingRebootNotifications(
-      base::NullCallback(), reboot_time);
+      base::NullCallback(), reboot_time, Requester::kScheduledRebootPolicy);
   EXPECT_EQ(notifications_scheduler_->GetShowDialogCalls(), 0);
   EXPECT_EQ(notifications_scheduler_->GetShowNotificationCalls(), 1);
 
@@ -189,6 +157,46 @@ TEST_F(RebootNotificationsSchedulerTest, RescheduleNotifications) {
   task_environment_.FastForwardBy(base::Minutes(25));
   EXPECT_EQ(notifications_scheduler_->GetShowDialogCalls(), 1);
   EXPECT_EQ(notifications_scheduler_->GetShowNotificationCalls(), 2);
+}
+
+TEST_F(RebootNotificationsSchedulerTest,
+       RescheduleNotificationsForTwoRequesters) {
+  // Schedule reboot for the first requester. Check notification and dialog are
+  // shown.
+  const base::TimeDelta first_reboot_delay = base::Seconds(10);
+  const base::Time first_reboot_time =
+      task_environment_.GetMockClock()->Now() + first_reboot_delay;
+  notifications_scheduler_->SchedulePendingRebootNotifications(
+      base::NullCallback(), first_reboot_time,
+      Requester::kScheduledRebootPolicy);
+  EXPECT_EQ(notifications_scheduler_->GetShowDialogCalls(), 1);
+  EXPECT_EQ(notifications_scheduler_->GetShowNotificationCalls(), 1);
+  EXPECT_EQ(notifications_scheduler_->GetCloseNotificationCalls(), 1);
+
+  // Schedule reboot for the second requester after the first one. Check reboot
+  // is not rescheduled.
+  {
+    const base::TimeDelta later_reboot_delay = 2 * first_reboot_delay;
+    const base::Time later_reboot_time =
+        task_environment_.GetMockClock()->Now() + later_reboot_delay;
+    notifications_scheduler_->SchedulePendingRebootNotifications(
+        base::NullCallback(), later_reboot_time, Requester::kRebootCommand);
+    EXPECT_EQ(notifications_scheduler_->GetShowDialogCalls(), 1);
+    EXPECT_EQ(notifications_scheduler_->GetShowNotificationCalls(), 1);
+  }
+
+  // Schedule reboot for the second requester before the first one. Check reboot
+  // is rescheduled.
+  {
+    const base::TimeDelta before_reboot_delay = first_reboot_delay / 2;
+    const base::Time before_reboot_time =
+        task_environment_.GetMockClock()->Now() + before_reboot_delay;
+    notifications_scheduler_->SchedulePendingRebootNotifications(
+        base::NullCallback(), before_reboot_time, Requester::kRebootCommand);
+    EXPECT_EQ(notifications_scheduler_->GetShowDialogCalls(), 2);
+    EXPECT_EQ(notifications_scheduler_->GetShowNotificationCalls(), 2);
+    EXPECT_EQ(notifications_scheduler_->GetCloseNotificationCalls(), 2);
+  }
 }
 
 TEST_F(RebootNotificationsSchedulerTest,
@@ -241,6 +249,34 @@ TEST_F(RebootNotificationsSchedulerTest,
   notifications_scheduler_->SetWaitFullRestoreInit(true);
   session_manager_.SessionStarted();
   EXPECT_EQ(GetDisplayedNotificationCount(), 0);
+}
+
+TEST_F(RebootNotificationsSchedulerTest, ResetState) {
+  // Check that fresh scheduler resets state.
+  notifications_scheduler_->CancelRebootNotifications(
+      Requester::kScheduledRebootPolicy);
+  EXPECT_EQ(notifications_scheduler_->GetCloseNotificationCalls(), 1);
+
+  const auto reboot_time =
+      task_environment_.GetMockClock()->Now() + base::Minutes(10);
+  notifications_scheduler_->SchedulePendingRebootNotifications(
+      base::DoNothing(), reboot_time, Requester::kScheduledRebootPolicy);
+  EXPECT_EQ(notifications_scheduler_->GetCloseNotificationCalls(), 2);
+
+  // Check that requested scheduler does not reset state for another requester.
+  notifications_scheduler_->CancelRebootNotifications(
+      Requester::kRebootCommand);
+  EXPECT_EQ(notifications_scheduler_->GetCloseNotificationCalls(), 2);
+
+  // Check that requested scheduler resets state for the same requester.
+  notifications_scheduler_->CancelRebootNotifications(
+      Requester::kScheduledRebootPolicy);
+  EXPECT_EQ(notifications_scheduler_->GetCloseNotificationCalls(), 3);
+
+  // Check that scheduler is fresh.
+  notifications_scheduler_->CancelRebootNotifications(
+      Requester::kRebootCommand);
+  EXPECT_EQ(notifications_scheduler_->GetCloseNotificationCalls(), 4);
 }
 
 }  // namespace policy

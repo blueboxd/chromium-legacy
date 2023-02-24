@@ -54,8 +54,8 @@ bool GetInt(const base::Value& dict, const char* key, int* result) {
 // |onc_object|.
 void ExpandField(const std::string& fieldname,
                  const VariableExpander& variable_expander,
-                 base::Value* onc_object) {
-  std::string* field_value = onc_object->FindStringKey(fieldname);
+                 base::Value::Dict* onc_object) {
+  std::string* field_value = onc_object->FindString(fieldname);
   if (!field_value)
     return;
   variable_expander.ExpandString(field_value);
@@ -84,13 +84,12 @@ bool IsUserLoginPasswordPlaceholder(const std::string& field_name,
 // passphrases) in ONC.
 class OncMaskValues : public Mapper {
  public:
-  static base::Value Mask(const OncValueSignature& signature,
-                          const base::Value& onc_object,
-                          const std::string& mask) {
+  static base::Value::Dict Mask(const OncValueSignature& signature,
+                                const base::Value::Dict& onc_object,
+                                const std::string& mask) {
     OncMaskValues masker(mask);
     bool error = false;
-    base::Value result(
-        masker.MapObject(signature, onc_object.GetDict(), &error));
+    base::Value::Dict result = masker.MapObject(signature, onc_object, &error);
     return result;
   }
 
@@ -351,11 +350,12 @@ bool ResolveServerCertRefsInObject(const CertPEMsByGUIDMap& certs_by_guid,
 
 }  // namespace
 
-base::Value ReadDictionaryFromJson(const std::string& json) {
+absl::optional<base::Value::Dict> ReadDictionaryFromJson(
+    const std::string& json) {
   if (json.empty()) {
     // Policy may contain empty values, just log a debug message.
     NET_LOG(DEBUG) << "Empty json string";
-    return base::Value();
+    return absl::nullopt;
   }
   auto parsed_json = base::JSONReader::ReadAndReturnValueWithError(
       json,
@@ -363,12 +363,13 @@ base::Value ReadDictionaryFromJson(const std::string& json) {
   if (!parsed_json.has_value()) {
     NET_LOG(ERROR) << "Invalid JSON Dictionary: "
                    << parsed_json.error().message;
-    return base::Value();
-  } else if (!parsed_json->is_dict()) {
-    NET_LOG(ERROR) << "Invalid JSON Dictionary: Expected a dictionary.";
-    return base::Value();
+    return absl::nullopt;
   }
-  return std::move(*parsed_json);
+  if (!parsed_json->is_dict()) {
+    NET_LOG(ERROR) << "Invalid JSON Dictionary: Expected a dictionary.";
+    return absl::nullopt;
+  }
+  return std::move(*parsed_json).TakeDict();
 }
 
 base::Value Decrypt(const std::string& passphrase, const base::Value& root) {
@@ -460,11 +461,13 @@ base::Value Decrypt(const std::string& passphrase, const base::Value& root) {
     return base::Value();
   }
 
-  base::Value new_root = ReadDictionaryFromJson(plaintext);
-  if (new_root.is_none())
+  absl::optional<base::Value::Dict> new_root =
+      ReadDictionaryFromJson(plaintext);
+  if (!new_root) {
     NET_LOG(ERROR) << "Property dictionary malformed.";
-
-  return new_root;
+    return base::Value();
+  }
+  return base::Value(std::move(*new_root));
 }
 
 std::string GetSourceAsString(::onc::ONCSource source) {
@@ -486,8 +489,7 @@ std::string GetSourceAsString(::onc::ONCSource source) {
 
 void ExpandStringsInOncObject(const OncValueSignature& signature,
                               const VariableExpander& variable_expander,
-                              base::Value* onc_object) {
-  DCHECK(onc_object->is_dict());
+                              base::Value::Dict* onc_object) {
   if (&signature == &kEAPSignature) {
     ExpandField(::onc::eap::kAnonymousIdentity, variable_expander, onc_object);
     ExpandField(::onc::eap::kIdentity, variable_expander, onc_object);
@@ -497,7 +499,7 @@ void ExpandStringsInOncObject(const OncValueSignature& signature,
   }
 
   // Recurse into nested objects.
-  for (auto it : onc_object->DictItems()) {
+  for (auto it : *onc_object) {
     if (!it.second.is_dict())
       continue;
 
@@ -507,16 +509,15 @@ void ExpandStringsInOncObject(const OncValueSignature& signature,
       continue;
 
     ExpandStringsInOncObject(*field_signature->value_signature,
-                             variable_expander, &it.second);
+                             variable_expander, &it.second.GetDict());
   }
 }
 
 void ExpandStringsInNetworks(const VariableExpander& variable_expander,
                              base::Value::List& network_configs) {
   for (auto& network : network_configs) {
-    DCHECK(network.is_dict());
     ExpandStringsInOncObject(kNetworkConfigurationSignature, variable_expander,
-                             &network);
+                             &network.GetDict());
   }
 }
 
@@ -580,9 +581,10 @@ void SetHiddenSSIDField(base::Value::Dict& wifi_fields) {
   wifi_fields.Set(::onc::wifi::kHiddenSSID, false);
 }
 
-base::Value MaskCredentialsInOncObject(const OncValueSignature& signature,
-                                       const base::Value& onc_object,
-                                       const std::string& mask) {
+base::Value::Dict MaskCredentialsInOncObject(
+    const OncValueSignature& signature,
+    const base::Value::Dict& onc_object,
+    const std::string& mask) {
   return OncMaskValues::Mask(signature, onc_object, mask);
 }
 
@@ -628,12 +630,14 @@ bool ParseAndValidateOncForImport(const std::string& onc_blob,
   if (onc_blob.empty())
     return true;
 
-  base::Value toplevel_onc = ReadDictionaryFromJson(onc_blob);
-  if (toplevel_onc.is_none()) {
+  absl::optional<base::Value::Dict> toplevel_onc_dict =
+      ReadDictionaryFromJson(onc_blob);
+  if (!toplevel_onc_dict) {
     NET_LOG(ERROR) << "Not a valid ONC JSON dictionary: "
                    << GetSourceAsString(onc_source);
     return false;
   }
+  base::Value toplevel_onc(std::move(*toplevel_onc_dict));
 
   // Check and see if this is an encrypted ONC file. If so, decrypt it.
   std::string onc_type;
@@ -660,8 +664,10 @@ bool ParseAndValidateOncForImport(const std::string& onc_blob,
   validator.SetOncSource(onc_source);
 
   Validator::Result validation_result;
-  base::Value validated_toplevel_onc = validator.ValidateAndRepairObject(
-      &kToplevelConfigurationSignature, toplevel_onc, &validation_result);
+  absl::optional<base::Value::Dict> validated_toplevel_onc =
+      validator.ValidateAndRepairObject(&kToplevelConfigurationSignature,
+                                        toplevel_onc.GetDict(),
+                                        &validation_result);
 
   if (from_policy) {
     UMA_HISTOGRAM_BOOLEAN("Enterprise.ONC.PolicyValidation",
@@ -674,17 +680,15 @@ bool ParseAndValidateOncForImport(const std::string& onc_blob,
                    << GetSourceAsString(onc_source);
     success = false;
   } else if (validation_result == Validator::INVALID ||
-             validated_toplevel_onc.is_none()) {
+             !validated_toplevel_onc.has_value()) {
     NET_LOG(ERROR) << "ONC is invalid and couldn't be repaired: "
                    << GetSourceAsString(onc_source);
     return false;
   }
 
-  base::Value::Dict& validated_toplevel_onc_dict =
-      validated_toplevel_onc.GetDict();
   if (certificates) {
-    base::Value::List* validated_certs = validated_toplevel_onc_dict.FindList(
-        ::onc::toplevel_config::kCertificates);
+    base::Value::List* validated_certs =
+        validated_toplevel_onc->FindList(::onc::toplevel_config::kCertificates);
     if (validated_certs)
       *certificates = std::move(*validated_certs);
   }
@@ -693,9 +697,8 @@ bool ParseAndValidateOncForImport(const std::string& onc_blob,
   // nullptr, because ResolveServerCertRefsInNetworks could affect the return
   // value of the function (which is supposed to aggregate validation issues in
   // all segments of the ONC blob).
-  base::Value::List* validated_networks_list =
-      validated_toplevel_onc_dict.FindList(
-          ::onc::toplevel_config::kNetworkConfigurations);
+  base::Value::List* validated_networks_list = validated_toplevel_onc->FindList(
+      ::onc::toplevel_config::kNetworkConfigurations);
   if (validated_networks_list) {
     FillInHexSSIDFieldsInNetworks(*validated_networks_list);
     // Set HiddenSSID to default value to solve the issue crbug.com/1171837
@@ -718,7 +721,7 @@ bool ParseAndValidateOncForImport(const std::string& onc_blob,
 
   if (global_network_config) {
     base::Value::Dict* validated_global_config =
-        validated_toplevel_onc_dict.FindDict(
+        validated_toplevel_onc->FindDict(
             ::onc::toplevel_config::kGlobalNetworkConfiguration);
     if (validated_global_config) {
       *global_network_config = std::move(*validated_global_config);

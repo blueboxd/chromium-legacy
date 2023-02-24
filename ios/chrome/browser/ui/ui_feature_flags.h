@@ -52,8 +52,14 @@ BASE_DECLARE_FEATURE(kDefaultBrowserIntentsShowSettings);
 // Feature flag to use the new Edit menu API for browser view.
 BASE_DECLARE_FEATURE(kIOSCustomBrowserEditMenu);
 
+// Feature param under kIOSEditMenuPartialTranslate to disable on incognito.
+extern const char kIOSEditMenuPartialTranslateNoIncognitoParam[];
 // Feature flag to enable partial translate in the edit menu.
 BASE_DECLARE_FEATURE(kIOSEditMenuPartialTranslate);
+
+// Helper function to check if kIOSEditMenuPartialTranslate is enabled in
+// incognito.
+bool ShouldShowPartialTranslateInIncognito();
 
 // Feature flag that shows iOS 15 context menu, instead of tooltip popover,
 // during a location bar long press gesture.
@@ -123,5 +129,24 @@ bool IsTabGridSortedByRecency();
 
 // Feature to enable multiline gradient support in fade truncating label.
 BASE_DECLARE_FEATURE(kMultilineFadeTruncatingLabel);
+
+// Flag to enable push notification settings menu item.
+BASE_DECLARE_FEATURE(kNotificationSettingsMenuItem);
+
+// Enables indexing Reading List items in Spotlight.
+BASE_DECLARE_FEATURE(kSpotlightReadingListSource);
+
+// Feature to enable sign-in only flow without device level account.
+BASE_DECLARE_FEATURE(kConsistencyNewAccountInterface);
+
+// Whether the flag for consistency new-account interface is enabled.
+bool IsConsistencyNewAccountInterfaceEnabled();
+
+// Feature flag to enable add to home screen in share menu.
+BASE_DECLARE_FEATURE(kAddToHomeScreen);
+// Param to disable the feature in incognito.
+extern const char kAddToHomeScreenDisableIncognitoParam[];
+// Helper function to check the feature add to home screen.
+bool ShouldAddToHomeScreen(bool in_incognito);
 
 #endif  // IOS_CHROME_BROWSER_UI_UI_FEATURE_FLAGS_H_

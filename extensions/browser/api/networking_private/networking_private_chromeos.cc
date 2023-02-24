@@ -389,8 +389,7 @@ void NetworkingPrivateChromeOS::SetProperties(
   NET_LOG(USER) << "networkingPrivate.setProperties for: "
                 << NetworkId(network);
   GetManagedConfigurationHandler()->SetProperties(
-      network->path(), base::Value(std::move(properties)),
-      std::move(success_callback),
+      network->path(), properties, std::move(success_callback),
       base::BindOnce(&NetworkHandlerFailureCallback,
                      std::move(failure_callback)));
 }
@@ -419,7 +418,7 @@ void NetworkingPrivateChromeOS::CreateNetwork(
       properties.GetDict(), ::onc::network_config::kGUID);
   NET_LOG(USER) << "networkingPrivate.CreateNetwork. GUID=" << guid;
   GetManagedConfigurationHandler()->CreateConfiguration(
-      user_id_hash, properties,
+      user_id_hash, properties.GetDict(),
       base::BindOnce(&NetworkHandlerCreateCallback,
                      std::move(success_callback)),
       base::BindOnce(&NetworkHandlerFailureCallback,
@@ -730,15 +729,15 @@ void NetworkingPrivateChromeOS::GetDeviceStateList(
 
 void NetworkingPrivateChromeOS::GetGlobalPolicy(
     GetGlobalPolicyCallback callback) {
-  base::Value result(base::Value::Type::DICT);
-  const base::Value* global_network_config =
+  base::Value::Dict result;
+  const base::Value::Dict* global_network_config =
       GetManagedConfigurationHandler()->GetGlobalConfigFromPolicy(
           std::string() /* no username hash, device policy */);
 
   if (global_network_config) {
-    result.MergeDictionary(global_network_config);
+    result.Merge(global_network_config->Clone());
   }
-  std::move(callback).Run(std::move(result.GetDict()));
+  std::move(callback).Run(std::move(result));
 }
 
 void NetworkingPrivateChromeOS::GetCertificateLists(

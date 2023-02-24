@@ -23,6 +23,8 @@ void AddMaterialUiColorMixer(ColorProvider* provider,
            << (dark_mode ? "Dark" : "Light") << " window.";
   ColorMixer& mixer = provider->AddMixer();
 
+  mixer[kColorBadgeBackground] = {kColorSysTonalContainer};
+  mixer[kColorBadgeForeground] = {kColorSysOnTonalContainer};
   mixer[kColorButtonBackground] = {kColorSysSurface};
   mixer[kColorButtonBackgroundPressed] =
       GetResultingPaintColor({kColorSysStatePressed}, {kColorButtonBackground});
@@ -38,6 +40,10 @@ void AddMaterialUiColorMixer(ColorProvider* provider,
   mixer[kColorButtonForegroundDisabled] = {kColorSysStateDisabled};
   mixer[kColorButtonForegroundProminent] = {kColorSysOnPrimary};
   mixer[kColorButtonForegroundUnchecked] = {kColorSysOnSurfaceVariant};
+  mixer[kColorCheckboxBackgroundDisabled] = {kColorSysStateDisabledContainer};
+  mixer[kColorCheckboxForegroundChecked] = {kColorSysOnSurfacePrimary};
+  mixer[kColorCheckboxForegroundDisabled] = {kColorSysStateDisabled};
+  mixer[kColorCheckboxForegroundUnchecked] = {kColorSysOnSurfaceVariant};
   mixer[kColorComboboxBackground] = {kColorSysSurface};
   mixer[kColorComboboxBackgroundDisabled] = {GetResultingPaintColor(
       {kColorSysStateDisabledContainer}, {kColorComboboxBackground})};

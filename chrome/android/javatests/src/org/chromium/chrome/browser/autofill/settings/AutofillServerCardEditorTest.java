@@ -13,8 +13,8 @@ import static androidx.test.espresso.matcher.ViewMatchers.withEffectiveVisibilit
 import static androidx.test.espresso.matcher.ViewMatchers.withId;
 import static androidx.test.espresso.matcher.ViewMatchers.withText;
 
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.times;
@@ -99,6 +99,7 @@ public class AutofillServerCardEditorTest {
 
     private static final CreditCard SAMPLE_VIRTUAL_CARD_ENROLLED_CARD = new CreditCard(
             /* guid= */ "1", /* origin= */ "", /* isLocal= */ false, /* isCached= */ true,
+            /* isVirtual= */ false,
             /* name= */ "John Doe", /* number= */ "4444333322221111", /* obfuscatedNumber= */ "",
             /* month= */ "5", AutofillTestHelper.nextYear(), /* basicCardIssuerNetwork = */ "visa",
             /* issuerIconDrawableId= */ 0, /* billingAddressId= */ "", /* serverId= */ "",
@@ -110,7 +111,8 @@ public class AutofillServerCardEditorTest {
 
     private static final CreditCard SAMPLE_VIRTUAL_CARD_UNENROLLED_AND_ELIGIBLE_CARD =
             new CreditCard(/* guid= */ "2", /* origin= */ "", /* isLocal= */ false,
-                    /* isCached= */ true, /* name= */ "John Doe", /* number= */ "4444333322221111",
+                    /* isCached= */ true, /* isVirtual= */ false, /* name= */ "John Doe",
+                    /* number= */ "4444333322221111",
                     /* obfuscatedNumber= */ "", /* month= */ "5", AutofillTestHelper.nextYear(),
                     /* basicCardIssuerNetwork = */ "visa", /* issuerIconDrawableId= */ 0,
                     /* billingAddressId= */ "", /* serverId= */ "", /* instrumentId= */ 234,
@@ -122,7 +124,8 @@ public class AutofillServerCardEditorTest {
 
     private static final CreditCard SAMPLE_VIRTUAL_CARD_UNENROLLED_AND_NOT_ELIGIBLE_CARD =
             new CreditCard(/* guid= */ "3", /* origin= */ "", /* isLocal= */ false,
-                    /* isCached= */ true, /* name= */ "John Doe", /* number= */ "4444333322221111",
+                    /* isCached= */ true, /* isVirtual= */ false, /* name= */ "John Doe",
+                    /* number= */ "4444333322221111",
                     /* obfuscatedNumber= */ "", /* month= */ "5", AutofillTestHelper.nextYear(),
                     /* basicCardIssuerNetwork = */ "visa", /* issuerIconDrawableId= */ 0,
                     /* billingAddressId= */ "", /* serverId= */ "", /* instrumentId= */ 345,

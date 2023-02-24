@@ -286,6 +286,12 @@ BLINK_COMMON_EXPORT extern const base::FeatureParam<int>
 BLINK_COMMON_EXPORT extern const base::FeatureParam<bool>
     kCacheCodeOnIdleDelayServiceWorkerOnlyParam;
 
+BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kProduceCompileHints);
+BLINK_COMMON_EXPORT extern const base::FeatureParam<int>
+    kProduceCompileHintsOnIdleDelayParam;
+BLINK_COMMON_EXPORT extern const base::FeatureParam<double>
+    kProduceCompileHintsNoiseLevel;
+
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(
     kAlignFontDisplayAutoTimeoutWithLCPGoal);
 BLINK_COMMON_EXPORT extern const base::FeatureParam<int>
@@ -991,6 +997,46 @@ BLINK_COMMON_EXPORT extern const base::FeatureParam<int>
 // Max milliseconds that font are allowed to delay of FCP.
 BLINK_COMMON_EXPORT extern const base::FeatureParam<int>
     kMaxFCPDelayMsForRenderBlockingFonts;
+
+// Whether Sec-CH-UA headers on subresource fetches that contain an empty
+// string should be quoted (`""`) as they are for navigation fetches. See
+// https://crbug.com/1416925.
+BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(
+    kQuoteEmptySecChUaStringHeadersConsistently);
+
+// The number of "automatic" implicit storage access grants per third-party
+// origin that can be granted.
+//
+// Note that if `kStorageAccessAPIAutoGrantInFPS` and
+// `kStorageAccessAPIAutoDenyOutsideFPS` are both true, then this parameter has
+// no effect.
+BLINK_COMMON_EXPORT extern const base::FeatureParam<int>
+    kStorageAccessAPIImplicitGrantLimit;
+// Whether to auto-grant storage access requests when the top level origin and
+// the requesting origin are in the same First-Party Set.
+BLINK_COMMON_EXPORT extern const base::FeatureParam<bool>
+    kStorageAccessAPIAutoGrantInFPS;
+// Whether to auto-deny storage access requests when the top level origin and
+// the requesting origin are not in the same First-Party Set.
+BLINK_COMMON_EXPORT extern const base::FeatureParam<bool>
+    kStorageAccessAPIAutoDenyOutsideFPS;
+
+// Kill-switch for a deprecation trial that unpartitions storage in third-party
+// contexts under the registered top-level site. If
+// `kDisableThirdPartyStoragePartitioningDeprecationTrial` is enabled, the
+// deprecation trial information can be sent to and enabled in the browser
+// process (i.e. when the base::Feature is enabled, the deprecation trial is
+// enabled in the browser process too).
+BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(
+    kDisableThirdPartyStoragePartitioningDeprecationTrial);
+
+// Kill-switch for any calls to the  mojo interface
+// RuntimeFeatureStateController in the RuntimeFeatureStateOverrideContext
+// class. If `kRuntimeFeatureStateControllerApplyFeatureDiff` is disabled,
+// origin/deprecation trial token information is not sent to the browser
+// process.
+BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(
+    kRuntimeFeatureStateControllerApplyFeatureDiff);
 
 }  // namespace features
 }  // namespace blink

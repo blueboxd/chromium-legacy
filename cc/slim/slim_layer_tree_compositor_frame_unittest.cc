@@ -5,23 +5,32 @@
 #include <memory>
 #include <utility>
 
+#include "base/functional/callback_helpers.h"
 #include "base/memory/weak_ptr.h"
+#include "base/test/bind.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/time/time.h"
 #include "base/unguessable_token.h"
 #include "cc/slim/features.h"
 #include "cc/slim/layer.h"
+#include "cc/slim/nine_patch_layer.h"
 #include "cc/slim/solid_color_layer.h"
 #include "cc/slim/test_frame_sink_impl.h"
 #include "cc/slim/test_layer_tree_client.h"
 #include "cc/slim/test_layer_tree_impl.h"
+#include "cc/slim/ui_resource_layer.h"
 #include "components/viz/common/frame_sinks/begin_frame_args.h"
+#include "components/viz/common/frame_sinks/copy_output_request.h"
 #include "components/viz/common/quads/compositor_frame.h"
 #include "components/viz/common/quads/solid_color_draw_quad.h"
+#include "components/viz/common/quads/texture_draw_quad.h"
+#include "components/viz/common/resources/transferable_resource.h"
 #include "components/viz/common/surfaces/local_surface_id.h"
 #include "components/viz/test/draw_quad_matchers.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/presentation_feedback.h"
 
 namespace cc::slim {
 
@@ -67,7 +76,9 @@ class SlimLayerTreeCompositorFrameTest : public testing::Test {
         BEGINFRAME_FROM_HERE,
         /*source_id=*/1, ++sequence_id_, frame_time, frame_time + interval,
         interval, viz::BeginFrameArgs::NORMAL);
-    frame_sink_->OnBeginFrame(begin_frame_args, {}, /*frame_ack=*/false, {});
+    frame_sink_->OnBeginFrame(begin_frame_args, std::move(next_timing_details_),
+                              /*frame_ack=*/false, {});
+    next_timing_details_.clear();
     viz::CompositorFrame frame = frame_sink_->TakeLastFrame();
     frame_sink_->DidReceiveCompositorFrameAck({});
     return frame;
@@ -82,6 +93,19 @@ class SlimLayerTreeCompositorFrameTest : public testing::Test {
     return solid_color_layer;
   }
 
+  void SetNextFrameTimingDetailsMap(viz::FrameTimingDetailsMap timing_map) {
+    next_timing_details_ = std::move(timing_map);
+  }
+
+  viz::FrameTimingDetails BuildFrameTimingDetails(uint32_t flags = 0) {
+    viz::FrameTimingDetails details;
+    base::TimeTicks timestamp = base::TimeTicks::Now();
+    base::TimeDelta interval = base::Milliseconds(16.6);
+    gfx::PresentationFeedback feedback(timestamp, interval, flags);
+    details.presentation_feedback = feedback;
+    return details;
+  }
+
  protected:
   base::test::ScopedFeatureList scoped_feature_list_;
   TestLayerTreeClient client_;
@@ -89,6 +113,7 @@ class SlimLayerTreeCompositorFrameTest : public testing::Test {
   base::WeakPtr<TestFrameSinkImpl> frame_sink_;
 
   uint64_t sequence_id_ = 0;
+  viz::FrameTimingDetailsMap next_timing_details_;
 
   gfx::Rect viewport_;
   viz::LocalSurfaceId local_surface_id_;
@@ -302,6 +327,402 @@ TEST_F(SlimLayerTreeCompositorFrameTest, AxisAlignedClip) {
     // Clip is in target space.
     EXPECT_EQ(quad->shared_quad_state->clip_rect.value(),
               gfx::Rect(5, 5, 10, 20));
+  }
+}
+
+TEST_F(SlimLayerTreeCompositorFrameTest, PresentationCallback) {
+  auto solid_color_layer =
+      CreateSolidColorLayer(viewport_.size(), SkColors::kGray);
+  layer_tree_->SetRoot(solid_color_layer);
+
+  absl::optional<gfx::PresentationFeedback> feedback_opt_1;
+  absl::optional<gfx::PresentationFeedback> feedback_opt_2;
+  layer_tree_->RequestPresentationTimeForNextFrame(base::BindLambdaForTesting(
+      [&](const gfx::PresentationFeedback& feedback) {
+        feedback_opt_1 = feedback;
+      }));
+  layer_tree_->RequestPresentationTimeForNextFrame(base::BindLambdaForTesting(
+      [&](const gfx::PresentationFeedback& feedback) {
+        feedback_opt_2 = feedback;
+      }));
+  viz::CompositorFrame frame1 = ProduceFrame();
+
+  viz::FrameTimingDetailsMap timing_map;
+  viz::FrameTimingDetails details = BuildFrameTimingDetails();
+  timing_map[frame1.metadata.frame_token] = details;
+  SetNextFrameTimingDetailsMap(std::move(timing_map));
+  viz::CompositorFrame frame2 = ProduceFrame();
+
+  ASSERT_TRUE(feedback_opt_1);
+  ASSERT_TRUE(feedback_opt_2);
+  EXPECT_EQ(feedback_opt_1.value(), details.presentation_feedback);
+  EXPECT_EQ(feedback_opt_2.value(), details.presentation_feedback);
+}
+
+TEST_F(SlimLayerTreeCompositorFrameTest, PresentationCallbackMissedFrame) {
+  auto solid_color_layer =
+      CreateSolidColorLayer(viewport_.size(), SkColors::kGray);
+  layer_tree_->SetRoot(solid_color_layer);
+
+  absl::optional<gfx::PresentationFeedback> feedback_opt_1;
+  layer_tree_->RequestPresentationTimeForNextFrame(base::BindLambdaForTesting(
+      [&](const gfx::PresentationFeedback& feedback) {
+        feedback_opt_1 = feedback;
+      }));
+  viz::CompositorFrame frame1 = ProduceFrame();
+
+  absl::optional<gfx::PresentationFeedback> feedback_opt_2;
+  layer_tree_->RequestPresentationTimeForNextFrame(base::BindLambdaForTesting(
+      [&](const gfx::PresentationFeedback& feedback) {
+        feedback_opt_2 = feedback;
+      }));
+  viz::CompositorFrame frame2 = ProduceFrame();
+  viz::CompositorFrame frame3 = ProduceFrame();
+  EXPECT_FALSE(feedback_opt_1);
+  EXPECT_FALSE(feedback_opt_2);
+
+  {
+    // Ack frame 1 which should only run the first callback.
+    viz::FrameTimingDetailsMap timing_map;
+    viz::FrameTimingDetails details = BuildFrameTimingDetails();
+    timing_map[frame1.metadata.frame_token] = details;
+    SetNextFrameTimingDetailsMap(std::move(timing_map));
+    viz::CompositorFrame frame4 = ProduceFrame();
+
+    EXPECT_TRUE(feedback_opt_1);
+    EXPECT_EQ(feedback_opt_1.value(), details.presentation_feedback);
+    EXPECT_FALSE(feedback_opt_2);
+  }
+
+  {
+    // Ack frame 3, skipping frame 2, which should only run the second callback.
+    viz::FrameTimingDetailsMap timing_map;
+    viz::FrameTimingDetails details = BuildFrameTimingDetails();
+    timing_map[frame3.metadata.frame_token] = details;
+    SetNextFrameTimingDetailsMap(std::move(timing_map));
+    viz::CompositorFrame frame4 = ProduceFrame();
+
+    ASSERT_TRUE(feedback_opt_2);
+    EXPECT_EQ(feedback_opt_2.value(), details.presentation_feedback);
+  }
+}
+
+TEST_F(SlimLayerTreeCompositorFrameTest, SuccessPresentationCallback) {
+  auto solid_color_layer =
+      CreateSolidColorLayer(viewport_.size(), SkColors::kGray);
+  layer_tree_->SetRoot(solid_color_layer);
+
+  absl::optional<base::TimeTicks> feedback_time_opt_1;
+  absl::optional<base::TimeTicks> feedback_time_opt_2;
+  layer_tree_->RequestSuccessfulPresentationTimeForNextFrame(
+      base::BindLambdaForTesting(
+          [&](base::TimeTicks timeticks) { feedback_time_opt_1 = timeticks; }));
+  layer_tree_->RequestSuccessfulPresentationTimeForNextFrame(
+      base::BindLambdaForTesting(
+          [&](base::TimeTicks timeticks) { feedback_time_opt_2 = timeticks; }));
+  viz::CompositorFrame frame1 = ProduceFrame();
+
+  viz::FrameTimingDetailsMap timing_map;
+  viz::FrameTimingDetails details = BuildFrameTimingDetails();
+  timing_map[frame1.metadata.frame_token] = details;
+  SetNextFrameTimingDetailsMap(std::move(timing_map));
+  viz::CompositorFrame frame2 = ProduceFrame();
+
+  ASSERT_TRUE(feedback_time_opt_1);
+  ASSERT_TRUE(feedback_time_opt_2);
+  EXPECT_EQ(feedback_time_opt_1.value(),
+            details.presentation_feedback.timestamp);
+  EXPECT_EQ(feedback_time_opt_2.value(),
+            details.presentation_feedback.timestamp);
+}
+
+TEST_F(SlimLayerTreeCompositorFrameTest,
+       SuccessPresentationCallbackNotCalledForFailedFrame) {
+  auto solid_color_layer =
+      CreateSolidColorLayer(viewport_.size(), SkColors::kGray);
+  layer_tree_->SetRoot(solid_color_layer);
+
+  absl::optional<base::TimeTicks> feedback_time_opt_1;
+  layer_tree_->RequestSuccessfulPresentationTimeForNextFrame(
+      base::BindLambdaForTesting(
+          [&](base::TimeTicks timeticks) { feedback_time_opt_1 = timeticks; }));
+  viz::CompositorFrame frame1 = ProduceFrame();
+  viz::CompositorFrame frame2 = ProduceFrame();
+
+  absl::optional<base::TimeTicks> feedback_time_opt_2;
+  layer_tree_->RequestSuccessfulPresentationTimeForNextFrame(
+      base::BindLambdaForTesting(
+          [&](base::TimeTicks timeticks) { feedback_time_opt_2 = timeticks; }));
+  viz::CompositorFrame frame3 = ProduceFrame();
+
+  // Frame 1 failed. Should not run either callback.
+  {
+    viz::FrameTimingDetailsMap timing_map;
+    viz::FrameTimingDetails details =
+        BuildFrameTimingDetails(gfx::PresentationFeedback::kFailure);
+    timing_map[frame1.metadata.frame_token] = details;
+    SetNextFrameTimingDetailsMap(std::move(timing_map));
+    viz::CompositorFrame frame4 = ProduceFrame();
+    EXPECT_FALSE(feedback_time_opt_1);
+    EXPECT_FALSE(feedback_time_opt_2);
+  }
+
+  // Successful feedback for frame 2. Should run callback 1 but not 2.
+  {
+    viz::FrameTimingDetailsMap timing_map;
+    viz::FrameTimingDetails details = BuildFrameTimingDetails();
+    timing_map[frame2.metadata.frame_token] = details;
+    SetNextFrameTimingDetailsMap(std::move(timing_map));
+    viz::CompositorFrame frame5 = ProduceFrame();
+    ASSERT_TRUE(feedback_time_opt_1);
+    EXPECT_EQ(feedback_time_opt_1.value(),
+              details.presentation_feedback.timestamp);
+    ASSERT_FALSE(feedback_time_opt_2);
+  }
+
+  // Successful feedback for frame 3. Should run 2.
+  {
+    viz::FrameTimingDetailsMap timing_map;
+    viz::FrameTimingDetails details = BuildFrameTimingDetails();
+    timing_map[frame3.metadata.frame_token] = details;
+    SetNextFrameTimingDetailsMap(std::move(timing_map));
+    viz::CompositorFrame frame5 = ProduceFrame();
+    ASSERT_TRUE(feedback_time_opt_2);
+    EXPECT_EQ(feedback_time_opt_2.value(),
+              details.presentation_feedback.timestamp);
+  }
+}
+
+TEST_F(SlimLayerTreeCompositorFrameTest, CopyOutputRequest) {
+  auto solid_color_layer =
+      CreateSolidColorLayer(viewport_.size(), SkColors::kGray);
+  layer_tree_->SetRoot(solid_color_layer);
+
+  auto copy_request_no_source_1 = std::make_unique<viz::CopyOutputRequest>(
+      viz::CopyOutputRequest::ResultFormat::RGBA,
+      viz::CopyOutputRequest::ResultDestination::kSystemMemory,
+      base::DoNothing());
+  auto copy_request_no_source_2 = std::make_unique<viz::CopyOutputRequest>(
+      viz::CopyOutputRequest::ResultFormat::RGBA,
+      viz::CopyOutputRequest::ResultDestination::kSystemMemory,
+      base::DoNothing());
+
+  base::UnguessableToken token = base::UnguessableToken::Create();
+  auto copy_request_with_source = std::make_unique<viz::CopyOutputRequest>(
+      viz::CopyOutputRequest::ResultFormat::RGBA,
+      viz::CopyOutputRequest::ResultDestination::kSystemMemory,
+      base::DoNothing());
+  copy_request_with_source->set_source(token);
+  auto copy_request_with_same_source = std::make_unique<viz::CopyOutputRequest>(
+      viz::CopyOutputRequest::ResultFormat::RGBA,
+      viz::CopyOutputRequest::ResultDestination::kSystemMemory,
+      base::DoNothing());
+  copy_request_with_same_source->set_source(token);
+
+  base::UnguessableToken token2 = base::UnguessableToken::Create();
+  auto copy_request_with_difference_source =
+      std::make_unique<viz::CopyOutputRequest>(
+          viz::CopyOutputRequest::ResultFormat::RGBA,
+          viz::CopyOutputRequest::ResultDestination::kSystemMemory,
+          base::DoNothing());
+  copy_request_with_difference_source->set_source(token2);
+
+  layer_tree_->RequestCopyOfOutput(std::move(copy_request_no_source_1));
+  layer_tree_->RequestCopyOfOutput(std::move(copy_request_no_source_2));
+  layer_tree_->RequestCopyOfOutput(std::move(copy_request_with_source));
+  layer_tree_->RequestCopyOfOutput(std::move(copy_request_with_same_source));
+  layer_tree_->RequestCopyOfOutput(
+      std::move(copy_request_with_difference_source));
+
+  {
+    viz::CompositorFrame frame = ProduceFrame();
+    ASSERT_EQ(frame.render_pass_list.size(), 1u);
+    auto& pass = frame.render_pass_list.back();
+    ASSERT_EQ(pass->copy_requests.size(), 4u);
+    EXPECT_TRUE(pass->copy_requests[0]);
+    EXPECT_TRUE(pass->copy_requests[1]);
+    EXPECT_TRUE(pass->copy_requests[2]);
+    EXPECT_TRUE(pass->copy_requests[3]);
+  }
+
+  {
+    viz::CompositorFrame frame = ProduceFrame();
+    ASSERT_EQ(frame.render_pass_list.size(), 1u);
+    auto& pass = frame.render_pass_list.back();
+    ASSERT_EQ(pass->copy_requests.size(), 0u);
+  }
+}
+
+TEST_F(SlimLayerTreeCompositorFrameTest, UIResourceLayerAppendQuads) {
+  auto ui_resource_layer = UIResourceLayer::Create();
+  ui_resource_layer->SetBounds(viewport_.size());
+  ui_resource_layer->SetIsDrawable(true);
+  layer_tree_->SetRoot(ui_resource_layer);
+
+  viz::ResourceId first_resource_id = viz::kInvalidResourceId;
+  {
+    auto image_info =
+        SkImageInfo::Make(1, 1, kN32_SkColorType, kPremul_SkAlphaType);
+    SkBitmap bitmap;
+    bitmap.allocPixels(image_info);
+    bitmap.setImmutable();
+    ui_resource_layer->SetBitmap(bitmap);
+
+    viz::CompositorFrame frame = ProduceFrame();
+    ASSERT_EQ(frame.render_pass_list.size(), 1u);
+    auto& pass = frame.render_pass_list.back();
+    ASSERT_THAT(pass->quad_list,
+                ElementsAre(AllOf(viz::IsTextureQuad(), viz::HasRect(viewport_),
+                                  viz::HasVisibleRect(viewport_),
+                                  viz::HasTransform(gfx::Transform()))));
+    const viz::TextureDrawQuad* texture_quad =
+        viz::TextureDrawQuad::MaterialCast(pass->quad_list.front());
+    EXPECT_TRUE(texture_quad->needs_blending);
+    EXPECT_NE(viz::kInvalidResourceId, texture_quad->resource_id());
+    EXPECT_EQ(gfx::PointF(0.0f, 0.0f), texture_quad->uv_top_left);
+    EXPECT_EQ(gfx::PointF(1.0f, 1.0f), texture_quad->uv_bottom_right);
+    EXPECT_EQ(1.0f, texture_quad->vertex_opacity[0]);
+    EXPECT_EQ(1.0f, texture_quad->vertex_opacity[1]);
+    EXPECT_EQ(1.0f, texture_quad->vertex_opacity[2]);
+    EXPECT_EQ(1.0f, texture_quad->vertex_opacity[3]);
+
+    ASSERT_EQ(frame.resource_list.size(), 1u);
+    EXPECT_EQ(frame.resource_list[0].id, texture_quad->resource_id());
+    EXPECT_EQ(frame.resource_list[0].size, gfx::Size(1, 1));
+    first_resource_id = texture_quad->resource_id();
+
+    ASSERT_EQ(frame_sink_->uploaded_resources().size(), 1u);
+    EXPECT_EQ(frame_sink_->uploaded_resources().begin()->second.viz_resource_id,
+              texture_quad->resource_id());
+  }
+
+  ui_resource_layer->SetUV(gfx::PointF(0.25f, 0.25f),
+                           gfx::PointF(0.75f, 0.75f));
+  ui_resource_layer->SetVertexOpacity(0.1f, 0.2f, 0.3f, 0.4f);
+  {
+    auto image_info =
+        SkImageInfo::Make(2, 2, kN32_SkColorType, kPremul_SkAlphaType);
+    SkBitmap bitmap;
+    bitmap.allocPixels(image_info);
+    bitmap.setImmutable();
+    ui_resource_layer->SetBitmap(bitmap);
+
+    viz::CompositorFrame frame = ProduceFrame();
+    ASSERT_EQ(frame.render_pass_list.size(), 1u);
+    auto& pass = frame.render_pass_list.back();
+    ASSERT_THAT(pass->quad_list,
+                ElementsAre(AllOf(viz::IsTextureQuad(), viz::HasRect(viewport_),
+                                  viz::HasVisibleRect(viewport_),
+                                  viz::HasTransform(gfx::Transform()))));
+    const viz::TextureDrawQuad* texture_quad =
+        viz::TextureDrawQuad::MaterialCast(pass->quad_list.front());
+    EXPECT_TRUE(texture_quad->needs_blending);
+    EXPECT_NE(viz::kInvalidResourceId, texture_quad->resource_id());
+    EXPECT_EQ(gfx::PointF(0.25f, 0.25f), texture_quad->uv_top_left);
+    EXPECT_EQ(gfx::PointF(0.75f, 0.75f), texture_quad->uv_bottom_right);
+    EXPECT_EQ(0.1f, texture_quad->vertex_opacity[0]);
+    EXPECT_EQ(0.2f, texture_quad->vertex_opacity[1]);
+    EXPECT_EQ(0.3f, texture_quad->vertex_opacity[2]);
+    EXPECT_EQ(0.4f, texture_quad->vertex_opacity[3]);
+
+    ASSERT_EQ(frame.resource_list.size(), 1u);
+    EXPECT_EQ(frame.resource_list[0].id, texture_quad->resource_id());
+    EXPECT_EQ(frame.resource_list[0].size, gfx::Size(2, 2));
+    EXPECT_NE(first_resource_id, texture_quad->resource_id());
+  }
+}
+
+TEST_F(SlimLayerTreeCompositorFrameTest, NinePatchLayerAppendQuads) {
+  auto nine_patch_layer = NinePatchLayer::Create();
+  nine_patch_layer->SetBounds(viewport_.size());
+  nine_patch_layer->SetIsDrawable(true);
+  layer_tree_->SetRoot(nine_patch_layer);
+
+  auto image_info =
+      SkImageInfo::Make(10, 10, kN32_SkColorType, kPremul_SkAlphaType);
+  SkBitmap bitmap;
+  bitmap.allocPixels(image_info);
+  bitmap.setImmutable();
+  nine_patch_layer->SetBitmap(bitmap);
+
+  nine_patch_layer->SetBorder(gfx::Rect(10, 10, 20, 20));  // 10 pixel border.
+  nine_patch_layer->SetAperture(gfx::Rect(2, 2, 6, 6));
+  nine_patch_layer->SetFillCenter(true);
+  nine_patch_layer->SetNearestNeighbor(true);
+
+  viz::CompositorFrame frame = ProduceFrame();
+  ASSERT_EQ(frame.resource_list.size(), 1u);
+  EXPECT_EQ(frame.resource_list[0].size, gfx::Size(10, 10));
+  ASSERT_EQ(frame_sink_->uploaded_resources().size(), 1u);
+  ASSERT_EQ(frame.render_pass_list.size(), 1u);
+  auto& pass = frame.render_pass_list.back();
+  ASSERT_THAT(
+      pass->quad_list,
+      ElementsAre(
+          // Top left.
+          AllOf(viz::IsTextureQuad(), viz::HasRect(gfx::Rect(10, 10)),
+                viz::HasVisibleRect(gfx::Rect(10, 10))),
+          // Top right.
+          AllOf(viz::IsTextureQuad(), viz::HasRect(gfx::Rect(90, 0, 10, 10)),
+                viz::HasVisibleRect(gfx::Rect(90, 0, 10, 10))),
+          // Bottom left.
+          AllOf(viz::IsTextureQuad(), viz::HasRect(gfx::Rect(0, 90, 10, 10)),
+                viz::HasVisibleRect(gfx::Rect(0, 90, 10, 10))),
+          // Bottom right.
+          AllOf(viz::IsTextureQuad(), viz::HasRect(gfx::Rect(90, 90, 10, 10)),
+                viz::HasVisibleRect(gfx::Rect(90, 90, 10, 10))),
+          // Top.
+          AllOf(viz::IsTextureQuad(), viz::HasRect(gfx::Rect(10, 0, 80, 10)),
+                viz::HasVisibleRect(gfx::Rect(10, 0, 80, 10))),
+          // Left.
+          AllOf(viz::IsTextureQuad(), viz::HasRect(gfx::Rect(0, 10, 10, 80)),
+                viz::HasVisibleRect(gfx::Rect(0, 10, 10, 80))),
+          // Right.
+          AllOf(viz::IsTextureQuad(), viz::HasRect(gfx::Rect(90, 10, 10, 80)),
+                viz::HasVisibleRect(gfx::Rect(90, 10, 10, 80))),
+          // Bottom.
+          AllOf(viz::IsTextureQuad(), viz::HasRect(gfx::Rect(10, 90, 80, 10)),
+                viz::HasVisibleRect(gfx::Rect(10, 90, 80, 10))),
+          // Center.
+          AllOf(viz::IsTextureQuad(),
+                viz::HasRect(gfx::Rect(10, 10, 80, 80)))));
+  gfx::PointF expected_uv_top_left[] = {
+      gfx::PointF(0.0f, 0.0f),  // Top left.
+      gfx::PointF(0.8f, 0.0f),  // Top right.
+      gfx::PointF(0.0f, 0.8f),  // Bottom left.
+      gfx::PointF(0.8f, 0.8f),  // Bottom right.
+      gfx::PointF(0.2f, 0.0f),  // Top.
+      gfx::PointF(0.0f, 0.2f),  // Left.
+      gfx::PointF(0.8f, 0.2f),  // Right.
+      gfx::PointF(0.2f, 0.8f),  // Bottom.
+      gfx::PointF(0.2f, 0.2f),  // Center.
+  };
+  gfx::PointF expected_uv_bottom_right[] = {
+      gfx::PointF(0.2f, 0.2f),  // Top left.
+      gfx::PointF(1.0f, 0.2f),  // Top right.
+      gfx::PointF(0.2f, 1.0f),  // Bottom left.
+      gfx::PointF(1.0f, 1.0f),  // Bottom right.
+      gfx::PointF(0.8f, 0.2f),  // Top.
+      gfx::PointF(0.2f, 0.8f),  // Left.
+      gfx::PointF(1.0f, 0.8f),  // Right.
+      gfx::PointF(0.8f, 1.0f),  // Bottom.
+      gfx::PointF(0.8f, 0.8f),  // Center.
+  };
+  for (size_t i = 0; i < std::size(expected_uv_top_left); ++i) {
+    const viz::TextureDrawQuad* texture_quad =
+        viz::TextureDrawQuad::MaterialCast(pass->quad_list.ElementAt(i));
+    EXPECT_NE(viz::kInvalidResourceId, texture_quad->resource_id());
+    EXPECT_TRUE(texture_quad->nearest_neighbor);
+    EXPECT_EQ(expected_uv_top_left[i], texture_quad->uv_top_left);
+    EXPECT_EQ(expected_uv_bottom_right[i], texture_quad->uv_bottom_right);
+    EXPECT_EQ(1.0f, texture_quad->vertex_opacity[0]);
+    EXPECT_EQ(1.0f, texture_quad->vertex_opacity[1]);
+    EXPECT_EQ(1.0f, texture_quad->vertex_opacity[2]);
+    EXPECT_EQ(1.0f, texture_quad->vertex_opacity[3]);
+
+    EXPECT_EQ(frame.resource_list[0].id, texture_quad->resource_id());
+    EXPECT_EQ(frame_sink_->uploaded_resources().begin()->second.viz_resource_id,
+              texture_quad->resource_id());
   }
 }
 

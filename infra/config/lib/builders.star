@@ -155,7 +155,6 @@ sheriff_rotations = struct(
     CFT = _rotation("cft"),
     FUCHSIA = _rotation("fuchsia"),
     CHROMIUM_CLANG = _rotation("chromium.clang"),
-    CHROMIUM_FUZZ = _rotation("chromium.fuzz"),
     CHROMIUM_GPU = _rotation("chromium.gpu"),
     IOS = _rotation("ios"),
 )
@@ -410,7 +409,7 @@ defaults = args.defaults(
     reclient_bootstrap_env = None,
     reclient_profiler_service = None,
     reclient_publish_trace = None,
-    reclient_scandeps_server = False,
+    reclient_scandeps_server = None,
     reclient_cache_silo = None,
     reclient_ensure_verified = None,
     reclient_disable_bq_upload = None,
@@ -807,6 +806,9 @@ def builder(
     )
     if code_coverage != None:
         properties["$build/code_coverage"] = code_coverage
+
+    if reclient_scandeps_server == args.DEFAULT and os and os.category == os_category.MAC:
+        reclient_scandeps_server = True
 
     reclient = _reclient_property(
         instance = reclient_instance,

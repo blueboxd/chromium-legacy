@@ -784,6 +784,19 @@ chromium-metrics-reviews@google.com.
       variants="AutofillCreditCardWebauthnOptInOrigin"/>
 </histogram>
 
+<histogram name="Autofill.BetterAuth.OptInPromoNotOfferedReason"
+    enum="WebauthnOptInPromoNotOfferedReason" expires_after="2023-07-01">
+  <owner>vinnypersky@google.com</owner>
+  <owner>shgar@google.com</owner>
+  <summary>
+    Records when the Better Auth (FIDO) opt-in promo could have been offered on
+    Desktop, but wasn't. Logged at the time of the promo not being shown. This
+    metric can only be logged from the checkout flow, as we do not block opting
+    in to FIDO from the settings page. It logs the enum reason of what caused
+    the promo to not be shown.
+  </summary>
+</histogram>
+
 <histogram
     name="Autofill.BetterAuth.OptInPromoShown{AutofillCreditCardWebauthnOptInOrigin}"
     enum="BooleanHit" expires_after="2023-07-01">
@@ -1863,6 +1876,16 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Autofill.FormContextMenuImpressions.ByNumberOfFields"
+    units="fields" expires_after="2023-09-01">
+  <owner>vidhanj@google.com</owner>
+  <owner>chrome-autofill-alerts@google.com</owner>
+  <summary>
+    Number of fields on form where the context menu was shown. Recorded on the
+    form submission.
+  </summary>
+</histogram>
+
 <histogram name="Autofill.FormEvents.Address{AutofillDataAvailability}"
     enum="AutofillFormEvent" expires_after="2023-12-12">
   <owner>battre@chromium.org</owner>
@@ -2406,6 +2429,38 @@ chromium-metrics-reviews@google.com.
     Logs how/if the label of an input was derived. Emitted once per field during
     label inference.
   </summary>
+</histogram>
+
+<histogram name="Autofill.Leipzig.FillingAssistanceOrigin"
+    enum="AutofillCategoryResolvedFillingAssistance" expires_after="2023-12-12">
+  <owner>koerber@chromium.org</owner>
+  <owner>fleimgruber@chromium.org</owner>
+  <owner>chrome-autofill-team@google.com</owner>
+  <summary>
+    Like Autofill.KeyMetrics.FillingAssistance.Address, but split by profile
+    category.
+  </summary>
+</histogram>
+
+<histogram name="Autofill.Leipzig.FillingCorrectness.{Category}"
+    enum="BooleanAutofillFillingCorrectness" expires_after="2023-12-12">
+  <owner>koerber@chromium.org</owner>
+  <owner>fleimgruber@chromium.org</owner>
+  <owner>chrome-autofill-team@google.com</owner>
+  <summary>
+    Like Autofill.KeyMetrics.FillingCorrectness.Address, but split by profile
+    category.
+  </summary>
+  <token key="Category">
+    <variant name="AccountChrome"
+        summary="Only kAccount profiles originating from Chrome were used"/>
+    <variant name="AccountNonChrome"
+        summary="Only kAccount profiles originating from outside Chrome were
+                 used"/>
+    <variant name="Legacy" summary="Only kLegacyOrSyncable profiles were used"/>
+    <variant name="Mixed"
+        summary="Multiple profiles of mixed categories were used"/>
+  </token>
 </histogram>
 
 <histogram name="Autofill.LocalCardMigrationBubbleOffer.{ShowType}"
@@ -4334,7 +4389,10 @@ chromium-metrics-reviews@google.com.
     card or dismissed with no action. The metric is recorded right after user
     has done the action: the credit card selection or some other option (which
     always leads to the bottom sheet being closed) or swiped the sheet to close
-    it. See the TouchToFillCreditCardMediator.java for details.
+    it. See the TouchToFillCreditCardMediator.java for details. Note that
+    &quot;Go to payment settings&quot; click is also considered as the outcome,
+    although it doesn't close the Touch To Fill. So in this case there will be a
+    double count for one bottom sheet showing.
   </summary>
 </histogram>
 
@@ -4419,7 +4477,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Autofill.UnmaskPrompt.GetRealPanDuration" units="ms"
-    expires_after="2023-08-13">
+    expires_after="2023-07-01">
   <owner>jsaul@google.com</owner>
   <owner>siyua@chromium.org</owner>
   <summary>
@@ -4430,7 +4488,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Autofill.UnmaskPrompt.GetRealPanDuration.{CardType}.{Result}"
-    units="ms" expires_after="2023-04-01">
+    units="ms" expires_after="2023-07-01">
   <owner>siyua@chromium.org</owner>
   <owner>payments-autofill-team@google.com</owner>
   <summary>
@@ -4444,7 +4502,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Autofill.UnmaskPrompt.GetRealPanResult"
-    enum="AutofillGetRealPanResult" expires_after="2023-06-25">
+    enum="AutofillGetRealPanResult" expires_after="2023-07-01">
   <owner>jsaul@google.com</owner>
   <owner>siyua@chromium.org</owner>
   <summary>
@@ -4455,7 +4513,8 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Autofill.UnmaskPrompt.GetRealPanResult.{CardType}"
-    enum="AutofillGetRealPanResult" expires_after="2023-04-01">
+    enum="AutofillGetRealPanResult" expires_after="2023-07-01">
+  <owner>jsaul@google.com</owner>
   <owner>siyua@chromium.org</owner>
   <owner>payments-autofill-team@google.com</owner>
   <summary>
@@ -4468,7 +4527,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Autofill.UnmaskPrompt.TimeBeforeAbandonUnmasking" units="ms"
-    expires_after="2023-04-01">
+    expires_after="2023-07-01">
   <owner>jsaul@google.com</owner>
   <owner>siyua@chromium.org</owner>
   <summary>
@@ -4481,7 +4540,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Autofill.UnmaskPrompt.UnmaskingDuration" units="ms"
-    expires_after="2023-04-01">
+    expires_after="2023-07-01">
   <owner>jsaul@google.com</owner>
   <owner>siyua@chromium.org</owner>
   <summary>
@@ -4492,7 +4551,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Autofill.UnmaskPrompt.UnmaskingDuration.{CardType}.{Result}"
-    units="ms" expires_after="2023-04-01">
+    units="ms" expires_after="2023-07-01">
   <owner>jsaul@google.com</owner>
   <owner>siyua@chromium.org</owner>
   <summary>
@@ -4508,6 +4567,8 @@ chromium-metrics-reviews@google.com.
 <histogram name="Autofill.UnmaskPrompt.{CardType}.Events"
     enum="AutofillUnmaskPromptEvent" expires_after="2023-11-01">
   <owner>vinnypersky@google.com</owner>
+  <owner>jsaul@google.com</owner>
+  <owner>siyua@chromium.org</owner>
   <owner>payments-autofill-team@google.com</owner>
   <summary>
     Events tracking the usage of the unmasking prompt, recorded for {CardType}.

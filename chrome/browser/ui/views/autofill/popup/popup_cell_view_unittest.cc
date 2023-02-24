@@ -112,6 +112,21 @@ TEST_F(PopupCellViewTest, SetSelectedUpdatesBackground) {
                                          ui::kColorDropdownBackgroundSelected));
 }
 
+TEST_F(PopupCellViewTest, Tooltip) {
+  constexpr char16_t kTooltip[] = u"Sample tooltip";
+
+  ShowView(views::Builder<PopupCellView>()
+               .SetAccessibilityDelegate(
+                   std::make_unique<TestAccessibilityDelegate>())
+               .SetTooltipText(kTooltip)
+               .Build());
+  EXPECT_EQ(view().GetTooltipText(), kTooltip);
+
+  // The method derived form `views::View` responds properly, too.
+  const views::View& cell_as_view = view();
+  EXPECT_EQ(cell_as_view.GetTooltipText(gfx::Point()), kTooltip);
+}
+
 TEST_F(PopupCellViewTest, SetSelectedUpdatesTrackedLabels) {
   std::unique_ptr<PopupCellView> cell =
       views::Builder<PopupCellView>()
@@ -214,31 +229,5 @@ TEST_F(PopupCellViewTest, GestureEvents) {
   generator().GestureTapAt(label->GetBoundsInScreen().CenterPoint());
 }
 #endif  // !BUILDFLAG(IS_MAC)
-
-TEST_F(PopupCellViewTest, IgnoreClickIfMouseWasNotOutsideBefore) {
-  std::unique_ptr<PopupCellView> cell =
-      views::Builder<PopupCellView>()
-          .SetAccessibilityDelegate(
-              std::make_unique<TestAccessibilityDelegate>())
-          .Build();
-  views::Label* label =
-      cell->AddChildView(std::make_unique<views::Label>(u"Label text"));
-  ShowView(std::move(cell));
-
-  StrictMock<base::MockCallback<base::RepeatingClosure>> accept_callback;
-
-  view().SetOnAcceptedCallback(accept_callback.Get());
-  generator().MoveMouseTo(label->GetBoundsInScreen().CenterPoint());
-  Paint();
-  // No OnAccept callback is run.
-  generator().ClickLeftButton();
-
-  generator().MoveMouseTo(kOutOfBounds);
-  Paint();
-  generator().MoveMouseTo(label->GetBoundsInScreen().CenterPoint());
-  // If the mouse has been outside before, the accept click is passed through.
-  EXPECT_CALL(accept_callback, Run);
-  generator().ClickLeftButton();
-}
 
 }  // namespace autofill

@@ -10,11 +10,13 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ssl/https_only_mode_tab_helper.h"
+#include "chrome/browser/ssl/https_upgrades_util.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "components/security_interstitials/content/stateful_ssl_host_state_delegate.h"
 #include "components/security_interstitials/core/https_only_mode_metrics.h"
+#include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/url_loader_request_interceptor.h"
 #include "content/public/browser/web_contents.h"
@@ -34,6 +36,7 @@
 #include "services/network/public/mojom/network_context.mojom.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
 #include "services/network/public/mojom/url_response_head.mojom.h"
+#include "ui/base/page_transition_types.h"
 #include "url/gurl.h"
 #include "url/url_constants.h"
 
@@ -85,8 +88,7 @@ bool ShouldCreateLoader(const network::ResourceRequest& resource_request,
   if (resource_request.is_outermost_main_frame &&
       resource_request.method == "GET" &&
       !net::IsLocalhost(resource_request.url) &&
-      resource_request.url.SchemeIs(url::kHttpScheme) &&
-      !tab_helper->is_navigation_fallback()) {
+      resource_request.url.SchemeIs(url::kHttpScheme)) {
     return true;
   }
   return false;
@@ -232,6 +234,15 @@ void HttpsUpgradesInterceptor::MaybeCreateLoader(
   }
 
   // Don't upgrade navigation if it is allowlisted.
+  // First, check the enterprise policy HTTP allowlist.
+  if (IsHostnameInAllowlist(tentative_resource_request.url,
+                            prefs->GetList(prefs::kHttpAllowlist))) {
+    std::move(callback).Run({});
+    return;
+  }
+
+  // Then check whether the host has been allowlisted by the user (or by a
+  // previous upgrade attempt failing).
   // TODO(crbug.com/1394910): Distinguish HTTPS-First Mode and HTTPS-Upgrades
   // allowlist entries, and ensure that HTTPS-Upgrades allowlist entries don't
   // downgrade Page Info.
@@ -252,6 +263,30 @@ void HttpsUpgradesInterceptor::MaybeCreateLoader(
     state->AllowHttpForHost(tentative_resource_request.url.host(),
                             storage_partition);
 
+    std::move(callback).Run({});
+    return;
+  }
+
+  // If this is a back/forward navigation to a failed upgrade, then don't
+  // intercept to upgrade the navigation. Other forms of re-visiting a URL
+  // that previously failed to be upgraded to HTTPS *should* be intercepted so
+  // the upgrade can be attempted again (e.g., the user reloading the tab, the
+  // user navigating around and ending back on this URL in the same tab, etc.).
+  //
+  // This effectively "caches" the HTTPS-First Mode interstitial for the
+  // history entry of a failed upgrade for the lifetime of the tab. This means
+  // that it is possible for a user to come back much later (say, a week later),
+  // after a site has fixed its HTTPS configuration, and still see the
+  // interstitial for that URL.
+  //
+  // Without this check, resetting the HTTPS-Upgrades flags in
+  // HttpsOnlyModeTabHelper::DidStartNavigation() means the Interceptor would
+  // fire on back/forward navigation to the interstitial, which causes an
+  // "extra" interstitial entry to be added to the history list and lose other
+  // entries.
+  auto* entry = web_contents->GetController().GetPendingEntry();
+  if (entry && entry->GetTransitionType() & ui::PAGE_TRANSITION_FORWARD_BACK &&
+      tab_helper->has_failed_upgrade(tentative_resource_request.url)) {
     std::move(callback).Run({});
     return;
   }
@@ -377,8 +412,9 @@ bool HttpsUpgradesInterceptor::MaybeCreateLoaderForResponse(
 
   tab_helper->set_is_navigation_upgraded(false);
   tab_helper->set_is_navigation_fallback(true);
+  tab_helper->add_failed_upgrade(tab_helper->fallback_url());
 
-  // `client_` may have been previously boudn from handling the initial upgrade
+  // `client_` may have been previously bound from handling the initial upgrade
   // in MaybeCreateLoader(), so reset it before re-binding it to handle this
   // response.
   client_.reset();

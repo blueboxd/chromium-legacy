@@ -15,6 +15,17 @@
 
 namespace reading_list {
 
+DualReadingListModel::ScopedReadingListBatchUpdateImpl::
+    ScopedReadingListBatchUpdateImpl(
+        std::unique_ptr<ScopedReadingListBatchUpdate>
+            local_or_syncable_model_batch,
+        std::unique_ptr<ScopedReadingListBatchUpdate> account_model_batch)
+    : local_or_syncable_model_batch_(std::move(local_or_syncable_model_batch)),
+      account_model_batch_(std::move(account_model_batch)) {}
+
+DualReadingListModel::ScopedReadingListBatchUpdateImpl::
+    ~ScopedReadingListBatchUpdateImpl() = default;
+
 DualReadingListModel::DualReadingListModel(
     std::unique_ptr<ReadingListModelImpl> local_or_syncable_model,
     std::unique_ptr<ReadingListModelImpl> account_model)
@@ -65,16 +76,15 @@ DualReadingListModel::GetSyncControllerDelegateForTransportMode() {
 
 bool DualReadingListModel::IsPerformingBatchUpdates() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return local_or_syncable_model_->IsPerformingBatchUpdates() ||
-         account_model_->IsPerformingBatchUpdates();
+  return current_batch_updates_count_ > 0;
 }
 
 std::unique_ptr<ReadingListModel::ScopedReadingListBatchUpdate>
 DualReadingListModel::BeginBatchUpdates() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  // TODO(crbug.com/1402196): Implement.
-  NOTIMPLEMENTED();
-  return nullptr;
+  return std::make_unique<ScopedReadingListBatchUpdateImpl>(
+      local_or_syncable_model_->BeginBatchUpdates(),
+      account_model_->BeginBatchUpdates());
 }
 
 base::flat_set<GURL> DualReadingListModel::GetKeys() const {
@@ -175,8 +185,17 @@ const ReadingListEntry& DualReadingListModel::AddOrReplaceEntry(
   DCHECK(loaded());
   DCHECK(IsUrlSupported(url));
 
-  // TODO(crbug.com/1402196): Implement.
-  NOTIMPLEMENTED();
+  std::unique_ptr<DualReadingListModel::ScopedReadingListBatchUpdate>
+      scoped_model_batch_updates;
+  if (GetEntryByURL(url)) {
+    scoped_model_batch_updates = BeginBatchUpdates();
+    RemoveEntryByURL(url);
+  }
+
+  if (account_model_->IsTrackingSyncMetadata()) {
+    return account_model_->AddOrReplaceEntry(url, title, source,
+                                             estimated_read_time);
+  }
   return local_or_syncable_model_->AddOrReplaceEntry(url, title, source,
                                                      estimated_read_time);
 }
@@ -259,6 +278,26 @@ void DualReadingListModel::RemoveObserver(ReadingListModelObserver* observer) {
   observers_.RemoveObserver(observer);
 }
 
+void DualReadingListModel::ReadingListModelBeganBatchUpdates(
+    const ReadingListModel* model) {
+  ++current_batch_updates_count_;
+  if (current_batch_updates_count_ == 1) {
+    for (auto& observer : observers_) {
+      observer.ReadingListModelBeganBatchUpdates(this);
+    }
+  }
+}
+
+void DualReadingListModel::ReadingListModelCompletedBatchUpdates(
+    const ReadingListModel* model) {
+  --current_batch_updates_count_;
+  if (current_batch_updates_count_ == 0) {
+    for (auto& observer : observers_) {
+      observer.ReadingListModelCompletedBatchUpdates(this);
+    }
+  }
+}
+
 void DualReadingListModel::ReadingListModelLoaded(
     const ReadingListModel* model) {
   if (loaded()) {
@@ -281,6 +320,23 @@ void DualReadingListModel::ReadingListDidRemoveEntry(
     const GURL& url) {
   if (!ongoing_remove_entry_by_url_) {
     NotifyObserversWithDidRemoveEntry(url);
+  }
+}
+
+void DualReadingListModel::ReadingListWillAddEntry(
+    const ReadingListModel* model,
+    const ReadingListEntry& entry) {
+  for (auto& observer : observers_) {
+    observer.ReadingListWillAddEntry(this, entry);
+  }
+}
+
+void DualReadingListModel::ReadingListDidAddEntry(
+    const ReadingListModel* model,
+    const GURL& url,
+    reading_list::EntrySource source) {
+  for (auto& observer : observers_) {
+    observer.ReadingListDidAddEntry(this, url, source);
   }
 }
 

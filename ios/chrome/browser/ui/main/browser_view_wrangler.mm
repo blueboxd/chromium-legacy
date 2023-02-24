@@ -16,9 +16,10 @@
 #import "ios/chrome/browser/main/browser.h"
 #import "ios/chrome/browser/main/browser_list.h"
 #import "ios/chrome/browser/main/browser_list_factory.h"
-#import "ios/chrome/browser/sessions/scene_util.h"
 #import "ios/chrome/browser/sessions/session_restoration_browser_agent.h"
 #import "ios/chrome/browser/snapshots/snapshot_browser_agent.h"
+#import "ios/chrome/browser/tabs/inactive_tabs/features.h"
+#import "ios/chrome/browser/tabs/inactive_tabs/utils.h"
 #import "ios/chrome/browser/ui/browser_view/browser_coordinator.h"
 #import "ios/chrome/browser/ui/browser_view/browser_view_controller.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
@@ -34,6 +35,12 @@
 #error "This file requires ARC support."
 #endif
 
+namespace {
+// Suffix to append to the session ID when creating an inactive browser.
+NSString* kInactiveSessionIDSuffix = @"-Inactive";
+
+}  // namespace
+
 // Internal implementation of BrowserInterface -- for the most part a wrapper
 // around BrowserCoordinator.
 @interface WrangledBrowser : NSObject <BrowserInterface>
@@ -45,6 +52,8 @@
 @end
 
 @implementation WrangledBrowser
+
+@synthesize inactiveBrowser = _inactiveBrowser;
 
 - (instancetype)initWithCoordinator:(BrowserCoordinator*)coordinator {
   if (self = [super init]) {
@@ -106,6 +115,7 @@
   BOOL _isShutdown;
 
   std::unique_ptr<Browser> _mainBrowser;
+  std::unique_ptr<Browser> _inactiveBrowser;
   std::unique_ptr<Browser> _otrBrowser;
 }
 
@@ -116,6 +126,7 @@
 @property(nonatomic) BrowserCoordinator* mainBrowserCoordinator;
 @property(nonatomic) BrowserCoordinator* incognitoBrowserCoordinator;
 @property(nonatomic, readonly) Browser* mainBrowser;
+@property(nonatomic, readonly) Browser* inactiveBrowser;
 @property(nonatomic, readonly) Browser* otrBrowser;
 
 // The main browser can't be set after creation, but they can be
@@ -124,9 +135,11 @@
 // The OTR browser can be reset after creation.
 - (void)setOtrBrowser:(std::unique_ptr<Browser>)browser;
 
-// Creates and sets up a new Browser for the given BrowserState.
+// Creates and sets up a new Browser for the given BrowserState and inactive
+// state.
 - (std::unique_ptr<Browser>)buildBrowserForBrowserState:
-    (ChromeBrowserState*)browserState;
+                                (ChromeBrowserState*)browserState
+                                               inactive:(BOOL)inactive;
 
 // Creates the correct BrowserCoordinator for the corresponding browser state
 // and Browser.
@@ -157,7 +170,7 @@
 }
 
 - (Browser*)createMainBrowser {
-  _mainBrowser = [self buildBrowserForBrowserState:_browserState];
+  _mainBrowser = [self buildBrowserForBrowserState:_browserState inactive:NO];
   return _mainBrowser.get();
 }
 
@@ -175,6 +188,35 @@
   DCHECK(_mainBrowserCoordinator.viewController);
   _mainInterface =
       [[WrangledBrowser alloc] initWithCoordinator:_mainBrowserCoordinator];
+}
+
+- (void)createInactiveBrowser {
+  DCHECK(self.mainBrowser)
+      << "Main browser should be created before the inactive one.";
+  DCHECK(self.mainInterface)
+      << "Main interface should be created before create inactive browser.";
+
+  // Create and restore the inactive browser.
+  _inactiveBrowser = [self buildBrowserForBrowserState:_browserState
+                                              inactive:YES];
+  SessionRestorationBrowserAgent::FromBrowser(_inactiveBrowser.get())
+      ->RestoreSession();
+
+  if (IsInactiveTabsEnabled()) {
+    // Ensure there is no active element in the restored inactive browser. It
+    // can be caused by a flag change, for example.
+    // TODO(crbug.com/1412108): Remove the following line as soon as inactive
+    // tabs is fully launched. After fully launched the only place where tabs
+    // can move from inactive to active is after a settings change, this line
+    // will be called at this specific moment.
+    MoveTabsFromInactiveToActive(_inactiveBrowser.get(), _mainBrowser.get());
+
+    // Moves all tabs that might have become inactive since the last launch.
+    MoveTabsFromActiveToInactive(_mainBrowser.get(), _inactiveBrowser.get());
+    _mainInterface.inactiveBrowser = _inactiveBrowser.get();
+  } else {
+    RestoreAllInactiveTabs(_inactiveBrowser.get(), _mainBrowser.get());
+  }
 }
 
 #pragma mark - BrowserViewInformation property implementations
@@ -234,13 +276,21 @@
   return _mainBrowser.get();
 }
 
+- (Browser*)inactiveBrowser {
+  DCHECK(_inactiveBrowser.get())
+      << "-createInactiveBrowser must be called before -inactiveBrowser is "
+         "accessed and inactive tabs feature should be available.";
+  return _inactiveBrowser.get();
+}
+
 - (Browser*)otrBrowser {
   if (!_otrBrowser) {
     // Ensure the incognito BrowserState is created.
     DCHECK(_browserState);
     ChromeBrowserState* incognitoBrowserState =
         _browserState->GetOffTheRecordChromeBrowserState();
-    _otrBrowser = [self buildBrowserForBrowserState:incognitoBrowserState];
+    _otrBrowser = [self buildBrowserForBrowserState:incognitoBrowserState
+                                           inactive:NO];
   }
   return _otrBrowser.get();
 }
@@ -253,7 +303,7 @@
     // Close all webstates in `webStateList`. Do this in an @autoreleasepool as
     // WebStateList observers will be notified (they are unregistered later). As
     // some of them may be implemented in Objective-C and unregister themselves
-    // in their -dealloc method, ensure they -autorelease introduced by ARC are
+    // in their -dealloc method, ensure the -autorelease introduced by ARC are
     // processed before the WebStateList destructor is called.
     @autoreleasepool {
       webStateList->CloseAllWebStates(WebStateList::CLOSE_NO_FLAGS);
@@ -263,6 +313,24 @@
   _mainBrowser = nullptr;
 }
 
+- (void)clearInactiveBrowser {
+  if (_inactiveBrowser.get()) {
+    WebStateList* webStateList = _inactiveBrowser->GetWebStateList();
+    crash_report_helper::StopMonitoringTabStateForWebStateList(webStateList);
+    crash_report_helper::StopMonitoringURLsForWebStateList(webStateList);
+    // Close all webstates in `webStateList`. Do this in an @autoreleasepool as
+    // WebStateList observers will be notified (they are unregistered later). As
+    // some of them may be implemented in Objective-C and unregister themselves
+    // in their -dealloc method, ensure the -autorelease introduced by ARC are
+    // processed before the WebStateList destructor is called.
+    @autoreleasepool {
+      webStateList->CloseAllWebStates(WebStateList::CLOSE_NO_FLAGS);
+    }
+  }
+
+  _inactiveBrowser = nullptr;
+}
+
 - (void)setOtrBrowser:(std::unique_ptr<Browser>)otrBrowser {
   if (_otrBrowser.get()) {
     WebStateList* webStateList = self.otrBrowser->GetWebStateList();
@@ -270,7 +338,7 @@
     // Close all webstates in `webStateList`. Do this in an @autoreleasepool as
     // WebStateList observers will be notified (they are unregistered later). As
     // some of them may be implemented in Objective-C and unregister themselves
-    // in their -dealloc method, ensure they -autorelease introduced by ARC are
+    // in their -dealloc method, ensure the -autorelease introduced by ARC are
     // processed before the WebStateList destructor is called.
     @autoreleasepool {
       webStateList->CloseAllWebStates(WebStateList::CLOSE_NO_FLAGS);
@@ -330,7 +398,8 @@
   ChromeBrowserState* incognitoBrowserState =
       _browserState->GetOffTheRecordChromeBrowserState();
 
-  [self setOtrBrowser:[self buildBrowserForBrowserState:incognitoBrowserState]];
+  [self setOtrBrowser:[self buildBrowserForBrowserState:incognitoBrowserState
+                                               inactive:NO]];
   DCHECK(self.otrBrowser->GetWebStateList()->empty());
 
   if (_currentInterface == nil) {
@@ -343,6 +412,7 @@
   _isShutdown = YES;
 
   [self.mainBrowser->GetCommandDispatcher() prepareForShutdown];
+  [self.inactiveBrowser->GetCommandDispatcher() prepareForShutdown];
   if ([self hasIncognitoInterface]) {
     [self.otrBrowser->GetCommandDispatcher() prepareForShutdown];
   }
@@ -356,6 +426,7 @@
 
   BrowserList* browserList = BrowserListFactory::GetForBrowserState(
       self.mainBrowser->GetBrowserState());
+  browserList->RemoveBrowser(self.inactiveBrowser);
   browserList->RemoveBrowser(self.mainBrowser);
   BrowserList* otrBrowserList = BrowserListFactory::GetForBrowserState(
       self.otrBrowser->GetBrowserState());
@@ -363,7 +434,10 @@
 
   // Handles removing observers, stopping crash key monitoring, and closing all
   // tabs.
+  [self clearInactiveBrowser];
   [self clearMainBrowser];
+  // TODO(crbug.com/1416934): Create `clearOtrBrowser` or similar to follow the
+  // same logic as `clearMainBrowser` or `clearInactiveBrowser`.
   [self setOtrBrowser:nullptr];
 
   _browserState = nullptr;
@@ -403,10 +477,17 @@
 }
 
 - (std::unique_ptr<Browser>)buildBrowserForBrowserState:
-    (ChromeBrowserState*)browserState {
+                                (ChromeBrowserState*)browserState
+                                               inactive:(BOOL)inactive {
   DCHECK(browserState);
-  auto browser = Browser::Create(browserState);
+  std::unique_ptr<Browser> browser;
+  if (inactive) {
+    browser = Browser::CreateForInactiveTabs(browserState);
+  } else {
+    browser = Browser::Create(browserState);
+  }
   DCHECK_EQ(browser->GetBrowserState(), browserState);
+  DCHECK_EQ(browser->IsInactive(), inactive);
 
   BrowserList* browserList =
       BrowserListFactory::GetForBrowserState(browserState);
@@ -435,30 +516,22 @@
   return browser;
 }
 
-- (void)setSessionIDForBrowser:(Browser*)browser {
-  // The location were the session and snapshots are stored can change due to
-  // multiple factors, such as upgrading Chrome or iOS from a version that did
-  // not support multiple windows to one that does (e.g. Chrome M86 or earlier
-  // to M87, iOS 12.x to iOS 13.0+), or upgrading Chrome from M87-M89 to M90+,
-  // or restoring an iPhone backup to an iPad.
-  //
-  // As the migration code is relatively quick when there is nothing to do, it
-  // is always attempted (will result in one directory lookup). Trying to check
-  // if the migration has to be done can be quite tricky, as both permanent and
-  // off-the-record BrowserState need to be independently migrated, migration
-  // also needs to happen on device that do support multiple scenes, ...
-  //
-  // Once the migration has been performed, the function will be a no-op, so it
-  // is safe to call it multiple time for the same BrowserState.
-  MigrateSessionStorageForDirectory(
-      browser->GetBrowserState()->GetStatePath(), _sceneState.sceneSessionID,
-      _sceneState.appState.previousSingleWindowSessionID);
+// Returns the scene session ID with the inactive suffixes if needed.
+- (NSString*)sceneSessionIDForBrowser:(Browser*)browser {
+  NSString* sessionID = _sceneState.sceneSessionID;
+  if (!browser->IsInactive()) {
+    return sessionID;
+  }
+  return [sessionID stringByAppendingString:kInactiveSessionIDSuffix];
+}
 
-  SnapshotBrowserAgent::FromBrowser(browser)->SetSessionID(
-      _sceneState.sceneSessionID);
+- (void)setSessionIDForBrowser:(Browser*)browser {
+  NSString* sceneSessionID = [self sceneSessionIDForBrowser:browser];
+
+  SnapshotBrowserAgent::FromBrowser(browser)->SetSessionID(sceneSessionID);
 
   SessionRestorationBrowserAgent::FromBrowser(browser)->SetSessionID(
-      _sceneState.sceneSessionID);
+      sceneSessionID);
 }
 
 @end

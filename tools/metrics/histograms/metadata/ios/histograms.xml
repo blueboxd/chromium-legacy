@@ -403,6 +403,44 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="IOS.CredentialProviderExtension.Promo.Impression{IsReminder}"
+    enum="IOSCredentialProviderPromoSource" expires_after="2023-09-01">
+  <owner>huitingyu@google.com</owner>
+  <owner>hiramahmood@google.com</owner>
+  <summary>
+    The impression count for the credential provider extention promo
+    corresponding to a source of the promo.
+  </summary>
+  <token key="IsReminder">
+    <variant name="" summary="default impression of promo"/>
+    <variant name=".IsReminder"
+        summary="impression of promo shown as reminder"/>
+  </token>
+</histogram>
+
+<histogram
+    name="IOS.CredentialProviderExtension.Promo.{PromoSource}{IsReminder}"
+    enum="IOSCredentialProviderPromoAction" expires_after="2023-09-01">
+  <owner>huitingyu@google.com</owner>
+  <owner>hiramahmood@google.com</owner>
+  <summary>
+    The action taken in the credential provider extention promo displayed for
+    the user event {PromoSource}. If the promo is as a reminder, the histogram
+    name is suffixed with &quot;IsReminder&quot;.
+  </summary>
+  <token key="PromoSource">
+    <variant name="OnPasswordCopied" summary="the user copies the password"/>
+    <variant name="OnPasswordSaved" summary="the user saves the password"/>
+    <variant name="OnSuccessfulLoginWithAutofilledPassword"
+        summary="the user logs in with autofilled password"/>
+  </token>
+  <token key="IsReminder">
+    <variant name="" summary="default impression of promo"/>
+    <variant name=".IsReminder"
+        summary="impression of promo shown as reminder"/>
+  </token>
+</histogram>
+
 <histogram name="IOS.CRWWKNavigationStatesRemoveOldPending" enum="Boolean"
     expires_after="2023-07-09">
   <owner>justincohen@chromium.org</owner>
@@ -1335,6 +1373,13 @@ chromium-metrics-reviews@google.com.
     is fully loaded. Only measures page loads initiated by user typing a URL or
     selecting a suggested entry from the URL bar.
   </summary>
+</histogram>
+
+<histogram name="IOS.PartialTranslate.Outcome" enum="PartialTranslateOutcome"
+    expires_after="2024-02-23">
+  <owner>olivierrobin@chromium.org</owner>
+  <owner>djean@chromium.org</owner>
+  <summary>The outcome of the partial translate feature.</summary>
 </histogram>
 
 <histogram name="IOS.PasswordManager.Favicons.Count" units="count"

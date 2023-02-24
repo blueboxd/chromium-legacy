@@ -17,7 +17,9 @@
 #include "chrome/grit/side_panel_shared_resources_map.h"
 #include "chrome/grit/side_panel_user_notes_resources.h"
 #include "chrome/grit/side_panel_user_notes_resources_map.h"
+#include "components/prefs/pref_service.h"
 #include "components/strings/grit/components_strings.h"
+#include "components/user_notes/user_notes_prefs.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "ui/base/ui_base_features.h"
@@ -43,6 +45,13 @@ UserNotesSidePanelUI::UserNotesSidePanelUI(content::WebUI* web_ui)
   };
   for (const auto& str : kLocalizedStrings) {
     webui::AddLocalizedString(source, str.name, str.id);
+  }
+
+  Profile* const profile = Profile::FromWebUI(web_ui);
+  PrefService* pref_service = profile->GetPrefs();
+  if (pref_service) {
+    source->AddBoolean("sortByNewest",
+                       pref_service->GetBoolean(prefs::kUserNotesSortByNewest));
   }
 
   source->AddString(
@@ -82,5 +91,18 @@ void UserNotesSidePanelUI::CreatePageHandler(
   }
   user_notes_page_handler_ = std::make_unique<UserNotesPageHandler>(
       std::move(receiver), std::move(page), Profile::FromWebUI(web_ui()),
-      browser_, this);
+      browser_, start_creation_flow_, this);
+  start_creation_flow_ = false;
+}
+
+base::WeakPtr<UserNotesSidePanelUI> UserNotesSidePanelUI::GetWeakPtr() {
+  return weak_ptr_factory_.GetWeakPtr();
+}
+
+void UserNotesSidePanelUI::StartNoteCreation(bool wait_for_tab_change) {
+  if (user_notes_page_handler_) {
+    user_notes_page_handler_->StartNoteCreation(wait_for_tab_change);
+  } else {
+    start_creation_flow_ = true;
+  }
 }

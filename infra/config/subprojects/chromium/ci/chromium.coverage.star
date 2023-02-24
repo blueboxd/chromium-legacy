@@ -224,7 +224,6 @@ coverage_builder(
     use_clang_coverage = True,
 )
 
-# this builder is still experimental, so we do not export_coverage_to_zoss.
 coverage_builder(
     name = "linux-js-code-coverage",
     builder_spec = builder_config.builder_spec(
@@ -252,6 +251,20 @@ coverage_builder(
     export_coverage_to_zoss = True,
     reclient_jobs = reclient.jobs.HIGH_JOBS_FOR_CI,
     use_javascript_coverage = True,
+)
+
+# Experimental builder. Does not export_coverage_to_zoss.
+coverage_builder(
+    name = "linux-fuzz-coverage",
+    executable = "recipe:chromium_fuzz_coverage",
+    builderless = True,
+    os = os.LINUX_DEFAULT,
+    console_view_entry = [
+        consoles.console_view_entry(
+            category = "linux-fuzz",
+            short_name = "lnx-fuzz",
+        ),
+    ],
 )
 
 coverage_builder(

@@ -27,6 +27,7 @@
 <translation id="1201402288615127009">다음</translation>
 <translation id="1209796539517632982">자동 네임서버</translation>
 <translation id="1210831758834677569">라오어</translation>
+<translation id="1221555006497674479">저장용량 부족. 공유 드라이브 저장용량 <ph name="TOTAL_SPACE" /> 중 <ph name="REMAINING_PERCENTAGE" />% 남았습니다.</translation>
 <translation id="1243314992276662751">업로드</translation>
 <translation id="1249250836236328755">장르</translation>
 <translation id="1254593899333212300">인터넷에 바로 연결</translation>
@@ -73,6 +74,7 @@
 <translation id="1641780993263690097">중국어(병음)</translation>
 <translation id="1646019627374511909">파일 <ph name="NUMBER_OF_ITEMS" />개를 오프라인에서 사용하도록 설정 중</translation>
 <translation id="164969095109328410">Chrome 기기</translation>
+<translation id="1661207570040737402">공유 드라이브의 Google Workspace 스토리지를 모두 사용했습니다.</translation>
 <translation id="1661867754829461514">PIN이 없습니다.</translation>
 <translation id="166439687370499867">공유 네트워크 설정 변경은 허용되지 않습니다</translation>
 <translation id="1665611772925418501">파일을 수정하지 못했습니다.</translation>
@@ -349,11 +351,11 @@
 <translation id="3924145049010392604">Meta</translation>
 <translation id="3943857333388298514">붙여넣기</translation>
 <translation id="3952872973865944257">텔루구어(표음)</translation>
-<translation id="3954354850384043518">진행 중</translation>
 <translation id="3958548648197196644">키위</translation>
 <translation id="3971140002794351170">모바일 프로필 다운로드, 네트워크 <ph name="NETWORK_COUNT" />개 중 <ph name="NETWORK_INDEX" />번째, <ph name="NETWORK_NAME" />, <ph name="NETWORK_PROVIDER_NAME" /></translation>
 <translation id="3973925058222872294">영어(영국)</translation>
 <translation id="3975895378829046965">벵골어(표음)</translation>
+<translation id="3999574733850440202">최근에 연 Microsoft 파일이 OneDrive로 이동되었습니다.</translation>
 <translation id="4002066346123236978">제목</translation>
 <translation id="4017788180641807848">영어(미국, 워크맨 키보드)</translation>
 <translation id="4019998208269143058">빠른 파일에 고정</translation>
@@ -829,6 +831,7 @@
 <translation id="7724603315864178912">잘라내기</translation>
 <translation id="7732111077498238432">네트워크는 정책을 통해 제어됩니다</translation>
 <translation id="7736003208887389532">파일을 완전히 삭제하시겠습니까?</translation>
+<translation id="7740287852186792672">검색결과</translation>
 <translation id="7748626145866214022">작업 표시줄에서 더 많은 옵션을 사용할 수 있습니다. 작업 표시줄에 초점을 맞추려면 Alt + A를 누르세요.</translation>
 <translation id="7760449188139285140">중국어(오필화수입법)</translation>
 <translation id="7765158879357617694">이동</translation>
@@ -880,6 +883,7 @@
 <translation id="8116072619078571545">얼음물</translation>
 <translation id="8128733386027980860">영어(영국, 드보락 키보드)</translation>
 <translation id="8137331602592933310">다른 사용자가 '<ph name="FILENAME" />'을(를) 나와 공유했습니다. 내가 소유자가 아니므로 삭제할 수 없습니다.</translation>
+<translation id="8138705869659070104">기기 설정 후 활성화</translation>
 <translation id="813913629614996137">초기화 중...</translation>
 <translation id="8147028810663464959">문자 폭을 최대로 설정</translation>
 <translation id="8151638057146502721">구성</translation>
@@ -905,6 +909,7 @@
 <translation id="8300849813060516376">OTASP 실패</translation>
 <translation id="8312871300878166382">폴더에 붙여넣기</translation>
 <translation id="8329978297633540474">일반 텍스트</translation>
+<translation id="8332007959299458842">최근에 연 Microsoft 파일이 Google Drive로 이동했습니다.</translation>
 <translation id="8335587457941836791">실행기에서 고정 해제</translation>
 <translation id="8335837413233998004">벨라루스어</translation>
 <translation id="8336153091935557858">어제 <ph name="YESTERDAY_DAYTIME" /></translation>
@@ -992,6 +997,7 @@
 <translation id="9046895021617826162">연결 실패</translation>
 <translation id="9065512565307033593">확인하지 못하면 네트워크 액세스가 사용 중지됩니다.</translation>
 <translation id="908378762078012445">러시아어(표음 AATSEEL 키보드)</translation>
+<translation id="9086302186042011942">동기화 중</translation>
 <translation id="9099674669267916096">페이지 수</translation>
 <translation id="9100610230175265781">암호를 입력해야 합니다.</translation>
 <translation id="9110990317705400362">Google은 더 안전한 인터넷 사용 방법을 끊임없이 모색하고 있습니다. 이전에는 브라우저에 확장 프로그램을 추가하라는 메시지가 어느 웹사이트에서나 표시되었습니다. 하지만 Chrome의 최신 버전에서는 확장 프로그램 페이지를 통해 확장 프로그램을 추가함으로써 설치를 원한다는 사실을 Chrome에 명시적으로 알려야 합니다. <ph name="BEGIN_LINK" />자세히 알아보기<ph name="END_LINK" /></translation>

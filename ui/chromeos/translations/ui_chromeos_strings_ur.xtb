@@ -27,6 +27,7 @@
 <translation id="1201402288615127009">اگلا</translation>
 <translation id="1209796539517632982">خود کار نام سرورز</translation>
 <translation id="1210831758834677569">لاؤ</translation>
+<translation id="1221555006497674479">اسٹوریج کم ہے، آپ کی <ph name="TOTAL_SPACE" /> مشترکہ ڈرائیو اسٹوریج میں سے <ph name="REMAINING_PERCENTAGE" /> فیصد باقی ہے۔</translation>
 <translation id="1243314992276662751">اپ لوڈ کریں</translation>
 <translation id="1249250836236328755">نوع</translation>
 <translation id="1254593899333212300">براہ راست انٹرنیٹ کنکشن</translation>
@@ -73,6 +74,7 @@
 <translation id="1641780993263690097">‏چینی Pinyin</translation>
 <translation id="1646019627374511909"><ph name="NUMBER_OF_ITEMS" /> فائلز کو آف لائن دستیاب بنایا جا رہا ہے</translation>
 <translation id="164969095109328410">‏Chrome آلہ</translation>
+<translation id="1661207570040737402">‏آپ نے مشترکہ ڈرائیو کیGoogle Workspace کی اپنی تمام اسٹوریج استعمال کر لی ہے۔</translation>
 <translation id="1661867754829461514">‏PIN غائب ہے</translation>
 <translation id="166439687370499867">اشتراک کردہ نیٹ ورک کنفیگریشنز تبدیل کرنے کی اجازت نہیں ہے</translation>
 <translation id="1665611772925418501">فائل میں ترمیم نہیں کی جا سکی۔</translation>
@@ -349,11 +351,11 @@
 <translation id="3924145049010392604">Meta</translation>
 <translation id="3943857333388298514">پیسٹ کریں</translation>
 <translation id="3952872973865944257">تیلگو فونیٹک</translation>
-<translation id="3954354850384043518">پیشرفت میں ہے</translation>
 <translation id="3958548648197196644">کیوی</translation>
 <translation id="3971140002794351170">موبائل پروفائل ڈاؤن لوڈ کریں، نیٹ ورک <ph name="NETWORK_INDEX" /> از <ph name="NETWORK_COUNT" />، <ph name="NETWORK_NAME" />، <ph name="NETWORK_PROVIDER_NAME" /></translation>
 <translation id="3973925058222872294">انگریزی (برطانیہ)</translation>
 <translation id="3975895378829046965">بنگالی فونیٹک</translation>
+<translation id="3999574733850440202">‏حال ہی میں کھلی ہوئی Microsoft فائلز OneDrive میں منتقل ہوگئی ہیں</translation>
 <translation id="4002066346123236978">عنوان</translation>
 <translation id="4017788180641807848">‏Workman کی بورڈ کے ساتھ انگریزی (امریکہ)</translation>
 <translation id="4019998208269143058">فوری فائلز کو پن کریں</translation>
@@ -362,6 +364,7 @@
 <translation id="4092890906744441904">آئرش</translation>
 <translation id="4124935795427217608">یونیکارن</translation>
 <translation id="4131235941541910880">ان آئٹمز کو کوڑے دان میں منتقل کریں جن کی آپ کو ضرورت نہیں ہے</translation>
+<translation id="4134804435730168042"><ph name="NETWORK_COUNT" /> میں سے نیٹ ورک <ph name="NETWORK_INDEX" />، <ph name="NETWORK_NAME" />، <ph name="NETWORK_PROVIDER_NAME" />، آلے کے سیٹ اپ ہونے کے بعد فعال کریں</translation>
 <translation id="4153015322587141338">کسی فائل پر دائیں کلک کریں اور شیلف میں موجود اپنی فائلوں تک فوری رسائی کے لیے "<ph name="PIN_COMMAND" />" کو منتخب کریں۔</translation>
 <translation id="4157569377477607576">منتظم کی پالیسی درج ذیل کی تجویز نہیں کرتی ہے:</translation>
 <translation id="4159731583141908892"><ph name="FILE_NAME" /> منتقل ہو گیا۔</translation>
@@ -404,6 +407,7 @@
 <translation id="4414834425328380570">"<ph name="FILE_NAME" />" حذف ہو جائے گا اور آپ اسے بحال نہیں کر سکیں گے۔</translation>
 <translation id="4418686080762064601">اپنی فائلوں کے ليے ایک شارٹ کٹ تخلیق کریں</translation>
 <translation id="4425149324548788773">میری ڈرائیو</translation>
+<translation id="4432921877815220091"><ph name="NETWORK_COUNT" /> میں سے نیٹ ورک <ph name="NETWORK_INDEX" />، <ph name="NETWORK_NAME" />، آلے کے سیٹ اپ ہونے کے بعد فعال کریں، اپنے منتظم کے زیر انتظام</translation>
 <translation id="4439427728133035643"><ph name="NETWORK_COUNT" /> میں سے <ph name="NETWORK_INDEX" /> نیٹ ورک، <ph name="NETWORK_NAME" />، سگنل کی مضبوطی <ph name="SIGNAL_STRENGTH" />%، منسلک کریں</translation>
 <translation id="4442424173763614572">‏DNS کی تلاش ناکام ہو گئی</translation>
 <translation id="4462159676511157176">حسب  ضرورت نام سرورز</translation>
@@ -612,6 +616,7 @@
 <translation id="5913638992615760742">کاپی کرنے کی کارروائی ناکام ہو گئی، غیر متوقع خرابی: <ph name="ERROR_MESSAGE" /></translation>
 <translation id="5926082595146149752">‏امریکی بین الاقوامی PC کی بورڈ کے ساتھ ڈچ (نیدرلینڈز)</translation>
 <translation id="5932901536148835538">Chromebit</translation>
+<translation id="5948255720516436063"><ph name="NETWORK_COUNT" /> میں سے نیٹ ورک <ph name="NETWORK_INDEX" />، <ph name="NETWORK_NAME" />، آلے کے سیٹ اپ ہونے کے بعد فعال کریں</translation>
 <translation id="5955954492236143329"><ph name="NUMBER_OF_ITEMS" /> آئٹمز</translation>
 <translation id="5957366693331451795">Chromeboxes</translation>
 <translation id="5982621672636444458">ترتیب دینے کے اختیارات</translation>
@@ -758,6 +763,7 @@
 <translation id="7126604456862387217">‏'&lt;b&gt;<ph name="SEARCH_STRING" />&lt;/b&gt;' - &lt;em&gt; Drive تلاش کریں&lt;/em&gt;</translation>
 <translation id="7135561821015524160">کنّڑ فونیٹک</translation>
 <translation id="714034171374937760">Chromebase</translation>
+<translation id="7162080671816799010">توثیق سرور کی شناخت کی توثیق کرنے کے لیے 'موضوع کے متبادل نام کی مماثلت' یا 'ڈومین لاحقہ کی مماثلت' غائب ہے</translation>
 <translation id="7165320105431587207">نیٹ ورک کنفیگر کرنے میں ناکام ہوگیا</translation>
 <translation id="7170041865419449892">رینج سے باہر</translation>
 <translation id="7180611975245234373">ریفریش کریں</translation>
@@ -828,6 +834,7 @@
 <translation id="7724603315864178912">کٹ کریں</translation>
 <translation id="7732111077498238432">نیٹ ورک پالیسی سے کنٹرول کی جاتی ہے</translation>
 <translation id="7736003208887389532">ان فائلز کو مستقل طور پر حذف کریں؟</translation>
+<translation id="7740287852186792672">تلاش کے نتائج</translation>
 <translation id="7748626145866214022">‏کارروائی بار پر مزید اختیارات دستیاب ہیں۔ کارروائی بار پر فوکس کرنے کے لئے Alt + A دبائیں۔</translation>
 <translation id="7760449188139285140">‏چینی Wubi</translation>
 <translation id="7765158879357617694">منتقل کریں</translation>
@@ -879,6 +886,7 @@
 <translation id="8116072619078571545">برف کا پانی</translation>
 <translation id="8128733386027980860">ڈوراک کی بورڈ کے ساتھ انگریزی (برطانیہ)</translation>
 <translation id="8137331602592933310">"<ph name="FILENAME" />" کا آپ کے ساتھ اشتراک کیا گیا ہے۔ آپ اسے حذف نہیں کر سکتے ہیں کیونکہ آپ اس کے مالک نہیں ہیں۔</translation>
+<translation id="8138705869659070104">آلہ سیٹ اپ کرنے کے بعد فعال کریں</translation>
 <translation id="813913629614996137">آغاز کیا جا رہا ہے…</translation>
 <translation id="8147028810663464959">حرف کی چوڑائی پوری ہے</translation>
 <translation id="8151638057146502721">کنفیگر کریں</translation>
@@ -904,6 +912,7 @@
 <translation id="8300849813060516376">‏OTASP ناکام ہوگیا</translation>
 <translation id="8312871300878166382">فولڈر میں پیسٹ کریں</translation>
 <translation id="8329978297633540474">سادہ متن</translation>
+<translation id="8332007959299458842">‏حال ہی میں کھلی ہوئی Microsoft فائلز Google Drive میں منتقل ہوگئی ہیں</translation>
 <translation id="8335587457941836791">شیلف سے پن ہٹائیں</translation>
 <translation id="8335837413233998004">بيلاروسی</translation>
 <translation id="8336153091935557858">گزشتہ کل <ph name="YESTERDAY_DAYTIME" /></translation>
@@ -930,6 +939,7 @@
 <translation id="8487700953926739672">آف لائن دستیاب ہے</translation>
 <translation id="8492972329130824181">ہوم نیٹ ورک دستیاب نہیں ہے۔ منسلک ہونے کیلئے موبائل ڈیٹا رومنگ کو فعال کرنا ہوگا۔</translation>
 <translation id="8499098729323186194"><ph name="NUMBER_OF_ITEMS" /> آئٹمز کو اخذ کیا جا رہا ہے…</translation>
+<translation id="8502913769543567768"><ph name="NETWORK_COUNT" /> میں سے نیٹ ورک <ph name="NETWORK_INDEX" />، <ph name="NETWORK_NAME" />، <ph name="NETWORK_PROVIDER_NAME" />، آلے کے سیٹ اپ ہونے کے بعد فعال کریں، اپنے منتظم کے زیر انتظام</translation>
 <translation id="8521441079177373948">UK</translation>
 <translation id="853494022971700746">فرانسیسی (فرانس)</translation>
 <translation id="8540608333167683902"><ph name="NETWORK_COUNT" /> میں سے <ph name="NETWORK_INDEX" /> نیٹ ورک، <ph name="NETWORK_NAME" />، <ph name="CONNECTION_STATUS" />، سگنل کی مضبوطی<ph name="SIGNAL_STRENGTH" />%، تفصیلات</translation>
@@ -991,6 +1001,7 @@
 <translation id="9046895021617826162">منسلک کرنا ناکام ہوگیا</translation>
 <translation id="9065512565307033593">اگر آپ توثیق کرنے میں ناکام ہوتے ہیں تو آپ کے نیٹ ورک کی رسائی کو غیر فعال کر دیا جائے گا۔</translation>
 <translation id="908378762078012445">‏فونیٹک AATSEEL کی بورڈ کے ساتھ روسی</translation>
+<translation id="9086302186042011942">مطابقت پذیری کی جا رہی ہے</translation>
 <translation id="9099674669267916096">صفحات کی تعداد</translation>
 <translation id="9100610230175265781">پاس فریز درکار ہے</translation>
 <translation id="9110990317705400362">‏ہم آپ کی براؤزنگ کو محفوظ تر بنانے کے طریقے مستقل تلاش کر رہے ہیں۔ ازیں قبل، کوئی بھی ویب سائٹ آپ کو اپنے براؤزر میں ایک ایکسٹینشن شامل کرنے کا اشارہ دے سکتی تھی۔ Google Chrome کے تازہ ترین ورژن میں، ایکسٹینشنز صفحہ کے ذریعہ ایکسٹینشنز کو شامل کر کے آپ کو واضح طور پر Chrome کو بتا دینا چاہیے کہ آپ انہیں شامل کرنا چاہتے ہیں۔ <ph name="BEGIN_LINK" />مزید جانیں<ph name="END_LINK" /></translation>

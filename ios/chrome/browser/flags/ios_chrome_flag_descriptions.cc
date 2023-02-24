@@ -16,6 +16,11 @@ const char kAdaptiveSuggestionsCountDescription[] =
     "Allows Omnibox to dynamically adjust number of offered suggestions to "
     "fill in the space between Omnibox and the soft keyboard.";
 
+const char kAddToHomeScreenName[] = "Add to home screen";
+const char kAddToHomeScreenDescription[] =
+    "Allows to add a bookmark on the device home screen when sharing from a "
+    "web view.";
+
 const char kAppStoreRatingName[] = "Enable the App Store Rating promo.";
 const char kAppStoreRatingDescription[] =
     "When enabled, App Store Rating promo will be presented to eligible "
@@ -157,6 +162,11 @@ extern const char kAppleCalendarExperienceKitName[] =
 extern const char kAppleCalendarExperienceKitDescription[] =
     "When enabled, long pressing on dates will trigger Experience Kit Apple "
     "Calendar event handling.";
+
+extern const char kConsistencyNewAccountInterfaceName[] =
+    "Consistency New Account Interface";
+extern const char kConsistencyNewAccountInterfaceDescription[] =
+    "Enables a sign-in only UI for users who need to add a new account.";
 
 extern const char kEmailName[] = "Email experience enable";
 extern const char kEmailDescription[] =
@@ -349,11 +359,6 @@ const char kEnableRefineDataSourceReloadReportingName[] =
 const char kEnableRefineDataSourceReloadReportingDescription[] =
     "Enable refining data source reload reporting when having a very short "
     "attention log";
-
-const char kEnableWebPageAnnotationsName[] = "Enable Web Page Intent Detection";
-const char kEnableWebPageAnnotationsDescription[] =
-    "Prototype to detect and highlight data with possible intent in a web "
-    "page.";
 
 const char kEnableSuggestionsScrollingOnIPadName[] =
     "Enable omnibox suggestions scrolling on iPad";
@@ -742,6 +747,12 @@ const char kIPHPriceNotificationsWhileBrowsingDescription[] =
     "product "
     "webpage that supports price tracking.";
 
+const char kNotificationSettingsMenuItemName[] =
+    "Notification Settings Menu Item";
+const char kNotificationSettingsMenuItemDescription[] =
+    "Displays the menu item for the notification controls inside the chrome "
+    "settings UI.";
+
 const char kRecordSnapshotSizeName[] =
     "Record the size of image and PDF snapshots in UMA histograms";
 const char kRecordSnapshotSizeDescription[] =
@@ -815,6 +826,10 @@ const char kSmartSortingPriceTrackingDestinationName[] =
 const char kSmartSortingPriceTrackingDestinationDescription[] =
     "Adds the Price Tracking destination (with Smart Sorting) to the "
     "new overflow menu.";
+
+const char kSpotlightReadingListSourceName[] = "Show Reading List in Spotlight";
+const char kSpotlightReadingListSourceDescription[] =
+    "Donate Reading List items to iOS Search Engine Spotlight";
 
 const char kNewOverflowMenuShareChromeActionName[] =
     "Share Chrome App action in the new overflow menu";

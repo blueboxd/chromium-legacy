@@ -100,16 +100,18 @@ void BrowserAccessibilityManagerMac::FireBlinkEvent(ax::mojom::Event event_type,
   FireNativeMacNotification(mac_notification, node);
 }
 
-void PostAnnouncementNotification(NSString* announcement) {
+void PostAnnouncementNotification(NSString* announcement,
+                                  NSWindow* window,
+                                  NSAccessibilityPriorityLevel priorityLevel) {
   NSDictionary* notification_info = @{
     NSAccessibilityAnnouncementKey : announcement,
-    NSAccessibilityPriorityKey : @(NSAccessibilityPriorityLow)
+    NSAccessibilityPriorityKey : @(priorityLevel)
   };
   // Trigger VoiceOver speech and show on Braille display, if available.
   // The Braille will only appear for a few seconds, and then will be replaced
   // with the previous announcement.
   NSAccessibilityPostNotificationWithUserInfo(
-      [NSApp mainWindow], NSAccessibilityAnnouncementRequestedNotification,
+      window, NSAccessibilityAnnouncementRequestedNotification,
       notification_info);
 }
 
@@ -228,7 +230,8 @@ void BrowserAccessibilityManagerMac::FireGeneratedEvent(
         // Unfortunately this produces an annoying boing sound with each live
         // announcement, but the alternative is almost no live region support.
         PostAnnouncementNotification(
-            base::SysUTF16ToNSString(wrapper->GetTextContentUTF16()));
+            base::SysUTF16ToNSString(wrapper->GetTextContentUTF16()),
+            [NSApp mainWindow], NSAccessibilityPriorityLow);
         return;
       }
 

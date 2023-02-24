@@ -276,7 +276,7 @@ void KioskLaunchController::Start(const KioskAppId& kiosk_app_id,
   }
 
   splash_screen_view_->SetDelegate(this);
-  splash_screen_view_->Show();
+  splash_screen_view_->Show(GetAppData());
 
   splash_wait_timer_.Start(FROM_HERE, GetSplashScreenMinTime(),
                            base::BindOnce(&KioskLaunchController::OnTimerFire,
@@ -445,10 +445,6 @@ KioskAppManagerBase::App KioskLaunchController::GetAppData() {
   return KioskAppManagerBase::App();
 }
 
-bool KioskLaunchController::IsNetworkRequired() {
-  return network_required_;
-}
-
 void KioskLaunchController::CleanUp() {
   DCHECK(!cleaned_up_);
   cleaned_up_ = true;
@@ -495,7 +491,7 @@ void KioskLaunchController::OnAppInstalling() {
   splash_screen_view_->UpdateAppLaunchState(
       AppLaunchSplashScreenView::AppLaunchState::kInstallingApplication);
 
-  splash_screen_view_->Show();
+  splash_screen_view_->Show(GetAppData());
 }
 
 void KioskLaunchController::OnAppPrepared() {
@@ -520,7 +516,7 @@ void KioskLaunchController::OnAppPrepared() {
 
   splash_screen_view_->UpdateAppLaunchState(
       AppLaunchSplashScreenView::AppLaunchState::kInstallingExtension);
-  splash_screen_view_->Show();
+  splash_screen_view_->Show(GetAppData());
 
   force_install_observer_ = std::make_unique<app_mode::ForceInstallObserver>(
       profile_,
@@ -539,6 +535,7 @@ void KioskLaunchController::InitializeNetwork() {
   // When we are asked to initialize network, we should remember that this app
   // requires network.
   network_required_ = true;
+  splash_screen_view_->SetNetworkRequired();
 
   splash_screen_view_->UpdateAppLaunchState(
       AppLaunchSplashScreenView::AppLaunchState::kPreparingNetwork);
@@ -637,7 +634,7 @@ void KioskLaunchController::HandleWebAppInstallFailed() {
   splash_screen_view_->UpdateAppLaunchState(
       AppLaunchSplashScreenView::AppLaunchState::
           kWaitingAppWindowInstallFailed);
-  splash_screen_view_->Show();
+  splash_screen_view_->Show(GetAppData());
   if (launch_on_install_ || g_skip_splash_wait_for_testing) {
     LaunchApp();
   }
@@ -663,7 +660,7 @@ void KioskLaunchController::FinishForcedExtensionsInstall(
 
   splash_screen_view_->UpdateAppLaunchState(
       AppLaunchSplashScreenView::AppLaunchState::kWaitingAppWindow);
-  splash_screen_view_->Show();
+  splash_screen_view_->Show(GetAppData());
 
   if (launch_on_install_ || g_skip_splash_wait_for_testing) {
     LaunchApp();
@@ -676,7 +673,7 @@ void KioskLaunchController::OnAppLaunched() {
   if (splash_screen_view_) {
     splash_screen_view_->UpdateAppLaunchState(
         AppLaunchSplashScreenView::AppLaunchState::kWaitingAppWindow);
-    splash_screen_view_->Show();
+    splash_screen_view_->Show(GetAppData());
   }
   session_manager::SessionManager::Get()->SessionStarted();
 }
@@ -697,7 +694,7 @@ void KioskLaunchController::OnAppWindowCreated() {
 void KioskLaunchController::OnAppDataUpdated() {
   // Invokes Show() to update the app title and icon.
   if (splash_screen_view_) {
-    splash_screen_view_->Show();
+    splash_screen_view_->Show(GetAppData());
   }
 }
 
@@ -831,6 +828,7 @@ void KioskLaunchController::OnNetworkConfigFinished() {
   if (splash_screen_view_) {
     splash_screen_view_->UpdateAppLaunchState(
         AppLaunchSplashScreenView::AppLaunchState::kPreparingProfile);
+    splash_screen_view_->Show(GetAppData());
   }
 
   app_state_ = AppState::kInitNetwork;

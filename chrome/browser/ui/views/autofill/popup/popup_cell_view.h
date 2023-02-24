@@ -53,6 +53,10 @@ class PopupCellView : public views::View {
   bool GetSelected() const { return selected_; }
   void SetSelected(bool selected);
 
+  // Gets and sets the tooltip of the cell.
+  const std::u16string& GetTooltipText() const { return tooltip_text_; }
+  void SetTooltipText(std::u16string tooltip_text);
+
   // Sets the accessibility delegate that is consulted when providing accessible
   // node data.
   void SetAccessibilityDelegate(
@@ -105,15 +109,18 @@ class PopupCellView : public views::View {
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
   bool HandleAccessibleAction(const ui::AXActionData& action_data) override;
 
-  void OnPaint(gfx::Canvas* canvas) override;
-
  private:
   // Returns true if the mouse is within the bounds of this item. This is not
   // affected by whether or not the item is overlaid by another popup.
   bool IsMouseInsideItemBounds() const { return IsMouseHovered(); }
 
+  // views::View:
+  std::u16string GetTooltipText(const gfx::Point& p) const override;
+
   // The selection state.
   bool selected_ = false;
+  // The tooltip text for this cell.
+  std::u16string tooltip_text_;
   // The accessibility delegate.
   std::unique_ptr<AccessibilityDelegate> a11y_delegate_;
 
@@ -125,17 +132,10 @@ class PopupCellView : public views::View {
 
   // The labels whose style is updated when the cell's selection status changes.
   std::vector<raw_ptr<views::Label>> tracked_labels_;
-
-  // We want a mouse click to accept a suggestion only if the user has made an
-  // explicit choice. Therefore, we shall ignore mouse clicks unless the mouse
-  // has been moved into the item's screen bounds. For example, if the item is
-  // hovered by the mouse at the time it's first shown, we want to ignore clicks
-  // until the mouse has left and re-entered the bounds of the item
-  // (crbug.com/1240472, crbug.com/1241585, crbug.com/1287364).
-  bool mouse_observed_outside_item_bounds_ = false;
 };
 
 BEGIN_VIEW_BUILDER(/* no export*/, PopupCellView, views::View)
+VIEW_BUILDER_PROPERTY(std::u16string, TooltipText)
 VIEW_BUILDER_PROPERTY(std::unique_ptr<PopupCellView::AccessibilityDelegate>,
                       AccessibilityDelegate)
 VIEW_BUILDER_PROPERTY(base::RepeatingClosure, OnEnteredCallback)

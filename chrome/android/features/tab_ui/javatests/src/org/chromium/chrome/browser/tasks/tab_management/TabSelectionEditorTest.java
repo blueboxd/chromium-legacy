@@ -21,7 +21,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.any;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.isNotNull;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
@@ -1283,6 +1283,23 @@ public class TabSelectionEditorTest {
 
         ChromeRenderTestRule.sanitize(mTabSelectionEditorLayout);
         mRenderTestRule.render(mTabSelectionEditorLayout, "list_view");
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"RenderTest"})
+    @CommandLineFlags.Add(BaseSwitches.ENABLE_LOW_END_DEVICE_MODE)
+    @EnableFeatures({ChromeFeatureList.TAB_GROUPS_CONTINUATION_ANDROID,
+            ChromeFeatureList.TAB_SELECTION_EDITOR_V2})
+    @Restriction({UiRestriction.RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_LOW_END_DEVICE})
+    public void
+    testListViewV2Shows() throws IOException {
+        prepareBlankTab(2, false);
+        List<Tab> tabs = getTabsInCurrentTabModel();
+
+        showSelectionEditor(tabs);
+
+        mRobot.resultRobot.verifyTabSelectionEditorIsVisible();
     }
 
     @Test

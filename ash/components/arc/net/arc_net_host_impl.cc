@@ -123,6 +123,17 @@ void ForgetNetworkFailureCallback(
   std::move(callback).Run(arc::mojom::NetworkResult::FAILURE);
 }
 
+void UpdateWifiNetworkSuccessCallback(
+    base::OnceCallback<void(arc::mojom::NetworkResult)> callback) {
+  std::move(callback).Run(arc::mojom::NetworkResult::SUCCESS);
+}
+
+void UpdateWifiNetworkFailureCallback(
+    base::OnceCallback<void(arc::mojom::NetworkResult)> callback,
+    const std::string& error_name) {
+  std::move(callback).Run(arc::mojom::NetworkResult::FAILURE);
+}
+
 void StartConnectSuccessCallback(
     base::OnceCallback<void(arc::mojom::NetworkResult)> callback) {
   std::move(callback).Run(arc::mojom::NetworkResult::SUCCESS);
@@ -481,7 +492,7 @@ void ArcNetHostImpl::CreateNetwork(mojom::WifiConfigurationPtr cfg,
   // the callee interface.
   auto split_callback = base::SplitOnceCallback(std::move(callback));
   GetManagedConfigurationHandler()->CreateConfiguration(
-      user_id_hash, base::Value(std::move(properties)),
+      user_id_hash, properties,
       base::BindOnce(&ArcNetHostImpl::CreateNetworkSuccessCallback,
                      weak_factory_.GetWeakPtr(),
                      std::move(split_callback.first)),
@@ -525,6 +536,37 @@ void ArcNetHostImpl::ForgetNetwork(const std::string& guid,
       base::BindOnce(&ForgetNetworkSuccessCallback,
                      std::move(split_callback.first)),
       base::BindOnce(&ForgetNetworkFailureCallback,
+                     std::move(split_callback.second)));
+}
+
+void ArcNetHostImpl::UpdateWifiNetwork(const std::string& guid,
+                                       mojom::WifiConfigurationPtr cfg,
+                                       UpdateWifiNetworkCallback callback) {
+  std::string path;
+  if (!GetNetworkPathFromGuid(guid, &path)) {
+    NET_LOG(ERROR) << "Could not retrieve Service path from GUID " << guid;
+    std::move(callback).Run(mojom::NetworkResult::FAILURE);
+    return;
+  }
+
+  // TODO(b/270089579): Add support for more properties to be updatable.
+  base::Value::Dict properties;
+  base::Value::Dict wifi_dict;
+
+  if (cfg->bssid_allowlist.has_value()) {
+    wifi_dict.Set(onc::wifi::kBSSIDAllowlist,
+                  TranslateStringListToValue(cfg->bssid_allowlist.value()));
+  }
+  properties.Set(onc::network_config::kWiFi, std::move(wifi_dict));
+
+  // TODO(crbug.com/730593): Remove SplitOnceCallback() by updating
+  // the callee interface.
+  auto split_callback = base::SplitOnceCallback(std::move(callback));
+  GetManagedConfigurationHandler()->SetProperties(
+      path, properties,
+      base::BindOnce(&UpdateWifiNetworkSuccessCallback,
+                     std::move(split_callback.first)),
+      base::BindOnce(&UpdateWifiNetworkFailureCallback,
                      std::move(split_callback.second)));
 }
 
@@ -719,7 +761,7 @@ void ArcNetHostImpl::AndroidVpnConnected(
   std::string service_path = LookupArcVpnServicePath();
   if (!service_path.empty()) {
     GetManagedConfigurationHandler()->SetProperties(
-        service_path, base::Value(TranslateVpnConfigurationToOnc(*cfg)),
+        service_path, TranslateVpnConfigurationToOnc(*cfg),
         base::BindOnce(&ArcNetHostImpl::ConnectArcVpn,
                        weak_factory_.GetWeakPtr(), service_path, std::string()),
         base::BindOnce(&ArcVpnErrorCallback,
@@ -729,7 +771,7 @@ void ArcNetHostImpl::AndroidVpnConnected(
 
   std::string user_id_hash = ash::LoginState::Get()->primary_user_hash();
   GetManagedConfigurationHandler()->CreateConfiguration(
-      user_id_hash, base::Value(TranslateVpnConfigurationToOnc(*cfg)),
+      user_id_hash, TranslateVpnConfigurationToOnc(*cfg),
       base::BindOnce(&ArcNetHostImpl::ConnectArcVpn,
                      weak_factory_.GetWeakPtr()),
       base::BindOnce(&ArcVpnErrorCallback, "connecting new ARC VPN"));
@@ -941,6 +983,14 @@ void ArcNetHostImpl::AddPasspointCredentials(
       std::move(credentials),
       base::BindOnce(&ArcNetHostImpl::AddPasspointCredentialsWithProperties,
                      weak_factory_.GetWeakPtr()));
+}
+
+void ArcNetHostImpl::RequestPasspointAppApproval(
+    mojom::PasspointApprovalRequestPtr request,
+    RequestPasspointAppApprovalCallback callback) {
+  // TODO(b/266151265): Start a dialog for Passpoint approval.
+  std::move(callback).Run(
+      mojom::PasspointApprovalResponse::New(/*allow=*/false));
 }
 
 void ArcNetHostImpl::AddPasspointCredentialsWithProperties(

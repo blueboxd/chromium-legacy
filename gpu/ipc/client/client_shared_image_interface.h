@@ -58,13 +58,6 @@ class GPU_EXPORT ClientSharedImageInterface : public SharedImageInterface {
                             SkAlphaType alpha_type,
                             uint32_t usage,
                             base::span<const uint8_t> pixel_data) override;
-  Mailbox CreateSharedImage(viz::ResourceFormat format,
-                            const gfx::Size& size,
-                            const gfx::ColorSpace& color_space,
-                            GrSurfaceOrigin surface_origin,
-                            SkAlphaType alpha_type,
-                            uint32_t usage,
-                            gpu::SurfaceHandle surface_handle) override;
   Mailbox CreateSharedImage(viz::SharedImageFormat format,
                             const gfx::Size& size,
                             const gfx::ColorSpace& color_space,
@@ -83,7 +76,7 @@ class GPU_EXPORT ClientSharedImageInterface : public SharedImageInterface {
   void CopyToGpuMemoryBuffer(const SyncToken& sync_token,
                              const Mailbox& mailbox) override;
 #endif
-  SwapChainMailboxes CreateSwapChain(viz::ResourceFormat format,
+  SwapChainMailboxes CreateSwapChain(viz::SharedImageFormat format,
                                      const gfx::Size& size,
                                      const gfx::ColorSpace& color_space,
                                      GrSurfaceOrigin surface_origin,

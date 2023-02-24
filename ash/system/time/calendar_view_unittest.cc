@@ -56,7 +56,6 @@ using ::google_apis::calendar::EventList;
 
 constexpr char kTestUser[] = "user@test";
 constexpr int kLoadingBarIndex = 2;
-constexpr char kManagedPage[] = "ChromeOS.SystemTray.OpenHelpPageForManaged";
 
 }  // namespace
 
@@ -1305,7 +1304,6 @@ TEST_F(CalendarViewTest, AdminDisabledTest) {
 }
 
 TEST_F(CalendarViewTest, ManagedButtonTest) {
-  base::HistogramTester histogram_tester;
   base::Time date;
   // Create a monthview based on Jun,7th 2021.
   ASSERT_TRUE(base::Time::FromString("7 Jun 2021 10:00 GMT", &date));
@@ -1320,9 +1318,6 @@ TEST_F(CalendarViewTest, ManagedButtonTest) {
 
   // Click on managed button to open chrome://management.
   GestureTapOn(managed_button());
-
-  // Expect increment to UMA histogram count for managed page - enterprise.
-  histogram_tester.ExpectBucketCount(kManagedPage, 0, 1);
 }
 
 // A test class for testing animation. This class cannot set fake now since it's
@@ -2608,6 +2603,35 @@ TEST_F(
   EXPECT_EQ(u"January", GetNextNextLabelText());
   EXPECT_EQ(u"November", month_header()->GetText());
   EXPECT_EQ(u"2021", header_year()->GetText());
+}
+
+TEST_F(
+    CalendarViewWithJellyEnabledTest,
+    ShouldFocusEventListCloseButton_WhenEventListViewLaunchedFromUpNextView) {
+  base::Time date;
+  ASSERT_TRUE(base::Time::FromString("18 Nov 2021 10:00 GMT", &date));
+  // Set time override.
+  SetFakeNow(date);
+  base::subtle::ScopedTimeClockOverrides time_override(
+      &CalendarViewTest::FakeTimeNow, /*time_ticks_override=*/nullptr,
+      /*thread_ticks_override=*/nullptr);
+
+  CreateCalendarView();
+  MockEventsFetched(calendar_utils::GetStartOfMonthUTC(date),
+                    CreateMockEventListWithEventStartTimeTenMinsAway());
+
+  // When fetched events are in the next 10 mins, then up next should have been
+  // created.
+  ASSERT_TRUE(up_next_view());
+
+  auto* focus_manager = calendar_view()->GetFocusManager();
+  up_next_todays_events_button()->RequestFocus();
+  ASSERT_EQ(up_next_todays_events_button(), focus_manager->GetFocusedView());
+
+  PressEnter();
+  ASSERT_TRUE(event_list_view());
+
+  EXPECT_EQ(focus_manager->GetFocusedView(), close_button());
 }
 
 }  // namespace ash

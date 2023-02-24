@@ -58,7 +58,6 @@
 #include "chrome/browser/ash/login/auth/chrome_safe_mode_delegate.h"
 #include "chrome/browser/ash/login/chrome_restart_request.h"
 #include "chrome/browser/ash/login/demo_mode/demo_session.h"
-#include "chrome/browser/ash/login/easy_unlock/easy_unlock_key_manager.h"
 #include "chrome/browser/ash/login/easy_unlock/easy_unlock_notification_controller.h"
 #include "chrome/browser/ash/login/easy_unlock/easy_unlock_service.h"
 #include "chrome/browser/ash/login/existing_user_controller.h"
@@ -1316,8 +1315,9 @@ void UserSessionManager::PrepareProfile(const base::FilePath& profile_path) {
           [](base::WeakPtr<UserSessionManager> self,
              const UserContext& user_context, Profile* profile) {
             // `profile` might be null, meaning that the creation failed.
-            if (!profile)
+            if (!profile || !self) {
               return;
+            }
             // Profile is created, extensions and promo resources
             // are initialized. At this point all other Chrome OS
             // services will be notified that it is safe to use
@@ -1330,8 +1330,9 @@ void UserSessionManager::PrepareProfile(const base::FilePath& profile_path) {
           [](base::WeakPtr<UserSessionManager> self,
              const UserContext& user_context, Profile* profile) {
             // `profile` might be null, meaning that the creation failed.
-            if (!profile)
+            if (!profile || !self) {
               return;
+            }
             // Profile created but before initializing extensions and
             // promo resources.
             self->InitProfilePreferences(profile, user_context);
@@ -1826,8 +1827,7 @@ bool MaybeStartManagementTransition(Profile* profile) {
 
 bool MaybeShowManagedTermsOfService(Profile* profile) {
   user_manager::UserManager* user_manager = user_manager::UserManager::Get();
-  if (features::IsManagedTermsOfServiceEnabled() &&
-      !user_manager->IsCurrentUserNew() &&
+  if (!user_manager->IsCurrentUserNew() &&
       profile->GetPrefs()->IsManagedPreference(::prefs::kTermsOfServiceURL)) {
     LoginDisplayHost::default_host()->GetSigninUI()->ShowTosForExistingUser();
     return true;
@@ -2165,13 +2165,6 @@ void UserSessionManager::CheckEolInfo(Profile* profile) {
                .first;
   }
   iter->second->CheckEolInfo();
-}
-
-EasyUnlockKeyManager* UserSessionManager::GetEasyUnlockKeyManager() {
-  if (!easy_unlock_key_manager_)
-    easy_unlock_key_manager_ = std::make_unique<EasyUnlockKeyManager>();
-
-  return easy_unlock_key_manager_.get();
 }
 
 void UserSessionManager::DoBrowserLaunchInternal(Profile* profile,

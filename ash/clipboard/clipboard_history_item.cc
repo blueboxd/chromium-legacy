@@ -6,8 +6,6 @@
 
 #include <vector>
 
-#include "ash/clipboard/clipboard_history_controller_impl.h"
-#include "ash/clipboard/clipboard_history_resource_manager.h"
 #include "ash/clipboard/clipboard_history_util.h"
 #include "ash/shell.h"
 #include "ash/style/color_util.h"
@@ -22,6 +20,7 @@
 #include "ui/base/models/image_model.h"
 #include "ui/base/webui/web_ui_util.h"
 #include "ui/color/color_provider_source.h"
+#include "ui/gfx/image/image.h"
 #include "ui/strings/grit/ui_strings.h"
 
 namespace ash {
@@ -29,14 +28,13 @@ namespace ash {
 namespace {
 
 ClipboardHistoryItem::DisplayFormat CalculateDisplayFormat(
-    ui::ClipboardInternalFormat main_format,
-    const ui::ClipboardData& data) {
-  switch (main_format) {
+    const ClipboardHistoryItem& item) {
+  switch (item.main_format()) {
     case ui::ClipboardInternalFormat::kPng:
       return ClipboardHistoryItem::DisplayFormat::kPng;
     case ui::ClipboardInternalFormat::kHtml:
-      if ((data.markup_data().find("<img") == std::string::npos) &&
-          (data.markup_data().find("<table") == std::string::npos)) {
+      if ((item.data().markup_data().find("<img") == std::string::npos) &&
+          (item.data().markup_data().find("<table") == std::string::npos)) {
         return ClipboardHistoryItem::DisplayFormat::kText;
       }
       return ClipboardHistoryItem::DisplayFormat::kHtml;
@@ -49,7 +47,7 @@ ClipboardHistoryItem::DisplayFormat CalculateDisplayFormat(
     case ui::ClipboardInternalFormat::kFilenames:
       return ClipboardHistoryItem::DisplayFormat::kFile;
     case ui::ClipboardInternalFormat::kCustom:
-      return clipboard_history_util::ContainsFileSystemData(data)
+      return clipboard_history_util::ContainsFileSystemData(item.data())
                  ? ClipboardHistoryItem::DisplayFormat::kFile
                  : ClipboardHistoryItem::DisplayFormat::kText;
   }
@@ -79,31 +77,31 @@ std::u16string DetermineDisplayTextForFileSystemData(
       base::UnescapeRule::SPACES));
 }
 
-std::u16string DetermineDisplayText(const ui::ClipboardData& data) {
-  switch (clipboard_history_util::CalculateMainFormat(data).value()) {
+std::u16string DetermineDisplayText(const ClipboardHistoryItem& item) {
+  switch (item.main_format()) {
     case ui::ClipboardInternalFormat::kPng:
       return l10n_util::GetStringUTF16(IDS_CLIPBOARD_MENU_IMAGE);
     case ui::ClipboardInternalFormat::kText:
-      return base::UTF8ToUTF16(data.text());
+      return base::UTF8ToUTF16(item.data().text());
     case ui::ClipboardInternalFormat::kHtml:
       // Show plain text if it exists. Otherwise, show the placeholder.
-      if (!data.text().empty()) {
-        return base::UTF8ToUTF16(data.text());
+      if (!item.data().text().empty()) {
+        return base::UTF8ToUTF16(item.data().text());
       }
 
       return l10n_util::GetStringUTF16(IDS_CLIPBOARD_MENU_HTML);
     case ui::ClipboardInternalFormat::kSvg:
-      return base::UTF8ToUTF16(data.svg_data());
+      return base::UTF8ToUTF16(item.data().svg_data());
     case ui::ClipboardInternalFormat::kRtf:
       return l10n_util::GetStringUTF16(IDS_CLIPBOARD_MENU_RTF_CONTENT);
     case ui::ClipboardInternalFormat::kBookmark:
-      return base::UTF8ToUTF16(data.bookmark_title());
+      return base::UTF8ToUTF16(item.data().bookmark_title());
     case ui::ClipboardInternalFormat::kWeb:
       return l10n_util::GetStringUTF16(IDS_CLIPBOARD_MENU_WEB_SMART_PASTE);
     case ui::ClipboardInternalFormat::kFilenames:
     case ui::ClipboardInternalFormat::kCustom:
       // Currently, the only supported type of custom data is file system data.
-      return DetermineDisplayTextForFileSystemData(data);
+      return DetermineDisplayTextForFileSystemData(item.data());
   }
 }
 
@@ -114,8 +112,14 @@ ClipboardHistoryItem::ClipboardHistoryItem(ui::ClipboardData data)
       data_(std::move(data)),
       time_copied_(base::Time::Now()),
       main_format_(clipboard_history_util::CalculateMainFormat(data_).value()),
-      display_format_(CalculateDisplayFormat(main_format_, data_)),
-      display_text_(DetermineDisplayText(data_)) {}
+      display_format_(CalculateDisplayFormat(*this)),
+      display_text_(DetermineDisplayText(*this)) {
+  if (display_format_ == DisplayFormat::kHtml) {
+    // The `ClipboardHistoryResourceManager` will update this preview once an
+    // image model is rendered.
+    html_preview_ = clipboard_history_util::GetHtmlPreviewPlaceholder();
+  }
+}
 
 ClipboardHistoryItem::ClipboardHistoryItem(const ClipboardHistoryItem&) =
     default;
@@ -147,15 +151,9 @@ absl::optional<std::string> ClipboardHistoryItem::GetImageDataUrl() const {
       }
       break;
     case DisplayFormat::kHtml: {
-      // TODO(b/267677307): Make cached image an item field, set and updated
-      // directly by the resource manager.
-      const SkBitmap& bitmap = *(Shell::Get()
-                                     ->clipboard_history_controller()
-                                     ->resource_manager()
-                                     ->GetImageModel(*this)
-                                     .GetImage()
-                                     .ToSkBitmap());
-      maybe_url = webui::GetBitmapDataUrl(bitmap);
+      DCHECK(html_preview_.has_value());
+      maybe_url =
+          webui::GetBitmapDataUrl(*html_preview_->GetImage().ToSkBitmap());
       break;
     }
     case DisplayFormat::kFile: {

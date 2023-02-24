@@ -73,6 +73,9 @@ class ArcNetHostImpl : public KeyedService,
                      CreateNetworkCallback callback) override;
   void ForgetNetwork(const std::string& guid,
                      ForgetNetworkCallback callback) override;
+  void UpdateWifiNetwork(const std::string& guid,
+                         mojom::WifiConfigurationPtr cfg,
+                         UpdateWifiNetworkCallback callback) override;
   void StartConnect(const std::string& guid,
                     StartConnectCallback callback) override;
   void StartDisconnect(const std::string& guid,
@@ -90,6 +93,9 @@ class ArcNetHostImpl : public KeyedService,
   void StartLohs(mojom::LohsConfigPtr config,
                  StartLohsCallback callback) override;
   void StopLohs() override;
+  void RequestPasspointAppApproval(
+      mojom::PasspointApprovalRequestPtr request,
+      RequestPasspointAppApprovalCallback callback) override;
 
   // Overridden from ash::NetworkStateHandlerObserver.
   void ScanCompleted(const ash::DeviceState* /*unused*/) override;

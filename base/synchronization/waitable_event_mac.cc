@@ -11,7 +11,6 @@
 #include <limits>
 #include <memory>
 
-#include "base/debug/activity_tracker.h"
 #include "base/files/scoped_file.h"
 #include "base/mac/dispatch_source_mach.h"
 #include "base/mac/mac_util.h"
@@ -151,9 +150,6 @@ size_t WaitableEvent::WaitMany(WaitableEvent** raw_waitables, size_t count) {
   DCHECK(count) << "Cannot wait on no events";
   internal::ScopedBlockingCallWithBaseSyncPrimitives scoped_blocking_call(
       FROM_HERE, BlockingType::MAY_BLOCK);
-  // Record an event (the first) that this thread is blocking upon.
-  debug::ScopedEventWaitActivity event_activity(raw_waitables[0]);
-
   // On macOS 10.11+, using Mach port sets may cause system instability, per
   // https://crbug.com/756102. On macOS 10.12+, a kqueue can be used
   // instead to work around that. On macOS 10.9 and 10.10, kqueue only works

@@ -100,6 +100,7 @@
 #import "ios/chrome/browser/ui/commands/qr_scanner_commands.h"
 #import "ios/chrome/browser/ui/commands/show_signin_command.h"
 #import "ios/chrome/browser/ui/commands/snackbar_commands.h"
+#import "ios/chrome/browser/ui/credential_provider_promo/credential_provider_promo_scene_agent.h"
 #import "ios/chrome/browser/ui/default_promo/default_browser_promo_non_modal_scheduler.h"
 #import "ios/chrome/browser/ui/default_promo/default_browser_utils.h"
 #import "ios/chrome/browser/ui/first_run/orientation_limiting_navigation_controller.h"
@@ -380,6 +381,7 @@ void InjectNTP(Browser* browser) {
          applicationCommandEndpoint:self
         browsingDataCommandEndpoint:self.browsingDataCommandsHandler
                      regularBrowser:self.mainInterface.browser
+                    inactiveBrowser:self.mainInterface.inactiveBrowser
                    incognitoBrowser:self.incognitoInterface.browser];
     tabGridCoordinator.delegate = self;
     _mainCoordinator = tabGridCoordinator;
@@ -872,6 +874,14 @@ void InjectNTP(Browser* browser) {
   // Create and start the BVC.
   [self.browserViewWrangler createMainCoordinatorAndInterface];
 
+  // Create the inactive browser. Should be called after the main browser is
+  // created (in -createMainBrowser) and restored (in
+  // -createMainCoordinatorAndInterface). Even if the feature is disabled, we
+  // always create the inactive browser to restore any element that have been
+  // saved in the past. To avoid any tab disappearance from user perspective, we
+  // move all tabs accordingly.
+  [self.browserViewWrangler createInactiveBrowser];
+
   id<ApplicationCommands> applicationCommandsHandler =
       HandlerForProtocol(mainCommandDispatcher, ApplicationCommands);
   id<PolicyChangeCommands> policyChangeCommandsHandler =
@@ -961,6 +971,15 @@ void InjectNTP(Browser* browser) {
                      initWithPromosManager:GetApplicationContext()
                                                ->GetPromosManager()]];
   }
+
+  // Do not gate by feature flag so it can run for enabled -> disabled
+  // scenarios.
+  [self.sceneState
+      addAgent:[[CredentialProviderPromoSceneAgent alloc]
+                   initWithPromosManager:GetApplicationContext()
+                                             ->GetPromosManager()
+                             prefService:self.sceneState.appState
+                                             .mainBrowserState->GetPrefs()]];
 }
 
 // Determines the mode (normal or incognito) the initial UI should be in.

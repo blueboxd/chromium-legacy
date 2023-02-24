@@ -15,7 +15,9 @@
 #import "base/check.h"
 #import "base/hash/hash.h"
 #import "base/i18n/string_compare.h"
+#import "base/metrics/user_metrics.h"
 #import "base/metrics/user_metrics_action.h"
+#import "base/notreached.h"
 #import "base/ranges/algorithm.h"
 #import "base/strings/string_number_conversions.h"
 #import "base/strings/sys_string_conversions.h"
@@ -108,6 +110,19 @@ NSString* TitleForBookmarkNode(const BookmarkNode* node) {
   return title;
 }
 
+BookmarkModelType GetBookmarkModelType(
+    const bookmarks::BookmarkNode* bookmark_node,
+    bookmarks::BookmarkModel* profile_model,
+    bookmarks::BookmarkModel* account_model) {
+  DCHECK(profile_model);
+  if (bookmark_node->HasAncestor(profile_model->root_node())) {
+    return BookmarkModelType::kProfile;
+  }
+  DCHECK(account_model &&
+         bookmark_node->HasAncestor(account_model->root_node()));
+  return BookmarkModelType::kAccount;
+}
+
 #pragma mark - Updating Bookmarks
 
 // Deletes all subnodes of `node`, including `node`, that are in `bookmarks`.
@@ -128,11 +143,14 @@ void DeleteBookmarks(const std::set<const BookmarkNode*>& bookmarks,
 // the user presses the undo button, and the UndoManagerWrapper allows the undo
 // to go through.
 MDCSnackbarMessage* CreateUndoToastWithWrapper(UndoManagerWrapper* wrapper,
-                                               NSString* text) {
+                                               NSString* text,
+                                               std::string user_action) {
+  DCHECK(!user_action.empty());
   // Create the block that will be executed if the user taps the undo button.
   MDCSnackbarMessageAction* action = [[MDCSnackbarMessageAction alloc] init];
   action.handler = ^{
     if (![wrapper hasUndoManagerChanged]) {
+      base::RecordAction(base::UserMetricsAction(user_action.c_str()));
       [wrapper undo];
     }
   };
@@ -197,7 +215,10 @@ MDCSnackbarMessage* CreateOrUpdateBookmarkWithUndoToast(
   NSString* text =
       l10n_util::GetNSString((node) ? IDS_IOS_BOOKMARK_NEW_BOOKMARK_UPDATED
                                     : IDS_IOS_BOOKMARK_NEW_BOOKMARK_CREATED);
-  return CreateUndoToastWithWrapper(wrapper, text);
+  const char* user_action = (node)
+                                ? "MobileBookmarkManagerUpdatedBookmarkUndone"
+                                : "MobileBookmarkManagerAddedBookmarkUndone";
+  return CreateUndoToastWithWrapper(wrapper, text, user_action);
 }
 
 MDCSnackbarMessage* CreateBookmarkAtPositionWithUndoToast(
@@ -224,7 +245,8 @@ MDCSnackbarMessage* CreateBookmarkAtPositionWithUndoToast(
 
   NSString* text =
       l10n_util::GetNSString(IDS_IOS_BOOKMARK_NEW_BOOKMARK_CREATED);
-  return CreateUndoToastWithWrapper(wrapper, text);
+  return CreateUndoToastWithWrapper(wrapper, text,
+                                    "MobileBookmarkManagerBookmarkAddedUndone");
 }
 
 MDCSnackbarMessage* UpdateBookmarkPositionWithUndoToast(
@@ -256,7 +278,8 @@ MDCSnackbarMessage* UpdateBookmarkPositionWithUndoToast(
 
   NSString* text =
       l10n_util::GetNSString(IDS_IOS_BOOKMARK_NEW_BOOKMARK_UPDATED);
-  return CreateUndoToastWithWrapper(wrapper, text);
+  return CreateUndoToastWithWrapper(wrapper, text,
+                                    "MobileBookmarkManagerMoveToFolderUndone");
 }
 
 void DeleteBookmarks(const std::set<const BookmarkNode*>& bookmarks,
@@ -282,7 +305,6 @@ MDCSnackbarMessage* DeleteBookmarksWithUndoToast(
   [wrapper resetUndoManagerChanged];
 
   NSString* text = nil;
-
   if (node_count == 1) {
     text = l10n_util::GetNSString(IDS_IOS_BOOKMARK_NEW_SINGLE_BOOKMARK_DELETE);
   } else {
@@ -290,8 +312,8 @@ MDCSnackbarMessage* DeleteBookmarksWithUndoToast(
         l10n_util::GetNSStringF(IDS_IOS_BOOKMARK_NEW_MULTIPLE_BOOKMARK_DELETE,
                                 base::NumberToString16(node_count));
   }
-
-  return CreateUndoToastWithWrapper(wrapper, text);
+  return CreateUndoToastWithWrapper(wrapper, text,
+                                    "MobileBookmarkManagerDeletedEntryUndone");
 }
 
 bool MoveBookmarks(std::set<const BookmarkNode*> bookmarks,
@@ -342,8 +364,8 @@ MDCSnackbarMessage* MoveBookmarksWithUndoToast(
     text = l10n_util::GetNSStringF(IDS_IOS_BOOKMARK_NEW_MULTIPLE_BOOKMARK_MOVE,
                                    base::NumberToString16(node_count));
   }
-
-  return CreateUndoToastWithWrapper(wrapper, text);
+  return CreateUndoToastWithWrapper(wrapper, text,
+                                    "MobileBookmarkManagerMoveToFolderUndone");
 }
 
 #pragma mark - Useful bookmark manipulation.

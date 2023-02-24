@@ -114,8 +114,8 @@ BASE_FEATURE(kExtensionSidePanelIntegration,
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // File Handlers.
-BASE_FEATURE(kWebFileHandlers,
-             "WebFileHandlers",
+BASE_FEATURE(kExtensionWebFileHandlers,
+             "ExtensionWebFileHandlers",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // IsValidSourceUrl enforcement for ExtensionHostMsg_OpenChannelToExtension IPC.
@@ -154,6 +154,13 @@ BASE_FEATURE(kMinimumMV3CSPWithInlineSpeculationRules,
 // https://chromium.googlesource.com/chromium/src/+/master/docs/telemetry_extension/README.md.
 BASE_FEATURE(kTelemetryExtensionPendingApprovalApi,
              "TelemetryExtensionPendingApprovalApi",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// If enabled, user permitted sites are granted access. This should only happen
+// if kExtensionsMenuAccessControl is enabled, since it's the only entry point
+// where user could set permitted sites.
+BASE_FEATURE(kExtensionsMenuAccessControlWithPermittedSites,
+             "ExtensionsMenuAccessControlWithPermittedSitesName",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 }  // namespace extensions_features

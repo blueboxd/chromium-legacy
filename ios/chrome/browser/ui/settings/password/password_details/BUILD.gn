@@ -35,6 +35,7 @@ source_set("password_details") {
     "//ios/chrome/browser/ui/alert_coordinator",
     "//ios/chrome/browser/ui/commands",
     "//ios/chrome/browser/ui/coordinators:chrome_coordinators",
+    "//ios/chrome/browser/ui/settings/password:common",
     "//ios/chrome/browser/ui/settings/utils",
     "//ios/chrome/browser/ui/table_view",
     "//ios/chrome/browser/ui/util",
@@ -99,6 +100,15 @@ source_set("password_details_ui") {
     "//ios/chrome/common/ui/util",
     "//ui/base",
   ]
+}
+
+source_set("password_details_table_view_constants") {
+  configs += [ "//build/config/compiler:enable_arc" ]
+  sources = [
+    "password_details_table_view_constants.h",
+    "password_details_table_view_constants.mm",
+  ]
+  deps = [ "//ios/chrome/browser/ui/list_model" ]
 }
 
 source_set("unit_tests") {

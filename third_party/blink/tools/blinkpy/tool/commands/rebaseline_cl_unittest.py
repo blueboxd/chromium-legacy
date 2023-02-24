@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import contextlib
+import io
 import json
 import logging
 import optparse
@@ -14,6 +16,7 @@ from blinkpy.common.net.results_fetcher import Build
 from blinkpy.common.net.web_test_results import WebTestResults
 from blinkpy.common.path_finder import RELATIVE_WEB_TESTS
 from blinkpy.common.system.log_testing import LoggingTestCase
+from blinkpy.tool.mock_tool import MockBlinkTool
 from blinkpy.tool.commands.rebaseline import TestBaselineSet
 from blinkpy.tool.commands.rebaseline_cl import RebaselineCL
 from blinkpy.tool.commands.rebaseline_unittest import BaseTestCase
@@ -26,7 +29,7 @@ from unittest import mock
     'blinkpy.common.net.rpc.BuildbucketClient.execute_batch', lambda self: [])
 class RebaselineCLTest(BaseTestCase, LoggingTestCase):
 
-    command_constructor = RebaselineCL
+    command_constructor = lambda self: RebaselineCL(MockBlinkTool())
 
     def setUp(self):
         BaseTestCase.setUp(self)
@@ -668,14 +671,13 @@ class RebaselineCLTest(BaseTestCase, LoggingTestCase):
                               '5000',
                               '--step-name',
                               'blink_web_tests (with patch)',
-                          ]],
-                          [[
-                              'python',
-                              'echo',
-                              'optimize-baselines',
-                              '--no-manifest-update',
-                              'one/flaky-fail.html',
                           ]]])
+        self.tool.main.assert_called_once_with([
+            'echo',
+            'optimize-baselines',
+            '--no-manifest-update',
+            'one/flaky-fail.html',
+        ])
 
     def test_rebaseline_command_invocations_multiple_steps(self):
         """Test the rebaseline tool handles multiple steps on the same builder.
@@ -741,10 +743,12 @@ class RebaselineCLTest(BaseTestCase, LoggingTestCase):
                 'not_site_per_process_blink_web_tests (with patch)'
             ],
         ])
-        self.assertEqual(self.tool.executive.calls[2], [[
-            'python', 'echo', 'optimize-baselines', '--no-manifest-update',
-            'one/text-fail.html'
-        ]])
+        self.tool.main.assert_called_once_with([
+            'echo',
+            'optimize-baselines',
+            '--no-manifest-update',
+            'one/text-fail.html',
+        ])
 
     def test_execute_missing_results_with_no_fill_missing_prompts(self):
         self.tool.results_fetcher.set_results(
@@ -887,3 +891,16 @@ class RebaselineCLTest(BaseTestCase, LoggingTestCase):
         ])
         self.assertEqual(exit_code, 0)
         self.assertEqual(self.command.selected_try_bots, frozenset(builders))
+
+    def test_invalid_explicit_builder_list(self):
+        message = io.StringIO()
+        with contextlib.redirect_stderr(message):
+            with self.assertRaises(SystemExit):
+                self.command.main(['--builders=does-not-exist'])
+        self.assertRegex(message.getvalue(),
+                         "'does-not-exist' is not a try builder")
+        self.assertRegex(message.getvalue(), 'MOCK Try Linux\n')
+        self.assertRegex(message.getvalue(),
+                         'MOCK Try Linux \(CQ duplicate\)\n')
+        self.assertRegex(message.getvalue(), 'MOCK Try Mac\n')
+        self.assertRegex(message.getvalue(), 'MOCK Try Win\n')

@@ -325,7 +325,7 @@ TEST_F(DriveFsPinManagerTest, Add) {
     EXPECT_EQ(progress.pinned_bytes, 0);
     EXPECT_EQ(progress.bytes_to_pin, 0);
     EXPECT_EQ(progress.required_space, 0);
-    EXPECT_EQ(progress.skipped_files, 0);
+    EXPECT_EQ(progress.skipped_items, 0);
   }
 
   const Id id1 = Id(101);
@@ -399,7 +399,7 @@ TEST_F(DriveFsPinManagerTest, Add) {
     EXPECT_EQ(progress.required_space, 698249216);
     EXPECT_EQ(progress.syncing_files, 0);
     EXPECT_EQ(progress.files_to_pin, 1);
-    EXPECT_EQ(progress.skipped_files, 0);
+    EXPECT_EQ(progress.skipped_items, 0);
   }
 
   // Add a second item, but which is already pinned this time.
@@ -437,7 +437,7 @@ TEST_F(DriveFsPinManagerTest, Add) {
     EXPECT_EQ(progress.required_space, 777216000);
     EXPECT_EQ(progress.syncing_files, 1);
     EXPECT_EQ(progress.files_to_pin, 2);
-    EXPECT_EQ(progress.skipped_files, 0);
+    EXPECT_EQ(progress.skipped_items, 0);
   }
 
   // Add a third item, but which is not pinned yet, although already available
@@ -476,7 +476,7 @@ TEST_F(DriveFsPinManagerTest, Add) {
     EXPECT_EQ(progress.required_space, 777216000);
     EXPECT_EQ(progress.syncing_files, 1);
     EXPECT_EQ(progress.files_to_pin, 3);
-    EXPECT_EQ(progress.skipped_files, 0);
+    EXPECT_EQ(progress.skipped_items, 0);
   }
 
   // Try to add a forth item, but which is both pinned and already available
@@ -515,7 +515,7 @@ TEST_F(DriveFsPinManagerTest, Add) {
     EXPECT_EQ(progress.required_space, 777216000);
     EXPECT_EQ(progress.syncing_files, 1);
     EXPECT_EQ(progress.files_to_pin, 3);
-    EXPECT_EQ(progress.skipped_files, 1);
+    EXPECT_EQ(progress.skipped_items, 1);
   }
 }
 
@@ -774,19 +774,22 @@ TEST_F(DriveFsPinManagerTest, Remove) {
 
   // Put in place a file to track.
   {
-    const auto [it, ok] = manager.files_to_track_.try_emplace(
-        id1, PinManager::File{.path = path1,
-                              .transferred = 1200,
-                              .total = 3000,
-                              .pinned = false,
-                              .in_progress = true});
-    ASSERT_TRUE(ok);
+    ASSERT_TRUE(manager.files_to_track_
+                    .try_emplace(id1, PinManager::File{.path = path1,
+                                                       .transferred = 1200,
+                                                       .total = 3000,
+                                                       .pinned = false,
+                                                       .in_progress = true})
+                    .second);
+    ASSERT_TRUE(manager.files_to_pin_.insert(id1).second);
   }
 
+  EXPECT_THAT(manager.files_to_pin_, UnorderedElementsAre(id1));
   EXPECT_THAT(manager.files_to_track_, SizeIs(1));
 
   // Remove file while setting size to zero.
   EXPECT_TRUE(manager.Remove(id1, path2, 0));
+  EXPECT_THAT(manager.files_to_pin_, IsEmpty());
   EXPECT_THAT(manager.files_to_track_, IsEmpty());
 
   {

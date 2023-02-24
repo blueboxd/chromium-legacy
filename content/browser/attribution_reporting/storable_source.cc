@@ -14,8 +14,8 @@
 #include "components/attribution_reporting/aggregation_keys.h"
 #include "components/attribution_reporting/filters.h"
 #include "components/attribution_reporting/source_registration.h"
+#include "components/attribution_reporting/source_type.mojom-forward.h"
 #include "components/attribution_reporting/suitable_origin.h"
-#include "content/browser/attribution_reporting/attribution_source_type.h"
 #include "content/browser/attribution_reporting/attribution_utils.h"
 #include "content/browser/attribution_reporting/common_source_info.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -34,7 +34,7 @@ StorableSource::StorableSource(
     attribution_reporting::SourceRegistration reg,
     base::Time source_time,
     attribution_reporting::SuitableOrigin source_origin,
-    AttributionSourceType source_type,
+    attribution_reporting::mojom::SourceType source_type,
     bool is_within_fenced_frame)
     : registration_json_(
           SerializeAttributionJson(reg.ToJson(), /*pretty_print=*/true)),
@@ -45,18 +45,10 @@ StorableSource::StorableSource(
           std::move(reporting_origin),
           source_time,
           CommonSourceInfo::GetExpiryTime(reg.expiry, source_time, source_type),
-          reg.event_report_window
-              ? absl::make_optional(
-                    CommonSourceInfo::GetExpiryTime(reg.event_report_window,
-                                                    source_time,
-                                                    source_type))
-              : absl::nullopt,
-          reg.aggregatable_report_window
-              ? absl::make_optional(CommonSourceInfo::GetExpiryTime(
-                    reg.aggregatable_report_window,
-                    source_time,
-                    source_type))
-              : absl::nullopt,
+          CommonSourceInfo::GetReportWindowTime(reg.event_report_window,
+                                                source_time),
+          CommonSourceInfo::GetReportWindowTime(reg.aggregatable_report_window,
+                                                source_time),
           source_type,
           reg.priority,
           std::move(reg.filter_data),

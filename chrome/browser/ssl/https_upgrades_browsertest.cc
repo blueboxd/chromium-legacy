@@ -1036,10 +1036,8 @@ IN_PROC_BROWSER_TEST_P(HttpsUpgradesBrowserTest, PreferHstsOverHttpsFirstMode) {
 // Regression test for crbug.com/1272781. Previously, performing back/forward
 // navigations around the HTTPS-First Mode interstitial could cause history
 // entries to dropped.
-// TODO(crbug.com/1272781): Broken when BFCache is disabled (like on the
-// linux-bfcache-rel bots).
-IN_PROC_BROWSER_TEST_F(HttpsUpgradesBrowserTest,
-                       DISABLED_InterstitialFallbackMaintainsHistory) {
+IN_PROC_BROWSER_TEST_P(HttpsUpgradesBrowserTest,
+                       InterstitialFallbackMaintainsHistory) {
   // This test only applies to HTTPS-First Mode.
   if (!IsHttpInterstitialEnabled()) {
     return;
@@ -1088,18 +1086,16 @@ IN_PROC_BROWSER_TEST_F(HttpsUpgradesBrowserTest,
   // upgraded to HTTPS and fail, triggering the HTTPS-First Mode
   // interstitial.
   content::NavigateToURLBlockUntilNavigationsComplete(contents,
-                                                      downgrading_http_url, 2);
+                                                      downgrading_http_url, 1);
   EXPECT_EQ(downgrading_http_url, contents->GetLastCommittedURL());
   EXPECT_TRUE(chrome_browser_interstitials::IsShowingHttpsFirstModeInterstitial(
       contents));
 
   // Simulate clicking the browser "back" button.
-  // TODO(crbug.com/1394910): The incorrect WARNING security state is retained
-  // from the interstitial page.
   EXPECT_TRUE(content::HistoryGoBack(contents));
   EXPECT_EQ(good_https_url, contents->GetLastCommittedURL());
   auto* helper = SecurityStateTabHelper::FromWebContents(contents);
-  EXPECT_EQ(security_state::WARNING, helper->GetSecurityLevel());
+  EXPECT_EQ(security_state::SECURE, helper->GetSecurityLevel());
 
   // Simulate clicking the browser "forward" button. The HistoryGoForward()
   // call returns `false` because it is an error page.
@@ -1123,6 +1119,89 @@ IN_PROC_BROWSER_TEST_F(HttpsUpgradesBrowserTest,
   EXPECT_TRUE(chrome_browser_interstitials::IsShowingHttpsFirstModeInterstitial(
       contents));
   EXPECT_TRUE(contents->GetController().CanGoBack());
+}
+
+// Tests that if the HttpAllowlist enterprise policy is set, then HTTPS upgrades
+// are skipped for hosts in the allowlist. Includes simple hostname, wildcard
+// hostname pattern, and bare IP address cases.
+IN_PROC_BROWSER_TEST_P(HttpsUpgradesBrowserTest,
+                       EnterpriseAllowlistDisablesUpgrades) {
+  content::WebContents* contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+
+  // Without any policy allowlist, navigate to HTTP URL on foo.test. It *should*
+  // get upgraded to HTTPS.
+  auto http_url = http_server()->GetURL("foo.test", "/simple.html");
+  auto https_url = https_server()->GetURL("foo.test", "/simple.html");
+  EXPECT_FALSE(content::NavigateToURL(contents, http_url));
+  EXPECT_EQ(https_url, contents->GetLastCommittedURL());
+
+  // Artificially add the pref that gets mapped from the enterprise policy.
+  auto* profile = Profile::FromBrowserContext(contents->GetBrowserContext());
+  auto* prefs = profile->GetPrefs();
+  base::Value::List allowlist;
+  allowlist.Append("foo.test");
+  allowlist.Append("[*.]bar.test");
+  allowlist.Append(http_server()->GetIPLiteralString());
+  // These cases should not work, but the policy->pref mapping won't immediately
+  // reject them.
+  allowlist.Append("[*]");
+  allowlist.Append("*");
+  prefs->SetList(prefs::kHttpAllowlist, std::move(allowlist));
+
+  // Navigate to HTTP URL on foo.test. It should not get upgraded to HTTPS and
+  // no interstitial should be shown.
+  http_url = http_server()->GetURL("foo.test", "/simple.html");
+  https_url = https_server()->GetURL("foo.test", "/simple.html");
+  EXPECT_TRUE(content::NavigateToURL(contents, http_url));
+  EXPECT_EQ(http_url, contents->GetLastCommittedURL());
+  EXPECT_FALSE(
+      chrome_browser_interstitials::IsShowingHttpsFirstModeInterstitial(
+          contents));
+
+  // Navigate to HTTP URL on bar.test. Same result.
+  http_url = http_server()->GetURL("bar.test", "/simple.html");
+  https_url = https_server()->GetURL("bar.test", "/simple.html");
+  EXPECT_TRUE(content::NavigateToURL(contents, http_url));
+  EXPECT_EQ(http_url, contents->GetLastCommittedURL());
+  EXPECT_FALSE(
+      chrome_browser_interstitials::IsShowingHttpsFirstModeInterstitial(
+          contents));
+
+  // Navigate to HTTP URL on bar.bar.test. Same result as subdomain wildcard
+  // was specified.
+  http_url = http_server()->GetURL("bar.bar.test", "/simple.html");
+  https_url = https_server()->GetURL("bar.bar.test", "/simple.html");
+  EXPECT_TRUE(content::NavigateToURL(contents, http_url));
+  EXPECT_EQ(http_url, contents->GetLastCommittedURL());
+  EXPECT_FALSE(
+      chrome_browser_interstitials::IsShowingHttpsFirstModeInterstitial(
+          contents));
+
+  // Navigate to HTTP URL on foo.foo.test. Subdomains of foo.test should not be
+  // considered as being in the allowlist as no wildcard was specified. This
+  // should get upgraded to HTTPS.
+  http_url = http_server()->GetURL("foo.foo.test", "/simple.html");
+  https_url = https_server()->GetURL("foo.foo.test", "/simple.html");
+  EXPECT_FALSE(content::NavigateToURL(contents, http_url));
+  EXPECT_EQ(https_url, contents->GetLastCommittedURL());
+
+  // Navigate to HTTP URL on baz.test, which is not on the allowlist. Should get
+  // upgraded to HTTPS.
+  http_url = http_server()->GetURL("baz.test", "/simple.html");
+  https_url = https_server()->GetURL("baz.test", "/simple.html");
+  EXPECT_FALSE(content::NavigateToURL(contents, http_url));
+  EXPECT_EQ(https_url, contents->GetLastCommittedURL());
+
+  // Navigate to HTTP URL on the HTTP test server's IP address. It should not
+  // get upgraded ot HTTPS and no interstitial should be shown.
+  http_url = http_server()->GetURL("/simple.html");
+  https_url = https_server()->GetURL("/simple.html");
+  EXPECT_TRUE(content::NavigateToURL(contents, http_url));
+  EXPECT_EQ(http_url, contents->GetLastCommittedURL());
+  EXPECT_FALSE(
+      chrome_browser_interstitials::IsShowingHttpsFirstModeInterstitial(
+          contents));
 }
 
 // A simple test fixture that ensures the kHttpsFirstModeV2 feature is enabled

@@ -2934,7 +2934,8 @@ bool LocalFrameView::PaintTree(PaintBenchmarkMode benchmark_mode) {
   bool repainted = false;
   bool needs_clear_repaint_flags = false;
 
-  PaintChunkSubset previous_chunks(paint_controller_->GetPaintArtifactShared());
+  scoped_refptr<const PaintArtifact> previous_artifact =
+      paint_controller_->GetPaintArtifactShared();
 
   PaintController::ScopedBenchmarkMode scoped_benchmark(*paint_controller_,
                                                         benchmark_mode);
@@ -2973,7 +2974,7 @@ bool LocalFrameView::PaintTree(PaintBenchmarkMode benchmark_mode) {
     repainted = true;
     if (paint_artifact_compositor_) {
       paint_artifact_compositor_->SetNeedsFullUpdateAfterPaintIfNeeded(
-          previous_chunks, paint_controller_->GetPaintArtifactShared());
+          *previous_artifact, paint_controller_->GetPaintArtifact());
     }
   }
 
@@ -3137,7 +3138,7 @@ void LocalFrameView::UpdateStyleAndLayoutIfNeededRecursive() {
 
   // WebView plugins need to update regardless of whether the
   // LayoutEmbeddedObject that owns them needed layout.
-  // TODO(schenney): This currently runs the entire lifecycle on plugin
+  // TODO(rendering-core) This currently runs the entire lifecycle on plugin
   // WebViews. We should have a way to only run these other Documents to the
   // same lifecycle stage as this frame.
   for (const auto& plugin : plugins_) {

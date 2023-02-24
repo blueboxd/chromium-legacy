@@ -580,6 +580,18 @@ const FeatureEntry::FeatureVariation
          nullptr},
 };
 
+const FeatureEntry::FeatureParam kIOSEditMenuPartialTranslateNoIncognito[] = {
+    {kIOSEditMenuPartialTranslateNoIncognitoParam, "true"}};
+const FeatureEntry::FeatureVariation kIOSEditMenuPartialTranslateVariations[] =
+    {{"Disable on incognito", kIOSEditMenuPartialTranslateNoIncognito,
+      std::size(kIOSEditMenuPartialTranslateNoIncognito), nullptr}};
+
+const FeatureEntry::FeatureParam kAddToHomeScreenDisableIncognito[] = {
+    {kAddToHomeScreenDisableIncognitoParam, "true"}};
+const FeatureEntry::FeatureVariation kAddToHomeScreenVariations[] = {
+    {"Disable on incognito", kAddToHomeScreenDisableIncognito,
+     std::size(kAddToHomeScreenDisableIncognito), nullptr}};
+
 // To add a new entry, add to the end of kFeatureEntries. There are four
 // distinct types of entries:
 // . ENABLE_DISABLE_VALUE: entry is either enabled, disabled, or uses the
@@ -632,7 +644,8 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kShowAutofillTypePredictionsName,
      flag_descriptions::kShowAutofillTypePredictionsDescription,
      flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(autofill::features::kAutofillShowTypePredictions)},
+     FEATURE_VALUE_TYPE(
+         autofill::features::test::kAutofillShowTypePredictions)},
     {"autofill-account-profiles-union-view",
      flag_descriptions::kAutofillAccountProfilesUnionViewName,
      flag_descriptions::kAutofillAccountProfilesUnionViewDescription,
@@ -901,10 +914,6 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
     {"use-sf-symbols", flag_descriptions::kUseSFSymbolsName,
      flag_descriptions::kUseSFSymbolsDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(kUseSFSymbols)},
-    {"ios-webpage-intent-annotations",
-     flag_descriptions::kEnableWebPageAnnotationsName,
-     flag_descriptions::kEnableWebPageAnnotationsDescription, flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(web::features::kEnableWebPageAnnotations)},
     {"enable-password-grouping", flag_descriptions::kPasswordsGroupingName,
      flag_descriptions::kPasswordsGroupingDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(password_manager::features::kPasswordsGrouping)},
@@ -1350,11 +1359,18 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
     {"ios-edit-menu-partial-translate",
      flag_descriptions::kIOSEditMenuPartialTranslateName,
      flag_descriptions::kIOSEditMenuPartialTranslateDescription,
-     flags_ui::kOsIos, FEATURE_VALUE_TYPE(kIOSEditMenuPartialTranslate)},
+     flags_ui::kOsIos,
+     FEATURE_WITH_PARAMS_VALUE_TYPE(kIOSEditMenuPartialTranslate,
+                                    kIOSEditMenuPartialTranslateVariations,
+                                    "IOSEditMenuPartialTranslate")},
     {"ios-custom-browser-edit-menu",
      flag_descriptions::kIOSCustomBrowserEditMenuName,
      flag_descriptions::kIOSCustomBrowserEditMenuDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(kIOSCustomBrowserEditMenu)},
+    {"notification-settings-menu-item",
+     flag_descriptions::kNotificationSettingsMenuItemName,
+     flag_descriptions::kNotificationSettingsMenuItemDescription,
+     flags_ui::kOsIos, FEATURE_VALUE_TYPE(kNotificationSettingsMenuItem)},
     {"password-notes", flag_descriptions::kPasswordNotesWithBackupName,
      flag_descriptions::kPasswordNotesWithBackupDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(syncer::kPasswordNotesWithBackup)},
@@ -1362,6 +1378,19 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kFeedExperimentTaggingName,
      flag_descriptions::kFeedExperimentTaggingDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(kEnableFeedExperimentTagging)},
+    {"spotlight-reading-list-source",
+     flag_descriptions::kSpotlightReadingListSourceName,
+     flag_descriptions::kSpotlightReadingListSourceDescription,
+     flags_ui::kOsIos, FEATURE_VALUE_TYPE(kSpotlightReadingListSource)},
+    {"consistency-new-account-interface",
+     flag_descriptions::kConsistencyNewAccountInterfaceName,
+     flag_descriptions::kConsistencyNewAccountInterfaceDescription,
+     flags_ui::kOsIos, FEATURE_VALUE_TYPE(kConsistencyNewAccountInterface)},
+    {"add-to-home-screen", flag_descriptions::kAddToHomeScreenName,
+     flag_descriptions::kAddToHomeScreenDescription, flags_ui::kOsIos,
+     FEATURE_WITH_PARAMS_VALUE_TYPE(kAddToHomeScreen,
+                                    kAddToHomeScreenVariations,
+                                    "IOSEditMenuPartialTranslate")},
 };
 
 bool SkipConditionalFeatureEntry(const flags_ui::FeatureEntry& entry) {
@@ -1664,6 +1693,10 @@ void SetFeatureEntryEnabled(flags_ui::FlagsStorage* flags_storage,
 
 void ResetAllFlags(flags_ui::FlagsStorage* flags_storage) {
   GetGlobalFlagsState().ResetAllFlags(flags_storage);
+}
+
+bool IsRestartNeededToCommitChanges() {
+  return GetGlobalFlagsState().IsRestartNeededToCommitChanges();
 }
 
 namespace testing {

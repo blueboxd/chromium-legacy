@@ -819,8 +819,8 @@
   <message name="IDS_FILE_BROWSER_QUEUED_LABEL" desc="Queued label.">
     Queued
   </message>
-  <message name="IDS_FILE_BROWSER_IN_PROGRESS_LABEL" desc="In progress label.">
-    In progress
+  <message name="IDS_FILE_BROWSER_IN_PROGRESS_LABEL" desc="Syncing in progress label.">
+    Syncing
   </message>
   <message name="IDS_FILE_BROWSER_DISMISS_LABEL" desc="Dismiss label.">
     Dismiss
@@ -857,6 +857,9 @@
   </message>
   <message name="IDS_FILE_BROWSER_SEARCH_NO_MATCHING_RESULTS_DESC" desc="Text displayed in the files under the title when a search has no results">
     Try another search
+  </message>
+  <message name="IDS_FILE_BROWSER_SEARCH_V2_EDUCATION_NUDGE" desc="Educational text that appears next to the search query to inform the user about existence of new search features.">
+    New search features available
   </message>
 
   <message name="IDS_FILE_BROWSER_SEARCH_A11Y_CLEAR_SEARCH" desc="Text spoken by ChromeVox/screen reader when a search term has been cleared">
@@ -903,6 +906,9 @@
   </message>
   <message name="IDS_FILE_BROWSER_SEARCH_OPTIONS_TYPES_VIDEOS" desc="Text shown in search options if search results are limited to videos">
     Videos
+  </message>
+  <message name="IDS_FILE_BROWSER_SEARCH_RESULTS_LABEL" desc="Text shown as a breadcrumb to inform the user that they are viewing search results">
+    Search results
   </message>
 
   <message name="IDS_FILE_BROWSER_DEFAULT_NEW_FOLDER_NAME" desc="The default name for a newly created folder.">

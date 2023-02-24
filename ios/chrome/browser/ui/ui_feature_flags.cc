@@ -55,6 +55,9 @@ BASE_FEATURE(kIOSCustomBrowserEditMenu,
              "IOSCustomBrowserEditMenu",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+const char kIOSEditMenuPartialTranslateNoIncognitoParam[] =
+    "IOSEditMenuPartialTranslateNoIncognitoParam";
+
 BASE_FEATURE(kIOSEditMenuPartialTranslate,
              "IOSEditMenuPartialTranslate",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -139,3 +142,46 @@ bool IsTabGridSortedByRecency() {
 BASE_FEATURE(kMultilineFadeTruncatingLabel,
              "MultilineFadeTruncatingLabel",
              base::FEATURE_DISABLED_BY_DEFAULT);
+
+BASE_FEATURE(kNotificationSettingsMenuItem,
+             "NotificationSettingsMenuItem",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+BASE_FEATURE(kSpotlightReadingListSource,
+             "SpotlightReadingListSource",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+BASE_FEATURE(kConsistencyNewAccountInterface,
+             "ConsistencyNewAccountInterface",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+bool IsConsistencyNewAccountInterfaceEnabled() {
+  return base::FeatureList::IsEnabled(kConsistencyNewAccountInterface);
+}
+
+BASE_FEATURE(kAddToHomeScreen,
+             "AddToHomeScreen",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+const char kAddToHomeScreenDisableIncognitoParam[] =
+    "AddToHomeScreenDisableIncognitoParam";
+
+bool ShouldAddToHomeScreen(bool in_incognito) {
+  if (!base::FeatureList::IsEnabled(kAddToHomeScreen)) {
+    return false;
+  }
+  if (!in_incognito) {
+    return true;
+  }
+  return !base::GetFieldTrialParamByFeatureAsBool(
+      kAddToHomeScreen, kAddToHomeScreenDisableIncognitoParam, false);
+}
+
+bool ShouldShowPartialTranslateInIncognito() {
+  if (!base::FeatureList::IsEnabled(kIOSEditMenuPartialTranslate)) {
+    return false;
+  }
+  return !base::GetFieldTrialParamByFeatureAsBool(
+      kIOSEditMenuPartialTranslate,
+      kIOSEditMenuPartialTranslateNoIncognitoParam, false);
+}

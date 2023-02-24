@@ -10,6 +10,7 @@
 #include "build/chromecast_buildflags.h"
 #include "build/chromeos_buildflags.h"
 #include "services/network/public/cpp/features.h"
+#include "third_party/blink/public/common/features_generated.h"
 #include "third_party/blink/public/common/forcedark/forcedark_switches.h"
 #include "third_party/blink/public/common/switches.h"
 
@@ -753,6 +754,14 @@ const base::FeatureParam<int> kCacheCodeOnIdleDelayParam{&kCacheCodeOnIdle,
 // Apply CacheCodeOnIdle only for service workers (https://crbug.com/1410082).
 const base::FeatureParam<bool> kCacheCodeOnIdleDelayServiceWorkerOnlyParam{
     &kCacheCodeOnIdle, "service-worker-only", false};
+
+BASE_FEATURE(kProduceCompileHints,
+             "ProduceCompileHints",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+const base::FeatureParam<int> kProduceCompileHintsOnIdleDelayParam{
+    &kProduceCompileHints, "delay-in-ms", 10000};
+const base::FeatureParam<double> kProduceCompileHintsNoiseLevel{
+    &kProduceCompileHints, "noise probability", 0.9};
 
 // Make all pending 'display: auto' web fonts enter the swap or failure period
 // immediately before reaching the LCP time limit (~2500ms), so that web fonts
@@ -1758,6 +1767,25 @@ const base::FeatureParam<int> kMaxFCPDelayMsForRenderBlockingFonts(
 BASE_FEATURE(kWebRtcStatsReportIdl,
              "WebRtcStatsReportIdl",
              base::FEATURE_DISABLED_BY_DEFAULT);
+
+BASE_FEATURE(kQuoteEmptySecChUaStringHeadersConsistently,
+             "QuoteEmptySecChUaStringHeadersConsistently",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
+const base::FeatureParam<int> kStorageAccessAPIImplicitGrantLimit{
+    &kStorageAccessAPI, "storage-access-api-implicit-grant-limit", 5};
+const base::FeatureParam<bool> kStorageAccessAPIAutoGrantInFPS{
+    &kStorageAccessAPI, "storage_access_api_auto_grant_in_fps", true};
+const base::FeatureParam<bool> kStorageAccessAPIAutoDenyOutsideFPS{
+    &kStorageAccessAPI, "storage_access_api_auto_deny_outside_fps", true};
+
+BASE_FEATURE(kDisableThirdPartyStoragePartitioningDeprecationTrial,
+             "DisableThirdPartyStoragePartitioningDeprecationTrial",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
+BASE_FEATURE(kRuntimeFeatureStateControllerApplyFeatureDiff,
+             "RuntimeFeatureStateControllerApplyFeatureDiff",
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 }  // namespace features
 }  // namespace blink

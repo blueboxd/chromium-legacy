@@ -313,6 +313,7 @@ struct SameSizeAsDocumentLoader
   absl::optional<ViewTransitionState> view_transition_state;
   absl::optional<FencedFrame::RedactedFencedFrameProperties>
       fenced_frame_properties;
+  bool has_storage_access;
 };
 
 // Asserts size of DocumentLoader, so that whenever a new attribute is added to
@@ -511,7 +512,8 @@ DocumentLoader::DocumentLoader(
       extra_data_(std::move(extra_data)),
       reduced_accept_language_(params_->reduced_accept_language),
       navigation_delivery_type_(params_->navigation_delivery_type),
-      view_transition_state_(std::move(params_->view_transition_state)) {
+      view_transition_state_(std::move(params_->view_transition_state)),
+      has_storage_access_(params_->has_storage_access) {
   DCHECK(frame_);
   DCHECK(params_);
 
@@ -648,6 +650,7 @@ DocumentLoader::CreateWebNavigationParamsToCloneDocument() {
   params->has_fenced_frame_reporting = has_fenced_frame_reporting_;
   params->reduced_accept_language = reduced_accept_language_;
   params->navigation_delivery_type = navigation_delivery_type_;
+  params->has_storage_access = has_storage_access_;
   return params;
 }
 
@@ -2277,6 +2280,7 @@ void DocumentLoader::InitializeWindow(Document* owner_document) {
         owner_document->domWindow()->GetAgent()->IsOriginKeyedForInheritance();
   }
 
+  bool inherited_has_storage_access = false;
   // In some rare cases, we'll re-use a LocalDOMWindow for a new Document. For
   // example, when a script calls window.open("..."), the browser gives
   // JavaScript a window synchronously but kicks off the load in the window
@@ -2298,6 +2302,11 @@ void DocumentLoader::InitializeWindow(Document* owner_document) {
     if (!ShouldInheritExplicitOriginKeying(Url(), commit_reason_) &&
         origin_agent_cluster) {
       agent->ForceOriginKeyedBecauseOfInheritance();
+    }
+
+    if (has_storage_access_) {
+      frame_->DomWindow()->SetHasStorageAccess();
+      inherited_has_storage_access = true;
     }
   } else {
     if (frame_->GetSettings()->GetShouldReuseGlobalForUnownedMainFrame() &&
@@ -2327,6 +2336,10 @@ void DocumentLoader::InitializeWindow(Document* owner_document) {
     // above.
     DCHECK(did_have_policy_container || WillLoadUrlAsEmpty(Url()));
   }
+  base::UmaHistogramBoolean("API.StorageAccess.DocumentLoadedWithStorageAccess",
+                            frame_->DomWindow()->HasStorageAccess());
+  base::UmaHistogramBoolean("API.StorageAccess.DocumentInheritedStorageAccess",
+                            inherited_has_storage_access);
 
   frame_->DomWindow()->SetPolicyContainer(std::move(policy_container_));
   frame_->DomWindow()->SetContentSecurityPolicy(csp);

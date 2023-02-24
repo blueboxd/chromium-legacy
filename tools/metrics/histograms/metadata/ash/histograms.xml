@@ -447,6 +447,80 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Ash.BrowserDataBackMigrator.ElapsedTimeDeleteAshItems"
+    units="ms" expires_after="2023-12-01">
+  <owner>janagrill@google.com</owner>
+  <owner>artyomchen@google.com</owner>
+  <summary>
+    The time in ms that elapsed while DeleteAshItems() was run. Recorded once
+    when browser data backward migration happens if the step succeeds.
+  </summary>
+</histogram>
+
+<histogram name="Ash.BrowserDataBackMigrator.ElapsedTimeDeleteLacrosDir"
+    units="ms" expires_after="2023-12-01">
+  <owner>janagrill@google.com</owner>
+  <owner>artyomchen@google.com</owner>
+  <summary>
+    The time in ms that elapsed while DeleteLacrosDir() was run. Recorded once
+    when browser data backward migration happens if the step succeeds.
+  </summary>
+</histogram>
+
+<histogram name="Ash.BrowserDataBackMigrator.ElapsedTimeDeleteTmpDir"
+    units="ms" expires_after="2023-12-01">
+  <owner>janagrill@google.com</owner>
+  <owner>artyomchen@google.com</owner>
+  <summary>
+    The time in ms that elapsed while DeleteTmpDir() was run. Recorded once when
+    browser data backward migration happens if the step succeeds.
+  </summary>
+</histogram>
+
+<histogram name="Ash.BrowserDataBackMigrator.ElapsedTimeMergeSplitItems"
+    units="ms" expires_after="2023-12-01">
+  <owner>janagrill@google.com</owner>
+  <owner>artyomchen@google.com</owner>
+  <summary>
+    The time in ms that elapsed while MergeSplitItems() was run. Recorded once
+    when browser data backward migration happens if the step succeeds.
+  </summary>
+</histogram>
+
+<histogram
+    name="Ash.BrowserDataBackMigrator.ElapsedTimeMoveLacrosItemsToAshDir"
+    units="ms" expires_after="2023-12-01">
+  <owner>janagrill@google.com</owner>
+  <owner>artyomchen@google.com</owner>
+  <summary>
+    The time in ms that elapsed while MoveLacrosItemsToAshDir() was run.
+    Recorded once when browser data backward migration happens if the step
+    succeeds.
+  </summary>
+</histogram>
+
+<histogram
+    name="Ash.BrowserDataBackMigrator.ElapsedTimeMoveMergedItemsBackToAsh"
+    units="ms" expires_after="2023-12-01">
+  <owner>janagrill@google.com</owner>
+  <owner>artyomchen@google.com</owner>
+  <summary>
+    The time in ms that elapsed while MoveMergedItemsBackToAsh() was run.
+    Recorded once when browser data backward migration happens if the step
+    succeeds.
+  </summary>
+</histogram>
+
+<histogram name="Ash.BrowserDataBackMigrator.ElapsedTimePreMigrationCleanUp"
+    units="ms" expires_after="2023-12-01">
+  <owner>janagrill@google.com</owner>
+  <owner>artyomchen@google.com</owner>
+  <summary>
+    The time in ms that elapsed while PreMigrationCleanUp() was run. Recorded
+    once when browser data backward migration happens if the step succeeds.
+  </summary>
+</histogram>
+
 <histogram name="Ash.BrowserDataBackMigrator.FinalStatus"
     enum="BrowserDataBackMigratorFinalStatus" expires_after="2023-12-01">
   <owner>janagrill@google.com</owner>
@@ -486,6 +560,16 @@ chromium-metrics-reviews@google.com.
     <variant name="MoveMergedItemsBackToAshMoveFileFailed"/>
     <variant name="PreMigrationCleanUpDeleteTmpDirFailed"/>
   </token>
+</histogram>
+
+<histogram name="Ash.BrowserDataBackMigrator.SuccessfulMigrationTime"
+    units="ms" expires_after="2023-12-01">
+  <owner>janagrill@google.com</owner>
+  <owner>artyomchen@google.com</owner>
+  <summary>
+    How long the backward migration took to complete in ms. Only recorded if
+    migration succeeds.
+  </summary>
 </histogram>
 
 <histogram name="Ash.BrowserDataMigrator.AshDataSizeMB" units="MB"
@@ -1691,6 +1775,17 @@ chromium-metrics-reviews@google.com.
     Emitted after a virtual desk being removed with close all option and undo
     toast being showed. This metrics is a sum of user undo remove and ignore
     undo.
+  </summary>
+</histogram>
+
+<histogram name="Ash.Desks.CloseAllZombieWindowsFound" units="windows"
+    expires_after="2024-02-21">
+  <owner>benbecker@google.com</owner>
+  <owner>chromeos-wms@google.com</owner>
+  <summary>
+    Emitted one minute after the DesksController synchronously closes all
+    windows with widgets remaining in a desk. Reports the number of windows with
+    null widgets that are still open after that time.
   </summary>
 </histogram>
 
@@ -3832,6 +3927,22 @@ chromium-metrics-reviews@google.com.
   </token>
 </histogram>
 
+<histogram name="Ash.OSAuth.Login.ConfiguredAuthFactors.{AuthFactor}"
+    enum="Boolean" expires_after="2024-03-01">
+  <owner>anastasiian@chromium.org</owner>
+  <owner>cros-lurs@google.com</owner>
+  <summary>
+    Whether the logged in user has {AuthFactor} auth factor configured. Recorded
+    upon successful login.
+  </summary>
+  <token key="AuthFactor">
+    <variant name="CryptohomePin"/>
+    <variant name="GaiaPassword"/>
+    <variant name="Recovery"/>
+    <variant name="SmartCard"/>
+  </token>
+</histogram>
+
 <histogram
     name="Ash.OSAuth.{AuthenticationSurface}.NbPasswordAttempts.{AuthenticationOutcome}"
     units="attempts" expires_after="2023-06-18">
@@ -4446,6 +4557,21 @@ chromium-metrics-reviews@google.com.
     Records the nullptr error that potentially caused a crash when handling
     policy changes.
   </summary>
+</histogram>
+
+<histogram name="Ash.Projector.SpeechRecognitionEndState.{RecognizerLocation}"
+    enum="SpeechRecognitionEndState" expires_after="2023-11-01">
+  <owner>yilkal@chromium.org</owner>
+  <owner>cros-projector@google.com</owner>
+  <summary>
+    For a recognition session happening at {RecognizerLocation}, this histogram
+    records the recognition status at the end of the session.
+  </summary>
+  <token key="RecognizerLocation">
+    <variant name="OnDevice" summary="Speech recognition happened on device"/>
+    <variant name="ServerBased"
+        summary="Speech recognition happened on remote servers"/>
+  </token>
 </histogram>
 
 <histogram name="Ash.Projector.Toolbar.{TabletOrClamshell}"

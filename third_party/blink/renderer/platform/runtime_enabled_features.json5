@@ -937,6 +937,10 @@
       copied_from_base_feature_if: "overridden",
     },
     {
+      name: "CSSOverflowMediaFeatures",
+      status: "experimental",
+    },
+    {
       name: "CSSPaintAPIArguments",
       status: "experimental",
       base_feature: "none",
@@ -946,7 +950,7 @@
       // regardless of whether the new highlights or decorations are exposed
       // to authors (see CSSSpellingGrammarErrors).
       name: "CSSPaintingForSpellingGrammarErrors",
-      status: "stable",
+      status: "experimental",
       base_feature: "CssPaintingForSpellingGrammarErrors",
     },
     {
@@ -1837,6 +1841,13 @@
       status: "experimental",
     },
     {
+      // If enabled, and the inner html parser is unable to successfully
+      // parse, it will log histograms of why it failed. The logging is
+      // non-trivial.
+      name: "InnerHTMLParserFastpathLogFailure",
+      status: "experimental",
+    },
+    {
       name: "InputMultipleFieldsUI",
       // No plan to support complex UI for date/time INPUT types on Android.
       status: {"Android": "test", "default": "stable"},
@@ -1955,7 +1966,7 @@
     },
     {
       name: "MachineLearningNeuralNetwork",
-      status: "test",
+      status: {"Win": "experimental", "default": "test"},
       base_feature: "none",
     },
     {
@@ -2124,9 +2135,7 @@
     },
     {
       name: "NavigateEventCancelableTraversals",
-      status: "experimental",
-      base_feature: "NavigateEventCancelableTraversals",
-      base_feature_status: "enabled",
+      status: "stable",
     },
     {
       name: "NavigationId",
@@ -2385,6 +2394,14 @@
       public: true,
       status: "experimental",
       base_feature: "none",
+    },
+    // Desktop only, if enabled PaymentHandler will use the new minimal header UX.
+    // See https://crbug.com/1385136.
+    {
+      name: "PaymentHandlerMinimalHeaderUX",
+      origin_trial_feature_name: "PaymentHandlerMinimalHeaderUX",
+      origin_trial_allows_third_party: true,
+      origin_trial_os: ["win", "mac", "linux", "fuchsia", "chromeos"],
     },
     {
       name: "PaymentInstruments",

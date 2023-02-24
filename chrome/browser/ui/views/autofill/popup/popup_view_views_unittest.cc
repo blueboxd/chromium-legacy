@@ -8,6 +8,7 @@
 
 #include "base/containers/contains.h"
 #include "base/strings/string_util.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "chrome/browser/autofill/mock_autofill_popup_controller.h"
@@ -18,6 +19,7 @@
 #include "chrome/test/views/chrome_views_test_base.h"
 #include "components/autofill/core/browser/ui/popup_item_ids.h"
 #include "components/autofill/core/browser/ui/suggestion.h"
+#include "components/autofill/core/common/autofill_features.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -354,6 +356,41 @@ TEST_F(PopupViewViewsTest, CursorUpDownForSelectableCells) {
             absl::make_optional<CellIndex>(1u, CellType::kContent));
 }
 
+TEST_F(PopupViewViewsTest, CursorLeftRightForAutocompleteEntries) {
+  base::test::ScopedFeatureList feature_list{
+      features::kAutofillShowAutocompleteDeleteButton};
+
+  // Set up the popup.
+  CreateAndShowView(
+      {POPUP_ITEM_ID_AUTOCOMPLETE_ENTRY, POPUP_ITEM_ID_AUTOCOMPLETE_ENTRY});
+
+  view().SetSelectedCell(CellIndex{0, CellType::kContent});
+
+  // Pressing left does nothing because the left-most cell is already selected.
+  SimulateKeyPress(ui::VKEY_LEFT);
+  EXPECT_EQ(view().GetSelectedCell(),
+            absl::make_optional<CellIndex>(0u, CellType::kContent));
+
+  // Pressing right selects the control area.
+  SimulateKeyPress(ui::VKEY_RIGHT);
+  EXPECT_EQ(view().GetSelectedCell(),
+            absl::make_optional<CellIndex>(0u, CellType::kControl));
+
+  // Going down respects the currently selected column.
+  SimulateKeyPress(ui::VKEY_DOWN);
+  EXPECT_EQ(view().GetSelectedCell(),
+            absl::make_optional<CellIndex>(1u, CellType::kControl));
+
+  // Wrapping respects the currently selected column.
+  SimulateKeyPress(ui::VKEY_DOWN);
+  EXPECT_EQ(view().GetSelectedCell(),
+            absl::make_optional<CellIndex>(0u, CellType::kControl));
+
+  SimulateKeyPress(ui::VKEY_LEFT);
+  EXPECT_EQ(view().GetSelectedCell(),
+            absl::make_optional<CellIndex>(0u, CellType::kContent));
+}
+
 TEST_F(PopupViewViewsTest, PageUpDownForSelectableCells) {
   // Set up the popup.
   CreateAndShowView(
@@ -587,39 +624,6 @@ TEST_P(PopupViewViewsTestWithClickablePopupItemId,
   generator().MoveMouseTo(gfx::Point(1000, 1000));  // Exits the popup.
   ASSERT_FALSE(view().IsMouseHovered());
   generator().MoveMouseTo(GetCenterOfSuggestion(0));
-  generator().ClickLeftButton();
-  view().RemoveAllChildViews();
-}
-
-// Tests that if the mouse hovers a suggestion when the popup is displayed,
-// clicking the suggestion triggers no AcceptSuggestion() event.
-TEST_P(PopupViewViewsTestWithClickablePopupItemId,
-       IgnoreClickIfFocusedAtPaintWithoutExit) {
-  CreateAndShowView({popup_item_id()});
-  EXPECT_CALL(controller(), AcceptSuggestion).Times(0);
-  generator().MoveMouseTo(GetCenterOfSuggestion(0));
-  ASSERT_TRUE(view().IsMouseHovered());
-  Paint();
-  generator().ClickLeftButton();
-  view().RemoveAllChildViews();
-}
-
-// Tests that if the mouse hovers a suggestion when the popup is displayed and
-// moves around on this suggestion, clicking the suggestion triggers no
-// AcceptSuggestion() event.
-TEST_P(PopupViewViewsTestWithClickablePopupItemId,
-       IgnoreClickIfFocusedAtPaintWithSlightMouseMovement) {
-  CreateAndShowView({popup_item_id()});
-  EXPECT_CALL(controller(), AcceptSuggestion).Times(0);
-  int width = GetRowViewAt(0).width();
-  int height = GetRowViewAt(0).height();
-  for (int x : {-width / 3, width / 3}) {
-    for (int y : {-height / 3, height / 3}) {
-      generator().MoveMouseTo(GetCenterOfSuggestion(0) + gfx::Vector2d(x, y));
-      ASSERT_TRUE(view().IsMouseHovered());
-      Paint();
-    }
-  }
   generator().ClickLeftButton();
   view().RemoveAllChildViews();
 }

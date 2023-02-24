@@ -191,8 +191,6 @@ public class SingleWebsiteSettings extends SiteSettingsPreferenceFragment
     // The callback to be run after this site is reset.
     private Observer mWebsiteSettingsObserver;
 
-    private final SiteDataCleaner mSiteDataCleaner = new SiteDataCleaner();
-
     // The website this page is displaying details about.
     private Website mSite;
 
@@ -346,13 +344,14 @@ public class SingleWebsiteSettings extends SiteSettingsPreferenceFragment
             }
             Callback<Boolean> onDialogClosed = (Boolean confirmed) -> {
                 if (confirmed) {
-                    mSite.clearAllStoredData(getSiteSettingsDelegate().getBrowserContextHandle(),
-                            mDataClearedCallback::run);
+                    SiteDataCleaner.clearData(getSiteSettingsDelegate().getBrowserContextHandle(),
+                            mSite, mDataClearedCallback);
                 }
             };
             ClearWebsiteStorageDialog dialogFragment =
                     ClearWebsiteStorageDialog.newInstance(preference, onDialogClosed,
-                            getSiteSettingsDelegate().isPrivacySandboxSettings4Enabled());
+                            getSiteSettingsDelegate().isPrivacySandboxSettings4Enabled(),
+                            /*isGroup=*/false);
             dialogFragment.setTargetFragment(this, 0);
             dialogFragment.show(getFragmentManager(), ClearWebsiteStorageDialog.TAG);
         } else {
@@ -544,7 +543,7 @@ public class SingleWebsiteSettings extends SiteSettingsPreferenceFragment
                         context.getString(R.string.origin_settings_storage_usage_brief),
                         Formatter.formatShortFileSize(context, usage)));
             }
-            preference.setDataForDisplay(mSite.getTitle(), appFound);
+            preference.setDataForDisplay(mSite.getTitle(), appFound, /*isGroup=*/false);
             if (mSite.isCookieDeletionDisabled(
                         getSiteSettingsDelegate().getBrowserContextHandle())) {
                 preference.setEnabled(false);
@@ -1176,7 +1175,7 @@ public class SingleWebsiteSettings extends SiteSettingsPreferenceFragment
                         .setPositiveButton(buttonResId,
                                 (dialog, which) -> {
                                     if (mHideNonPermissionPreferences) {
-                                        mSiteDataCleaner.resetPermissions(
+                                        SiteDataCleaner.resetPermissions(
                                                 getSiteSettingsDelegate().getBrowserContextHandle(),
                                                 mSite);
                                     } else {
@@ -1216,9 +1215,9 @@ public class SingleWebsiteSettings extends SiteSettingsPreferenceFragment
         boolean finishActivityImmediately =
                 mSite.getTotalUsage() == 0 && mObjectPolicyPermissionCount == 0;
 
-        mSiteDataCleaner.resetPermissions(
+        SiteDataCleaner.resetPermissions(
                 getSiteSettingsDelegate().getBrowserContextHandle(), mSite);
-        mSiteDataCleaner.clearData(
+        SiteDataCleaner.clearData(
                 getSiteSettingsDelegate().getBrowserContextHandle(), mSite, mDataClearedCallback);
 
         int navigationSource = getArguments().getInt(

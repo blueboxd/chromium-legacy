@@ -4,8 +4,9 @@
 
 package org.chromium.chrome.browser.omnibox.suggestions.base;
 
-import static org.mockito.Mockito.any;
-import static org.mockito.Mockito.anyInt;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.Mockito.clearInvocations;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -16,11 +17,12 @@ import static org.mockito.Mockito.when;
 
 import android.app.Activity;
 import android.content.res.Resources;
+import android.graphics.drawable.ColorDrawable;
+import android.graphics.drawable.LayerDrawable;
 import android.view.View;
 import android.view.ViewGroup.MarginLayoutParams;
 import android.widget.ImageView;
 
-import androidx.annotation.ColorInt;
 import androidx.test.ext.junit.rules.ActivityScenarioRule;
 
 import org.junit.Assert;
@@ -28,9 +30,11 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InOrder;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 
 import org.chromium.base.test.BaseRobolectricTestRunner;
@@ -40,6 +44,7 @@ import org.chromium.chrome.browser.omnibox.suggestions.SuggestionCommonPropertie
 import org.chromium.chrome.browser.omnibox.suggestions.base.BaseSuggestionViewProperties.Action;
 import org.chromium.chrome.browser.ui.theme.BrandedColorScheme;
 import org.chromium.components.browser_ui.styles.ChromeColors;
+import org.chromium.components.browser_ui.widget.RoundedCornerOutlineProvider;
 import org.chromium.ui.base.TestActivity;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
@@ -58,9 +63,6 @@ public class BaseSuggestionViewBinderUnitTest {
             new ActivityScenarioRule<>(TestActivity.class);
 
     @Mock
-    BaseSuggestionView mBaseView;
-
-    @Mock
     DecoratedSuggestionView mDecoratedView;
 
     @Mock
@@ -72,6 +74,7 @@ public class BaseSuggestionViewBinderUnitTest {
     private Activity mActivity;
     private Resources mResources;
     private PropertyModel mModel;
+    private BaseSuggestionView mBaseView;
 
     @Before
     public void setUp() {
@@ -81,6 +84,7 @@ public class BaseSuggestionViewBinderUnitTest {
         mResources = mActivity.getResources();
 
         when(mContentView.getContext()).thenReturn(mActivity);
+        when(mDecoratedView.getContext()).thenReturn(mActivity);
 
         mBaseView = spy(new BaseSuggestionView(mContentView));
 
@@ -285,12 +289,35 @@ public class BaseSuggestionViewBinderUnitTest {
     }
 
     @Test
-    public void suggestionBackground() {
+    public void partialSuggestionRounding() {
         mModel.set(DropdownCommonProperties.BG_BOTTOM_CORNER_ROUNDED, false);
         mModel.set(DropdownCommonProperties.BG_TOP_CORNER_ROUNDED, true);
 
-        verify(mBaseView).setBackground(any());
-        Assert.assertNotNull(mBaseView.getBackground());
+        Assert.assertTrue(mBaseView.getClipToOutline());
+        // Expect the RoundedCornerOutlineProvider. Fail if it's anything else.
+        var provider = (RoundedCornerOutlineProvider) mBaseView.getOutlineProvider();
+        Assert.assertTrue(provider.isTopEdgeRoundedForTesting());
+        Assert.assertFalse(provider.isBottomEdgeRoundedForTesting());
+    }
+
+    @Test
+    public void fullSuggestionRounding() {
+        mModel.set(DropdownCommonProperties.BG_BOTTOM_CORNER_ROUNDED, true);
+        mModel.set(DropdownCommonProperties.BG_TOP_CORNER_ROUNDED, true);
+
+        Assert.assertTrue(mBaseView.getClipToOutline());
+        // Expect the RoundedCornerOutlineProvider. Fail if it's anything else.
+        var provider = (RoundedCornerOutlineProvider) mBaseView.getOutlineProvider();
+        Assert.assertTrue(provider.isTopEdgeRoundedForTesting());
+        Assert.assertTrue(provider.isBottomEdgeRoundedForTesting());
+    }
+
+    @Test
+    public void noSuggestionRounding() {
+        mModel.set(DropdownCommonProperties.BG_BOTTOM_CORNER_ROUNDED, false);
+        mModel.set(DropdownCommonProperties.BG_TOP_CORNER_ROUNDED, false);
+
+        Assert.assertFalse(mBaseView.getClipToOutline());
     }
 
     @Test
@@ -310,24 +337,126 @@ public class BaseSuggestionViewBinderUnitTest {
     }
 
     @Test
-    public void getBackgroundDrawableColor_incognito() {
-        final @ColorInt int expectedColor =
-                mBaseView.getContext().getColor(R.color.omnibox_suggestion_bg_incognito);
-        final boolean isIncognito = true;
+    public void applySelectableBackground_incognito() {
+        // This is a whitebox test. It currently assumes that the Suggestion background is a
+        // LayerDrawable, whose bottom element represents the color.
+        mModel.set(SuggestionCommonProperties.COLOR_SCHEME, BrandedColorScheme.INCOGNITO);
 
-        Assert.assertEquals(
-                BaseSuggestionViewBinder.getBackgroundDrawableColor(isIncognito, mBaseView),
-                expectedColor);
+        var backgroundCaptor = ArgumentCaptor.forClass(LayerDrawable.class);
+        verify(mDecoratedView).setBackground(backgroundCaptor.capture());
+
+        Assert.assertEquals(mActivity.getColor(R.color.omnibox_suggestion_bg_incognito),
+                ((ColorDrawable) backgroundCaptor.getValue().getDrawable(0)).getColor());
     }
 
     @Test
-    public void getBackgroundDrawableColor_notIncognito() {
-        final @ColorInt int expectedColor = ChromeColors.getSurfaceColor(
-                mBaseView.getContext(), R.dimen.omnibox_suggestion_bg_elevation);
-        final boolean isIncognito = false;
+    public void applySelectableBackground_nonIncognito() {
+        // This is a whitebox test. It currently assumes that the Suggestion background is a
+        // LayerDrawable, whose bottom element represents the color.
+        mModel.set(SuggestionCommonProperties.COLOR_SCHEME, BrandedColorScheme.LIGHT_BRANDED_THEME);
 
-        Assert.assertEquals(
-                BaseSuggestionViewBinder.getBackgroundDrawableColor(isIncognito, mBaseView),
-                expectedColor);
+        var backgroundCaptor = ArgumentCaptor.forClass(LayerDrawable.class);
+        verify(mDecoratedView).setBackground(backgroundCaptor.capture());
+
+        Assert.assertEquals(ChromeColors.getSurfaceColor(mBaseView.getContext(),
+                                    R.dimen.omnibox_suggestion_bg_elevation),
+                ((ColorDrawable) backgroundCaptor.getValue().getDrawable(0)).getColor());
+    }
+
+    @Test
+    public void applySelectableBackground_reuseConstantState() {
+        // This is a whitebox test. It currently assumes that the Suggestion background is a
+        // LayerDrawable, whose bottom element represents the color.
+        var bgCaptor1 = ArgumentCaptor.forClass(LayerDrawable.class);
+        var bgCaptor2 = ArgumentCaptor.forClass(LayerDrawable.class);
+
+        // First call should instantiate incognito color.
+        mModel.set(SuggestionCommonProperties.COLOR_SCHEME, BrandedColorScheme.INCOGNITO);
+        verify(mDecoratedView).setBackground(bgCaptor1.capture());
+
+        // Attempt to re-use the background color.
+        // We do this by instantiating a fully dummy mock which does not deliver Context.
+        // This must not crash.
+        var viewWithNoContext = mock(View.class);
+        BaseSuggestionViewBinder.applySelectableBackground(mModel, viewWithNoContext);
+        verify(viewWithNoContext).setBackground(bgCaptor2.capture());
+
+        var color1 = ((ColorDrawable) bgCaptor1.getValue().getDrawable(0)).getColor();
+        var color2 = ((ColorDrawable) bgCaptor2.getValue().getDrawable(0)).getColor();
+
+        Assert.assertEquals(color1, color2);
+    }
+
+    @Test
+    public void applySelectableBackground_clearConstantStateWhenClientColorSchemeChanges() {
+        // This is a whitebox test. It currently assumes that the Suggestion background is a
+        // LayerDrawable, whose bottom element represents the color.
+        var incognitoBgCaptor = ArgumentCaptor.forClass(LayerDrawable.class);
+        var lightBgCaptor = ArgumentCaptor.forClass(LayerDrawable.class);
+
+        // First call should instantiate incognito color.
+        mModel.set(SuggestionCommonProperties.COLOR_SCHEME, BrandedColorScheme.INCOGNITO);
+        verify(mDecoratedView).setBackground(incognitoBgCaptor.capture());
+        clearInvocations(mDecoratedView);
+
+        // Second call should instantiate regular color.
+        mModel.set(SuggestionCommonProperties.COLOR_SCHEME, BrandedColorScheme.LIGHT_BRANDED_THEME);
+        verify(mDecoratedView).setBackground(lightBgCaptor.capture());
+        clearInvocations(mDecoratedView);
+
+        var incognitoColor =
+                ((ColorDrawable) incognitoBgCaptor.getValue().getDrawable(0)).getColor();
+        var lightColor = ((ColorDrawable) lightBgCaptor.getValue().getDrawable(0)).getColor();
+
+        Assert.assertNotEquals(incognitoColor, lightColor);
+    }
+
+    @Test
+    public void applySelectableBackground_clearConstantStateWhenSystemColorSchemeChanges() {
+        // This is a whitebox test. It currently assumes that the Suggestion background is a
+        // LayerDrawable, whose bottom element represents the color.
+
+        // First call should instantiate incognito color.
+        mModel.set(SuggestionCommonProperties.COLOR_SCHEME, BrandedColorScheme.APP_DEFAULT);
+        Assert.assertNotNull(BaseSuggestionViewBinder.getFocusableDrawableStateForTesting());
+
+        // Check that we're not resetting the state if neither Client nor System properties change.
+        BaseSuggestionViewBinder.maybeResetCachedFocusableDrawableState(mModel, mDecoratedView);
+        Assert.assertNotNull(BaseSuggestionViewBinder.getFocusableDrawableStateForTesting());
+
+        // Second call should instantiate regular color.
+        // Configuration change refreshes all of Chrome.
+        // https://robolectric.org/device-configuration
+        RuntimeEnvironment.setQualifiers("+night");
+
+        // We've enabled night theme. Confirm that the cached state is invalidated.
+        BaseSuggestionViewBinder.maybeResetCachedFocusableDrawableState(mModel, mBaseView);
+        Assert.assertNull(BaseSuggestionViewBinder.getFocusableDrawableStateForTesting());
+    }
+
+    @Test
+    public void applySelectableBackground_reuseConstantStateAcrossViews() {
+        // This test validates, that we don't drop the cached StateDrawable whenever we create a new
+        // view that declares all the same set of properties (including COLOR_SCHEME) from scratch.
+        // In the event the newly created PropertyModel declares the same COLOR_SCHEME as ones
+        // already built, we want to continue using the cached ConstantState.
+
+        // First call should cache the ConstantState for the background.
+        mModel.set(SuggestionCommonProperties.COLOR_SCHEME, BrandedColorScheme.LIGHT_BRANDED_THEME);
+        var state1 = BaseSuggestionViewBinder.getFocusableDrawableStateForTesting();
+
+        // Create a second MVP setup.
+        var newModel = new PropertyModel(BaseSuggestionViewProperties.ALL_KEYS);
+        var viewWithNoContext = spy(new BaseSuggestionView(mContentView));
+        PropertyModelChangeProcessor.create(
+                newModel, viewWithNoContext, new BaseSuggestionViewBinder((m, v, p) -> {}));
+
+        // Apply the same color scheme to the new model.
+        // Observe that we don't crash.
+        newModel.set(
+                SuggestionCommonProperties.COLOR_SCHEME, BrandedColorScheme.LIGHT_BRANDED_THEME);
+        var state2 = BaseSuggestionViewBinder.getFocusableDrawableStateForTesting();
+
+        Assert.assertEquals(state1, state2);
     }
 }

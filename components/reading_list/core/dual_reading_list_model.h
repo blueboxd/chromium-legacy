@@ -88,11 +88,20 @@ class DualReadingListModel : public ReadingListModel,
   void RemoveObserver(ReadingListModelObserver* observer) override;
 
   // ReadingListModelObserver overrides.
+  void ReadingListModelBeganBatchUpdates(
+      const ReadingListModel* model) override;
+  void ReadingListModelCompletedBatchUpdates(
+      const ReadingListModel* model) override;
   void ReadingListModelLoaded(const ReadingListModel* model) override;
   void ReadingListWillRemoveEntry(const ReadingListModel* model,
                                   const GURL& url) override;
   void ReadingListDidRemoveEntry(const ReadingListModel* model,
                                  const GURL& url) override;
+  void ReadingListWillAddEntry(const ReadingListModel* model,
+                               const ReadingListEntry& entry) override;
+  void ReadingListDidAddEntry(const ReadingListModel* model,
+                              const GURL& url,
+                              reading_list::EntrySource source) override;
   void ReadingListDidApplyChanges(ReadingListModel* model) override;
 
   class ScopedReadingListBatchUpdateImpl : public ScopedReadingListBatchUpdate {
@@ -122,6 +131,8 @@ class DualReadingListModel : public ReadingListModel,
   // Indicates whether a ReadingListModelImpl::RemoveEntryByURL is currently
   // performing on `local_or_syncable_model_` and `account_model_`.
   bool ongoing_remove_entry_by_url_ = false;
+
+  unsigned int current_batch_updates_count_ = 0;
 
   base::ObserverList<ReadingListModelObserver>::Unchecked observers_;
 

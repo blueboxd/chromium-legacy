@@ -5,7 +5,6 @@
 #include "chrome/browser/ash/policy/scheduled_task_handler/reboot_notifications_scheduler.h"
 
 #include "ash/constants/ash_pref_names.h"
-#include "base/system/sys_info.h"
 #include "base/time/default_clock.h"
 #include "base/time/default_tick_clock.h"
 #include "chrome/browser/ash/app_restore/full_restore_service_factory.h"
@@ -16,11 +15,26 @@
 #include "components/user_prefs/user_prefs.h"
 
 namespace policy {
-
 namespace {
 constexpr base::TimeDelta kNotificationDelay = base::Hours(1);
 constexpr base::TimeDelta kDialogDelay = base::Minutes(5);
-constexpr base::TimeDelta kGraceTime = base::Hours(1);
+
+const char* ToString(
+    absl::optional<RebootNotificationsScheduler::Requester> requester) {
+  if (!requester) {
+    return "None";
+  }
+
+#define CASE(name)                                    \
+  case RebootNotificationsScheduler::Requester::name: \
+    return #name;
+
+  switch (requester.value()) {
+    CASE(kScheduledRebootPolicy);
+    CASE(kRebootCommand);
+  }
+#undef CASE
+}
 }  // namespace
 
 RebootNotificationsScheduler* RebootNotificationsScheduler::instance = nullptr;
@@ -32,7 +46,9 @@ RebootNotificationsScheduler::RebootNotificationsScheduler()
 RebootNotificationsScheduler::RebootNotificationsScheduler(
     const base::Clock* clock,
     const base::TickClock* tick_clock)
-    : notification_timer_(clock, tick_clock), dialog_timer_(clock, tick_clock) {
+    : notification_timer_(clock, tick_clock),
+      dialog_timer_(clock, tick_clock),
+      clock_(clock) {
   DCHECK(!RebootNotificationsScheduler::Get());
   RebootNotificationsScheduler::SetInstance(this);
   if (session_manager::SessionManager::Get())
@@ -66,12 +82,23 @@ bool RebootNotificationsScheduler::ShouldShowPostRebootNotification(
 
 void RebootNotificationsScheduler::SchedulePendingRebootNotifications(
     base::OnceClosure reboot_callback,
-    const base::Time& reboot_time) {
-  ResetState();
-  if (ShouldApplyGraceTime(reboot_time)) {
+    const base::Time& reboot_time,
+    Requester requester) {
+  if (!CanReschedule(requester, reboot_time)) {
+    LOG(WARNING) << "Reboot notification is scheduled by "
+                 << ToString(current_requester_) << ". Skipping for "
+                 << ToString(requester);
+    // TODO(b/225913691): If the `current_requester_` gets cancelled and resets
+    // its notifications and the `requester` is still pending, it will not
+    // have its notification shown. Create a queue for requesters and trigger
+    // a new notification or clean entries in
+    // `CancelRebootNotifications`.
     return;
   }
 
+  ResetState();
+
+  current_requester_ = requester;
   reboot_time_ = reboot_time;
   reboot_callback_ = std::move(reboot_callback);
   base::TimeDelta delay = GetRebootDelay(reboot_time_);
@@ -130,6 +157,15 @@ void RebootNotificationsScheduler::MaybeShowPostRebootNotification(
   observation_.Reset();
 }
 
+void RebootNotificationsScheduler::CancelRebootNotifications(
+    Requester requester) {
+  if (current_requester_.has_value() && current_requester_ != requester) {
+    return;
+  }
+
+  ResetState();
+}
+
 void RebootNotificationsScheduler::ResetState() {
   if (notification_timer_.IsRunning())
     notification_timer_.Stop();
@@ -137,12 +173,7 @@ void RebootNotificationsScheduler::ResetState() {
     dialog_timer_.Stop();
   CloseNotifications();
   reboot_callback_.Reset();
-}
-
-bool RebootNotificationsScheduler::ShouldApplyGraceTime(
-    const base::Time& reboot_time) const {
-  base::TimeDelta delay = GetRebootDelay(reboot_time);
-  return ((delay + GetSystemUptime()) <= kGraceTime);
+  current_requester_ = absl::nullopt;
 }
 
 void RebootNotificationsScheduler::MaybeShowPendingRebootNotification() {
@@ -176,17 +207,9 @@ void RebootNotificationsScheduler::SetInstance(
   RebootNotificationsScheduler::instance = reboot_notifications_scheduler;
 }
 
-const base::Time RebootNotificationsScheduler::GetCurrentTime() const {
-  return base::Time::Now();
-}
-
-const base::TimeDelta RebootNotificationsScheduler::GetSystemUptime() const {
-  return base::SysInfo::Uptime();
-}
-
 base::TimeDelta RebootNotificationsScheduler::GetRebootDelay(
     const base::Time& reboot_time) const {
-  return (reboot_time - GetCurrentTime());
+  return reboot_time - clock_->Now();
 }
 
 void RebootNotificationsScheduler::CloseNotifications() {
@@ -198,6 +221,23 @@ bool RebootNotificationsScheduler::ShouldWaitFullRestoreInit() const {
   Profile* profile = ProfileManager::GetActiveUserProfile();
   return ash::full_restore::FullRestoreServiceFactory::
       IsFullRestoreAvailableForProfile(profile);
+}
+
+bool RebootNotificationsScheduler::CanReschedule(Requester requester,
+                                                 base::Time reboot_time) const {
+  if (!current_requester_.has_value()) {
+    // No scheduled notifications. Can reschedule.
+    return true;
+  }
+
+  if (current_requester_ == requester) {
+    // New requester is the old one. Can reschedule.
+    return true;
+  }
+
+  // Notification has already been scheduled by another scheduler. Reschedule
+  // iff new reboot shall happen earlier than the current one.
+  return reboot_time < reboot_time_;
 }
 
 bool RebootNotificationsScheduler::IsPostRebootPrefSet(PrefService* prefs) {

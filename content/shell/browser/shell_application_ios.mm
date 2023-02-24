@@ -8,36 +8,49 @@
 #error "This file requires ARC support."
 #endif
 
+#include "base/command_line.h"
 #include "content/shell/browser/shell.h"
 #include "content/shell/browser/shell_browser_context.h"
 #include "content/shell/browser/shell_content_browser_client.h"
 #include "ui/gfx/geometry/size.h"
 
-@implementation ShellAppDelegate
+@interface ShellAppSceneDelegate : UIResponder <UIWindowSceneDelegate>
+@end
+
+@implementation ShellAppSceneDelegate
 
 @synthesize window = _window;
 
+- (void)scene:(UIScene*)scene
+    willConnectToSession:(UISceneSession*)session
+                 options:(UISceneConnectionOptions*)connectionOptions {
+  CHECK_EQ(1u, content::Shell::windows().size());
+  UIWindow* window = content::Shell::windows()[0]->window();
+  window.windowScene = (UIWindowScene*)scene;
+  self.window = window;
+  [self.window makeKeyAndVisible];
+}
+
+@end
+
+@implementation ShellAppDelegate
+
+- (UISceneConfiguration*)application:(UIApplication*)application
+    configurationForConnectingSceneSession:
+        (UISceneSession*)connectingSceneSession
+                                   options:(UISceneConnectionOptions*)options {
+  UISceneConfiguration* configuration = [[UISceneConfiguration alloc] init];
+  configuration.delegateClass = ShellAppSceneDelegate.class;
+  return configuration;
+}
+
 - (BOOL)application:(UIApplication*)application
     willFinishLaunchingWithOptions:(NSDictionary*)launchOptions {
-  // TODO(dtapuska): Using the Shell that was created during construction before
-  // UIApplication is running doesn't work, so just create a new one here and
-  // attach it. Figure out how to not create the other one or don't create one
-  // here.
-  //  CHECK_EQ(1u, content::Shell::windows().size());
-  //  UIWindow* window = content::Shell::windows()[0]->window();
-  content::ShellBrowserContext* browserContext =
-      content::ShellContentBrowserClient::Get()->browser_context();
-  UIWindow* window =
-      content::Shell::CreateNewWindow(browserContext, GURL(url::kAboutBlankURL),
-                                      nullptr, gfx::Size())
-          ->window();
-  self.window = window;
   return YES;
 }
 
 - (BOOL)application:(UIApplication*)application
     didFinishLaunchingWithOptions:(NSDictionary*)launchOptions {
-  [self.window makeKeyAndVisible];
   return YES;
 }
 

@@ -56,6 +56,7 @@ BASE_DECLARE_FEATURE(kRtVcpuDualCore);
 BASE_DECLARE_FEATURE(kRtVcpuQuadCore);
 BASE_DECLARE_FEATURE(kSaveRawFilesOnTracing);
 BASE_DECLARE_FEATURE(kSwitchToKeyMintOnT);
+BASE_DECLARE_FEATURE(kSyncInstallPriority);
 BASE_DECLARE_FEATURE(kArcUpdateO4CListViaA2C2);
 BASE_DECLARE_FEATURE(kUsbStorageUIFeature);
 BASE_DECLARE_FEATURE(kUseDalvikMemoryProfile);
@@ -69,6 +70,10 @@ extern const base::FeatureParam<int> kVmMemorySizeMaxMiB;
 BASE_DECLARE_FEATURE(kVmBroadcastPreNotifyANR);
 BASE_DECLARE_FEATURE(kVmGmsCoreLowMemoryKillerProtection);
 BASE_DECLARE_FEATURE(kVmmSwapKeyboardShortcut);
+BASE_DECLARE_FEATURE(kVmmSwapPolicy);
+extern const base::FeatureParam<int> kVmmSwapOutDelaySecond;
+extern const base::FeatureParam<int> kVmmSwapOutTimeIntervalSecond;
+extern const base::FeatureParam<int> kVmmSwapArcSilenceIntervalSecond;
 
 }  // namespace arc
 

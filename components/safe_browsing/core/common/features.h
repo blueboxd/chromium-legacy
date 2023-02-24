@@ -115,6 +115,16 @@ extern const base::FeatureParam<int>
 extern const base::FeatureParam<int>
     kExtensionTelemetryFileDataMaxFileSizeBytes;
 
+// Specifies the interval for extension telemetry to collect offstore extension
+// file data.
+extern const base::FeatureParam<int>
+    kExtensionTelemetryFileDataCollectionIntervalSeconds;
+
+// Specifies the initial delay for extension telemetry to start collecting
+// offstore extension file data.
+extern const base::FeatureParam<int>
+    kExtensionTelemetryFileDataStartupDelaySeconds;
+
 // Enables data collected by the kExtensionTelemetry to be written and read to
 // disk. This data will be uploaded for analysis.
 BASE_DECLARE_FEATURE(kExtensionTelemetryPersistence);
@@ -223,6 +233,10 @@ BASE_DECLARE_FEATURE(kSuspiciousSiteTriggerQuotaFeature);
 // notified that they can enable Enhanced Protection through an operating system
 // notification.
 BASE_DECLARE_FEATURE(kTailoredSecurityDesktopNotice);
+
+// Enable a retry for the tailored security dialogs when the dialog
+// fails to show for a user whose google account has sync turned on.
+BASE_DECLARE_FEATURE(kTailoredSecurityDialogRetryMechanism);
 
 // Controls whether the integration of tailored security settings is enabled.
 BASE_DECLARE_FEATURE(kTailoredSecurityIntegration);

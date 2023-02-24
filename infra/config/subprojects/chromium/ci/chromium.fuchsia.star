@@ -10,25 +10,25 @@ load("//lib/ci.star", "ci")
 load("//lib/consoles.star", "consoles")
 
 ci.defaults.set(
-    builder_group = "chromium.fuchsia",
     executable = ci.DEFAULT_EXECUTABLE,
+    builder_group = "chromium.fuchsia",
+    pool = ci.DEFAULT_POOL,
     cores = 8,
     os = os.LINUX_DEFAULT,
-    pool = ci.DEFAULT_POOL,
     sheriff_rotations = sheriff_rotations.CHROMIUM,
     tree_closing = True,
     main_console_view = "main",
     cq_mirrors_console_view = "mirrors",
-    service_account = ci.DEFAULT_SERVICE_ACCOUNT,
     execution_timeout = ci.DEFAULT_EXECUTION_TIMEOUT,
     notifies = ["cr-fuchsia"],
     reclient_instance = reclient.instance.DEFAULT_TRUSTED,
     reclient_jobs = reclient.jobs.HIGH_JOBS_FOR_CI,
+    service_account = ci.DEFAULT_SERVICE_ACCOUNT,
 )
 
 consoles.console_view(
     name = "chromium.fuchsia",
-    branch_selector = branches.FUCHSIA_LTS_MILESTONE,
+    branch_selector = branches.selector.FUCHSIA_BRANCHES,
     ordering = {
         None: ["release", "debug"],
     },
@@ -43,7 +43,7 @@ ci.builder(
             short_name = "x64",
         ),
         consoles.console_view_entry(
-            branch_selector = branches.MAIN,
+            branch_selector = branches.selector.MAIN,
             console_view = "sheriff.fuchsia",
             category = "gardener|ci|x64",
             short_name = "det",
@@ -54,7 +54,7 @@ ci.builder(
 
 ci.builder(
     name = "fuchsia-arm64-cast-receiver-rel",
-    branch_selector = branches.FUCHSIA_LTS_MILESTONE,
+    branch_selector = branches.selector.FUCHSIA_BRANCHES,
     builder_spec = builder_config.builder_spec(
         gclient_config = builder_config.gclient_config(
             config = "chromium",
@@ -81,7 +81,7 @@ ci.builder(
             short_name = "arm64",
         ),
         consoles.console_view_entry(
-            branch_selector = branches.MAIN,
+            branch_selector = branches.selector.MAIN,
             console_view = "sheriff.fuchsia",
             category = "gardener|ci|arm64",
             short_name = "cast",
@@ -91,7 +91,7 @@ ci.builder(
 
 ci.builder(
     name = "fuchsia-arm64-rel",
-    branch_selector = branches.FUCHSIA_LTS_MILESTONE,
+    branch_selector = branches.selector.FUCHSIA_BRANCHES,
     builder_spec = builder_config.builder_spec(
         gclient_config = builder_config.gclient_config(
             config = "chromium",
@@ -118,7 +118,7 @@ ci.builder(
             short_name = "arm64",
         ),
         consoles.console_view_entry(
-            branch_selector = branches.MAIN,
+            branch_selector = branches.selector.MAIN,
             console_view = "sheriff.fuchsia",
             category = "gardener|ci|arm64",
             short_name = "rel",
@@ -128,7 +128,7 @@ ci.builder(
 
 ci.builder(
     name = "fuchsia-x64-cast-receiver-rel",
-    branch_selector = branches.FUCHSIA_LTS_MILESTONE,
+    branch_selector = branches.selector.FUCHSIA_BRANCHES,
     builder_spec = builder_config.builder_spec(
         gclient_config = builder_config.gclient_config(
             config = "chromium",
@@ -153,7 +153,7 @@ ci.builder(
             short_name = "x64",
         ),
         consoles.console_view_entry(
-            branch_selector = branches.MAIN,
+            branch_selector = branches.selector.MAIN,
             console_view = "sheriff.fuchsia",
             category = "gardener|ci|x64",
             short_name = "cast",
@@ -187,7 +187,7 @@ ci.builder(
             short_name = "x64",
         ),
         consoles.console_view_entry(
-            branch_selector = branches.MAIN,
+            branch_selector = branches.selector.MAIN,
             console_view = "sheriff.fuchsia",
             category = "gardener|ci|x64",
             short_name = "dbg",
@@ -197,7 +197,7 @@ ci.builder(
 
 ci.builder(
     name = "fuchsia-x64-rel",
-    branch_selector = branches.FUCHSIA_LTS_MILESTONE,
+    branch_selector = branches.selector.FUCHSIA_BRANCHES,
     builder_spec = builder_config.builder_spec(
         gclient_config = builder_config.gclient_config(
             config = "chromium",
@@ -222,7 +222,7 @@ ci.builder(
             short_name = "x64",
         ),
         consoles.console_view_entry(
-            branch_selector = branches.MAIN,
+            branch_selector = branches.selector.MAIN,
             console_view = "sheriff.fuchsia",
             category = "gardener|ci|x64",
             short_name = "rel",

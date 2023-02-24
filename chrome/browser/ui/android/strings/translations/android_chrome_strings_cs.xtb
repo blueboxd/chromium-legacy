@@ -265,7 +265,7 @@ Když smažete historii prohlížení (celou nebo na určitém webu), smažou se
 <translation id="250020030759455918">Uvidíte stav přihlášení, údaje o prohlížení a data webu <ph name="SITE_NAME" /> v Chromu</translation>
 <translation id="2510106555128151389">Probíhá instalace aplikace <ph name="WEBAPK_NAME" />...</translation>
 <translation id="2513403576141822879">Další nastavení související s ochranou soukromí, zabezpečením a shromažďováním dat naleznete v části <ph name="BEGIN_LINK" />Synchronizace a služby Google<ph name="END_LINK" /></translation>
-<translation id="2517472476991765520">Naskenovat</translation>
+<translation id="2517472476991765520">Skenovat</translation>
 <translation id="2523184218357549926">Odesílá do Googlu adresy URL stránek, které navštěvujete</translation>
 <translation id="2527209463677295330">Zahrnutím většího množství textu ze stránky můžete získat lepší výsledky</translation>
 <translation id="2527497042232966453">Přepnuto na anonymní karty</translation>
@@ -1208,7 +1208,7 @@ Některé weby mohou například na tento požadavek reagovat tak, že vám zobr
 <translation id="749294055653435199">Funkce Google Lens v tomto zařízení není dostupná</translation>
 <translation id="7493994139787901920"><ph name="VERSION" /> (aktualizováno <ph name="TIME_SINCE_UPDATE" />)</translation>
 <translation id="7498271377022651285">Čekejte prosím…</translation>
-<translation id="7502234197872745058">Pokud se chcete odhlásit od účtu Google na všech webech, <ph name="BEGIN_LINK1" />odhlaste se z Chromu<ph name="END_LINK1" />.</translation>
+<translation id="7502234197872745058">Pokud se chcete odhlásit z účtu Google na všech webech, <ph name="BEGIN_LINK1" />odhlaste se z Chromu<ph name="END_LINK1" />.</translation>
 <translation id="750228856503700085">Jsou k dispozici aktualizace</translation>
 <translation id="7507207699631365376">Zobrazit <ph name="BEGIN_LINK" />zásady ochrany soukromí<ph name="END_LINK" /> tohoto poskytovatele</translation>
 <translation id="7514365320538308">Stáhnout</translation>

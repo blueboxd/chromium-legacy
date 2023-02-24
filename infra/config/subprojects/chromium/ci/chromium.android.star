@@ -11,24 +11,24 @@ load("//lib/ci.star", "ci")
 load("//lib/consoles.star", "consoles")
 
 ci.defaults.set(
-    builder_group = "chromium.android",
     executable = ci.DEFAULT_EXECUTABLE,
+    builder_group = "chromium.android",
+    pool = ci.DEFAULT_POOL,
     cores = 8,
     os = os.LINUX_DEFAULT,
-    pool = ci.DEFAULT_POOL,
     sheriff_rotations = sheriff_rotations.ANDROID,
-    service_account = ci.DEFAULT_SERVICE_ACCOUNT,
     execution_timeout = ci.DEFAULT_EXECUTION_TIMEOUT,
 
     # TODO(crbug.com/1362440): remove this.
     omit_python2 = False,
     reclient_instance = reclient.instance.DEFAULT_TRUSTED,
     reclient_jobs = reclient.jobs.HIGH_JOBS_FOR_CI,
+    service_account = ci.DEFAULT_SERVICE_ACCOUNT,
 )
 
 consoles.console_view(
     name = "chromium.android",
-    branch_selector = branches.STANDARD_MILESTONE,
+    branch_selector = branches.selector.ANDROID_BRANCHES,
     ordering = {
         None: ["cronet", "builder", "tester"],
         "*cpu*": ["arm", "arm64", "x86"],
@@ -75,7 +75,8 @@ ci.builder(
 
 ci.thin_tester(
     name = "Android WebView N (dbg)",
-    branch_selector = branches.STANDARD_MILESTONE,
+    branch_selector = branches.selector.ANDROID_BRANCHES,
+    triggered_by = ["ci/Android arm64 Builder (dbg)"],
     builder_spec = builder_config.builder_spec(
         execution_mode = builder_config.execution_mode.TEST,
         gclient_config = builder_config.gclient_config(
@@ -101,7 +102,6 @@ ci.thin_tester(
         ),
         build_gs_bucket = "chromium-android-archive",
     ),
-    triggered_by = ["ci/Android arm64 Builder (dbg)"],
     console_view_entry = consoles.console_view_entry(
         category = "tester|webview",
         short_name = "N",
@@ -111,7 +111,8 @@ ci.thin_tester(
 
 ci.thin_tester(
     name = "Android WebView O (dbg)",
-    branch_selector = branches.STANDARD_MILESTONE,
+    branch_selector = branches.selector.ANDROID_BRANCHES,
+    triggered_by = ["ci/Android arm64 Builder (dbg)"],
     builder_spec = builder_config.builder_spec(
         execution_mode = builder_config.execution_mode.TEST,
         gclient_config = builder_config.gclient_config(
@@ -137,7 +138,6 @@ ci.thin_tester(
         ),
         build_gs_bucket = "chromium-android-archive",
     ),
-    triggered_by = ["ci/Android arm64 Builder (dbg)"],
     console_view_entry = consoles.console_view_entry(
         category = "tester|webview",
         short_name = "O",
@@ -147,7 +147,8 @@ ci.thin_tester(
 
 ci.thin_tester(
     name = "Android WebView P (dbg)",
-    branch_selector = branches.STANDARD_MILESTONE,
+    branch_selector = branches.selector.ANDROID_BRANCHES,
+    triggered_by = ["ci/Android arm64 Builder (dbg)"],
     builder_spec = builder_config.builder_spec(
         execution_mode = builder_config.execution_mode.TEST,
         gclient_config = builder_config.gclient_config(
@@ -173,7 +174,6 @@ ci.thin_tester(
         ),
         build_gs_bucket = "chromium-android-archive",
     ),
-    triggered_by = ["ci/Android arm64 Builder (dbg)"],
     console_view_entry = consoles.console_view_entry(
         category = "tester|webview",
         short_name = "P",
@@ -183,7 +183,7 @@ ci.thin_tester(
 
 ci.builder(
     name = "Android arm Builder (dbg)",
-    branch_selector = branches.STANDARD_MILESTONE,
+    branch_selector = branches.selector.ANDROID_BRANCHES,
     builder_spec = builder_config.builder_spec(
         gclient_config = builder_config.gclient_config(
             config = "chromium",
@@ -217,7 +217,7 @@ ci.builder(
 
 ci.builder(
     name = "Android arm64 Builder (dbg)",
-    branch_selector = branches.STANDARD_MILESTONE,
+    branch_selector = branches.selector.ANDROID_BRANCHES,
     builder_spec = builder_config.builder_spec(
         gclient_config = builder_config.gclient_config(
             config = "chromium",
@@ -262,7 +262,7 @@ ci.builder(
 # History: crbug.com/1246468
 ci.builder(
     name = "Android arm64 Builder All Targets (dbg)",
-    branch_selector = branches.STANDARD_MILESTONE,
+    branch_selector = branches.selector.ANDROID_BRANCHES,
     builder_spec = builder_config.builder_spec(
         gclient_config = builder_config.gclient_config(
             config = "chromium",
@@ -299,7 +299,7 @@ ci.builder(
 # See the builder "Android x64 Builder All Targets (dbg)" for more details.
 ci.builder(
     name = "Android x64 Builder (dbg)",
-    branch_selector = branches.STANDARD_MILESTONE,
+    branch_selector = branches.selector.ANDROID_BRANCHES,
     builder_spec = builder_config.builder_spec(
         gclient_config = builder_config.gclient_config(
             config = "chromium",
@@ -335,7 +335,7 @@ ci.builder(
 # So this builder matches "Android x64 Builder (dbg)", but compiles everything.
 ci.builder(
     name = "Android x64 Builder All Targets (dbg)",
-    branch_selector = branches.STANDARD_MILESTONE,
+    branch_selector = branches.selector.ANDROID_BRANCHES,
     builder_spec = builder_config.copy_from("ci/Android x64 Builder (dbg)"),
     console_view_entry = consoles.console_view_entry(
         category = "builder|x86",
@@ -347,7 +347,7 @@ ci.builder(
 
 ci.builder(
     name = "Android x86 Builder (dbg)",
-    branch_selector = branches.STANDARD_MILESTONE,
+    branch_selector = branches.selector.ANDROID_BRANCHES,
     builder_spec = builder_config.builder_spec(
         gclient_config = builder_config.gclient_config(
             config = "chromium",
@@ -407,6 +407,7 @@ ci.builder(
 
 ci.thin_tester(
     name = "android-webview-10-x86-rel-tests",
+    triggered_by = ["ci/android-x86-rel"],
     builder_spec = builder_config.builder_spec(
         execution_mode = builder_config.execution_mode.TEST,
         gclient_config = builder_config.gclient_config(
@@ -426,7 +427,6 @@ ci.thin_tester(
         ),
         build_gs_bucket = "chromium-android-archive",
     ),
-    triggered_by = ["ci/android-x86-rel"],
     console_view_entry = consoles.console_view_entry(
         category = "tester|x86",
         short_name = "10",
@@ -435,7 +435,7 @@ ci.thin_tester(
 
 ci.builder(
     name = "Cast Android (dbg)",
-    branch_selector = branches.STANDARD_MILESTONE,
+    branch_selector = branches.selector.ANDROID_BRANCHES,
     builder_spec = builder_config.builder_spec(
         gclient_config = builder_config.gclient_config(
             config = "chromium",
@@ -495,7 +495,8 @@ ci.builder(
 
 ci.thin_tester(
     name = "Nougat Phone Tester",
-    branch_selector = branches.STANDARD_MILESTONE,
+    branch_selector = branches.selector.ANDROID_BRANCHES,
+    triggered_by = ["ci/Android arm64 Builder (dbg)"],
     builder_spec = builder_config.builder_spec(
         execution_mode = builder_config.execution_mode.TEST,
         gclient_config = builder_config.gclient_config(
@@ -518,7 +519,6 @@ ci.thin_tester(
         ),
         build_gs_bucket = "chromium-android-archive",
     ),
-    triggered_by = ["ci/Android arm64 Builder (dbg)"],
     console_view_entry = consoles.console_view_entry(
         category = "tester|phone",
         short_name = "N",
@@ -528,7 +528,8 @@ ci.thin_tester(
 
 ci.thin_tester(
     name = "Oreo Phone Tester",
-    branch_selector = branches.STANDARD_MILESTONE,
+    branch_selector = branches.selector.ANDROID_BRANCHES,
+    triggered_by = ["ci/Android arm64 Builder (dbg)"],
     builder_spec = builder_config.builder_spec(
         execution_mode = builder_config.execution_mode.TEST,
         gclient_config = builder_config.gclient_config(
@@ -551,7 +552,6 @@ ci.thin_tester(
         ),
         build_gs_bucket = "chromium-android-archive",
     ),
-    triggered_by = ["ci/Android arm64 Builder (dbg)"],
     sheriff_rotations = args.ignore_default(None),
     console_view_entry = consoles.console_view_entry(
         category = "tester|phone",
@@ -593,6 +593,7 @@ ci.builder(
 
 ci.builder(
     name = "android-12l-x64-dbg-tests",
+    triggered_by = ["ci/Android x64 Builder (dbg)"],
     builder_spec = builder_config.builder_spec(
         execution_mode = builder_config.execution_mode.TEST,
         gclient_config = builder_config.gclient_config(
@@ -615,7 +616,6 @@ ci.builder(
         ),
         build_gs_bucket = "chromium-android-archive",
     ),
-    triggered_by = ["ci/Android x64 Builder (dbg)"],
     sheriff_rotations = args.ignore_default(None),
     console_view_entry = consoles.console_view_entry(
         category = "tester|tablet",
@@ -697,7 +697,7 @@ ci.builder(
 
 ci.builder(
     name = "android-cronet-arm-dbg",
-    branch_selector = branches.STANDARD_MILESTONE,
+    branch_selector = branches.selector.ANDROID_BRANCHES,
     builder_spec = builder_config.builder_spec(
         gclient_config = builder_config.gclient_config(
             config = "chromium",
@@ -731,7 +731,7 @@ ci.builder(
 
 ci.builder(
     name = "android-cronet-arm-rel",
-    branch_selector = branches.STANDARD_MILESTONE,
+    branch_selector = branches.selector.ANDROID_BRANCHES,
     builder_spec = builder_config.builder_spec(
         gclient_config = builder_config.gclient_config(
             config = "chromium",
@@ -864,7 +864,7 @@ ci.builder(
 
 ci.builder(
     name = "android-cronet-x86-dbg",
-    branch_selector = branches.STANDARD_MILESTONE,
+    branch_selector = branches.selector.ANDROID_BRANCHES,
     builder_spec = builder_config.builder_spec(
         gclient_config = builder_config.gclient_config(
             config = "chromium",
@@ -897,6 +897,7 @@ ci.builder(
 
 ci.thin_tester(
     name = "android-cronet-x86-dbg-lollipop-tests",
+    triggered_by = ["ci/android-cronet-x86-dbg"],
     builder_spec = builder_config.builder_spec(
         execution_mode = builder_config.execution_mode.TEST,
         gclient_config = builder_config.gclient_config(
@@ -920,7 +921,6 @@ ci.thin_tester(
         ),
         build_gs_bucket = "chromium-android-archive",
     ),
-    triggered_by = ["ci/android-cronet-x86-dbg"],
     sheriff_rotations = args.ignore_default(None),
     console_view_entry = consoles.console_view_entry(
         category = "cronet|test",
@@ -931,6 +931,7 @@ ci.thin_tester(
 
 ci.thin_tester(
     name = "android-cronet-x86-dbg-marshmallow-tests",
+    triggered_by = ["ci/android-cronet-x86-dbg"],
     builder_spec = builder_config.builder_spec(
         execution_mode = builder_config.execution_mode.TEST,
         gclient_config = builder_config.gclient_config(
@@ -954,7 +955,6 @@ ci.thin_tester(
         ),
         build_gs_bucket = "chromium-android-archive",
     ),
-    triggered_by = ["ci/android-cronet-x86-dbg"],
     sheriff_rotations = args.ignore_default(None),
     console_view_entry = consoles.console_view_entry(
         category = "cronet|test",
@@ -965,6 +965,7 @@ ci.thin_tester(
 
 ci.thin_tester(
     name = "android-cronet-x86-dbg-oreo-tests",
+    triggered_by = ["ci/android-cronet-x86-dbg"],
     builder_spec = builder_config.builder_spec(
         execution_mode = builder_config.execution_mode.TEST,
         gclient_config = builder_config.gclient_config(
@@ -988,7 +989,6 @@ ci.thin_tester(
         ),
         build_gs_bucket = "chromium-android-archive",
     ),
-    triggered_by = ["ci/android-cronet-x86-dbg"],
     sheriff_rotations = args.ignore_default(None),
     console_view_entry = consoles.console_view_entry(
         category = "cronet|test",
@@ -999,6 +999,7 @@ ci.thin_tester(
 
 ci.thin_tester(
     name = "android-cronet-x86-dbg-pie-tests",
+    triggered_by = ["ci/android-cronet-x86-dbg"],
     builder_spec = builder_config.builder_spec(
         execution_mode = builder_config.execution_mode.TEST,
         gclient_config = builder_config.gclient_config(
@@ -1022,7 +1023,6 @@ ci.thin_tester(
         ),
         build_gs_bucket = "chromium-android-archive",
     ),
-    triggered_by = ["ci/android-cronet-x86-dbg"],
     sheriff_rotations = args.ignore_default(None),
     console_view_entry = consoles.console_view_entry(
         category = "cronet|test",
@@ -1033,7 +1033,8 @@ ci.thin_tester(
 
 ci.thin_tester(
     name = "android-cronet-x86-dbg-10-tests",
-    branch_selector = branches.STANDARD_MILESTONE,
+    branch_selector = branches.selector.ANDROID_BRANCHES,
+    triggered_by = ["ci/android-cronet-x86-dbg"],
     builder_spec = builder_config.builder_spec(
         execution_mode = builder_config.execution_mode.TEST,
         gclient_config = builder_config.gclient_config(
@@ -1057,7 +1058,6 @@ ci.thin_tester(
         ),
         build_gs_bucket = "chromium-android-archive",
     ),
-    triggered_by = ["ci/android-cronet-x86-dbg"],
     sheriff_rotations = args.ignore_default(None),
     console_view_entry = consoles.console_view_entry(
         category = "cronet|test",
@@ -1068,6 +1068,7 @@ ci.thin_tester(
 
 ci.thin_tester(
     name = "android-cronet-x86-dbg-11-tests",
+    triggered_by = ["ci/android-cronet-x86-dbg"],
     builder_spec = builder_config.builder_spec(
         execution_mode = builder_config.execution_mode.TEST,
         gclient_config = builder_config.gclient_config(
@@ -1091,7 +1092,6 @@ ci.thin_tester(
         ),
         build_gs_bucket = "chromium-android-archive",
     ),
-    triggered_by = ["ci/android-cronet-x86-dbg"],
     sheriff_rotations = args.ignore_default(None),
     console_view_entry = consoles.console_view_entry(
         category = "cronet|test",
@@ -1130,6 +1130,7 @@ ci.builder(
 
 ci.thin_tester(
     name = "android-cronet-x86-rel-kitkat-tests",
+    triggered_by = ["ci/android-cronet-x86-rel"],
     builder_spec = builder_config.builder_spec(
         execution_mode = builder_config.execution_mode.TEST,
         gclient_config = builder_config.gclient_config(
@@ -1149,7 +1150,6 @@ ci.thin_tester(
         android_config = builder_config.android_config(config = "x86_builder"),
         build_gs_bucket = "chromium-android-archive",
     ),
-    triggered_by = ["ci/android-cronet-x86-rel"],
     sheriff_rotations = args.ignore_default(None),
     console_view_entry = consoles.console_view_entry(
         category = "cronet|test",
@@ -1160,7 +1160,7 @@ ci.thin_tester(
 
 ci.builder(
     name = "android-nougat-x86-rel",
-    branch_selector = branches.STANDARD_MILESTONE,
+    branch_selector = branches.selector.ANDROID_BRANCHES,
     builder_spec = builder_config.builder_spec(
         gclient_config = builder_config.gclient_config(
             config = "chromium",
@@ -1187,7 +1187,8 @@ ci.builder(
 
 ci.thin_tester(
     name = "android-pie-arm64-dbg",
-    branch_selector = branches.STANDARD_MILESTONE,
+    branch_selector = branches.selector.ANDROID_BRANCHES,
+    triggered_by = ["ci/Android arm64 Builder (dbg)"],
     builder_spec = builder_config.builder_spec(
         execution_mode = builder_config.execution_mode.TEST,
         gclient_config = builder_config.gclient_config(
@@ -1210,7 +1211,6 @@ ci.thin_tester(
         ),
         build_gs_bucket = "chromium-android-archive",
     ),
-    triggered_by = ["ci/Android arm64 Builder (dbg)"],
     console_view_entry = consoles.console_view_entry(
         category = "tester|phone",
         short_name = "P",
@@ -1249,7 +1249,7 @@ ci.builder(
 
 ci.builder(
     name = "android-pie-arm64-rel",
-    branch_selector = branches.STANDARD_MILESTONE,
+    branch_selector = branches.selector.ANDROID_BRANCHES,
     builder_spec = builder_config.builder_spec(
         gclient_config = builder_config.gclient_config(
             config = "chromium",
@@ -1348,7 +1348,7 @@ ci.builder(
 
 ci.builder(
     name = "android-12-x64-rel",
-    branch_selector = branches.STANDARD_MILESTONE,
+    branch_selector = branches.selector.ANDROID_BRANCHES,
     builder_spec = builder_config.builder_spec(
         gclient_config = builder_config.gclient_config(
             config = "chromium",

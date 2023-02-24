@@ -257,7 +257,7 @@ Comprova les contrasenyes sempre que vulguis al <ph name="GOOGLE_PASSWORD_MANAGE
 <translation id="1225177025209879837">S'està processant la sol·licitud...</translation>
 <translation id="1227660082540388410">Edita la clau d'accés</translation>
 <translation id="1227993798763400520">No s'ha pogut emetre. Torna-ho a provar.</translation>
-<translation id="1230417814058465809">Està activada la protecció estàndard. Per augmentar la seguretat, utilitza la protecció millorada.</translation>
+<translation id="1230417814058465809">La protecció estàndard està activada. Per augmentar la seguretat, utilitza la protecció millorada.</translation>
 <translation id="1231733316453485619">Vols activar la sincronització?</translation>
 <translation id="1232569758102978740">Sense títol</translation>
 <translation id="1233497634904001272">Torna a tocar la clau de seguretat per completar la sol·licitud.</translation>
@@ -1856,7 +1856,7 @@ Pots gestionar la configuració d'aquest compte instal·lant l'aplicació Family
 <translation id="2659971421398561408">Canvi de mida del disc de Crostini</translation>
 <translation id="2660779039299703961">Esdeveniment</translation>
 <translation id="266079277508604648">No es pot contactar amb la impressora. Comprova que estigui encesa i connectada al teu Chromebook per Wi-Fi o USB.</translation>
-<translation id="2661315027005813059">Pàgina desada a la memòria cau back-forward: <ph name="BACK_FORWARD_CACHE_PAGE_URL" /></translation>
+<translation id="2661315027005813059">Pàgina desada a la memòria cau endavant/enrere: <ph name="BACK_FORWARD_CACHE_PAGE_URL" /></translation>
 <translation id="2661714428027871023">Navega més de pressa i estalvia dades amb el mode lleuger. Fes clic per obtenir més informació.</translation>
 <translation id="2662876636500006917">Chrome Web Store</translation>
 <translation id="2663302507110284145">Idioma</translation>
@@ -2582,7 +2582,7 @@ Pots gestionar la configuració d'aquest compte instal·lant l'aplicació Family
 <translation id="3331974543021145906">Informació de l'aplicació</translation>
 <translation id="3333190335304955291">Pots desactivar aquest servei a Configuració.</translation>
 <translation id="3333961966071413176">Tots els contactes</translation>
-<translation id="3334632933872291866"><ph name="WINDOW_TITLE" />: s'està reproduint el vídeo en mode de pantalla en pantalla</translation>
+<translation id="3334632933872291866"><ph name="WINDOW_TITLE" />: s'està reproduint el vídeo en mode d'imatge sobre imatge</translation>
 <translation id="3335947283844343239">Torna a obrir la pestanya tancada</translation>
 <translation id="3336855445806447827">No ho sé</translation>
 <translation id="3337568642696914359">No permetis que els llocs web gestionin protocols</translation>
@@ -3002,7 +3002,7 @@ Pots gestionar la configuració d'aquest compte instal·lant l'aplicació Family
 <translation id="3727187387656390258">Inspecciona l'element emergent</translation>
 <translation id="372722114124766626">Només una vegada</translation>
 <translation id="3727332897090187514">No s'ha afegit cap nota</translation>
-<translation id="3727473233247516571">Submarc desat a la memòria cau back-forward: <ph name="BACK_FORWARD_CACHE_PAGE_URL" /></translation>
+<translation id="3727473233247516571">Submarc desat a la memòria cau endavant/enrere: <ph name="BACK_FORWARD_CACHE_PAGE_URL" /></translation>
 <translation id="3728188878314831180">Mostra notificacions del telèfon</translation>
 <translation id="3728681439294129328">Configura l'adreça de la xarxa</translation>
 <translation id="3729303374699765035">Pregunta'm quan un lloc web vulgui descobrir dispositius Bluetooth propers</translation>
@@ -4460,7 +4460,7 @@ Fes servir Ctrl+Alt+disminueix la brillantor per reduir.</translation>
 <translation id="5088534251099454936">PKCS #1 SHA-512 amb encriptació RSA</translation>
 <translation id="5089763948477033443">Ansa de canvi de mida del tauler lateral</translation>
 <translation id="5090637338841444533">Sense permís per fer un seguiment de la posició de la càmera</translation>
-<translation id="5093569275467863761">Submarc d'incògnit desat a la memòria cau back-forward: <ph name="BACK_FORWARD_CACHE_INCOGNITO_PAGE_URL" /></translation>
+<translation id="5093569275467863761">Submarc d'incògnit desat a la memòria cau endavant/enrere: <ph name="BACK_FORWARD_CACHE_INCOGNITO_PAGE_URL" /></translation>
 <translation id="5094042205195563542">S'està iniciant la instal·lació</translation>
 <translation id="5094176498302660097">Amb aquesta aplicació pots obrir i editar fitxers admesos des de l'aplicació Fitxers o des d'altres aplicacions. Si vols controlar quins fitxers s'obren amb aquesta aplicació de manera predeterminada, <ph name="BEGIN_LINK" />obtén més informació sobre com pots establir aplicacions predeterminades al dispositiu<ph name="END_LINK" />.</translation>
 <translation id="5094721898978802975">Comunicar-se amb aplicacions natives cooperatives</translation>
@@ -4659,7 +4659,7 @@ Fes servir Ctrl+Alt+disminueix la brillantor per reduir.</translation>
 <translation id="5280426389926346830">Vols crear una drecera?</translation>
 <translation id="5281013262333731149">S'obre a <ph name="OPEN_BROWSER" /></translation>
 <translation id="528208740344463258">Per baixar i utilitzar les aplicacions d'Android, primer has d'instal·lar aquesta actualització obligatòria. Mentre el dispositiu <ph name="DEVICE_TYPE" /> s'estigui actualitzant, no el podràs fer servir. Un cop finalitzada la instal·lació, <ph name="DEVICE_TYPE" /> es reiniciarà.</translation>
-<translation id="5282733140964383898">Si s'activa l'opció No segueixis, s'inclourà una sol·licitud amb el teu trànsit de navegació. Els efectes depenen de si un lloc web respon o no a la sol·licitud, així com de la manera en què s'interpreta la sol·licitud. Per exemple, és possible que alguns llocs web responguin a aquesta sol·licitud mostrant-te anuncis que no estiguin basats en altres llocs web que hagis visitat. Molts llocs web continuaran recopilant i utilitzant les teves dades de navegació (per exemple, per millorar la seguretat, per proporcionar contingut, serveis, anuncis i recomanacions als seus llocs web o per generar estadístiques d'informes).<ph name="BEGIN_LINK" />Més informació<ph name="END_LINK" /></translation>
+<translation id="5282733140964383898">Si s'activa l'opció No rastregis, s'inclourà una sol·licitud amb el teu trànsit de navegació. Els efectes depenen de si un lloc web respon o no a la sol·licitud, així com de la manera en què s'interpreta la sol·licitud. Per exemple, és possible que alguns llocs web responguin a aquesta sol·licitud mostrant-te anuncis que no estiguin basats en altres llocs web que hagis visitat. Molts llocs web continuaran recopilant i utilitzant les teves dades de navegació (per exemple, per millorar la seguretat, per proporcionar contingut, serveis, anuncis i recomanacions als seus llocs web o per generar estadístiques d'informes).<ph name="BEGIN_LINK" />Més informació<ph name="END_LINK" /></translation>
 <translation id="5283677936944177147">El sistema no ha pogut determinar el model ni el número de sèrie del dispositiu.</translation>
 <translation id="5284445933715251131">Continua la baixada</translation>
 <translation id="5285635972691565180">Pantalla <ph name="DISPLAY_ID" /></translation>
@@ -4680,7 +4680,7 @@ Fes servir Ctrl+Alt+disminueix la brillantor per reduir.</translation>
 <translation id="5297082477358294722">S'ha desat la contrasenya. Consulta i gestiona les contrasenyes desades al <ph name="SAVED_PASSWORDS_STORE" />.</translation>
 <translation id="5297946558563358707">Quan una altra persona miri la teva pantalla, mostra la icona de l'ull de privadesa a la part inferior dreta de la pantalla</translation>
 <translation id="5298219193514155779">Tema creat per</translation>
-<translation id="5299109548848736476">No segueixis</translation>
+<translation id="5299109548848736476">No rastregis</translation>
 <translation id="5299558715747014286">Veure i gestionar els teus grups de pestanyes</translation>
 <translation id="5300287940468717207">Vols restablir els permisos del lloc web?</translation>
 <translation id="5300426565656326054">Personalització d'anuncis basada en el navegador</translation>
@@ -4738,7 +4738,7 @@ Fes servir Ctrl+Alt+disminueix la brillantor per reduir.</translation>
 <translation id="5352257124367865087">Gestiona els permisos dels llocs web</translation>
 <translation id="5353252989841766347">Exporteu contrasenyes de Chrome</translation>
 <translation id="5355099869024327351">Permet que l'Assistent et mostri notificacions</translation>
-<translation id="5355191726083956201">Està activada la protecció millorada</translation>
+<translation id="5355191726083956201">La protecció millorada està activada</translation>
 <translation id="5355501370336370394">Inscriu un dispositiu d'empresa</translation>
 <translation id="5355926466126177564">L'extensió <ph name="EXTENSION_NAME" /> ha canviat la pàgina que es mostra quan feu una cerca des de l'omnibox.</translation>
 <translation id="5356155057455921522">Aquesta actualització de l'administrador farà que les aplicacions de la teva organització s'obrin més de pressa. Aquest procés pot tardar uns minuts.</translation>
@@ -7304,7 +7304,7 @@ Prem un interruptor o una tecla assignats per suprimir una assignació.</transla
         <ph name="BREAK" />
         <ph name="BREAK" />
         Pots gestionar la configuració d'aquesta targeta des del seu menú o veure més opcions a Personalitza Chrome.</translation>
-<translation id="7750228210027921155">Pantalla en pantalla</translation>
+<translation id="7750228210027921155">Imatge sobre imatge</translation>
 <translation id="7751260505918304024">Mostra-ho tot</translation>
 <translation id="7751619076382363711">No has suprimit cap lloc web</translation>
 <translation id="7753735457098489144">Ha fallat la instal·lació perquè falta espai d'emmagatzematge. Per alliberar espai, suprimeix fitxers de l'emmagatzematge del dispositiu.</translation>
@@ -7623,7 +7623,7 @@ Deseu el fitxer de clau en una ubicació segura. El necessitareu per crear versi
 <translation id="8033023935541439900">S'ha obert el menú de marques d'èmfasi. Prem la fletxa esquerra o dreta per navegar i prem Retorn per inserir-ne una.</translation>
 <translation id="8033827949643255796">seleccionats</translation>
 <translation id="8033958968890501070">Temps d'espera esgotat</translation>
-<translation id="8035059678007243127">Pàgina d'incògnit desada a la memòria cau back-forward: <ph name="BACK_FORWARD_CACHE_INCOGNITO_PAGE_URL" /></translation>
+<translation id="8035059678007243127">Pàgina d'incògnit desada a la memòria cau endavant/enrere: <ph name="BACK_FORWARD_CACHE_INCOGNITO_PAGE_URL" /></translation>
 <translation id="8037117027592400564">Llegeix tot el text en veu alta mitjançant una síntesi de veu</translation>
 <translation id="8037357227543935929">Pregunta (opció predeterminada)</translation>
 <translation id="803771048473350947">Fitxer</translation>
@@ -8101,7 +8101,7 @@ Deseu el fitxer de clau en una ubicació segura. El necessitareu per crear versi
 <translation id="8464132254133862871">Aquest compte d'usuari no és apte per al servei.</translation>
 <translation id="8465252176946159372">No és vàlid</translation>
 <translation id="8465444703385715657"><ph name="PLUGIN_NAME" /> necessita el teu permís per executar-se</translation>
-<translation id="8466417995783206254">En aquesta pestanya s'està reproduint un vídeo en mode de pantalla en pantalla.</translation>
+<translation id="8466417995783206254">En aquesta pestanya s'està reproduint un vídeo en mode d'imatge sobre imatge.</translation>
 <translation id="8467326454809944210">Tria un altre idioma</translation>
 <translation id="8470513973197838199">Contrasenyes desades per a <ph name="ORIGIN" /></translation>
 <translation id="8471525937465764768">Els llocs web solen connectar-se a dispositius USB per a funcions com ara desar dades en un dispositiu d'emmagatzematge o imprimir un document</translation>
@@ -8862,7 +8862,7 @@ Obtén informació sobre les dades que Google recull i sobre el motiu pel qual h
       <ph name="LIST_ITEM" />Torna't a connectar a la Wi‑Fi.
       <ph name="LIST_ITEM" />Executa Diagnòstic de connectivitat de Chrome.
     <ph name="END_LIST" /></translation>
-<translation id="916607977885256133">Pantalla en pantalla</translation>
+<translation id="916607977885256133">Imatge sobre imatge</translation>
 <translation id="9166253503936244008">Escaneja aquest codi QR amb el dispositiu que té la clau d'accés que vols utilitzar per a <ph name="APP_NAME" /></translation>
 <translation id="9167063903968449027">Mostra la Llista de lectura</translation>
 <translation id="9167450455589251456">El perfil no s'admet</translation>

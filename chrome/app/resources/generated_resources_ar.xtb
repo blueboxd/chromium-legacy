@@ -143,7 +143,7 @@
 <translation id="1126809382673880764">‏لا يوفّر لك هذا الوضع حماية من الإضافات أو عمليات التنزيل أو المواقع الإلكترونية الضارة. وستظل تستفيد من ميزة "التصفّح الآمن" عند توفّرها في خدمات Google الأخرى، مثل Gmail و"بحث Google".</translation>
 <translation id="1128090040635299943">‏يجري الآن إعداد نظام التشغيل Linux. ستستغرق عملية الإعداد بضع دقائق.</translation>
 <translation id="1128591060186966949">تعديل محرّك البحث</translation>
-<translation id="1129420403709586868">يمكنك عرض الصور والوسائط من هاتفك.</translation>
+<translation id="1129420403709586868">عرض الصور والوسائط من هاتفك</translation>
 <translation id="1129850422003387628">إدارة التطبيقات</translation>
 <translation id="113050636487300043">اختَر اسمًا ومظهرًا ملوّنًا لكل ملف شخصي للتمييز بينها.</translation>
 <translation id="1130589222747246278"><ph name="WINDOW_TITLE" /> - جزء من مجموعة <ph name="GROUP_NAME" /></translation>
@@ -1911,7 +1911,7 @@
 <translation id="270921614578699633">تم تجاوز المعدل</translation>
 <translation id="2709516037105925701">الملء التلقائي</translation>
 <translation id="2710101514844343743">بيانات الاستخدام والتشخيص</translation>
-<translation id="271033894570825754">جديدة</translation>
+<translation id="271033894570825754">جديد</translation>
 <translation id="2711073837061989559">الإصدارات التجريبية</translation>
 <translation id="2712173769900027643">طلب إذن</translation>
 <translation id="2712207122921938368">إنشاء مفتاح مرور على جهاز آخر</translation>
@@ -3910,7 +3910,7 @@
 <translation id="4563210852471260509">لغة الإدخال الأولية هي الصينية</translation>
 <translation id="4563382028841851106">الإزالة من الحساب</translation>
 <translation id="4563880231729913339">إصبع 3</translation>
-<translation id="4564245002465020751">إنهاء عملية الإعداد على هاتفك</translation>
+<translation id="4564245002465020751">إكمال عملية ضبط الإعدادات على هاتفك</translation>
 <translation id="4565377596337484307">إخفاء كلمة المرور</translation>
 <translation id="4565917129334815774">تخزين سجلّات النظام</translation>
 <translation id="4566170377336116390">‏إذا أردت التبديل بعد إتمام التسجيل، عليك إعادة ضبط جهازك على الإعدادات الأصلية (Powerwash).</translation>
@@ -4112,7 +4112,7 @@
 <translation id="4746351372139058112">الرسائل</translation>
 <translation id="4748783296226936791">‏تتّصل المواقع الإلكترونية عادةً بأجهزة HID لتتيح الميزات التي تستخدم لوحات المفاتيح غير العادية ووحدات التحكّم في الألعاب وغيرها من الأجهزة.</translation>
 <translation id="4749960740855309258">فتح علامة تبويب جديدة</translation>
-<translation id="4750185073185658673">‏عليك الانتقال إلى هاتفك لمراجعة بعض الأذونات الإضافية. تأكَّد من تفعيل البلوتوث وWi-Fi على هاتفك.</translation>
+<translation id="4750185073185658673">‏عليك الانتقال إلى هاتفك لمراجعة بعض الأذونات الإضافية. يُرجى التأكّد من أنّ كل من البلوتوث وWi-Fi مفعّلين على هاتفك.</translation>
 <translation id="4750394297954878236">الاقتراحات</translation>
 <translation id="475088594373173692">المستخدم الأول</translation>
 <translation id="4756378406049221019">إيقاف/تحديث</translation>
@@ -5296,7 +5296,7 @@
 <translation id="5865508026715185451">سيتم إيقاف تطبيق <ph name="APP_NAME" /> مؤقتًا بعد قليل.</translation>
 <translation id="586567932979200359">أنت تشغّل <ph name="PRODUCT_NAME" /> من صورته على القرص. ويسمح لك تثبيته على الكمبيوتر بتشغيله بدون الحاجة إلى صورة القرص، كما يضمن ذلك الحفاظ على تحديثه بشكل مستمر.</translation>
 <translation id="5865733239029070421">‏يُرسِل إحصاءات الاستخدام وتقارير الأعطال إلى Google تلقائيًا.</translation>
-<translation id="5867841422488265304">البحث عن عنوان الويب أو إدخاله</translation>
+<translation id="5867841422488265304">البحث عن عنوان ويب أو إدخاله</translation>
 <translation id="5869029295770560994">حسنًا</translation>
 <translation id="5869522115854928033">كلمات المرور المحفوظة</translation>
 <translation id="5870086504539785141">إغلاق قائمة إمكانية الوصول</translation>
@@ -5933,7 +5933,7 @@
 <translation id="6466258437571594570">منع المواقع الإلكترونية من إزعاجك عند طلب إذن بإرسال الإشعارات</translation>
 <translation id="6466988389784393586">ف&amp;تح كل الإشارات المرجعية</translation>
 <translation id="6467304607960172345">تحسين الفيديوهات بملء الشاشة</translation>
-<translation id="6467377768028664108">بعد ذلك، سيتمكّن جهاز <ph name="DEVICE_TYPE" /> من:</translation>
+<translation id="6467377768028664108">سيتمكّن جهاز <ph name="DEVICE_TYPE" /> من تنفيذ الآتي:</translation>
 <translation id="6468485451923838994">الخطوط</translation>
 <translation id="6468773105221177474"><ph name="FILE_COUNT" /> ملف</translation>
 <translation id="6469557521904094793">تفعيل شبكة الجوّال</translation>
@@ -7634,7 +7634,7 @@
 <translation id="8030169304546394654">غير متصل</translation>
 <translation id="8030852056903932865">أوافق</translation>
 <translation id="8032244173881942855">يتعذّر إرسال علامة التبويب.</translation>
-<translation id="8032569120109842252">تتم متابعته حاليًا</translation>
+<translation id="8032569120109842252">المواقع التي تتابعها</translation>
 <translation id="8033023935541439900">‏تم فتح قائمة علامات التشكيل. اضغط على السهم المتّجه لليمين أو اليسار للتنقُّل ثم اضغط على Enter للإدخال.</translation>
 <translation id="8033827949643255796">تم التحديد</translation>
 <translation id="8033958968890501070">انتهاء المهلة</translation>
@@ -7643,7 +7643,7 @@
 <translation id="8037357227543935929">الطلب (تلقائي)</translation>
 <translation id="803771048473350947">ملف</translation>
 <translation id="8041089156583427627">إرسال تعليقات</translation>
-<translation id="8041267120753677077">يمكنك بث تطبيقات هاتفك.</translation>
+<translation id="8041267120753677077">بث تطبيقات هاتفك</translation>
 <translation id="8042142357103597104">درجة تعتيم النص</translation>
 <translation id="8042331986490021244">‏يتم تشفير كلمات المرور على جهازك قبل حفظها في "مدير كلمات المرور" من Google.</translation>
 <translation id="8044262338717486897"><ph name="LINUX_APP_NAME" /> لا يستجيب.</translation>

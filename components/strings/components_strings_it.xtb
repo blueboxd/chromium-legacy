@@ -1065,7 +1065,7 @@ In caso contrario l'uso sarà bloccato dalle impostazioni sulla privacy. I conte
 <translation id="3678342917559046352">Estensione non valida: il valore deve essere in uno dei seguenti formati: &lt;extension_id&gt; o &lt;extension_id&gt;;&lt;update_url&gt;.</translation>
 <translation id="3678529606614285348">Apri la pagina in un'altra finestra di navigazione in incognito (CTRL-MAIUSC-N)</translation>
 <translation id="3681007416295224113">Informazioni certificato</translation>
-<translation id="3693327506115126094">Scegli la modalità di verifica della tua identità</translation>
+<translation id="3693327506115126094">Scegli come verificare la tua identità</translation>
 <translation id="3701427423622901115">Reimpostazione confermata.</translation>
 <translation id="3704162925118123524">La rete che stai utilizzando può richiedere di visitare la relativa pagina di accesso.</translation>
 <translation id="3705189812819839667"><ph name="RESULT_OWNER" /> - <ph name="RESULT_PRODUCT_SOURCE" /></translation>
@@ -2337,7 +2337,7 @@ In caso contrario l'uso sarà bloccato dalle impostazioni sulla privacy. I conte
 <translation id="6979440798594660689">Disattivazione audio (impostazione predefinita)</translation>
 <translation id="6989763994942163495">Mostra impostazioni avanzate...</translation>
 <translation id="6992499368826755835">Auto e motori</translation>
-<translation id="6996312675313362352">Traduci sempre questa lingua: <ph name="ORIGINAL_LANGUAGE" /></translation>
+<translation id="6996312675313362352">Traduci sempre <ph name="ORIGINAL_LANGUAGE" /></translation>
 <translation id="6999969238895751684">Settore dell'intrattenimento</translation>
 <translation id="7003335073762455340">Stai monitorando questo prodotto. La pagina è salvata in <ph name="LAST_BOOKMARKS_FOLDER" />.</translation>
 <translation id="7004583254764674281">Usa Windows Hello per verificare più velocemente le carte</translation>
@@ -2681,7 +2681,7 @@ Ulteriori dettagli:
 <translation id="7798389633136518089">Ignorato perché il criterio non è stato impostato da un'origine cloud.</translation>
 <translation id="7800304661137206267">La connessione è stata criptata utilizzando <ph name="CIPHER" />, con <ph name="MAC" /> per l'autenticazione dei messaggi e <ph name="KX" /> come meccanismo principale di scambio delle chiavi.</translation>
 <translation id="7802523362929240268">Il sito è legittimo</translation>
-<translation id="7802989406998618639">Inserisci il codice di sicurezza di <ph name="NUMBER_OF_DIGITS" /> cifre indicato sulla <ph name="SIDE_OF_CARD" /> per consentire alla tua banca di verificare la tua identità</translation>
+<translation id="7802989406998618639">Inserisci il codice di sicurezza a <ph name="NUMBER_OF_DIGITS" /> cifre che trovi sul <ph name="SIDE_OF_CARD" /> della carta per consentire alla banca di verificare la tua identità</translation>
 <translation id="780301667611848630">No grazie</translation>
 <translation id="7805571567667010077">Gestita dalla tua organizzazione</translation>
 <translation id="7805768142964895445">Stato</translation>
@@ -2903,7 +2903,7 @@ Ulteriori dettagli:
 <translation id="8380941800586852976">Pericolosa</translation>
 <translation id="8381674639488873545">L'addebito potrebbe essere singolo oppure ricorrente e potrebbe non essere evidente. <ph name="BEGIN_LINK" />Mostra comunque<ph name="END_LINK" /></translation>
 <translation id="8390725133630534698">La possibilità di condivisione da <ph name="ORIGIN_NAME" /> a <ph name="VM_NAME" /> è stata bloccata da un criterio dell'amministratore</translation>
-<translation id="8396522675989118466">Si tratta del codice di <ph name="NUMBER_OF_DIGITS" /> cifre indicato su: <ph name="SIDE_OF_CARD" /></translation>
+<translation id="8396522675989118466">È il codice a <ph name="NUMBER_OF_DIGITS" /> cifre indicato sul <ph name="SIDE_OF_CARD" /></translation>
 <translation id="8398790343843005537">Trova il tuo telefono</translation>
 <translation id="8405579342203358118">Gestisci le informazioni da sincronizzare nelle impostazioni di Chrome</translation>
 <translation id="8406071103346257942">non usare più il blocco schermo per inserire le password</translation>

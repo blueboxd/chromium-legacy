@@ -901,7 +901,7 @@
 <translation id="1805738995123446102">برگه پس‌زمینه درحال استفاده از میکروفون است</translation>
 <translation id="1805822111539868586">بازرسی بازدیدها</translation>
 <translation id="1805888043020974594">سرور چاپ</translation>
-<translation id="1805967612549112634">تأیید پین</translation>
+<translation id="1805967612549112634">پین را تأیید کنید</translation>
 <translation id="1806335016774576568">رفتن به برنامه باز دیگر</translation>
 <translation id="1807246157184219062">روشن</translation>
 <translation id="1809201888580326312">انتخاب کرده‌اید گذرواژه‌های این سایت‌ها و برنامه‌ها ذخیره نشوند</translation>
@@ -4373,7 +4373,7 @@
 <translation id="4981449534399733132">‏برای اینکه داده‌های محصول مرور را از همه دستگاه‌های همگام‌سازی‌شده و حساب Google خود پاک کنید، <ph name="BEGIN_LINK" />به سیستم وارد شوید<ph name="END_LINK" />.</translation>
 <translation id="4982111327868342436">در هر دستگاهی کار را از جایی که متوقف کرده‌اید ادامه دهید</translation>
 <translation id="4982236238228587209">نرم‌افزار دستگاه</translation>
-<translation id="4986706507552097681">‏هرزمان بخواهید می‌توانید موارد مدنظرتان را برای همگام‌سازی در تنظیمات انتخاب کنید. Google ممکن است «جستجو» و سرویس‌های دیگر را براساس سابقه‌تان شخصی کند.</translation>
+<translation id="4986706507552097681">‏هرزمان بخواهید می‌توانید موارد مدنظرتان را برای همگام‌سازی در تنظیمات انتخاب کنید. Google ممکن است «جستجو» و سرویس‌های دیگر را براساس سابقه‌تان شخصی‌سازی کند.</translation>
 <translation id="4986728572522335985">با این کار، همه داده‌های موجود در کلید امنیتی، ازجمله پین آن، پاک می‌شود</translation>
 <translation id="4988526792673242964">صفحات</translation>
 <translation id="49896407730300355">چرخاندن خلاف جهت ع&amp;قربه‌های ساعت</translation>
@@ -6651,7 +6651,7 @@
 <translation id="7108338896283013870">عدم نمایش</translation>
 <translation id="7108668606237948702">Enter</translation>
 <translation id="7108933416628942903">اکنون قفل شود</translation>
-<translation id="7109543803214225826">میان‌بر حذف شد</translation>
+<translation id="7109543803214225826">میان‌بر برداشته شد</translation>
 <translation id="7110644433780444336">{NUM_TABS,plural, =1{افزودن برگه به گروه}one{افزودن برگه‌ها به گروه}other{افزودن برگه‌ها به گروه}}</translation>
 <translation id="7111822978084196600">این پنجره را نام‌گذاری کنید</translation>
 <translation id="7113102733263608554"><ph name="ITEM_COUNT_ONE" /> مورد</translation>

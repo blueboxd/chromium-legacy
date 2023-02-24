@@ -10,21 +10,21 @@ load("//lib/try.star", "try_")
 load("//lib/consoles.star", "consoles")
 
 try_.defaults.set(
-    builder_group = "tryserver.blink",
     executable = try_.DEFAULT_EXECUTABLE,
-    cores = 8,
+    builder_group = "tryserver.blink",
     pool = try_.DEFAULT_POOL,
-    service_account = try_.DEFAULT_SERVICE_ACCOUNT,
+    cores = 8,
     execution_timeout = try_.DEFAULT_EXECUTION_TIMEOUT,
+    service_account = try_.DEFAULT_SERVICE_ACCOUNT,
 )
 
 consoles.list_view(
     name = "tryserver.blink",
-    branch_selector = branches.STANDARD_MILESTONE,
+    branch_selector = branches.selector.DESKTOP_BRANCHES,
 )
 
 def blink_mac_builder(*, name, **kwargs):
-    kwargs.setdefault("branch_selector", branches.STANDARD_MILESTONE)
+    kwargs.setdefault("branch_selector", branches.selector.MAC_BRANCHES)
     kwargs.setdefault("builderless", True)
     kwargs.setdefault("cores", None)
     kwargs.setdefault("goma_backend", goma.backend.RBE_PROD)
@@ -37,7 +37,7 @@ def blink_mac_builder(*, name, **kwargs):
 
 try_.builder(
     name = "linux-blink-rel",
-    branch_selector = branches.STANDARD_MILESTONE,
+    branch_selector = branches.selector.LINUX_BRANCHES,
     builder_spec = builder_config.builder_spec(
         gclient_config = builder_config.gclient_config(
             config = "chromium",
@@ -55,8 +55,8 @@ try_.builder(
         retry_failed_shards = False,
     ),
     os = os.LINUX_DEFAULT,
-    main_list_view = "try",
     goma_backend = goma.backend.RBE_PROD,
+    main_list_view = "try",
     reclient_instance = reclient.instance.DEFAULT_UNTRUSTED,
     tryjob = try_.job(
         location_filters = [
@@ -70,7 +70,7 @@ try_.builder(
 
 try_.builder(
     name = "win10.20h2-blink-rel",
-    branch_selector = branches.STANDARD_MILESTONE,
+    branch_selector = branches.selector.WINDOWS_BRANCHES,
     builder_spec = builder_config.builder_spec(
         gclient_config = builder_config.gclient_config(
             config = "chromium",
@@ -97,7 +97,7 @@ try_.builder(
 
 try_.builder(
     name = "win11-blink-rel",
-    branch_selector = branches.STANDARD_MILESTONE,
+    branch_selector = branches.selector.WINDOWS_BRANCHES,
     builder_spec = builder_config.builder_spec(
         gclient_config = builder_config.gclient_config(
             config = "chromium",

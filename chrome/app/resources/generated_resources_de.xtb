@@ -1829,7 +1829,7 @@ Wenn du die Family Link App auf deinem Gerät installierst, kannst du die Einste
 <translation id="2634199532920451708">Druckverlauf</translation>
 <translation id="2635094637295383009">Twitter</translation>
 <translation id="2635276683026132559">Signatur</translation>
-<translation id="2637313651144986786">Tabs werden durchsucht…</translation>
+<translation id="2637313651144986786">Tabs suchen…</translation>
 <translation id="2637400434494156704">Falsche PIN. Du hast noch einen Eingabeversuch.</translation>
 <translation id="2638662041295312666">Log-in-Bild</translation>
 <translation id="2640299212685523844">GTK verwenden</translation>
@@ -2435,7 +2435,7 @@ Servernachricht: <ph name="SERVER_MSG" /></translation>
 <translation id="3183944777708523606">Monitoranordnung</translation>
 <translation id="3184536091884214176">CUPS-Drucker einrichten oder verwalten. <ph name="LINK_BEGIN" />Weitere Informationen<ph name="LINK_END" /></translation>
 <translation id="3185014249447200271">{NUM_APPS,plural, =1{Diese App ist blockiert}other{Einige Apps sind blockiert}}</translation>
-<translation id="3187472288455401631">Anzeigenanalyse</translation>
+<translation id="3187472288455401631">Analyse von Werbung</translation>
 <translation id="3188257591659621405">Meine Dateien</translation>
 <translation id="3188465121994729530">Gleitender Durchschnitt</translation>
 <translation id="3189187154924005138">Großer Cursor</translation>
@@ -3622,7 +3622,7 @@ Möchtest du <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="4299022904780065004">Neues &amp;Inkognitofenster</translation>
 <translation id="4301671483919369635">Diese Website ist berechtigt, Dateien zu bearbeiten</translation>
 <translation id="4303079906735388947">Richte eine neue PIN für deinen Sicherheitsschlüssel ein</translation>
-<translation id="4304713468139749426">Passwortmanager</translation>
+<translation id="4304713468139749426">Passwort­manager</translation>
 <translation id="4305402730127028764">Auf <ph name="DEVICE_NAME" /> kopieren</translation>
 <translation id="4305817255990598646">Wechseln</translation>
 <translation id="4306119971288449206">Für Apps muss der Inhaltstyp "<ph name="CONTENT_TYPE" />" bereitgestellt werden</translation>
@@ -3636,7 +3636,7 @@ Möchtest du <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="4311284648179069796">Lesen und Ändern nicht genehmigt</translation>
 <translation id="4312701113286993760">{COUNT,plural, =1{1 Google-Konto}other{<ph name="EXTRA_ACCOUNTS" /> Google-Konten}}</translation>
 <translation id="4312866146174492540">Blockieren (Standard)</translation>
-<translation id="4314497418046265427">Mehr Produktivität, wenn du dein Smartphone mit <ph name="DEVICE_TYPE" /> verbindest</translation>
+<translation id="4314497418046265427">Produktiver arbeiten, wenn du dein Smartphone mit <ph name="DEVICE_TYPE" /> verbindest</translation>
 <translation id="4314815835985389558">Synchronisierung verwalten</translation>
 <translation id="4315933848520197627">Kontoverknüpfung aufheben</translation>
 <translation id="4316850752623536204">Website des Entwicklers</translation>
@@ -4105,7 +4105,7 @@ Zum Herauszoomen drücke Strg + Alt + „Helligkeit verringern“.</translatio
 <translation id="4746351372139058112">Messages</translation>
 <translation id="4748783296226936791">Websites verbinden sich normalerweise für solche Funktionen mit HID-Geräten, für die ungewöhnliche Tastaturen, Gamecontroller und andere Geräte verwendet werden</translation>
 <translation id="4749960740855309258">Neuen Tab öffnen</translation>
-<translation id="4750185073185658673">Auf deinem Smartphone kannst du noch andere Berechtigungen prüfen. Kontrolliere außerdem, ob Bluetooth und WLAN auf dem Smartphone aktiviert sind.</translation>
+<translation id="4750185073185658673">Auf deinem Smartphone kannst du weitere Berechtigungen prüfen. Bluetooth und WLAN müssen auf dem Gerät aktiviert sein.</translation>
 <translation id="4750394297954878236">Vorschläge</translation>
 <translation id="475088594373173692">Erster Nutzer</translation>
 <translation id="4756378406049221019">Stopp/Neu laden</translation>
@@ -6302,7 +6302,7 @@ Du hast # weitere gehackte Passwörter. Der Google Passwortmanager empfiehlt, d
 <translation id="6815376457351236663">Trotzdem öffnen</translation>
 <translation id="6817174620439930047">Nachfragen, wenn eine Website versucht, mit systemexklusiven Meldungen auf MIDI-Geräte zuzugreifen (empfohlen)</translation>
 <translation id="6818198425579322765">Sprache der Seite, die übersetzt wird</translation>
-<translation id="6818547713623251698">Fotos, Medien, Benachrichtigungen und Apps von deinem Smartphone ansehen</translation>
+<translation id="6818547713623251698">Fotos, Medien, Benachrichtigungen und Apps von deinem Smartphone abrufen</translation>
 <translation id="6818802132960437751">Integrierter Virenschutz</translation>
 <translation id="6818920801736417483">Passwörter speichern?</translation>
 <translation id="6823174134746916417">Touchpad-Klick</translation>
@@ -6505,7 +6505,7 @@ Du hast # weitere gehackte Passwörter. Der Google Passwortmanager empfiehlt, d
 <translation id="6992554835374084304">Erweiterte Rechtschreibprüfung aktivieren</translation>
 <translation id="6993000214273684335">Tab wurde aus unbenannter Gruppe entfernt – <ph name="GROUP_CONTENTS" /></translation>
 <translation id="6993050154661569036">Chrome-Browser wird aktualisiert</translation>
-<translation id="6995899638241819463">Warnen, wenn Passwörter durch eine Datenpanne preisgegeben werden</translation>
+<translation id="6995899638241819463">Warnen, wenn Passwörter durch eine Datenpanne preisgegeben wurden</translation>
 <translation id="6997553674029032185">Zur Website</translation>
 <translation id="6997642619627518301"><ph name="NAME_PH" /> – Aktivitätsprotokoll</translation>
 <translation id="6997707937646349884">Auf deinen Geräten:</translation>

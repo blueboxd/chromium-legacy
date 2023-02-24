@@ -17,6 +17,7 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewStub;
 
+import androidx.annotation.IntDef;
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 import androidx.appcompat.content.res.AppCompatResources;
@@ -47,6 +48,8 @@ import org.chromium.ui.resources.dynamics.ViewResourceAdapter;
 import org.chromium.ui.util.TokenHolder;
 import org.chromium.ui.widget.OptimizedFrameLayout;
 
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.util.function.BooleanSupplier;
 
 /**
@@ -230,6 +233,21 @@ public class ToolbarControlContainer extends OptimizedFrameLayout implements Con
 
     @VisibleForTesting
     protected static class ToolbarViewResourceAdapter extends ViewResourceAdapter {
+        /**
+         * Emitted at various points during the in motion observer method. Note that it is not the
+         * toolbar that is in motion, but the toolbar's handling of the compositor being in motion.
+         * Treat this list as append only and keep it in sync with ToolbarInMotionStage in
+         * enums.xml.
+         **/
+        @IntDef({ToolbarInMotionStage.SUPPRESSION_ENABLED, ToolbarInMotionStage.READINESS_CHECKED,
+                ToolbarInMotionStage.NUM_ENTRIES})
+        @Retention(RetentionPolicy.SOURCE)
+        @interface ToolbarInMotionStage {
+            int SUPPRESSION_ENABLED = 0;
+            int READINESS_CHECKED = 1;
+            int NUM_ENTRIES = 2;
+        }
+
         private final int[] mTempPosition = new int[2];
         private final Rect mLocationBarRect = new Rect();
         private final Rect mToolbarRect = new Rect();
@@ -413,6 +431,11 @@ public class ToolbarControlContainer extends OptimizedFrameLayout implements Con
                 return;
             }
 
+            if (ToolbarFeatures.shouldRecordSuppressionMetrics()) {
+                RecordHistogram.recordEnumeratedHistogram("Android.TopToolbar.InMotionStage",
+                        ToolbarInMotionStage.SUPPRESSION_ENABLED, ToolbarInMotionStage.NUM_ENTRIES);
+            }
+
             if (!Boolean.TRUE.equals(compositorInMotion)) {
                 if (mControlsToken == TokenHolder.INVALID_TOKEN) {
                     // Only needed when the ConstraintsChecker doesn't drive the capture.
@@ -424,11 +447,21 @@ public class ToolbarControlContainer extends OptimizedFrameLayout implements Con
                             mControlsToken);
                     mControlsToken = TokenHolder.INVALID_TOKEN;
                 }
-            } else if (super.isDirty() && mToolbar.isReadyForTextureCapture().isReady) {
-                // Motion is starting, and we don't have a good capture. Lock the controls so that a
-                // new capture doesn't happen and the old capture is not shown. This can be fixed
-                // once the motion is over.
-                if (mControlContainerIsVisibleSupplier.getAsBoolean()) {
+            } else if (super.isDirty() && mControlContainerIsVisibleSupplier.getAsBoolean()) {
+                CaptureReadinessResult captureReadinessResult = mToolbar.isReadyForTextureCapture();
+                if (ToolbarFeatures.shouldRecordSuppressionMetrics()
+                        && compositorInMotion != null) {
+                    RecordHistogram.recordEnumeratedHistogram("Android.TopToolbar.InMotionStage",
+                            ToolbarInMotionStage.READINESS_CHECKED,
+                            ToolbarInMotionStage.NUM_ENTRIES);
+                }
+                if (captureReadinessResult.blockReason
+                        == TopToolbarBlockCaptureReason.SNAPSHOT_SAME) {
+                    setDirtyRectEmpty();
+                } else if (captureReadinessResult.isReady) {
+                    // Motion is starting, and we don't have a good capture. Lock the controls so
+                    // that a new capture doesn't happen and the old capture is not shown. This can
+                    // be fixed once the motion is over.
                     mControlsToken =
                             mBrowserStateBrowserControlsVisibilityDelegate
                                     .showControlsPersistentAndClearOldToken(mControlsToken);

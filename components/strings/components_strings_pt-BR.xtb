@@ -1152,7 +1152,7 @@ Se não fizer isso, a permissão será bloqueada pelas configurações de privac
 <translation id="3901925938762663762">O cartão expirou</translation>
 <translation id="3906954721959377182">Tablet</translation>
 <translation id="3909695131102177774"><ph name="LABEL" /> <ph name="ERROR" /></translation>
-<translation id="3921869355029467742">Digite o código de segurança</translation>
+<translation id="3921869355029467742">Digitar o código de segurança</translation>
 <translation id="3927932062596804919">Negar</translation>
 <translation id="393316646445601645">Internet e telecomunicações</translation>
 <translation id="3939773374150895049">Usar WebAuthn em vez de CVC?</translation>
@@ -2685,7 +2685,7 @@ Mais detalhes:
 <translation id="7798389633136518089">Ignorado porque a política não foi definida por uma origem na nuvem.</translation>
 <translation id="7800304661137206267">A conexão foi criptografada utilizando <ph name="CIPHER" />, com <ph name="MAC" /> para mensagem de autenticação e <ph name="KX" /> como o mecanismo de troca de chaves.</translation>
 <translation id="7802523362929240268">O site é legítimo</translation>
-<translation id="7802989406998618639">Insira o código de segurança de <ph name="NUMBER_OF_DIGITS" /> dígitos na <ph name="SIDE_OF_CARD" /> para que o banco possa confirmar sua identidade</translation>
+<translation id="7802989406998618639">Insira o código de segurança de <ph name="NUMBER_OF_DIGITS" /> dígitos que fica na <ph name="SIDE_OF_CARD" /> para o banco confirmar sua identidade.</translation>
 <translation id="780301667611848630">Não</translation>
 <translation id="7805571567667010077">Gerenciada pela sua organização</translation>
 <translation id="7805768142964895445">Status</translation>

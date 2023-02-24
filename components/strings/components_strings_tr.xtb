@@ -845,7 +845,7 @@ Aksi halde bu işlem gizlilik ayarlarınız tarafından engellenecek. Buna izin 
 <translation id="3157931365184549694">Geri yükle</translation>
 <translation id="3158539265159265653">Disk</translation>
 <translation id="3162559335345991374">Kullandığınız Kablosuz ağ, giriş sayfasını ziyaret etmenizi gerektiriyor olabilir.</translation>
-<translation id="3169472444629675720">Discover</translation>
+<translation id="3169472444629675720">Keşfet</translation>
 <translation id="3176929007561373547">Proxy sunucunun çalışıyor olduğundan emin olmak için
     proxy ayarlarınızı kontrol edin veya ağ yöneticinize danışın. Proxy sunucu
     kullanmamanız gerektiğini düşünüyorsanız:
@@ -1152,7 +1152,7 @@ Aksi halde bu işlem gizlilik ayarlarınız tarafından engellenecek. Buna izin 
 <translation id="3901925938762663762">Kartın kullanım süresi doldu</translation>
 <translation id="3906954721959377182">Tablet</translation>
 <translation id="3909695131102177774"><ph name="LABEL" /> <ph name="ERROR" /></translation>
-<translation id="3921869355029467742">Güvenlik kodunuzu girin</translation>
+<translation id="3921869355029467742">Güvenlik koduyla</translation>
 <translation id="3927932062596804919">Reddet</translation>
 <translation id="393316646445601645">İnternet ve telekom</translation>
 <translation id="3939773374150895049">CVC yerine WebAuthn kullanılsın mı?</translation>
@@ -1409,7 +1409,7 @@ Aksi halde bu işlem gizlilik ayarlarınız tarafından engellenecek. Buna izin 
 <translation id="4567686777917670400">Yöneticiniz, tarayıcınızın kurulumunu uzaktan değiştirebilir. Bu cihazdaki etkinlikler Chromium dışında da yönetilebilir. <ph name="BEGIN_LINK" />Daha fazla bilgi<ph name="END_LINK" /></translation>
 <translation id="457875822857220463">Teslimat</translation>
 <translation id="4582204425268416675">Kartı kaldır</translation>
-<translation id="4582595824823167856">Kısa mesaj alma</translation>
+<translation id="4582595824823167856">Kısa mesajla</translation>
 <translation id="4587425331216688090">Adres Chrome'dan kaldırılsın mı?</translation>
 <translation id="459089498662672729">Yönetici politikası, <ph name="ORIGIN_NAME" /> sitesinden buraya yapıştırma işlevini önermiyor</translation>
 <translation id="4592951414987517459"><ph name="DOMAIN" /> ile olan bağlantınız modern bir şifre seti kullanılarak şifrelendi.</translation>
@@ -3209,7 +3209,7 @@ Ek ayrıntılar:
 <translation id="9179907736442194268">Herhangi bir sitede fiyatı düştüğünde uyarı alın</translation>
 <translation id="9183302530794969518">Google Dokümanlar</translation>
 <translation id="9183425211371246419"><ph name="HOST_NAME" /> desteklenmeyen bir protokol kullanıyor.</translation>
-<translation id="918454845714257218"><ph name="SIDE_OF_CARD" /> yer alan kodu kontrol edip tekrar deneyin</translation>
+<translation id="918454845714257218">Kodu (<ph name="SIDE_OF_CARD" /> yer alan) kontrol edip tekrar deneyin</translation>
 <translation id="9187461866967718678">Ekstrem sporlar</translation>
 <translation id="9191834167571392248">Sol altta delik</translation>
 <translation id="9199905725844810519">Yazdırma engellendi</translation>

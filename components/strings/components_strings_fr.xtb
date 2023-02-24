@@ -152,7 +152,7 @@ Par défaut, ce type d'accès est bloqué par vos paramètres de confidentialit�
 <translation id="132390688737681464">Enregistrer et renseigner les adresses</translation>
 <translation id="1330449323196174374">Pli du volet gauche</translation>
 <translation id="1333745675627230582">Jouer au jeu Chrome Dino</translation>
-<translation id="1333989956347591814">Votre activité <ph name="BEGIN_EMPHASIS" />peut rester visible<ph name="END_EMPHASIS" /> par :
+<translation id="1333989956347591814">Votre activité <ph name="BEGIN_EMPHASIS" />pourra rester visible<ph name="END_EMPHASIS" /> par :
         <ph name="BEGIN_LIST" />
           <ph name="LIST_ITEM" />Les sites Web que vous consultez
           <ph name="LIST_ITEM" />Votre employeur ou votre établissement scolaire
@@ -2686,7 +2686,7 @@ Informations supplémentaires :
 <translation id="7798389633136518089">Règle ignorée, car non configurée par une source cloud.</translation>
 <translation id="7800304661137206267">La connexion est chiffrée au moyen de <ph name="CIPHER" />, avec <ph name="MAC" /> pour l'authentification des messages et <ph name="KX" /> pour la méthode d'échange de clés.</translation>
 <translation id="7802523362929240268">Ce site est légitime</translation>
-<translation id="7802989406998618639">Saisissez le code de sécurité à <ph name="NUMBER_OF_DIGITS" /> chiffres à l'<ph name="SIDE_OF_CARD" /> afin que votre banque puisse confirmer votre identité</translation>
+<translation id="7802989406998618639">Saisissez le code de sécurité à <ph name="NUMBER_OF_DIGITS" /> chiffres indiqué à l'<ph name="SIDE_OF_CARD" /> pour que votre banque puisse vérifier votre identité</translation>
 <translation id="780301667611848630">Non, merci</translation>
 <translation id="7805571567667010077">Gérée par votre organisation</translation>
 <translation id="7805768142964895445">État</translation>
@@ -2908,7 +2908,7 @@ Informations supplémentaires :
 <translation id="8380941800586852976">Dangereux</translation>
 <translation id="8381674639488873545">Il peut s'agir de frais uniques ou récurrents qui ne sont pas toujours clairement signalés. <ph name="BEGIN_LINK" />Je souhaite accéder malgré tout à ce site<ph name="END_LINK" />.</translation>
 <translation id="8390725133630534698">Le règlement de l'administrateur bloque le partage de <ph name="ORIGIN_NAME" /> vers <ph name="VM_NAME" /></translation>
-<translation id="8396522675989118466">Il s'agit du code à <ph name="NUMBER_OF_DIGITS" /> chiffres indiqué au <ph name="SIDE_OF_CARD" /></translation>
+<translation id="8396522675989118466">Il s'agit du code à <ph name="NUMBER_OF_DIGITS" /> chiffres indiqué à l'<ph name="SIDE_OF_CARD" /></translation>
 <translation id="8398790343843005537">Rechercher votre téléphone</translation>
 <translation id="8405579342203358118">Gérez les infos que vous synchronisez dans les paramètres Chrome</translation>
 <translation id="8406071103346257942">cesser d'utiliser le verrouillage de l'écran pour saisir les mots de passe</translation>
@@ -3209,7 +3209,7 @@ Informations supplémentaires :
 <translation id="9179907736442194268">Recevez des alertes par e-mail si le prix baisse sur un site</translation>
 <translation id="9183302530794969518">Google Docs</translation>
 <translation id="9183425211371246419"><ph name="HOST_NAME" /> utilise un protocole incompatible.</translation>
-<translation id="918454845714257218">Vérifiez le code sur le <ph name="SIDE_OF_CARD" />, puis réessayez</translation>
+<translation id="918454845714257218">Vérifiez le code indiqué à l'<ph name="SIDE_OF_CARD" />, puis réessayez</translation>
 <translation id="9187461866967718678">Sports extrêmes</translation>
 <translation id="9191834167571392248">Perforation en bas à gauche</translation>
 <translation id="9199905725844810519">Impression bloquée</translation>

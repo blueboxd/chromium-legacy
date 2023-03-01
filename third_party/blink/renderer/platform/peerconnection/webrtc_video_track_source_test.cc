@@ -21,6 +21,7 @@
 using testing::_;
 using testing::Invoke;
 using testing::Mock;
+using testing::Sequence;
 
 namespace blink {
 
@@ -77,9 +78,11 @@ class WebRtcVideoTrackSourceTest
                      const gfx::Rect& visible_rect,
                      const gfx::Size& natural_size,
                      media::VideoFrame::StorageType storage_type,
-                     media::VideoPixelFormat pixel_format) {
-    scoped_refptr<media::VideoFrame> frame = CreateTestFrame(
-        coded_size, visible_rect, natural_size, storage_type, pixel_format);
+                     media::VideoPixelFormat pixel_format,
+                     base::TimeDelta timestamp) {
+    scoped_refptr<media::VideoFrame> frame =
+        CreateTestFrame(coded_size, visible_rect, natural_size, storage_type,
+                        pixel_format, timestamp);
     track_source_->OnFrameCaptured(frame, {});
   }
 
@@ -91,8 +94,9 @@ class WebRtcVideoTrackSourceTest
       media::VideoPixelFormat pixel_format,
       int max_pixels,
       float max_framerate) {
-    scoped_refptr<media::VideoFrame> frame = CreateTestFrame(
-        coded_size, visible_rect, natural_size, storage_type, pixel_format);
+    scoped_refptr<media::VideoFrame> frame =
+        CreateTestFrame(coded_size, visible_rect, natural_size, storage_type,
+                        pixel_format, base::TimeDelta());
     track_source_->OnFrameCaptured(frame, {});
     EXPECT_EQ(feedback_.max_pixels, max_pixels);
     EXPECT_EQ(feedback_.max_framerate_fps, max_framerate);
@@ -105,8 +109,9 @@ class WebRtcVideoTrackSourceTest
                                    const gfx::Rect& update_rect,
                                    media::VideoFrame::StorageType storage_type,
                                    media::VideoPixelFormat pixel_format) {
-    scoped_refptr<media::VideoFrame> frame = CreateTestFrame(
-        coded_size, visible_rect, natural_size, storage_type, pixel_format);
+    scoped_refptr<media::VideoFrame> frame =
+        CreateTestFrame(coded_size, visible_rect, natural_size, storage_type,
+                        pixel_format, base::TimeDelta());
     frame->metadata().capture_counter = capture_counter;
     frame->metadata().capture_update_rect = update_rect;
     track_source_->OnFrameCaptured(frame, {});
@@ -175,6 +180,35 @@ std::vector<WebRtcVideoTrackSourceTest::ParamType> TestParams() {
 }
 }  // namespace
 
+// Tests that the two generated test frames are received in sequence and have
+// correct |capture_time_identifier| set in webrtc::VideoFrame.
+TEST_P(WebRtcVideoTrackSourceTest, TestTimestamps) {
+  const gfx::Size kCodedSize(640, 480);
+  const gfx::Rect kVisibleRect(0, 60, 640, 360);
+  const gfx::Size kNaturalSize(640, 360);
+  const float kFps = 60.0;
+  const media::VideoFrame::StorageType storage_type = std::get<0>(GetParam());
+  const media::VideoPixelFormat pixel_format = std::get<1>(GetParam());
+
+  Sequence s;
+  EXPECT_CALL(mock_sink_, OnFrame(_))
+      .InSequence(s)
+      .WillOnce(Invoke([](const webrtc::VideoFrame& frame) {
+        ASSERT_TRUE(frame.capture_time_identifier().has_value());
+        EXPECT_EQ(frame.capture_time_identifier().value().us(), 0);
+      }));
+  EXPECT_CALL(mock_sink_, OnFrame(_))
+      .InSequence(s)
+      .WillOnce(Invoke([](const webrtc::VideoFrame& frame) {
+        ASSERT_TRUE(frame.capture_time_identifier().has_value());
+        EXPECT_EQ(frame.capture_time_identifier().value().us(), 16666);
+      }));
+  SendTestFrame(kCodedSize, kVisibleRect, kNaturalSize, storage_type,
+                pixel_format, base::Seconds(0));
+  SendTestFrame(kCodedSize, kVisibleRect, kNaturalSize, storage_type,
+                pixel_format, base::Seconds(1 / kFps));
+}
+
 TEST_P(WebRtcVideoTrackSourceTest, CropFrameTo640360) {
   const gfx::Size kCodedSize(640, 480);
   const gfx::Rect kVisibleRect(0, 60, 640, 360);
@@ -190,7 +224,7 @@ TEST_P(WebRtcVideoTrackSourceTest, CropFrameTo640360) {
         EXPECT_EQ(kNaturalSize.height(), frame.height());
       }));
   SendTestFrame(kCodedSize, kVisibleRect, kNaturalSize, storage_type,
-                pixel_format);
+                pixel_format, base::TimeDelta());
 }
 
 TEST_P(WebRtcVideoTrackSourceTest, SetsFeedback) {
@@ -228,7 +262,7 @@ TEST_P(WebRtcVideoTrackSourceTest, CropFrameTo320320) {
         EXPECT_EQ(kNaturalSize.height(), frame.height());
       }));
   SendTestFrame(kCodedSize, kVisibleRect, kNaturalSize, storage_type,
-                pixel_format);
+                pixel_format, base::TimeDelta());
 }
 
 TEST_P(WebRtcVideoTrackSourceTest, Scale720To640360) {
@@ -246,7 +280,7 @@ TEST_P(WebRtcVideoTrackSourceTest, Scale720To640360) {
         EXPECT_EQ(kNaturalSize.height(), frame.height());
       }));
   SendTestFrame(kCodedSize, kVisibleRect, kNaturalSize, storage_type,
-                pixel_format);
+                pixel_format, base::TimeDelta());
 }
 
 TEST_P(WebRtcVideoTrackSourceTest, UpdateRectWithNoTransform) {
@@ -351,7 +385,7 @@ TEST_P(WebRtcVideoTrackSourceTest, UpdateRectWithNoTransform) {
         ExpectUpdateRectEquals(kVisibleRect, frame.update_rect());
       }));
   SendTestFrame(kCodedSize, kVisibleRect, kNaturalSize, storage_type,
-                pixel_format);
+                pixel_format, base::TimeDelta());
   Mock::VerifyAndClearExpectations(&mock_sink_);
 }
 

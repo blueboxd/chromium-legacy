@@ -211,12 +211,16 @@ public class PartialCustomTabSideSheetStrategyTest {
         assertFalse(getWindowAttributes().isFullscreen());
         int height = getWindowAttributes().height;
         int width = getWindowAttributes().width;
+        doReturn(47)
+                .when(mPCCTTestRule.mResources)
+                .getDimensionPixelSize(eq(org.chromium.chrome.R.dimen.custom_tabs_shadow_offset));
 
         strategy.setFullscreenSupplierForTesting(() -> mFullscreen);
 
         mFullscreen = true;
         strategy.onEnterFullscreen(null, null);
         assertTrue(getWindowAttributes().isFullscreen());
+        assertEquals("Shadow should be removed.", 0, strategy.getShadowOffsetForTesting());
         verify(mPCCTTestRule.mOnResizedCallback).onResized(eq(DEVICE_HEIGHT), eq(DEVICE_WIDTH));
         clearInvocations(mPCCTTestRule.mOnResizedCallback);
 
@@ -226,12 +230,13 @@ public class PartialCustomTabSideSheetStrategyTest {
         assertFalse(getWindowAttributes().isFullscreen());
         assertEquals(height, getWindowAttributes().height);
         assertEquals(width, getWindowAttributes().width);
+        assertNotEquals("Shadow should be restored.", 0, strategy.getShadowOffsetForTesting());
         verify(mPCCTTestRule.mOnResizedCallback).onResized(eq(height), eq(width));
     }
 
     @Test
     public void enterAndExitMaximizeMode() {
-        var strategy = createPcctSideSheetStrategy(2000);
+        var strategy = createPcctSideSheetStrategy(700);
         assertFalse(getWindowAttributes().isFullscreen());
         int height = getWindowAttributes().height;
         int width = getWindowAttributes().width;
@@ -250,16 +255,43 @@ public class PartialCustomTabSideSheetStrategyTest {
 
     @Test
     public void toggleMaximizeNoAnimation() {
-        var strategy = createPcctSideSheetStrategy(2000);
+        var strategy = createPcctSideSheetStrategy(700);
         int height = getWindowAttributes().height;
         int width = getWindowAttributes().width;
-        strategy.toggleMaximize(false);
+        strategy.toggleMaximize(/*animation=*/false);
         verify(mPCCTTestRule.mOnResizedCallback).onResized(eq(FULL_HEIGHT), eq(DEVICE_WIDTH));
 
-        strategy.toggleMaximize(false);
+        strategy.toggleMaximize(/*animation=*/false);
+        // Even without animation, we still need to wait for task to be idle, since we post
+        // the task for size init in |onMaximizeEnd|.
+        PartialCustomTabTestRule.waitForAnimationToFinish();
         assertEquals(height, getWindowAttributes().height);
         assertEquals(width, getWindowAttributes().width);
         verify(mPCCTTestRule.mOnResizedCallback).onResized(eq(height), eq(width));
+    }
+
+    @Test
+    public void maximizeAndFullscreen() {
+        // Ensure maximize -> fullscreen enter/exit -> comes back to maximize mode
+        var strategy = createPcctSideSheetStrategy(700);
+        strategy.setFullscreenSupplierForTesting(() -> mFullscreen);
+        int height = getWindowAttributes().height;
+        int width = getWindowAttributes().width;
+
+        strategy.toggleMaximize(true);
+        PartialCustomTabTestRule.waitForAnimationToFinish();
+        verify(mPCCTTestRule.mOnResizedCallback).onResized(eq(FULL_HEIGHT), eq(DEVICE_WIDTH));
+
+        mFullscreen = true;
+        strategy.onEnterFullscreen(null, null);
+        clearInvocations(mPCCTTestRule.mOnResizedCallback);
+
+        // Verify we get a single resize callback invocation when exiting fullscreen and restoring
+        // maximize mode.
+        mFullscreen = false;
+        strategy.onExitFullscreen(null);
+        PartialCustomTabTestRule.waitForAnimationToFinish();
+        verify(mPCCTTestRule.mOnResizedCallback).onResized(eq(FULL_HEIGHT), eq(DEVICE_WIDTH));
     }
 
     @Test

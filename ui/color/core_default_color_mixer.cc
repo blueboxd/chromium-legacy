@@ -27,16 +27,20 @@ void AddCoreDefaultColorMixer(ColorProvider* provider,
            << (dark_mode ? "Dark" : "Light") << " window.";
   ColorMixer& mixer = provider->AddMixer();
   mixer[kColorAccent] = {dark_mode ? gfx::kGoogleBlue300 : gfx::kGoogleBlue600};
-  // 4.5 matches the default light theme contrast of
+  // 4.5 and 7.0 approximate the default light and dark theme contrasts of
   // accent-against-primary-background.
   mixer[kColorAccentWithGuaranteedContrastAtopPrimaryBackground] =
-      PickGoogleColor(kColorAccent, kColorPrimaryBackground, 4.5f);
+      PickGoogleColor(kColorAccent, kColorPrimaryBackground, 4.5f, 7.0f);
   mixer[kColorAlertHighSeverity] = {dark_mode ? gfx::kGoogleRed300
                                               : gfx::kGoogleRed600};
   mixer[kColorAlertLowSeverity] = {dark_mode ? gfx::kGoogleGreen300
                                              : gfx::kGoogleGreen700};
-  mixer[kColorAlertMediumSeverity] = {dark_mode ? gfx::kGoogleYellow300
-                                                : gfx::kGoogleYellow700};
+  mixer[kColorAlertMediumSeverityIcon] = {dark_mode ? gfx::kGoogleYellow300
+                                                    : gfx::kGoogleYellow700};
+  // Color used for alert text should more readable than the color above which
+  // is for icons.
+  mixer[kColorAlertMediumSeverityText] = {dark_mode ? gfx::kGoogleYellow300
+                                                    : gfx::kGoogleOrange900};
   mixer[kColorDisabledForeground] =
       PickGoogleColor(gfx::kGoogleGrey600, kColorPrimaryBackground,
                       color_utils::kMinimumReadableContrastRatio);
@@ -46,7 +50,7 @@ void AddCoreDefaultColorMixer(ColorProvider* provider,
       GetColorWithMaxContrast(kColorPrimaryBackground);
   mixer[kColorItemHighlight] =
       PickGoogleColor(kColorAccent, kColorPrimaryBackground,
-                      color_utils::kMinimumVisibleContrastRatio);
+                      color_utils::kMinimumVisibleContrastRatio, 5.0f);
   mixer[kColorItemSelectionBackground] =
       AlphaBlend(kColorAccentWithGuaranteedContrastAtopPrimaryBackground,
                  kColorPrimaryBackground, 0x3C);

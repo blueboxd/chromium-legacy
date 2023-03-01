@@ -177,8 +177,6 @@ public abstract class ChromeFeatureList {
     public static final String APP_LANGUAGE_PROMPT = "AppLanguagePrompt";
     public static final String APP_LANGUAGE_PROMPT_ULP = "AppLanguagePromptULP";
     public static final String APP_MENU_MOBILE_SITE_OPTION = "AppMenuMobileSiteOption";
-    public static final String ASSISTANT_CONSENT_SIMPLIFIED_TEXT = "AssistantConsentSimplifiedText";
-    public static final String ASSISTANT_CONSENT_V2 = "AssistantConsentV2";
     public static final String ASSISTANT_INTENT_EXPERIMENT_ID = "AssistantIntentExperimentId";
     public static final String ASSISTANT_INTENT_TRANSLATE_INFO = "AssistantIntentTranslateInfo";
     public static final String ASSISTANT_NON_PERSONALIZED_VOICE_SEARCH =
@@ -203,7 +201,6 @@ public abstract class ChromeFeatureList {
             "AutofillEnableVirtualCardMetadata";
     public static final String AUTOFILL_KEYBOARD_ACCESSORY = "AutofillKeyboardAccessory";
     public static final String AUTOFILL_MANUAL_FALLBACK_ANDROID = "AutofillManualFallbackAndroid";
-    public static final String AUTOFILL_REFRESH_STYLE_ANDROID = "AutofillRefreshStyleAndroid";
     public static final String AUTOFILL_TOUCH_TO_FILL_FOR_CREDIT_CARDS_ANDROID =
             "AutofillTouchToFillForCreditCardsAndroid";
     public static final String BACKGROUND_THREAD_POOL = "BackgroundThreadPool";
@@ -250,7 +247,6 @@ public abstract class ChromeFeatureList {
     public static final String CCT_RETAINING_STATE_IN_MEMORY = "CCTRetainingStateInMemory";
     public static final String CCT_TOOLBAR_CUSTOMIZATIONS = "CCTToolbarCustomizations";
     public static final String CHROME_NEW_DOWNLOAD_TAB = "ChromeNewDownloadTab";
-    public static final String CHROME_SHARE_LONG_SCREENSHOT = "ChromeShareLongScreenshot";
     public static final String CHROME_SHARING_HUB = "ChromeSharingHub";
     public static final String CHROME_SHARING_HUB_LAUNCH_ADJACENT =
             "ChromeSharingHubLaunchAdjacent";
@@ -292,6 +288,7 @@ public abstract class ChromeFeatureList {
             "DarkenWebsitesCheckboxInThemesSetting";
     public static final String DEFER_KEEP_SCREEN_ON_DURING_GESTURE =
             "DeferKeepScreenOnDuringGesture";
+    public static final String DEFER_NOTIFY_IN_MOTION = "DeferNotifyInMotion";
     public static final String DETAILED_LANGUAGE_SETTINGS = "DetailedLanguageSettings";
     public static final String DISCO_FEED_ENDPOINT = "DiscoFeedEndpoint";
     public static final String DNS_OVER_HTTPS = "DnsOverHttps";
@@ -393,7 +390,6 @@ public abstract class ChromeFeatureList {
             "OptimizationGuidePushNotifications";
     public static final String OPTIMIZE_GEOLOCATION_HEADER_GENERATION =
             "OptimizeGeolocationHeaderGeneration";
-    public static final String OSK_RESIZES_VISUAL_VIEWPORT = "OSKResizesVisualViewportByDefault";
     public static final String OVERLAY_NEW_LAYOUT = "OverlayNewLayout";
     public static final String PAGE_ANNOTATIONS_SERVICE = "PageAnnotationsService";
     public static final String PAGE_INFO_ABOUT_THIS_SITE_EN = "PageInfoAboutThisSiteEn";
@@ -443,7 +439,6 @@ public abstract class ChromeFeatureList {
     public static final String RECOVER_FROM_NEVER_SAVE_ANDROID = "RecoverFromNeverSaveAndroid";
     public static final String REENGAGEMENT_NOTIFICATION = "ReengagementNotification";
     public static final String RELATED_SEARCHES = "RelatedSearches";
-    public static final String RELATED_SEARCHES_UI = "RelatedSearchesUi";
     public static final String REPORT_PARENTAL_CONTROL_SITES_CHILD =
             "ReportParentalControlSitesChild";
     public static final String REQUEST_DESKTOP_SITE_DEFAULTS = "RequestDesktopSiteDefaults";
@@ -453,6 +448,8 @@ public abstract class ChromeFeatureList {
             "RequestDesktopSiteDefaultsControlSynthetic";
     public static final String REQUEST_DESKTOP_SITE_DEFAULTS_DOWNGRADE =
             "RequestDesktopSiteDefaultsDowngrade";
+    public static final String REQUEST_DESKTOP_SITE_DEFAULTS_LOGGING =
+            "RequestDesktopSiteDefaultsLogging";
     public static final String REQUEST_DESKTOP_SITE_DEFAULTS_SYNTHETIC =
             "RequestDesktopSiteDefaultsSynthetic";
     public static final String REQUEST_DESKTOP_SITE_OPT_IN_CONTROL_SYNTHETIC =
@@ -501,8 +498,6 @@ public abstract class ChromeFeatureList {
     public static final String TAB_GROUPS_ANDROID = "TabGroupsAndroid";
     public static final String TAB_GROUPS_CONTINUATION_ANDROID = "TabGroupsContinuationAndroid";
     public static final String TAB_GROUPS_FOR_TABLETS = "TabGroupsForTablets";
-    public static final String TAB_GROUPS_UI_IMPROVEMENTS_ANDROID =
-            "TabGroupsUiImprovementsAndroid";
     public static final String TAB_SELECTION_EDITOR_V2 = "TabSelectionEditorV2";
     public static final String TAB_STATE_V1_OPTIMIZATIONS = "TabStateV1Optimizations";
     public static final String TAB_STRIP_IMPROVEMENTS = "TabStripImprovements";
@@ -618,8 +613,6 @@ public abstract class ChromeFeatureList {
     public static final CachedFlag sInterestFeedV2 = new CachedFlag(INTEREST_FEED_V2, true);
     public static final CachedFlag sLensCameraAssistedSearch =
             new CachedFlag(LENS_CAMERA_ASSISTED_SEARCH, true);
-    public static final CachedFlag sOSKResizesVisualViewportByDefault =
-            new CachedFlag(OSK_RESIZES_VISUAL_VIEWPORT, false);
     public static final CachedFlag sOmahaMinSdkVersionAndroid =
             new CachedFlag(OMAHA_MIN_SDK_VERSION_ANDROID, false);
     public static final CachedFlag sOmniboxMatchToolbarAndStatusBarColor =
@@ -660,7 +653,7 @@ public abstract class ChromeFeatureList {
     public static final CachedFlag sTabGroupsContinuationAndroid =
             new CachedFlag(TAB_GROUPS_CONTINUATION_ANDROID, false);
     public static final CachedFlag sTabGroupsForTablets =
-            new CachedFlag(TAB_GROUPS_FOR_TABLETS, false);
+            new CachedFlag(TAB_GROUPS_FOR_TABLETS, true);
     public static final CachedFlag sTabSelectionEditorV2 =
             new CachedFlag(TAB_SELECTION_EDITOR_V2, false);
     public static final CachedFlag sTabStripImprovements =

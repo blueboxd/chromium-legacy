@@ -134,7 +134,8 @@
     "bases": ["wpt_internal/attribution-reporting"],
     "exclusive_tests": "ALL",
     "args": ["--attribution-reporting-debug-mode",
-             "--enable-features=AttributionReportingCrossAppWeb"],
+             "--enable-features=AttributionReportingCrossAppWeb,AttributionReportingTriggerAttestation",
+             "--additional-trust-token-key-commitments={\"https://web-platform.test:8444\":{\"TrustTokenV3VOPRF\":{\"protocol_version\":\"TrustTokenV3VOPRF\",\"id\":1,\"batchsize\":1,\"keys\":{\"0\":{\"Y\":\"AAAAAASqh8oivosFN46xxx7zIK10bh07Younm5hZ90HgglQqOFUC8l2/VSlsOlReOHJ2CrfJ6CG1adnTkKJhZ0BtbSPWBwviQtdl64MWJc7sSg9HPvWfTjDigX5ihbzihG8V8aA=\",\"expiry\":\"253402300799000000\"}}}}}"],
     "expires": "Jul 1, 2023"
   },
   {
@@ -758,6 +759,18 @@
     "args": ["--disable-blink-features=CSSTrigonometricFunctions"],
     "expires": "Jul 1, 2023"
   },
+   {
+    "prefix": "css-sign-related-functions-disabled",
+    "platforms": ["Linux", "Mac", "Win"],
+    "bases": [
+      "external/wpt/css/css-values/signs-abs-computed.html",
+      "external/wpt/css/css-values/signs-abs-serialize.html",
+      "external/wpt/css/css-values/signs-abs-invalid.html"
+    ],
+    "args": ["--disable-blink-features=CSSSignRelatedFunctions"],
+    "expires": "Jul 1, 2023"
+  },
+
   {
     "prefix": "import-maps-disabled",
     "platforms": ["Linux", "Mac", "Win"],
@@ -1174,8 +1187,16 @@
     "prefix": "popover-disabled",
     "platforms": ["Linux", "Mac", "Win"],
     "bases": [],
-    "args": ["--disable-blink-features=HTMLSelectMenuElement,HTMLPopoverAttribute"],
+    "args": ["--disable-blink-features=HTMLSelectMenuElement,HTMLPopoverAttribute,HTMLPopoverHint"],
     "expires": "Jul 1, 2023"
+  },
+  {
+    "prefix": "popover-hint-disabled",
+    "platforms": ["Linux", "Mac", "Win"],
+    "bases": [],
+    "args": ["--enable-blink-features=HTMLPopoverAttribute",
+      "--disable-blink-features=HTMLPopoverHint"],
+    "expires": "Jan 1, 2024"
   },
   {
     "prefix": "expose-lcp-render-time",
@@ -1778,5 +1799,14 @@
     ],
     "args": ["--enable-features=AllowRTCEncodedVideoFrameSetMetadataAllFields"],
     "expires": "Jul 1, 2023"
+  },
+  {
+    "prefix": "webrtc-legacy-stats-trial-disabled",
+    "platforms": ["Linux", "Mac", "Win"],
+    "bases": [
+      "http/tests/inspector-protocol/issues/webrtc-stats-deprecation.js"
+    ],
+    "args": ["--disable-blink-features=RTCLegacyCallbackBasedGetStats"],
+    "expires": "Dec 21, 2023"
   }
 ]

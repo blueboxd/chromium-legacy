@@ -26,6 +26,7 @@
 #include "components/attribution_reporting/aggregation_keys.h"
 #include "components/attribution_reporting/bounded_list.h"
 #include "components/attribution_reporting/constants.h"
+#include "components/attribution_reporting/destination_set.h"
 #include "components/attribution_reporting/event_trigger_data.h"
 #include "components/attribution_reporting/filters.h"
 #include "components/attribution_reporting/registration_type.mojom-forward.h"
@@ -229,8 +230,6 @@ class ConfigurableStorageDelegate : public AttributionStorageDelegate {
 
   void set_trigger_data_cardinality(uint64_t navigation, uint64_t event);
 
-  void set_source_event_id_cardinality(uint64_t cardinality);
-
   // Detaches the delegate from its current sequence in preparation for being
   // moved to storage, which runs on its own sequence.
   void DetachFromSequence();
@@ -280,8 +279,7 @@ class MockAttributionManager : public AttributionManager {
   MOCK_METHOD(
       void,
       GetPendingReportsForInternalUse,
-      (AttributionReport::Types report_types,
-       int limit,
+      (int limit,
        base::OnceCallback<void(std::vector<AttributionReport>)> callback),
       (override));
 
@@ -322,12 +320,17 @@ class MockAttributionManager : public AttributionManager {
                base::OnceClosure callback),
               (override));
 
+  MOCK_METHOD(attribution_reporting::mojom::OsSupport,
+              GetOsSupport,
+              (),
+              (override));
+
   void AddObserver(AttributionObserver* observer) override;
   void RemoveObserver(AttributionObserver* observer) override;
   AttributionDataHostManager* GetDataHostManager() override;
 
   void NotifySourcesChanged();
-  void NotifyReportsChanged(AttributionReport::Type report_type);
+  void NotifyReportsChanged();
   void NotifySourceHandled(
       const StorableSource& source,
       StorableSource::Result result,
@@ -369,7 +372,7 @@ class MockAttributionObserver : public AttributionObserver {
 
   MOCK_METHOD(void, OnSourcesChanged, (), (override));
 
-  MOCK_METHOD(void, OnReportsChanged, (AttributionReport::Type), (override));
+  MOCK_METHOD(void, OnReportsChanged, (), (override));
 
   MOCK_METHOD(void,
               OnSourceHandled,
@@ -502,7 +505,7 @@ class SourceBuilder {
   absl::optional<base::TimeDelta> event_report_window_;
   absl::optional<base::TimeDelta> aggregatable_report_window_;
   attribution_reporting::SuitableOrigin source_origin_;
-  base::flat_set<net::SchemefulSite> destination_sites_;
+  attribution_reporting::DestinationSet destination_sites_;
   attribution_reporting::SuitableOrigin reporting_origin_;
   attribution_reporting::mojom::SourceType source_type_ =
       attribution_reporting::mojom::SourceType::kNavigation;
@@ -604,7 +607,7 @@ class AttributionInfoBuilder {
       // For most tests, the context origin is irrelevant.
       attribution_reporting::SuitableOrigin context_origin =
           *attribution_reporting::SuitableOrigin::Deserialize(
-              "https://context.test"));
+              "https://conversion.test"));
   ~AttributionInfoBuilder();
 
   AttributionInfoBuilder& SetTime(base::Time time);
@@ -777,8 +780,9 @@ MATCHER_P(ImpressionOriginIs, matcher, "") {
 }
 
 MATCHER_P(DestinationSiteIs, matcher, "") {
-  return ExplainMatchResult(matcher, arg.common_info().destination_site(),
-                            result_listener);
+  return ExplainMatchResult(
+      ::testing::ElementsAre(matcher),
+      arg.common_info().destination_sites().destinations(), result_listener);
 }
 
 MATCHER_P(ReportingOriginIs, matcher, "") {

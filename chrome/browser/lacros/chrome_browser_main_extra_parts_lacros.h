@@ -9,6 +9,7 @@
 
 #include <memory>
 
+#include "chrome/browser/chromeos/smart_reader/smart_reader_client_impl.h"
 #include "chrome/browser/lacros/sync/sync_crosapi_manager_lacros.h"
 
 class ArcIconCache;
@@ -33,6 +34,7 @@ class TabletModePageBehavior;
 class UiMetricRecorderLacros;
 class VpnExtensionTrackerLacros;
 class WebAuthnRequestRegistrarLacros;
+class MultitaskMenuNudgeDelegateLacros;
 
 namespace arc {
 class ArcIconCacheDelegateProvider;
@@ -52,6 +54,10 @@ class ScreenOrientationDelegate;
 namespace video_conference {
 class VideoConferenceManagerClientImpl;
 }  // namespace video_conference
+
+namespace smart_reader {
+class SmartReaderClientImpl;
+}  // namespace smart_reader
 
 // Browser initialization for Lacros.
 class ChromeBrowserMainExtraPartsLacros : public ChromeBrowserMainExtraParts {
@@ -174,8 +180,16 @@ class ChromeBrowserMainExtraPartsLacros : public ChromeBrowserMainExtraParts {
   std::unique_ptr<video_conference::VideoConferenceManagerClientImpl>
       video_conference_manager_client_;
 
+  // Tracks the content within the current active tab in chrome to provide to
+  // the smart reader manager.
+  std::unique_ptr<smart_reader::SmartReaderClientImpl> smart_reader_client_;
+
   // Controls sync-related Crosapi clients.
   SyncCrosapiManagerLacros sync_crosapi_manager_;
+
+  // Handles getting and setting multitask menu nudge related prefs from ash.
+  std::unique_ptr<MultitaskMenuNudgeDelegateLacros>
+      multitask_menu_nudge_delegate_;
 };
 
 #endif  // CHROME_BROWSER_LACROS_CHROME_BROWSER_MAIN_EXTRA_PARTS_LACROS_H_

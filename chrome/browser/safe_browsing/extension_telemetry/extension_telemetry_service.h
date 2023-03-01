@@ -39,12 +39,13 @@ namespace safe_browsing {
 enum class ExtensionSignalType;
 class ExtensionSignal;
 class ExtensionSignalProcessor;
+class ExtensionTelemetryConfigManager;
 class ExtensionTelemetryFileProcessor;
+class ExtensionTelemetryPersister;
 class ExtensionTelemetryReportRequest;
 class ExtensionTelemetryReportRequest_ExtensionInfo;
+class ExtensionTelemetryReportRequest_ExtensionInfo_FileInfo;
 class ExtensionTelemetryUploader;
-class ExtensionTelemetryPersister;
-class ExtensionTelemetryConfigManager;
 class SafeBrowsingTokenFetcher;
 
 // This class process extension signals and reports telemetry for a given
@@ -92,7 +93,7 @@ class ExtensionTelemetryService : public KeyedService {
   // Checks the `extension_id` and `signal_type` against the
   // configuration and reports true if the signal should be created.
   bool IsSignalEnabled(const extensions::ExtensionId& extension_id,
-                       ExtensionSignalType signal_type);
+                       ExtensionSignalType signal_type) const;
 
   base::TimeDelta current_reporting_interval() {
     return current_reporting_interval_;
@@ -112,7 +113,7 @@ class ExtensionTelemetryService : public KeyedService {
 
   // Returns a bool that represents if there is any signal processor
   // information to report.
-  bool SignalDataPresent();
+  bool SignalDataPresent() const;
 
   // Creates telemetry report protobuf for all extension store extensions
   // and currently installed extensions along with signal data retrieved from
@@ -190,6 +191,22 @@ class ExtensionTelemetryService : public KeyedService {
   // Stops and clears any offstore file data collection objects/contexts.
   void StopOffstoreFileDataCollection();
 
+  // Stores offstore extension file data retrieved from PrefService.
+  struct OffstoreExtensionFileData {
+    OffstoreExtensionFileData();
+    ~OffstoreExtensionFileData();
+    OffstoreExtensionFileData(const OffstoreExtensionFileData&);
+
+    std::string manifest;
+    std::vector<ExtensionTelemetryReportRequest_ExtensionInfo_FileInfo>
+        file_infos;
+  };
+
+  // Given an |extension_id|, retrieves the collected file data from PrefService
+  // if available.
+  absl::optional<OffstoreExtensionFileData> RetrieveOffstoreFileDataForReport(
+      const extensions::ExtensionId& extension_id);
+
   // The persister object is bound to the threadpool. This prevents the
   // the read/write operations the `persister_` runs from blocking
   // the UI thread. It also allows the `persister_` object to be
@@ -254,6 +271,7 @@ class ExtensionTelemetryService : public KeyedService {
   // Then repeat the collection based on
   // |kExtensionTelemetryFileDataProcessIntervalSeconds| - default: 2 hours.
   base::OneShotTimer offstore_file_data_collection_timer_;
+  base::TimeTicks offstore_file_data_collection_start_time_;
 
   using SignalProcessors =
       base::flat_map<ExtensionSignalType,

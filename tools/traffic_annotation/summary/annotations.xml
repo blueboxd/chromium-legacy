@@ -61,7 +61,7 @@ Refer to README.md for content description and update process.
  <item id="devtools_network_resource" added_in_milestone="62" content_hash_code="01f4a4af" os_list="linux,windows,chromeos" file_path="chrome/browser/devtools/devtools_ui_bindings.cc" />
  <item id="devtools_proxy_config" added_in_milestone="85" content_hash_code="01e83c36" os_list="linux,windows,chromeos,android" file_path="content/browser/devtools/protocol/target_handler.cc" />
  <item id="dial_url_fetcher" added_in_milestone="67" content_hash_code="07bd0650" os_list="linux,windows,chromeos" file_path="chrome/browser/media/router/discovery/dial/dial_url_fetcher.cc" />
- <item id="digital_asset_links" added_in_milestone="90" content_hash_code="00ced49e" os_list="linux,windows,chromeos,android" file_path="components/digital_asset_links/digital_asset_links_handler.cc" />
+ <item id="digital_asset_links" added_in_milestone="90" content_hash_code="00ced49e" os_list="linux,windows,chromeos,android" file_path="components/content_relationship_verification/digital_asset_links_handler.cc" />
  <item id="direct_sockets" added_in_milestone="88" content_hash_code="03dc0aad" os_list="linux,windows,chromeos" file_path="content/browser/direct_sockets/direct_sockets_service_impl.cc" />
  <item id="dns_over_https" added_in_milestone="66" content_hash_code="02b087b6" os_list="linux,windows,chromeos,android" file_path="net/dns/dns_transaction.cc" />
  <item id="dns_transaction" added_in_milestone="65" content_hash_code="07e14f9f" os_list="linux,windows,chromeos,android" file_path="net/dns/dns_transaction.cc" />
@@ -361,7 +361,7 @@ Refer to README.md for content description and update process.
  <item id="printing_server_printers_query" added_in_milestone="106" content_hash_code="06f4759c" os_list="chromeos" file_path="chrome/browser/ash/printing/server_printers_fetcher.cc" />
  <item id="download_bubble_retry_download" added_in_milestone="105" content_hash_code="000b1439" os_list="linux,windows,chromeos" file_path="chrome/browser/download/bubble/download_bubble_controller.cc" />
  <item id="wilco_dtc_supportd" added_in_milestone="108" content_hash_code="01050d07" os_list="chromeos" file_path="chrome/browser/ash/wilco_dtc_supportd/wilco_dtc_supportd_web_request_service.cc" />
- <item id="quick_answers_loader" added_in_milestone="105" content_hash_code="070b3239" os_list="chromeos" file_path="chromeos/components/quick_answers/result_loader.cc" />
+ <item id="quick_answers_loader" added_in_milestone="105" content_hash_code="06f129c2" os_list="chromeos" file_path="chromeos/components/quick_answers/result_loader.cc" />
  <item id="chrome_search_suggest_service" added_in_milestone="105" content_hash_code="04d973c6" os_list="linux,windows,android,chromeos" file_path="components/search/start_suggest_service.cc" />
  <item id="coupon_persisted_tab_data" added_in_milestone="105" content_hash_code="006dcd97" os_list="android" file_path="chrome/browser/tab/java/src/org/chromium/chrome/browser/tab/state/CouponPersistedTabData.java" />
  <item id="speculation_rules_prefetch_probe" added_in_milestone="105" content_hash_code="04341e21" os_list="linux,windows,android,chromeos" file_path="content/browser/preloading/prefetch/prefetch_origin_prober.cc" />
@@ -417,7 +417,7 @@ Refer to README.md for content description and update process.
  <item id="webapk_minter_install_request" added_in_milestone="111" content_hash_code="042fed33" os_list="chromeos" file_path="chrome/browser/apps/app_service/webapk/webapk_install_task.cc" />
  <item id="deduplication_service" added_in_milestone="111" content_hash_code="06a77ea3" os_list="chromeos" file_path="chrome/browser/apps/app_deduplication_service/app_deduplication_server_connector.cc" />
  <item id="network_portal_detector" added_in_milestone="111" content_hash_code="023cdc21" os_list="chromeos" file_path="chrome/browser/ash/net/network_portal_detector_impl.cc" />
- <item id="safe_browsing_hashprefix_realtime_lookup" added_in_milestone="111" content_hash_code="071e66eb" os_list="linux,windows,chromeos,android" file_path="components/safe_browsing/core/browser/hashprefix_realtime/hash_realtime_service.cc" />
+ <item id="safe_browsing_hashprefix_realtime_lookup" added_in_milestone="111" content_hash_code="00aa24b2" os_list="linux,windows,chromeos,android" file_path="components/safe_browsing/core/browser/hashprefix_realtime/hash_realtime_service.cc" />
  <item id="android_feedback_connectivity_checker" added_in_milestone="111" content_hash_code="0011753d" os_list="android" file_path="chrome/android/java/src/org/chromium/chrome/browser/feedback/ConnectivityChecker.java" />
  <item id="printer_config_fetch" added_in_milestone="111" content_hash_code="042f8883" os_list="chromeos" file_path="chromeos/printing/printer_config_cache.cc" />
 </annotations>

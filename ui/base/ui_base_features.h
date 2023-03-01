@@ -16,8 +16,6 @@ namespace features {
 // Keep sorted!
 
 COMPONENT_EXPORT(UI_BASE_FEATURES)
-BASE_DECLARE_FEATURE(kCompositorThreadedScrollbarScrolling);
-COMPONENT_EXPORT(UI_BASE_FEATURES)
 BASE_DECLARE_FEATURE(kExperimentalFlingAnimation);
 COMPONENT_EXPORT(UI_BASE_FEATURES) BASE_DECLARE_FEATURE(kFocusFollowsCursor);
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -79,11 +77,14 @@ COMPONENT_EXPORT(UI_BASE_FEATURES)
 BASE_DECLARE_FEATURE(kDeprecateAltBasedSixPack);
 COMPONENT_EXPORT(UI_BASE_FEATURES)
 bool IsDeprecateAltBasedSixPackEnabled();
+#endif  // BUILDFLAG(IS_CHROMEOS)
+
+#if defined(USE_AURA)
 COMPONENT_EXPORT(UI_BASE_FEATURES)
 BASE_DECLARE_FEATURE(kTouchTextEditingRedesign);
 COMPONENT_EXPORT(UI_BASE_FEATURES)
 bool IsTouchTextEditingRedesignEnabled();
-#endif  // BUILDFLAG(IS_CHROMEOS)
+#endif  // defined(USE_AURA)
 
 // Used to enable forced colors mode for web content.
 COMPONENT_EXPORT(UI_BASE_FEATURES) BASE_DECLARE_FEATURE(kForcedColors);

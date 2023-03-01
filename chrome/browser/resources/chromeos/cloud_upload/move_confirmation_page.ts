@@ -4,6 +4,7 @@
 
 import 'chrome://resources/cr_elements/cr_button/cr_button.js';
 import 'chrome://resources/cr_elements/cr_checkbox/cr_checkbox.js';
+import 'chrome://resources/cr_elements/cr_lottie/cr_lottie.js';
 
 import {UserAction} from './cloud_upload.mojom-webui.js';
 import {CloudUploadBrowserProxy} from './cloud_upload_browser_proxy.js';
@@ -37,6 +38,22 @@ export class MoveConfirmationPageElement extends HTMLElement {
 
     moveButton.addEventListener('click', () => this.onMoveButtonClick());
     cancelButton.addEventListener('click', () => this.onCancelButtonClick());
+    this.init();
+  }
+
+  $<T extends HTMLElement>(query: string): T {
+    return this.shadowRoot!.querySelector(query)!;
+  }
+
+  async init() {
+    const {moveConfirmationShown: officeMoveConfirmationShown} =
+        await this.proxy.handler.officeMoveConfirmationShown();
+
+    // Only show checkbox if the confirmation has been shown before.
+    if (!officeMoveConfirmationShown) {
+      this.$<CrCheckboxElement>('#always-move-checkbox')!.remove();
+      this.proxy.handler.setOfficeMoveConfirmationShownTrue();
+    }
   }
 
   private getProviderText(cloudProvider: CloudProvider) {
@@ -59,13 +76,19 @@ export class MoveConfirmationPageElement extends HTMLElement {
     this.shadowRoot!.getElementById('app-name')!.innerText = appName;
     this.shadowRoot!.getElementById('provider-short-name')!.innerText =
         shortName;
+
+    const animationUrl = this.cloudProvider === CloudProvider.ONE_DRIVE ?
+        'move_confirmation_animation_onedrive.json' :
+        'move_confirmation_animation_drive.json';
+    this.shadowRoot!.querySelector('cr-lottie')!.setAttribute(
+        'animation-url', animationUrl);
   }
 
   private onMoveButtonClick(): void {
-    const checkbox = this.shadowRoot!.querySelector<CrCheckboxElement>(
-        '#always-move-checkbox')!;
-    this.proxy.handler.setAlwaysMoveOfficeFiles(checkbox.checked);
-
+    const checkbox = this.$<CrCheckboxElement>('#always-move-checkbox');
+    if (checkbox) {
+      this.proxy.handler.setAlwaysMoveOfficeFiles(checkbox.checked);
+    }
     if (this.cloudProvider === CloudProvider.ONE_DRIVE) {
       this.proxy.handler.respondWithUserActionAndClose(
           UserAction.kUploadToOneDrive);

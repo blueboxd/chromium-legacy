@@ -198,7 +198,7 @@ FeatureInfo::FeatureInfo(
   feature_flags_.chromium_image_ycbcr_420v = base::Contains(
       gpu_feature_info.supported_buffer_formats_for_allocation_and_texturing,
       gfx::BufferFormat::YUV_420_BIPLANAR);
-#elif BUILDFLAG(IS_MAC)
+#elif BUILDFLAG(IS_APPLE)
   feature_flags_.chromium_image_ycbcr_420v = true;
 #endif
 

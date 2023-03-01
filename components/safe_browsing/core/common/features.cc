@@ -106,6 +106,10 @@ const base::FeatureParam<int> kExtensionTelemetryWritesPerInterval{
     &kExtensionTelemetry, "NumberOfWritesInInterval",
     /*default_value=*/1};
 
+BASE_FEATURE(kExtensionTelemetryConfiguration,
+             "SafeBrowsingExtensionTelemetryConfiguration",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 BASE_FEATURE(kExtensionTelemetryCookiesGetAllSignal,
              "SafeBrowsingExtensionTelemetryCookiesGetAllSignal",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -113,10 +117,6 @@ BASE_FEATURE(kExtensionTelemetryCookiesGetAllSignal,
 BASE_FEATURE(kExtensionTelemetryPersistence,
              "SafeBrowsingExtensionTelemetryPersistence",
              base::FEATURE_ENABLED_BY_DEFAULT);
-
-BASE_FEATURE(kExtensionTelemetryConfiguration,
-             "SafeBrowsingExtensionTelemetryConfiguration",
-             base::FEATURE_DISABLED_BY_DEFAULT);
 
 BASE_FEATURE(kExtensionTelemetryFileData,
              "SafeBrowsingExtensionTelemetryFileData",
@@ -163,6 +163,14 @@ BASE_FEATURE(kFileTypePoliciesTag,
              "FileTypePoliciesTag",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
+BASE_FEATURE(kHashRealTimeOverOhttp,
+             "SafeBrowsingHashRealTimeOverOhttp",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+constexpr base::FeatureParam<std::string> kHashRealTimeOverOhttpRelayUrl{
+    &kHashRealTimeOverOhttp, "SafeBrowsingHashRealTimeOverOhttpRelayUrl",
+    /*default_value=*/""};
+
 BASE_FEATURE(kLogAccountEnhancedProtectionStateInProtegoPings,
              "TailoredSecurityLogAccountEnhancedProtectionStateInProtegoPings",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -205,6 +213,10 @@ BASE_FEATURE(kSafeBrowsingLookupMechanismExperiment,
 
 BASE_FEATURE(kSafeBrowsingRemoveCookiesInAuthRequests,
              "SafeBrowsingRemoveCookiesInAuthRequests",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+BASE_FEATURE(kSafeBrowsingSkipImageCssFont,
+             "SafeBrowsingSkipImageCssFont",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 BASE_FEATURE(kSevenZipEvaluationEnabled,
@@ -260,6 +272,10 @@ BASE_FEATURE(kVisualFeaturesSizes,
 
 BASE_FEATURE(kClientSideDetectionModelOptimizationGuide,
              "ClientSideDetectionModelOptimizationGuide",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+BASE_FEATURE(kSafeBrowsingPhishingClassificationESBThreshold,
+             "SafeBrowsingPhishingClassificationESBThreshold",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 namespace {

@@ -29,6 +29,7 @@
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
+#include "extensions/browser/extension_util.h"
 #include "extensions/browser/image_loader.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
@@ -681,9 +682,8 @@ std::string ParentPermissionDialogView::GetParentObfuscatedGaiaID(
     return service->GetSecondCustodianObfuscatedGaiaId();
   }
 
-  NOTREACHED()
+  NOTREACHED_NORETURN()
       << "Tried to get obfuscated gaia id for a non-custodian email address";
-  return std::string();
 }
 
 void ParentPermissionDialogView::StartReauthAccessTokenFetch(

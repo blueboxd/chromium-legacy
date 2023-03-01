@@ -760,6 +760,7 @@ LayoutMultiColumnSet* LayoutMultiColumnFlowThread::PendingColumnSetForNG()
 
 void LayoutMultiColumnFlowThread::AppendNewFragmentainerGroupFromNG() {
   NOT_DESTROYED();
+  DCHECK(!RuntimeEnabledFeatures::LayoutNGNoCopyBackEnabled());
   if (!last_set_worked_on_) {
     // There may be no column sets at all (when there's no content inside the
     // multicol container). Still the multicol container itself may take up
@@ -776,6 +777,7 @@ void LayoutMultiColumnFlowThread::AppendNewFragmentainerGroupFromNG() {
 void LayoutMultiColumnFlowThread::SetCurrentColumnBlockSizeFromNG(
     LayoutUnit block_size) {
   NOT_DESTROYED();
+  DCHECK(!RuntimeEnabledFeatures::LayoutNGNoCopyBackEnabled());
   // There are cases where NG creates an empty column even if we don't create a
   // column set.
   if (!last_set_worked_on_)
@@ -793,11 +795,13 @@ void LayoutMultiColumnFlowThread::FinishLayoutFromNG(
     column_box->ClearNeedsLayout();
   }
 
-  // If we have a trailing column set, finish it.
-  if (auto* last_column_set =
-          DynamicTo<LayoutMultiColumnSet>(LastMultiColumnBox())) {
-    last_column_set->EndFlow(flow_thread_offset);
-    last_column_set->FinishLayoutFromNG();
+  if (!RuntimeEnabledFeatures::LayoutNGNoCopyBackEnabled()) {
+    // If we have a trailing column set, finish it.
+    if (auto* last_column_set =
+            DynamicTo<LayoutMultiColumnSet>(LastMultiColumnBox())) {
+      last_column_set->EndFlow(flow_thread_offset);
+      last_column_set->FinishLayoutFromNG();
+    }
   }
 
   ValidateColumnSets();
@@ -1073,6 +1077,7 @@ void LayoutMultiColumnFlowThread::SkipColumnSpanner(
     const LayoutBox* layout_object,
     LayoutUnit logical_top_in_flow_thread) {
   NOT_DESTROYED();
+  DCHECK(!RuntimeEnabledFeatures::LayoutNGNoCopyBackEnabled());
   DCHECK(layout_object->IsColumnSpanAll());
 
   // In legacy layout, |last_set_worked_on_| is only updated if we find a column
@@ -1639,28 +1644,41 @@ void LayoutMultiColumnFlowThread::RestoreMultiColumnLayoutState(
   last_set_worked_on_ = state.ColumnSet();
 }
 
+LayoutPoint LayoutMultiColumnFlowThread::Location() const {
+  NOT_DESTROYED();
+  if (RuntimeEnabledFeatures::LayoutNGNoCopyBackEnabled() &&
+      !HasValidCachedGeometry() && EverHadLayout()) {
+    // const_cast in order to update the cached value.
+    const_cast<LayoutMultiColumnFlowThread*>(this)->UpdateGeometry();
+  }
+  return frame_location_;
+}
+
 LayoutSize LayoutMultiColumnFlowThread::Size() const {
   NOT_DESTROYED();
   if (RuntimeEnabledFeatures::LayoutNGNoCopyBackEnabled() &&
       !HasValidCachedGeometry() && EverHadLayout()) {
     // const_cast in order to update the cached value.
-    auto* mutable_this = const_cast<LayoutMultiColumnFlowThread*>(this);
-    mutable_this->SetHasValidCachedGeometry(true);
-    mutable_this->frame_size_ = ComputeSize();
+    const_cast<LayoutMultiColumnFlowThread*>(this)->UpdateGeometry();
   }
   return frame_size_;
 }
 
-LayoutSize LayoutMultiColumnFlowThread::ComputeSize() const {
+void LayoutMultiColumnFlowThread::UpdateGeometry() {
+  NOT_DESTROYED();
   DCHECK(RuntimeEnabledFeatures::LayoutNGNoCopyBackEnabled());
+  SetHasValidCachedGeometry(true);
+  frame_location_ = LayoutPoint();
   LogicalSize thread_size;
   const LayoutBlockFlow* container = MultiColumnBlockFlow();
   if (container->PhysicalFragmentCount() == 0u) {
-    return LayoutSize();
+    frame_size_ = LayoutSize();
+    return;
   }
   const auto* first_fragment = container->GetPhysicalFragment(0);
   WritingModeConverter converter(first_fragment->Style().GetWritingDirection());
   bool has_processed_first_column_in_flow_thread = false;
+  const NGBlockBreakToken* break_token = nullptr;
   for (const auto& container_fragment : container->PhysicalFragments()) {
     for (const auto& link : container_fragment.Children()) {
       const auto& child_fragment = To<NGPhysicalBoxFragment>(*link);
@@ -1670,17 +1688,22 @@ LayoutSize LayoutMultiColumnFlowThread::ComputeSize() const {
       LogicalSize logical_size = FragmentainerLogicalCapacity(child_fragment);
       thread_size.block_size += logical_size.block_size;
       if (!has_processed_first_column_in_flow_thread) {
+        // The offset of the flow thread is the same as that of the first
+        // column.
+        frame_location_ = LayoutBoxUtils::ComputeLocation(
+            child_fragment, link.Offset(), container_fragment, break_token);
+
         thread_size.inline_size = logical_size.inline_size;
         has_processed_first_column_in_flow_thread = true;
       }
     }
-    const auto* break_token = container_fragment.BreakToken();
+    break_token = container_fragment.BreakToken();
     if (!break_token || break_token->IsRepeated() ||
         break_token->IsAtBlockEnd()) {
       break;
     }
   }
-  return converter.ToPhysical(thread_size).ToLayoutSize();
+  frame_size_ = converter.ToPhysical(thread_size).ToLayoutSize();
 }
 
 }  // namespace blink

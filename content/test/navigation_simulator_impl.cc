@@ -1323,7 +1323,8 @@ bool NavigationSimulatorImpl::SimulateRendererInitiatedStart() {
           base::TimeTicks() /* renderer_before_unload_end */,
           absl::nullopt /* web_bundle_token */,
           blink::mojom::NavigationInitiatorActivationAndAdStatus::
-              kDidNotStartWithTransientActivation);
+              kDidNotStartWithTransientActivation,
+          false /* is_container_initiated */);
   auto common_params = blink::CreateCommonNavigationParams();
   common_params->navigation_start = base::TimeTicks::Now();
   common_params->input_start = navigation_input_start_;
@@ -1531,20 +1532,21 @@ NavigationSimulatorImpl::BuildDidCommitProvisionalLoadParams(
   params->method = request_ ? request_->common_params().method : "GET";
 
   if (failed_navigation) {
-    // Note: Error pages must commit in a unique origin. So it is left unset.
     params->url_is_unreachable = true;
+  } else if (same_document) {
+    params->should_update_history = true;
   } else {
-    if (same_document) {
-      params->origin = current_rfh->GetLastCommittedOrigin();
-      params->should_update_history = true;
-    } else {
-      // This mirrors the calculation in
-      // RenderFrameImpl::MakeDidCommitProvisionalLoadParams.
-      // TODO(https://crbug.com/1158101): Reconsider how we calculate
-      // should_update_history.
-      params->should_update_history = response_headers_->response_code() != 404;
-      params->origin = origin_.value_or(request_->GetOriginToCommit().value());
-    }
+    // TODO(https://crbug.com/1158101): Reconsider how we calculate
+    // should_update_history.
+    params->should_update_history = response_headers_->response_code() != 404;
+  }
+
+  // This mirrors the calculation in
+  // RenderFrameImpl::MakeDidCommitProvisionalLoadParams.
+  if (same_document) {
+    params->origin = current_rfh->GetLastCommittedOrigin();
+  } else {
+    params->origin = origin_.value_or(request_->GetOriginToCommit().value());
   }
 
   if (same_document) {

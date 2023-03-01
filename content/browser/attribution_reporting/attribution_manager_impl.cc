@@ -68,7 +68,6 @@
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/global_routing_id.h"
 #include "content/public/browser/render_frame_host.h"
-#include "content/public/browser/render_process_host.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
@@ -89,9 +88,6 @@ namespace {
 
 using ScopedUseInMemoryStorageForTesting =
     ::content::AttributionManagerImpl::ScopedUseInMemoryStorageForTesting;
-
-using ScopedOsSupportForTesting =
-    ::content::AttributionManagerImpl::ScopedOsSupportForTesting;
 
 // These values are persisted to logs. Entries should not be renumbered and
 // numeric values should never be reused.
@@ -328,28 +324,6 @@ bool IsOperationAllowed(
 
 bool g_run_in_memory = false;
 
-// This flag is per device and can only be changed by the OS.
-//
-// TODO(linnan): As currently we don't listen to the flag changes on the OS and
-// the API is synchronous, consider changing this to be per instance instead of
-// global which is set on creation. The renderer would be initialized with the
-// instance value without further updates.
-attribution_reporting::mojom::OsSupport g_os_support =
-    attribution_reporting::mojom::OsSupport::kDisabled;
-
-void SetOsSupport(attribution_reporting::mojom::OsSupport os_support) {
-  if (g_os_support == os_support) {
-    return;
-  }
-
-  g_os_support = os_support;
-
-  for (RenderProcessHost::iterator it = RenderProcessHost::AllHostsIterator();
-       !it.IsAtEnd(); it.Advance()) {
-    it.GetCurrentValue()->SetOsSupportForAttributionReporting(g_os_support);
-  }
-}
-
 }  // namespace
 
 struct AttributionManagerImpl::SourceOrTriggerRFH {
@@ -384,16 +358,6 @@ ScopedUseInMemoryStorageForTesting::~ScopedUseInMemoryStorageForTesting() {
   g_run_in_memory = previous_;
 }
 
-ScopedOsSupportForTesting::ScopedOsSupportForTesting(
-    attribution_reporting::mojom::OsSupport os_support)
-    : previous_(g_os_support) {
-  SetOsSupport(os_support);
-}
-
-ScopedOsSupportForTesting::~ScopedOsSupportForTesting() {
-  SetOsSupport(previous_);
-}
-
 // static
 std::unique_ptr<AttributionManagerImpl>
 AttributionManagerImpl::CreateWithNewDbForTesting(
@@ -410,11 +374,6 @@ AttributionManagerImpl::CreateWithNewDbForTesting(
   return std::make_unique<AttributionManagerImpl>(
       storage_partition, user_data_directory,
       std::move(special_storage_policy));
-}
-
-// static
-attribution_reporting::mojom::OsSupport AttributionManagerImpl::GetOsSupport() {
-  return g_os_support;
 }
 
 bool AttributionManagerImpl::IsReportAllowed(
@@ -509,10 +468,6 @@ AttributionManagerImpl::AttributionManagerImpl(
           blink::features::kAttributionReportingCrossAppWeb)) {
     attribution_os_level_manager_ =
         std::make_unique<AttributionOsLevelManagerAndroid>();
-    // The measurement API status can only change when user changes the setting
-    // on the device, therefore it's fine to update the global variable to keep
-    // track of the latest setting.
-    SetOsSupport(attribution_os_level_manager_->GetOsSupport());
   }
 #endif
 }
@@ -757,18 +712,24 @@ void AttributionManagerImpl::OnReportStored(
 
   scheduler_timer_.MaybeSet(min_new_report_time);
 
+  bool reports_changed = false;
+
   if (result.event_level_status() !=
       AttributionTrigger::EventLevelResult::kInternalError) {
     // Sources are changed here because storing an event-level report can
     // cause sources to reach event-level attribution limit or become
     // associated with a dedup key.
     NotifySourcesChanged();
-    NotifyReportsChanged(AttributionReport::Type::kEventLevel);
+    reports_changed = true;
   }
 
   if (result.aggregatable_status() ==
       AttributionTrigger::AggregatableResult::kSuccess) {
-    NotifyReportsChanged(AttributionReport::Type::kAggregatableAttribution);
+    reports_changed = true;
+  }
+
+  if (reports_changed) {
+    NotifyReportsChanged();
   }
 
   for (auto& observer : observers_) {
@@ -802,12 +763,10 @@ void AttributionManagerImpl::GetActiveSourcesForWebUI(
 }
 
 void AttributionManagerImpl::GetPendingReportsForInternalUse(
-    AttributionReport::Types report_types,
     int limit,
     base::OnceCallback<void(std::vector<AttributionReport>)> callback) {
   attribution_storage_.AsyncCall(&AttributionStorage::GetAttributionReports)
-      .WithArgs(
-          /*max_report_time=*/base::Time::Max(), limit, std::move(report_types))
+      .WithArgs(/*max_report_time=*/base::Time::Max(), limit)
       .Then(std::move(callback));
 }
 
@@ -875,8 +834,7 @@ void AttributionManagerImpl::OnClearDataComplete() {
   }
 
   NotifySourcesChanged();
-  NotifyReportsChanged(AttributionReport::Type::kEventLevel);
-  NotifyReportsChanged(AttributionReport::Type::kAggregatableAttribution);
+  NotifyReportsChanged();
 }
 
 void AttributionManagerImpl::GetAllDataKeys(
@@ -904,10 +862,7 @@ void AttributionManagerImpl::GetReportsToSend() {
   // TODO(apaseltiner): Consider limiting the number of reports being sent at
   // once, to avoid pulling an arbitrary number of reports into memory.
   attribution_storage_.AsyncCall(&AttributionStorage::GetAttributionReports)
-      .WithArgs(/*max_report_time=*/base::Time::Now(), /*limit=*/-1,
-                AttributionReport::Types{
-                    AttributionReport::Type::kEventLevel,
-                    AttributionReport::Type::kAggregatableAttribution})
+      .WithArgs(/*max_report_time=*/base::Time::Now(), /*limit=*/-1)
       .Then(base::BindOnce(&AttributionManagerImpl::SendReports,
                            weak_factory_.GetWeakPtr(),
                            /*web_ui_callback=*/base::NullCallback()));
@@ -1019,8 +974,7 @@ void AttributionManagerImpl::OnReportSent(base::OnceClosure done,
         if (manager && success) {
           manager->MarkReportCompleted(report_id);
           manager->scheduler_timer_.MaybeSet(new_report_time);
-          manager->NotifyReportsChanged(
-              AttributionReport::GetReportType(report_id));
+          manager->NotifyReportsChanged();
         }
       },
       std::move(done), weak_factory_.GetWeakPtr(), report.ReportId(),
@@ -1131,10 +1085,9 @@ void AttributionManagerImpl::NotifySourcesChanged() {
   }
 }
 
-void AttributionManagerImpl::NotifyReportsChanged(
-    AttributionReport::Type report_type) {
+void AttributionManagerImpl::NotifyReportsChanged() {
   for (auto& observer : observers_) {
-    observer.OnReportsChanged(report_type);
+    observer.OnReportsChanged();
   }
 }
 
@@ -1213,5 +1166,15 @@ void AttributionManagerImpl::OverrideOsLevelManagerForTesting(
   attribution_os_level_manager_ = std::move(os_level_manager);
 }
 #endif
+
+attribution_reporting::mojom::OsSupport AttributionManagerImpl::GetOsSupport() {
+#if BUILDFLAG(IS_ANDROID)
+  if (attribution_os_level_manager_) {
+    return attribution_os_level_manager_->GetOsSupport();
+  }
+#endif
+
+  return attribution_reporting::mojom::OsSupport::kDisabled;
+}
 
 }  // namespace content

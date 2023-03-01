@@ -174,6 +174,7 @@
 #include "chrome/browser/ui/search/search_tab_helper.h"
 #include "chrome/browser/ui/side_panel/customize_chrome/customize_chrome_tab_helper.h"
 #include "chrome/browser/ui/side_panel/customize_chrome/customize_chrome_utils.h"
+#include "chrome/browser/ui/side_panel/history_clusters/history_clusters_tab_helper.h"
 #include "chrome/browser/ui/sync/browser_synced_tab_delegate.h"
 #include "chrome/browser/ui/ui_features.h"
 #include "components/commerce/content/browser/hint/commerce_hint_tab_helper.h"
@@ -309,13 +310,6 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
   }
 #endif
   autofill::ChromeAutofillClient::CreateForWebContents(web_contents);
-  autofill::ContentAutofillDriverFactory::CreateForWebContentsAndDelegate(
-      web_contents,
-      autofill::ChromeAutofillClient::FromWebContents(web_contents),
-      base::BindRepeating(
-          &autofill::BrowserDriverInitHook,
-          autofill::ChromeAutofillClient::FromWebContents(web_contents),
-          g_browser_process->GetApplicationLocale()));
   if (breadcrumbs::IsEnabled())
     BreadcrumbManagerTabHelper::CreateForWebContents(web_contents);
   chrome_browser_net::NetErrorTabHelper::CreateForWebContents(web_contents);
@@ -512,6 +506,9 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
       permissions::UnusedSitePermissionsService::TabHelper::
           CreateForWebContents(web_contents, service);
     }
+  }
+  if (base::FeatureList::IsEnabled(ntp_features::kNtpHistoryClustersModule)) {
+    side_panel::HistoryClustersTabHelper::CreateForWebContents(web_contents);
   }
 #endif
 

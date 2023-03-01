@@ -1317,13 +1317,12 @@ void NetworkStateHandler::SetDeviceStateUpdatedForTest(
 // ShillPropertyHandler::Delegate overrides
 
 void NetworkStateHandler::UpdateManagedList(ManagedState::ManagedType type,
-                                            const base::Value& entries) {
+                                            const base::Value::List& entries) {
   CHECK(!notifying_network_observers_);
-  DCHECK(entries.is_list());
 
   ManagedStateList* managed_list = GetManagedList(type);
   NET_LOG(DEBUG) << "UpdateManagedList: " << ManagedState::TypeToString(type)
-                 << ": " << entries.GetList().size();
+                 << ": " << entries.size();
   // Create a map of existing entries. Assumes all entries in |managed_list|
   // are unique.
   std::map<std::string, std::unique_ptr<ManagedState>> managed_map;
@@ -1336,7 +1335,7 @@ void NetworkStateHandler::UpdateManagedList(ManagedState::ManagedType type,
   managed_list->clear();
   // Updates managed_list and request updates for new entries.
   std::set<std::string> list_entries;
-  for (const auto& iter : entries.GetList()) {
+  for (const auto& iter : entries) {
     const std::string* path = iter.GetIfString();
     if (!path)
       continue;
@@ -1413,7 +1412,8 @@ void NetworkStateHandler::UpdateBlockedCellularNetworks() {
   UpdateBlockedNetworksInternal(NetworkTypePattern::Cellular());
 }
 
-void NetworkStateHandler::ProfileListChanged(const base::Value& profile_list) {
+void NetworkStateHandler::ProfileListChanged(
+    const base::Value::List& profile_list) {
   NET_LOG(EVENT) << "ProfileListChanged. Re-Requesting Network Properties";
   ProcessIsUserLoggedIn(profile_list);
   for (ManagedStateList::iterator iter = network_list_.begin();
@@ -2122,12 +2122,16 @@ void NetworkStateHandler::UpdatePortalStateAndNotify(
        default_network->proxy_config() != default_network_proxy_config_)) {
     new_portal_state = default_network->shill_portal_state();
     new_default_network_path = default_network->path();
-    default_network_proxy_config_ = default_network->proxy_config().Clone();
+    if (default_network->proxy_config()) {
+      default_network_proxy_config_ = default_network->proxy_config()->Clone();
+    } else {
+      default_network_proxy_config_.reset();
+    }
   } else if (!default_network && (default_network_portal_state_ !=
                                       NetworkState::PortalState::kUnknown ||
-                                  !default_network_proxy_config_.is_none())) {
+                                  default_network_proxy_config_.has_value())) {
     new_portal_state = NetworkState::PortalState::kUnknown;
-    default_network_proxy_config_ = base::Value();
+    default_network_proxy_config_.reset();
   } else {
     // No portal state changes.
     return;
@@ -2348,13 +2352,10 @@ void NetworkStateHandler::SetDefaultNetworkValues(const std::string& path,
 }
 
 void NetworkStateHandler::ProcessIsUserLoggedIn(
-    const base::Value& profile_list) {
-  if (!profile_list.is_list()) {
-    return;
-  }
+    const base::Value::List& profile_list) {
   // The profile list contains the shared profile on the login screen. Once the
   // user is logged in there is more than one profile in the profile list.
-  is_user_logged_in_ = profile_list.GetList().size() > 1;
+  is_user_logged_in_ = profile_list.size() > 1;
 }
 
 }  // namespace ash

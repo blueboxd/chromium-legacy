@@ -392,8 +392,6 @@ ExtensionService::ExtensionService(
   on_app_terminating_subscription_ =
       browser_shutdown::AddAppTerminatingCallback(base::BindOnce(
           &ExtensionService::OnAppTerminating, base::Unretained(this)));
-  registrar_.Add(this, content::NOTIFICATION_RENDERER_PROCESS_TERMINATED,
-                 content::NotificationService::AllBrowserContextsAndSources());
 
   host_registry_observation_.Observe(ExtensionHostRegistry::Get(profile));
 
@@ -1035,12 +1033,11 @@ void ExtensionService::BlockAllExtensions() {
   block_extensions_ = true;
 
   // Blocklisted extensions are already unloaded, need not be blocked.
-  std::unique_ptr<ExtensionSet> extensions =
-      registry_->GenerateInstalledExtensionsSet(ExtensionRegistry::ENABLED |
-                                                ExtensionRegistry::DISABLED |
-                                                ExtensionRegistry::TERMINATED);
+  const ExtensionSet extensions = registry_->GenerateInstalledExtensionsSet(
+      ExtensionRegistry::ENABLED | ExtensionRegistry::DISABLED |
+      ExtensionRegistry::TERMINATED);
 
-  for (const auto& extension : *extensions) {
+  for (const auto& extension : extensions) {
     const std::string& id = extension->id();
 
     if (!CanBlockExtension(extension.get()))
@@ -1055,10 +1052,10 @@ void ExtensionService::BlockAllExtensions() {
 // as appropriate.
 void ExtensionService::UnblockAllExtensions() {
   block_extensions_ = false;
-  std::unique_ptr<ExtensionSet> to_unblock =
+  const ExtensionSet to_unblock =
       registry_->GenerateInstalledExtensionsSet(ExtensionRegistry::BLOCKED);
 
-  for (const auto& extension : *to_unblock) {
+  for (const auto& extension : to_unblock) {
     registry_->RemoveBlocked(extension->id());
     AddExtension(extension.get());
   }
@@ -1777,9 +1774,9 @@ void ExtensionService::OnExtensionManagementSettingsChanged() {
   ExtensionManagement* settings =
       ExtensionManagementFactory::GetForBrowserContext(profile());
   CHECK(settings);
-  std::unique_ptr<ExtensionSet> all_extensions(
-      registry_->GenerateInstalledExtensionsSet());
-  for (const auto& extension : *all_extensions) {
+  const ExtensionSet all_extensions =
+      registry_->GenerateInstalledExtensionsSet();
+  for (const auto& extension : all_extensions) {
     if (!settings->IsPermissionSetAllowed(
             extension.get(),
             extension->permissions_data()->active_permissions()) &&
@@ -2015,23 +2012,28 @@ void ExtensionService::OnAppTerminating() {
   browser_terminating_ = true;
 }
 
-void ExtensionService::Observe(int type,
-                               const content::NotificationSource& source,
-                               const content::NotificationDetails& details) {
-  DCHECK(type == content::NOTIFICATION_RENDERER_PROCESS_TERMINATED);
-  content::RenderProcessHost* process =
-      content::Source<content::RenderProcessHost>(source).ptr();
+void ExtensionService::OnRenderProcessHostCreated(
+    content::RenderProcessHost* host) {
+  if (!host_observation_.IsObservingSource(host)) {
+    host_observation_.AddObservation(host);
+  }
+}
+
+void ExtensionService::RenderProcessHostDestroyed(
+    content::RenderProcessHost* host) {
+  host_observation_.RemoveObservation(host);
+
   Profile* host_profile =
-      Profile::FromBrowserContext(process->GetBrowserContext());
+      Profile::FromBrowserContext(host->GetBrowserContext());
   if (!profile_->IsSameOrParent(host_profile->GetOriginalProfile()))
     return;
 
   ProcessMap* process_map = ProcessMap::Get(profile_);
-  if (process_map->Contains(process->GetID())) {
+  if (process_map->Contains(host->GetID())) {
     // An extension process was terminated, this might have resulted in an
     // app or extension becoming idle.
     std::set<std::string> extension_ids =
-        process_map->GetExtensionsInProcess(process->GetID());
+        process_map->GetExtensionsInProcess(host->GetID());
     // In addition to the extensions listed in the process map, one of those
     // extensions could be referencing a shared module which is waiting for
     // idle to update. Check all imports of these extensions, too.
@@ -2062,7 +2064,7 @@ void ExtensionService::Observe(int type,
       }
     }
   }
-  process_map->RemoveAllFromProcess(process->GetID());
+  process_map->RemoveAllFromProcess(host->GetID());
 }
 
 int ExtensionService::GetDisableReasonsOnInstalled(const Extension* extension) {
@@ -2157,7 +2159,7 @@ void ExtensionService::MaybeFinishDelayedInstallations() {
 
 void ExtensionService::OnBlocklistUpdated() {
   blocklist_->GetBlocklistedIDs(
-      registry_->GenerateInstalledExtensionsSet()->GetIDs(),
+      registry_->GenerateInstalledExtensionsSet().GetIDs(),
       base::BindOnce(&ExtensionService::ManageBlocklist,
                      AsExtensionServiceWeakPtr()));
 }
@@ -2317,10 +2319,10 @@ void ExtensionService::OnInstalledExtensionsLoaded() {
 }
 
 void ExtensionService::UninstallMigratedExtensions() {
-  std::unique_ptr<ExtensionSet> installed_extensions =
+  const ExtensionSet installed_extensions =
       registry_->GenerateInstalledExtensionsSet();
   for (const std::string& extension_id : kObsoleteComponentExtensionIds) {
-    auto* extension = installed_extensions->GetByID(extension_id);
+    auto* extension = installed_extensions.GetByID(extension_id);
     if (extension) {
       UninstallExtension(extension_id, UNINSTALL_REASON_COMPONENT_REMOVED,
                          nullptr);

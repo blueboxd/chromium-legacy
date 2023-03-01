@@ -38,14 +38,15 @@ _allowed_config_options = [
 
 # Allowed compilerOptions
 _allowed_compiler_options = [
-    'typeRoots',
-    'types',
+    'allowUmdGlobalAccess',
+    'lib',
+    'noPropertyAccessFromIndexSignature',
     'noUncheckedIndexedAccess',
     'noUnusedLocals',
-    'strictPropertyInitialization',
-    'noPropertyAccessFromIndexSignature',
-    'allowUmdGlobalAccess',
     'skipLibCheck',
+    'strictPropertyInitialization',
+    'typeRoots',
+    'types',
 ]
 
 
@@ -121,9 +122,10 @@ def validateJavaScriptAllowed(source_dir, out_dir, is_ios):
   # Specific exceptions for directories that are still migrating to TS.
   migrating_directories = [
       'chrome/browser/resources/bluetooth_internals',
-      'chrome/browser/resources/ntp4',
       'chrome/browser/resources/chromeos/accessibility',
       'chrome/browser/resources/chromeos/emoji_picker',
+      'chrome/browser/resources/nearby_share/shared',
+      'chrome/browser/resources/ntp4',
       'chrome/browser/resources/settings/chromeos/tsc_input',
       'chrome/test/data/webui',
       'chrome/test/data/webui/chromeos',

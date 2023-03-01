@@ -1066,7 +1066,7 @@ ts_library("web_ui_mojo_test_build_ts") {
     "web_ui_ts_test.test-mojom-webui.ts",
     "web_ui_ts_test_types.test-mojom-webui.ts",
   ]
-  deps = [ "//ui/webui/resources/mojo:library" ]
+  deps = [ "//ui/webui/resources/mojo:build_ts" ]
   extra_deps = [
     ":preprocess_mojo_webui_test",
     ":web_ui_ts_test_mojo_bindings_ts__generator",
@@ -1925,7 +1925,7 @@ test("content_browsertests") {
     deps += [ "//services/tracing:test_utils" ]
   }
 
-  if (!is_android && !is_fuchsia) {
+  if (is_chromeos) {
     sources += [ "../browser/smart_card/smart_card_browsertest.cc" ]
   }
 

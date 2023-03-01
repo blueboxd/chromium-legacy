@@ -306,6 +306,9 @@ crbug.com/1338173 [ chromeos chromeos-board-amd64-generic ] Pixel_PrecisionRound
 # Flaky on Fuchsia.
 crbug.com/1368748 [ fuchsia ] Pixel_OffscreenCanvasWebGLPaintAfterResize [ Failure ]
 
+# Failing likely due to protected memory, but cause TBD.
+crbug.com/1420067 [ fuchsia fuchsia-board-astro ] Pixel_Video* [ Failure ]
+crbug.com/1420067 [ fuchsia fuchsia-board-sherlock ] Pixel_Video* [ Failure ]
 
 # WebGPU pixel tests flakily hang in the metal shader compiler on Mac.
 crbug.com/1268120 [ mac asan ] Pixel_WebGPUToDataURL [ Failure ]
@@ -383,9 +386,19 @@ crbug.com/1382332 [ linux nvidia-0x2184 passthrough debug angle-vulkan ] Pixel_M
 crbug.com/1382332 [ linux release renderer-skia-vulkan intel-0x9bc5 ] Pixel_MediaRecorderFromVideoElement [ RetryOnFailure ]
 crbug.com/1382332 [ display-server-wayland intel-0x9bc5 linux no-clang-coverage release renderer-skia-gl ] Pixel_MediaRecorderFromVideoElement [ RetryOnFailure ]
 
-# Flakes on Pixel 4, Nexus 5X, and Samsung A13 due to video stream being offset vertically by 1 pixel.
-crbug.com/1410332 [ android android-chromium renderer-skia-gl ] Pixel_VideoStreamFromWebGLAlphaCanvas [ RetryOnFailure ]
-crbug.com/1410332 [ android android-chromium android-pixel-4 renderer-skia-gl ] Pixel_VideoStreamFrom2DAlphaCanvas_DisableOOPRaster [ RetryOnFailure ]
+# Flakes on Pixel 4, Pixel 6, Nexus 5X, and Samsung A13 due to video stream being offset vertically by 1 pixel.
+# finder:group-start crbug.com/1410332
+crbug.com/1410332 [ android ] Pixel_VideoStreamFrom2DAlphaCanvas [ RetryOnFailure ]
+crbug.com/1410332 [ android ] Pixel_VideoStreamFrom2DAlphaCanvas_DisableOOPRaster [ RetryOnFailure ]
+crbug.com/1410332 [ android ] Pixel_VideoStreamFromWebGLAlphaCanvas [ RetryOnFailure ]
+# finder:group-end
+
+# Fails on Linux AMD RX 5500 XT with RADV 20.0.8
+crbug.com/1418987 [ linux amd-0x7340 angle-vulkan ] Pixel_OffscreenCanvasAccelerated2DWorker [ Failure ]
+crbug.com/1418987 [ linux amd-0x7340 angle-vulkan ] Pixel_OffscreenCanvasWebGLPaintAfterResize [ Failure ]
+crbug.com/1418987 [ linux amd-0x7340 angle-vulkan ] Pixel_WebGLDisplayP3 [ Failure ]
+crbug.com/1418987 [ linux amd-0x7340 angle-vulkan ] Pixel_OffscreenCanvasAccelerated2D [ RetryOnFailure ]
+crbug.com/1418987 [ linux amd-0x7340 angle-vulkan ] Pixel_OffscreenCanvasWebGLDefaultWorker [ RetryOnFailure ]
 
 #######################################################################
 # Automated Entries After This Point - Do Not Manually Add Below Here #

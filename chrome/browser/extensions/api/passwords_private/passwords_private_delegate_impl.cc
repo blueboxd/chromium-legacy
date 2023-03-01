@@ -59,7 +59,7 @@
 #include "url/scheme_host_port.h"
 
 #if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN)
-#include "chrome/browser/device_reauth/chrome_biometric_authenticator_factory.h"
+#include "chrome/browser/device_reauth/chrome_device_authenticator_factory.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #endif
 
@@ -199,11 +199,11 @@ extensions::api::passwords_private::ImportResults ConvertImportResults(
 
 using password_manager::prefs::kBiometricAuthenticationBeforeFilling;
 
-scoped_refptr<device_reauth::BiometricAuthenticator> GetBiometricAuthenticator(
+scoped_refptr<device_reauth::DeviceAuthenticator> GetDeviceAuthenticator(
     content::WebContents* web_contents) {
   auto* client = ChromePasswordManagerClient::FromWebContents(web_contents);
   DCHECK(client);
-  return client->GetBiometricAuthenticator();
+  return client->GetDeviceAuthenticator();
 }
 
 void ChangeBiometricAuthenticationBeforeFillingSetting(PrefService* prefs,
@@ -490,16 +490,18 @@ void PasswordsPrivateDelegateImpl::OsReauthCall(
 #elif BUILDFLAG(IS_MAC)
   // TODO(crbug.com/1358442): Remove this check.
   if (__builtin_available(macOS 10.13, *) &&
-      GetBiometricAuthenticator(web_contents_)
+      GetDeviceAuthenticator(web_contents_)
           ->CanAuthenticate(
-              device_reauth::BiometricAuthRequester::kPasswordsInSettings) &&
+              device_reauth::DeviceAuthRequester::kPasswordsInSettings) &&
       base::FeatureList::IsEnabled(
           password_manager::features::kBiometricAuthenticationInSettings)) {
     AuthenticateWithBiometrics(
         password_manager_util_mac::GetMessageForBiometricLoginPrompt(purpose),
         std::move(callback));
   } else {
-    bool result = password_manager_util_mac::AuthenticateUser(purpose);
+    bool result = password_manager_util_mac::AuthenticateUser(
+        password_manager_util_mac::GetMessageForNonBiometricLoginPrompt(
+            purpose));
     std::move(callback).Run(result);
   }
 #elif BUILDFLAG(IS_CHROMEOS_ASH)
@@ -938,17 +940,16 @@ void PasswordsPrivateDelegateImpl::AuthenticateWithBiometrics(
     // TODO(crbug.com/1371026): Remove Cancel and instead simply destroy
     // |biometric_authenticator_|.
     biometric_authenticator_->Cancel(
-        device_reauth::BiometricAuthRequester::kPasswordsInSettings);
+        device_reauth::DeviceAuthRequester::kPasswordsInSettings);
   }
-  biometric_authenticator_ = GetBiometricAuthenticator(web_contents_);
+  biometric_authenticator_ = GetDeviceAuthenticator(web_contents_);
 
   base::OnceClosure on_reauth_completed =
       base::BindOnce(&PasswordsPrivateDelegateImpl::OnReauthCompleted,
                      weak_ptr_factory_.GetWeakPtr());
 
   biometric_authenticator_->AuthenticateWithMessage(
-      device_reauth::BiometricAuthRequester::kPasswordsInSettings, message,
-      std::move(callback).Then(std::move(on_reauth_completed)));
+      message, std::move(callback).Then(std::move(on_reauth_completed)));
 #endif
 }
 
@@ -967,6 +968,7 @@ PasswordsPrivateDelegateImpl::CreatePasswordUiEntryFromCredentialUiEntry(
           api::passwords_private::DomainInfo domainInfo;
           domainInfo.name = domain.name;
           domainInfo.url = domain.url.spec();
+          domainInfo.signon_realm = domain.signon_realm;
           return domainInfo;
         });
   }

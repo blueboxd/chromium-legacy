@@ -293,10 +293,6 @@ class CORE_EXPORT LocalFrame final
   BoxShadowPaintImageGenerator* GetBoxShadowPaintImageGenerator();
   ClipPathPaintImageGenerator* GetClipPathPaintImageGenerator();
 
-  void AddResourceTimingEntryFromNonNavigatedFrame(
-      mojom::blink::ResourceTimingInfoPtr timing,
-      blink::FrameOwnerElementType initiator_type);
-
   // A local root is the root of a connected subtree that contains only
   // LocalFrames. The local root is responsible for coordinating input, layout,
   // et cetera for that subtree of frames.
@@ -908,12 +904,11 @@ class CORE_EXPORT LocalFrame final
   ukm::SourceId GetUkmSourceId() override;
   void UpdateTaskTime(base::TimeDelta time) override;
   void UpdateBackForwardCacheDisablingFeatures(
-      uint64_t features_mask,
-      const BFCacheBlockingFeatureAndLocations&
-          non_sticky_features_and_js_locations,
-      const BFCacheBlockingFeatureAndLocations&
-          sticky_features_and_js_locations) override;
+      BlockingDetails details) override;
   const base::UnguessableToken& GetAgentClusterId() const override;
+
+  void OnTaskCompleted(base::TimeTicks start_time,
+                       base::TimeTicks end_time) override;
 
   // Activates the user activation states of this frame and all its ancestors.
   //

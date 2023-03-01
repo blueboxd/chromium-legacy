@@ -358,6 +358,7 @@ void AwContentBrowserClient::AppendExtraCommandLineSwitches(
         ::switches::kEnableCrashReporter,
         ::switches::kEnableCrashReporterForTesting,
         embedder_support::kOriginTrialDisabledFeatures,
+        embedder_support::kOriginTrialPublicKey,
     };
 
     command_line->CopySwitchesFrom(*base::CommandLine::ForCurrentProcess(),
@@ -601,8 +602,9 @@ AwContentBrowserClient::CreateURLLoaderThrottles(
            features::kWebViewRestrictSensitiveContent))) {
     auto* origin_verification_bridge =
         AwOriginVerificationSchedulerBridge::GetInstance();
-    result.push_back(digital_asset_links::BrowserURLLoaderThrottle::Create(
-        origin_verification_bridge));
+    result.push_back(
+        content_relationship_verification::BrowserURLLoaderThrottle::Create(
+            origin_verification_bridge));
   }
 
   result.push_back(safe_browsing::BrowserURLLoaderThrottle::Create(

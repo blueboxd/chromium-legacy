@@ -190,8 +190,10 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/logging_chrome.h"
 #include "chrome/common/pref_names.h"
+#include "chromeos/ash/components/attestation/attestation_features.h"
 #include "chromeos/ash/components/audio/audio_devices_pref_handler_impl.h"
 #include "chromeos/ash/components/audio/cras_audio_handler.h"
+#include "chromeos/ash/components/browser_context_helper/browser_context_flusher.h"
 #include "chromeos/ash/components/browser_context_helper/browser_context_helper.h"
 #include "chromeos/ash/components/cryptohome/cryptohome_parameters.h"
 #include "chromeos/ash/components/cryptohome/system_salt_getter.h"
@@ -1152,8 +1154,9 @@ void ChromeBrowserMainPartsAsh::PostProfileInit(Profile* profile,
     if (ProfileHelper::IsSigninProfile(profile)) {
       // Flush signin profile if it is just created (new device or after
       // recovery) to ensure it is correctly persisted.
-      if (profile->IsNewProfile())
-        ProfileHelper::Get()->FlushProfile(profile);
+      if (profile->IsNewProfile()) {
+        BrowserContextFlusher::Get()->ScheduleFlush(profile);
+      }
 
       ApplySigninProfileModifications(profile);
     } else {
@@ -1663,6 +1666,7 @@ void ChromeBrowserMainPartsAsh::PostDestroyThreads() {
   // Shutdown these services after g_browser_process.
   InstallAttributes::Shutdown();
   DeviceSettingsService::Shutdown();
+  attestation::AttestationFeatures::Shutdown();
 }
 
 void ChromeBrowserMainPartsAsh::StartDeviceActivityController() {

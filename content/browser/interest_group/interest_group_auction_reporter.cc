@@ -81,7 +81,7 @@ InterestGroupAuctionReporter::WinningBidInfo::~WinningBidInfo() = default;
 InterestGroupAuctionReporter::InterestGroupAuctionReporter(
     InterestGroupManagerImpl* interest_group_manager,
     AuctionWorkletManager* auction_worklet_manager,
-    AttributionDataHostManager* attribution_data_host_manager,
+    AttributionManager* attribution_manager,
     PrivateAggregationManager* private_aggregation_manager,
     LogPrivateAggregationRequestsCallback
         log_private_aggregation_requests_callback,
@@ -126,7 +126,7 @@ InterestGroupAuctionReporter::InterestGroupAuctionReporter(
           std::move(private_aggregation_requests_non_reserved)),
       fenced_frame_reporter_(FencedFrameReporter::CreateForFledge(
           url_loader_factory_,
-          attribution_data_host_manager,
+          attribution_manager,
           /*direct_seller_is_seller=*/
           !component_seller_winning_bid_info.has_value(),
           private_aggregation_manager_,
@@ -197,7 +197,7 @@ void InterestGroupAuctionReporter::OnFledgePrivateAggregationRequests(
   }
 
   for (auto& [origin, requests] : private_aggregation_requests) {
-    mojo::Remote<mojom::PrivateAggregationHost> remote;
+    mojo::Remote<blink::mojom::PrivateAggregationHost> remote;
     if (!private_aggregation_manager->BindNewReceiver(
             origin, main_frame_origin,
             PrivateAggregationBudgetKey::Api::kFledge,
@@ -211,7 +211,7 @@ void InterestGroupAuctionReporter::OnFledgePrivateAggregationRequests(
       // All for-event contributions have already been converted to histogram
       // contributions by filling in post auction signals before reaching here.
       DCHECK(request->contribution->is_histogram_contribution());
-      std::vector<mojom::AggregatableReportHistogramContributionPtr>
+      std::vector<blink::mojom::AggregatableReportHistogramContributionPtr>
           contributions;
       contributions.push_back(
           std::move(request->contribution->get_histogram_contribution()));
@@ -701,7 +701,8 @@ void InterestGroupAuctionReporter::SendPendingReportsIfNavigated() {
 
   if (base::FeatureList::IsEnabled(content::kPrivateAggregationApi) &&
       content::kPrivateAggregationApiEnabledInFledge.Get() &&
-      content::kPrivateAggregationApiFledgeExtensionsEnabled.Get()) {
+      base::FeatureList::IsEnabled(
+          blink::features::kPrivateAggregationApiFledgeExtensions)) {
     fenced_frame_reporter_->OnForEventPrivateAggregationRequestsReceived(
         std::move(private_aggregation_requests_non_reserved_));
   }

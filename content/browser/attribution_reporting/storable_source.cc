@@ -12,6 +12,7 @@
 #include "base/time/time.h"
 #include "base/values.h"
 #include "components/attribution_reporting/aggregation_keys.h"
+#include "components/attribution_reporting/destination_set.h"
 #include "components/attribution_reporting/filters.h"
 #include "components/attribution_reporting/source_registration.h"
 #include "components/attribution_reporting/source_type.mojom-forward.h"
@@ -41,7 +42,7 @@ StorableSource::StorableSource(
       common_info_(
           reg.source_event_id,
           std::move(source_origin),
-          std::move(reg.destination),
+          std::move(reg.destination_set),
           std::move(reporting_origin),
           source_time,
           CommonSourceInfo::GetExpiryTime(reg.expiry, source_time, source_type),

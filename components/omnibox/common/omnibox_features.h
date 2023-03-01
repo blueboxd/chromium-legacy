@@ -17,11 +17,12 @@ BASE_DECLARE_FEATURE(kExperimentalKeywordMode);
 BASE_DECLARE_FEATURE(kImageSearchSuggestionThumbnail);
 BASE_DECLARE_FEATURE(kOmniboxRemoveSuggestionsFromClipboard);
 
-// Flags that affect the "twiddle" step of AutocompleteResult, e.g.,
+// Features that affect the "twiddle" step of AutocompleteResult, e.g.,
 // `SortAndCull()`.
 BASE_DECLARE_FEATURE(kGroupingFramework);
 BASE_DECLARE_FEATURE(kOmniboxDemoteByType);
 BASE_DECLARE_FEATURE(kOmniboxRemoveExcessiveRecycledViewClearCalls);
+BASE_DECLARE_FEATURE(kPreferTailOverHistoryClusterSuggestions);
 BASE_DECLARE_FEATURE(kPreserveDefault);
 BASE_DECLARE_FEATURE(kSingleSortAndCullPass);
 BASE_DECLARE_FEATURE(kUpdateResultDebounce);
@@ -101,6 +102,7 @@ BASE_DECLARE_FEATURE(kWebUIOmniboxPopup);
 // popup).
 BASE_DECLARE_FEATURE(kOmniboxAssistantVoiceSearch);
 BASE_DECLARE_FEATURE(kOmniboxSteadyStateHeight);
+BASE_DECLARE_FEATURE(kDiscardTemporaryInputOnTabSwitch);
 
 // Omnibox & Suggestions UI - these affect both the omnibox and the suggestions
 // popup.

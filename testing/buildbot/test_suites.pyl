@@ -481,6 +481,21 @@
       },
     },
 
+    # TODO(crbug/1239300): Remove when persistent_shell experiment is over.
+    'chrome_persistent_shell_tests': {
+      'webview_instrumentation_test_apk_persistent_shell': {
+        'args': [
+          '--use-persistent-shell',
+        ],
+        'ci_only': True,
+        'test': 'webview_instrumentation_test_apk',
+        'experiment_percentage': 100,
+        'swarming': {
+          'shards': 7,
+        },
+      },
+    },
+
     'chrome_public_tests': {
       'chrome_public_test_apk': {
         'swarming': {
@@ -1966,6 +1981,13 @@
       'dangling_pointer_detection_content_browsertests': {
         'args': [
           '--enable-features=PartitionAllocDanglingPtr:mode/crash',
+          # On non-Android platforms, this suite is dominated by crashes
+          # caught by DPD. This typically ups the per-shard number of
+          # tests from 1.3k to well over 2k and chokes all shards into
+          # timeout. Unlike regular flakes, dangling pointers should not
+          # be retried away; so, at the expense of regular flakes, we
+          # zero the number of retries.
+          '--num-retries=0',
         ],
         'test': 'content_browsertests',
         'android_swarming': {
@@ -2356,7 +2378,7 @@
             {
               "cipd_package": 'chromium/android_webview/tools/cts_archive',
               'location': 'android_webview/tools/cts_archive',
-              'revision': 'APYMYksv9eNAkU6osFvNXN38pMO1Q1kScjeecePr7NgC',
+              'revision': 'M0v1Dk-st2O98ZDieiKXYME7-RgO6F_UHdSV9xDM09AC',
             }
           ]
         },
@@ -5026,6 +5048,23 @@
       },
     },
 
+    'telemetry_perf_unittests_isolated_scripts_xvfb': {
+      'telemetry_perf_unittests': {
+        'args': [
+          # TODO(crbug.com/1077284): Remove this once Crashpad is the default.
+          '--extra-browser-args=--enable-crashpad',
+          '--xvfb',
+        ],
+        'swarming': {
+          'idempotent': False,  # https://crbug.com/549140
+          'shards': 12,
+        },
+        'resultdb': {
+          'enable': True,
+        },
+      },
+    },
+
     'test_buildbucket_api_gpu_use_cases': {
       'test_buildbucket_api_gpu_use_cases': {},
     },
@@ -5300,7 +5339,7 @@
             {
               "cipd_package": 'chromium/android_webview/tools/cts_archive',
               'location': 'android_webview/tools/cts_archive',
-              'revision': 'APYMYksv9eNAkU6osFvNXN38pMO1Q1kScjeecePr7NgC',
+              'revision': 'M0v1Dk-st2O98ZDieiKXYME7-RgO6F_UHdSV9xDM09AC',
             }
           ]
         },
@@ -5337,7 +5376,7 @@
             {
               "cipd_package": 'chromium/android_webview/tools/cts_archive',
               'location': 'android_webview/tools/cts_archive',
-              'revision': 'APYMYksv9eNAkU6osFvNXN38pMO1Q1kScjeecePr7NgC',
+              'revision': 'M0v1Dk-st2O98ZDieiKXYME7-RgO6F_UHdSV9xDM09AC',
             }
           ]
         },
@@ -5355,7 +5394,7 @@
             {
               "cipd_package": 'chromium/android_webview/tools/cts_archive',
               'location': 'android_webview/tools/cts_archive',
-              'revision': 'APYMYksv9eNAkU6osFvNXN38pMO1Q1kScjeecePr7NgC',
+              'revision': 'M0v1Dk-st2O98ZDieiKXYME7-RgO6F_UHdSV9xDM09AC',
             }
           ]
         },
@@ -5371,7 +5410,7 @@
             {
               'cipd_package': 'chromium/android_webview/tools/cts_archive',
               'location': 'android_webview/tools/cts_archive',
-              'revision': 'APYMYksv9eNAkU6osFvNXN38pMO1Q1kScjeecePr7NgC',
+              'revision': 'M0v1Dk-st2O98ZDieiKXYME7-RgO6F_UHdSV9xDM09AC',
             }
           ]
         },
@@ -5389,7 +5428,7 @@
             {
               "cipd_package": 'chromium/android_webview/tools/cts_archive',
               'location': 'android_webview/tools/cts_archive',
-              'revision': 'APYMYksv9eNAkU6osFvNXN38pMO1Q1kScjeecePr7NgC',
+              'revision': 'M0v1Dk-st2O98ZDieiKXYME7-RgO6F_UHdSV9xDM09AC',
             }
           ]
         },
@@ -5404,7 +5443,7 @@
             {
               'cipd_package': 'chromium/android_webview/tools/cts_archive',
               'location': 'android_webview/tools/cts_archive',
-              'revision': 'APYMYksv9eNAkU6osFvNXN38pMO1Q1kScjeecePr7NgC',
+              'revision': 'M0v1Dk-st2O98ZDieiKXYME7-RgO6F_UHdSV9xDM09AC',
             }
           ]
         },
@@ -5503,6 +5542,17 @@
     },
 
     'wpt_tests_ios': {
+      'ios_cwt_chromedriver_tests_module': {
+        'mixins': [
+          'out_dir_arg',
+          'xcode_14_main',
+          'xctest',
+          'xcode_parallelization',
+        ],
+        'variants': [
+          'SIM_IPHONE_X_16_2',
+        ]
+      },
       'wpt_tests_ios': {
         'args': [
           '--log-wptreport',
@@ -5957,7 +6007,7 @@
       'linux_specific_chromium_isolated_scripts',
       'mojo_python_unittests_isolated_scripts',
       'pytype_tests',
-      'telemetry_perf_unittests_isolated_scripts',
+      'telemetry_perf_unittests_isolated_scripts_xvfb',
       'vulkan_swiftshader_isolated_scripts',
       'chromium_web_tests_high_dpi_isolated_scripts',
       'gpu_dawn_webgpu_blink_web_tests',
@@ -6637,6 +6687,7 @@
       'android_trichrome_smoke_tests': {},
       'android_smoke_tests': {},
       'android_specific_chromium_gtests': {},  # Already includes gl_gtests.
+      'chrome_persistent_shell_tests': {}, # Remove when experiment is over.
       'chromium_gtests': {},
       'chromium_gtests_for_devices_with_graphical_output': {},
       'linux_flavor_specific_chromium_gtests': {},
@@ -7239,14 +7290,6 @@
           'CROS_JACUZZI_PUBLIC',
           'CROS_KEVIN_PUBLIC',
         ]
-      },
-    },
-
-    'lacros_device_arm_tests': {
-      'lacros_all_tast_tests': {
-        'variants': [
-          'LACROS_JACUZZI',
-        ],
       },
     },
 

@@ -358,8 +358,7 @@ void OmniboxFieldTrial::GetDefaultHUPScoringParams(
 void OmniboxFieldTrial::GetExperimentalHUPScoringParams(
     HUPScoringParams* scoring_params) {
   VariationParams params;
-  if (!variations::GetVariationParams(kBundledExperimentFieldTrialName,
-                                      &params)) {
+  if (!base::GetFieldTrialParams(kBundledExperimentFieldTrialName, &params)) {
     return;
   }
 
@@ -684,9 +683,23 @@ bool OmniboxFieldTrial::IsSiteSearchStarterPackEnabled() {
 }
 
 // Omnibox UI simplification - Uniform Suggestion Row Heights
-bool OmniboxFieldTrial::IsSquareSuggestIconEnabled() {
-  return base::FeatureList::IsEnabled(omnibox::kSquareSuggestIcons);
-}
+const base::FeatureParam<bool> OmniboxFieldTrial::kSquareSuggestIconAnswers(
+    &omnibox::kSquareSuggestIcons,
+    "OmniboxSquareSuggestIconAnswers",
+    true);
+const base::FeatureParam<bool> OmniboxFieldTrial::kSquareSuggestIconIcons(
+    &omnibox::kSquareSuggestIcons,
+    "OmniboxSquareSuggestIconIcons",
+    true);
+const base::FeatureParam<bool> OmniboxFieldTrial::kSquareSuggestIconEntities(
+    &omnibox::kSquareSuggestIcons,
+    "OmniboxSquareSuggestIconEntities",
+    true);
+const base::FeatureParam<double>
+    OmniboxFieldTrial::kSquareSuggestIconEntitiesScale(
+        &omnibox::kSquareSuggestIcons,
+        "OmniboxSquareSuggestIconEntitiesScale",
+        0.8722);
 
 bool OmniboxFieldTrial::IsUniformRowHeightEnabled() {
   return base::FeatureList::IsEnabled(omnibox::kUniformRowHeight);

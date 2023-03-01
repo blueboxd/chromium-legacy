@@ -43,7 +43,7 @@ struct AuctionConfig;
 
 namespace content {
 
-class AttributionDataHostManager;
+class AttributionManager;
 class InterestGroupManagerImpl;
 class PrivateAggregationManager;
 
@@ -439,7 +439,7 @@ class CONTENT_EXPORT InterestGroupAuction
   // Takes ownership of the `auction_config`, so that the reporter can outlive
   // other auction-related classes.
   std::unique_ptr<InterestGroupAuctionReporter> CreateReporter(
-      AttributionDataHostManager* attribution_data_host_manager,
+      AttributionManager* attribution_manager,
       PrivateAggregationManager* private_aggregation_manager,
       InterestGroupAuctionReporter::LogPrivateAggregationRequestsCallback
           log_private_aggregation_requests_callback,
@@ -779,7 +779,6 @@ class CONTENT_EXPORT InterestGroupAuction
                                    const url::Origin* owner,
                                    LeaderInfo& leader_info);
 
-  absl::optional<base::TimeDelta> PerBuyerTimeout(const BidState* state);
   absl::optional<base::TimeDelta> SellerTimeout();
 
   // If AllBidsScored() is true, completes the bidding and scoring phase.
@@ -857,7 +856,7 @@ class CONTENT_EXPORT InterestGroupAuction
   // the server.
   bool ReportPaBuyersValueIfAllowed(
       const blink::InterestGroup& interest_group,
-      blink::InterestGroup::SellerCapabilities capability,
+      blink::SellerCapabilities capability,
       blink::AuctionConfig::NonSharedParams::BuyerReportType buyer_report_type,
       int value);
 

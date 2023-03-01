@@ -530,11 +530,13 @@ BrowserAutofillManager::BrowserAutofillManager(AutofillDriver* driver,
       suggestion_generator_(
           std::make_unique<AutofillSuggestionGenerator>(client,
                                                         personal_data_)) {
-  address_form_event_logger_ = std::make_unique<AddressFormEventLogger>(
-      driver->IsInAnyMainFrame(), form_interactions_ukm_logger(), client);
-  credit_card_form_event_logger_ = std::make_unique<CreditCardFormEventLogger>(
-      driver->IsInAnyMainFrame(), form_interactions_ukm_logger(),
-      personal_data_, client);
+  address_form_event_logger_ =
+      std::make_unique<autofill_metrics::AddressFormEventLogger>(
+          driver->IsInAnyMainFrame(), form_interactions_ukm_logger(), client);
+  credit_card_form_event_logger_ =
+      std::make_unique<autofill_metrics::CreditCardFormEventLogger>(
+          driver->IsInAnyMainFrame(), form_interactions_ukm_logger(),
+          personal_data_, client);
 
   credit_card_access_manager_ = std::make_unique<CreditCardAccessManager>(
       driver, client, personal_data_, credit_card_form_event_logger_.get());
@@ -2044,12 +2046,14 @@ void BrowserAutofillManager::Reset() {
   credit_card_form_event_logger_->OnDestroyed();
   credit_card_form_event_logger_.reset();
   AutofillManager::Reset();
-  address_form_event_logger_ = std::make_unique<AddressFormEventLogger>(
-      driver()->IsInAnyMainFrame(), form_interactions_ukm_logger(),
-      unsafe_client());
-  credit_card_form_event_logger_ = std::make_unique<CreditCardFormEventLogger>(
-      driver()->IsInAnyMainFrame(), form_interactions_ukm_logger(),
-      personal_data_, unsafe_client());
+  address_form_event_logger_ =
+      std::make_unique<autofill_metrics::AddressFormEventLogger>(
+          driver()->IsInAnyMainFrame(), form_interactions_ukm_logger(),
+          unsafe_client());
+  credit_card_form_event_logger_ =
+      std::make_unique<autofill_metrics::CreditCardFormEventLogger>(
+          driver()->IsInAnyMainFrame(), form_interactions_ukm_logger(),
+          personal_data_, unsafe_client());
   credit_card_access_manager_ = std::make_unique<CreditCardAccessManager>(
       driver(), unsafe_client(), personal_data_,
       credit_card_form_event_logger_.get());
@@ -2167,8 +2171,23 @@ void BrowserAutofillManager::FillOrPreviewDataModelForm(
 
   // TODO(crbug/1203667#c9): Skip if the form has changed in the meantime, which
   // may happen with refills.
-  if (form_structure->field_count() != form.fields.size())
+  if (action == mojom::RendererFormDataAction::kFill) {
+    base::UmaHistogramBoolean(
+        "Autofill.SkippingFormFillDueToChangedFieldCount",
+        form_structure->field_count() != form.fields.size());
+  }
+  if (form_structure->field_count() != form.fields.size()) {
+    LOG_AF(buffer)
+        << Tr{} << "*"
+        << "Skipped filling of form because the number of fields to be "
+           "filled differs from the number of fields registered in the form "
+           "cache."
+        << CTag{"table"};
+    LOG_AF(log_manager()) << LoggingScope::kFilling
+                          << LogMessage::kSendFillingData << Br{}
+                          << std::move(buffer);
     return;
+  }
 
   if (action == mojom::RendererFormDataAction::kFill && !is_refill) {
     SetFillingContext(
@@ -3306,7 +3325,8 @@ bool BrowserAutofillManager::ShouldShowVirtualCardOption(
 }
 #endif
 
-FormEventLoggerBase* BrowserAutofillManager::GetEventFormLogger(
+autofill_metrics::FormEventLoggerBase*
+BrowserAutofillManager::GetEventFormLogger(
     FieldTypeGroup field_type_group) const {
   switch (FieldTypeGroupToFormType(field_type_group)) {
     case FormType::kAddressForm:

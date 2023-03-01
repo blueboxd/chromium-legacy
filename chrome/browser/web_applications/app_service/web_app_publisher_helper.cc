@@ -79,6 +79,7 @@
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
+#include "components/services/app_service/public/cpp/app_launch_util.h"
 #include "components/services/app_service/public/cpp/file_handler.h"
 #include "components/services/app_service/public/cpp/intent_filter.h"
 #include "components/services/app_service/public/cpp/intent_filter_util.h"
@@ -630,9 +631,8 @@ apps::AppPtr WebAppPublisherHelper::CreateWebApp(const WebApp* web_app) {
       app_type(), web_app->app_id(), readiness,
       provider_->registrar_unsafe().GetAppShortName(web_app->app_id()),
       GetHighestPriorityInstallReason(web_app),
-      GetInstallSource(
-          provider_->registrar_unsafe().GetAppInstallSourceForMetrics(
-              web_app->app_id())));
+      GetInstallSource(provider_->registrar_unsafe().GetLatestAppInstallSource(
+          web_app->app_id())));
 
   app->description =
       provider_->registrar_unsafe().GetAppDescription(web_app->app_id());

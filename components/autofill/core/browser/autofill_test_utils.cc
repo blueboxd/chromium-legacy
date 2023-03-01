@@ -53,7 +53,9 @@ bool operator==(const FormFieldDataPredictions& a,
                 const FormFieldDataPredictions& b) {
   auto members = [](const FormFieldDataPredictions& p) {
     return std::tie(p.host_form_signature, p.signature, p.heuristic_type,
-                    p.server_type, p.overall_type, p.parseable_name, p.section);
+                    p.server_type, p.overall_type, p.parseable_name, p.section,
+                    p.rank, p.rank_in_signature_group, p.rank_in_host_form,
+                    p.rank_in_host_form_signature_group);
   };
   return members(a) == members(b);
 }
@@ -538,20 +540,22 @@ AutofillProfile GetServerProfile2() {
   return profile;
 }
 
-void SetProfileCategory(AutofillProfile& profile,
-                        AutofillProfileSourceCategory category) {
+void SetProfileCategory(
+    AutofillProfile& profile,
+    autofill_metrics::AutofillProfileSourceCategory category) {
   switch (category) {
-    case AutofillProfileSourceCategory::kLocalOrSyncable:
+    case autofill_metrics::AutofillProfileSourceCategory::kLocalOrSyncable:
       profile.set_source_for_testing(AutofillProfile::Source::kLocalOrSyncable);
       break;
-    case AutofillProfileSourceCategory::kAccountChrome:
-    case AutofillProfileSourceCategory::kAccountNonChrome:
+    case autofill_metrics::AutofillProfileSourceCategory::kAccountChrome:
+    case autofill_metrics::AutofillProfileSourceCategory::kAccountNonChrome:
       profile.set_source_for_testing(AutofillProfile::Source::kAccount);
       // Any value that is not kInitialCreatorOrModifierChrome works.
       const int kInitialCreatorOrModifierNonChrome =
           AutofillProfile::kInitialCreatorOrModifierChrome + 1;
       profile.set_initial_creator_id(
-          category == AutofillProfileSourceCategory::kAccountChrome
+          category == autofill_metrics::AutofillProfileSourceCategory::
+                          kAccountChrome
               ? AutofillProfile::kInitialCreatorOrModifierChrome
               : kInitialCreatorOrModifierNonChrome);
       break;

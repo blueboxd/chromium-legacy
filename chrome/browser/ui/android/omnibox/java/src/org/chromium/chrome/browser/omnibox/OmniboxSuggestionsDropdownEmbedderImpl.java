@@ -4,7 +4,11 @@
 
 package org.chromium.chrome.browser.omnibox;
 
+import android.content.ComponentCallbacks;
+import android.content.Context;
+import android.content.res.Configuration;
 import android.view.View;
+import android.view.View.OnLayoutChangeListener;
 import android.view.ViewTreeObserver.OnGlobalLayoutListener;
 import android.view.WindowInsets;
 
@@ -22,25 +26,23 @@ import org.chromium.ui.base.WindowDelegate;
 
 /**
  * Implementation of {@link OmniboxSuggestionsDropdownEmbedder} that positions it using an "anchor"
- * and "horizontal alignment" view. It aligns the omnibox dropdown as follows:
- * - The top of the dropdown is the bottom of the anchor view.
- * - The width of the dropdown is equal to the anchor view's width.
- * - The horizontal padding of the dropdown is calculated so that its contents are in line with the
- *   horizontal alignment view if the alignment view's width is smaller than the anchor view.
+ * and "horizontal alignment" view.
  * */
 class OmniboxSuggestionsDropdownEmbedderImpl implements OmniboxSuggestionsDropdownEmbedder,
-                                                        View.OnLayoutChangeListener,
-                                                        OnGlobalLayoutListener {
+                                                        OnLayoutChangeListener,
+                                                        OnGlobalLayoutListener, ComponentCallbacks {
     private final ObservableSupplierImpl<OmniboxAlignment> mOmniboxAlignmentSupplier =
             new ObservableSupplierImpl<>();
     private final @NonNull WindowAndroid mWindowAndroid;
     private final @NonNull WindowDelegate mWindowDelegate;
     private final @NonNull View mAnchorView;
     private final @NonNull View mHorizontalAlignmentView;
+    private final @NonNull Context mContext;
     // Reusable int array to pass to positioning methods that operate on a two element int array.
     // Keeping it as a member lets us avoid allocating a temp array every time.
     private final int[] mPositionArray = new int[2];
     private int mVerticalOffsetInWindow;
+    private int mWindowWidthDp;
     private WindowInsetsCompat mWindowInsetsCompat;
 
     /**
@@ -61,6 +63,9 @@ class OmniboxSuggestionsDropdownEmbedderImpl implements OmniboxSuggestionsDropdo
         mWindowDelegate = windowDelegate;
         mAnchorView = anchorView;
         mHorizontalAlignmentView = horizontalAlignmentView;
+        mContext = mAnchorView.getContext();
+        mContext.registerComponentCallbacks(this);
+        mWindowWidthDp = mContext.getResources().getConfiguration().smallestScreenWidthDp;
         recalculateOmniboxAlignment();
     }
 
@@ -82,7 +87,11 @@ class OmniboxSuggestionsDropdownEmbedderImpl implements OmniboxSuggestionsDropdo
 
     @Override
     public boolean isTablet() {
-        return DeviceFormFactor.isWindowOnTablet(mWindowAndroid);
+        if (OmniboxFeatures.shouldShowModernizeVisualUpdate(mContext)) {
+            return mWindowWidthDp >= DeviceFormFactor.MINIMUM_TABLET_WIDTH_DP;
+        } else {
+            return DeviceFormFactor.isWindowOnTablet(mWindowAndroid);
+        }
     }
 
     @Override
@@ -121,27 +130,67 @@ class OmniboxSuggestionsDropdownEmbedderImpl implements OmniboxSuggestionsDropdo
         }
     }
 
+    // ComponentCallbacks
+    @Override
+    public void onConfigurationChanged(@NonNull Configuration newConfig) {
+        if (!OmniboxFeatures.shouldShowModernizeVisualUpdate(mContext)) return;
+        int windowWidth = newConfig.smallestScreenWidthDp;
+        if (windowWidth == mWindowWidthDp) return;
+        mWindowWidthDp = windowWidth;
+        recalculateOmniboxAlignment();
+    }
+
+    @Override
+    public void onLowMemory() {}
+
     /**
      * Recalculates the desired alignment of the omnibox and sends the updated alignment data to
      * any observers. Currently will send an update message unconditionally. This method is called
      * during layout and should avoid memory allocations other than the necessary new
      * OmniboxAlignment().
+     *  The method aligns the omnibox dropdown as follows:
+     *  Case 1: Omnibox revamp enabled on tablet window.
+     *  | anchor  [  alignment  ]       |
+     *            |  dropdown   |
+     *  Case 2: Omnibox revamp disabled on tablet window.
+     *  | anchor    [alignment]         |
+     *  |{pad_left} dropdown {pad_right}|
+     *  Case 3: Phone window. Full width and no padding.
+     *  | anchor     [alignment]        |
+     *  |           dropdown            |
      */
     void recalculateOmniboxAlignment() {
-        int left = 0;
         View contentView = mAnchorView.getRootView().findViewById(android.R.id.content);
         ViewUtils.getRelativeLayoutPosition(contentView, mAnchorView, mPositionArray);
         int top = mPositionArray[1] + mAnchorView.getMeasuredHeight();
-        int width = mAnchorView.getMeasuredWidth();
+        int left;
+        int width;
         int paddingLeft;
         int paddingRight;
         if (isTablet()) {
             ViewUtils.getRelativeLayoutPosition(
                     mAnchorView, mHorizontalAlignmentView, mPositionArray);
-            paddingLeft = mPositionArray[0];
-            paddingRight = mAnchorView.getMeasuredWidth()
-                    - mHorizontalAlignmentView.getMeasuredWidth() - mPositionArray[0];
+            if (OmniboxFeatures.shouldShowModernizeVisualUpdate(mContext)) {
+                // Case 1: tablets with revamp enabled. Width equal to alignment view and left
+                // equivalent to left of alignment view.
+                left = mPositionArray[0];
+                width = mHorizontalAlignmentView.getMeasuredWidth();
+                paddingLeft = 0;
+                paddingRight = 0;
+            } else {
+                // Case 2: tablets with revamp disabled. Full bleed width with padding to align
+                // suggestions to the alignment view.
+                left = 0;
+                width = mAnchorView.getMeasuredWidth();
+                paddingLeft = mPositionArray[0];
+                paddingRight = mAnchorView.getMeasuredWidth()
+                        - mHorizontalAlignmentView.getMeasuredWidth() - mPositionArray[0];
+            }
         } else {
+            // Case 3: phones or phone-sized windows on tablets. Full bleed width with no padding or
+            // positioning adjustments.
+            left = 0;
+            width = mAnchorView.getMeasuredWidth();
             paddingLeft = 0;
             paddingRight = 0;
         }

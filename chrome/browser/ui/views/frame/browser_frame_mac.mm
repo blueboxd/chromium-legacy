@@ -434,7 +434,7 @@ void BrowserFrameMac::EnabledStateChangedForCommand(int id, bool enabled) {
       GetNSWindowHost()->CanGoForward(enabled);
       break;
     default:
-      NOTREACHED();
+      NOTREACHED_NORETURN();
   }
 }
 

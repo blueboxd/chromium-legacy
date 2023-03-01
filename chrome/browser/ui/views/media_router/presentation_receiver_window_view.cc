@@ -168,13 +168,6 @@ void PresentationReceiverWindowView::Init() {
   SecurityStateTabHelper::CreateForWebContents(web_contents);
   ChromeTranslateClient::CreateForWebContents(web_contents);
   autofill::ChromeAutofillClient::CreateForWebContents(web_contents);
-  autofill::ContentAutofillDriverFactory::CreateForWebContentsAndDelegate(
-      web_contents,
-      autofill::ChromeAutofillClient::FromWebContents(web_contents),
-      base::BindRepeating(
-          &autofill::BrowserDriverInitHook,
-          autofill::ChromeAutofillClient::FromWebContents(web_contents),
-          g_browser_process->GetApplicationLocale()));
   ChromePasswordManagerClient::CreateForWebContentsWithAutofillClient(
       web_contents,
       autofill::ChromeAutofillClient::FromWebContents(web_contents));
@@ -264,14 +257,13 @@ const LocationBarModel* PresentationReceiverWindowView::GetLocationBarModel()
 
 ContentSettingBubbleModelDelegate*
 PresentationReceiverWindowView::GetContentSettingBubbleModelDelegate() {
-  NOTREACHED();
-  return nullptr;
+  NOTREACHED_NORETURN();
 }
 
 void PresentationReceiverWindowView::ExecuteCommandWithDisposition(
     int id,
     WindowOpenDisposition disposition) {
-  NOTREACHED();
+  NOTREACHED_NORETURN();
 }
 
 WebContents* PresentationReceiverWindowView::GetActiveWebContents() const {

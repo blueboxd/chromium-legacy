@@ -590,6 +590,11 @@ body.check-select .dialog-header
   background-image: none;
 }
 
+.dialog-header #cloud-wrapper {
+  position: relative;
+  display: flex;
+}
+
 .dialog-header #search-wrapper {
   display: flex;
 }
@@ -2516,4 +2521,19 @@ files-tooltip:not(:defined) {
   padding-inline-start: 0;
   padding-top: 12px;
   visibility: visible;
+}
+
+.table-row-cell > .dateholder {
+  display: flex;
+}
+
+
+.table-row-cell > .dateholder > .date {
+  flex: 1 1;
+  overflow: hidden;
+}
+
+.table-row-cell > .dateholder > .dlp-managed-icon {
+  flex: 0 0 24px;
+  margin-inline-start: 8px;
 }

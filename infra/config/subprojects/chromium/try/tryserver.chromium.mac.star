@@ -137,8 +137,6 @@ try_.compilator_builder(
     branch_selector = branches.selector.MAC_BRANCHES,
     os = os.MAC_DEFAULT,
     check_for_flakiness = True,
-    goma_backend = goma.backend.RBE_PROD,
-    goma_jobs = goma.jobs.J150,
     main_list_view = "try",
 )
 
@@ -226,7 +224,6 @@ try_.builder(
         "ci/Mac Builder",
         "ci/Mac10.13 Tests",
     ],
-    goma_backend = goma.backend.RBE_PROD,
     reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
 )
 
@@ -293,8 +290,8 @@ try_.builder(
         is_compile_only = True,
     ),
     os = os.MAC_DEFAULT,
-    goma_backend = goma.backend.RBE_PROD,
     main_list_view = "try",
+    reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
     tryjob = try_.job(),
 )
 
@@ -380,7 +377,6 @@ ios_builder(
     mirrors = ["ci/ios-m1-simulator"],
     os = os.MAC_DEFAULT,
     cpu = cpu.ARM64,
-    goma_backend = goma.backend.RBE_PROD,
 )
 
 ios_builder(
@@ -451,8 +447,8 @@ ios_builder(
     check_for_flakiness = True,
     coverage_exclude_sources = "ios_test_files_and_test_utils",
     coverage_test_types = ["overall", "unit"],
-    goma_backend = goma.backend.RBE_PROD,
     main_list_view = "try",
+    reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
     tryjob = try_.job(
         location_filters = [
             "ios/.+",
@@ -492,7 +488,7 @@ ios_builder(
 ios_builder(
     name = "ios15-sdk-simulator",
     mirrors = ["ci/ios15-sdk-simulator"],
-    os = os.MAC_12,
+    os = os.MAC_13,
 )
 
 ios_builder(
@@ -509,7 +505,7 @@ ios_builder(
     mirrors = [
         "ci/ios16-sdk-simulator",
     ],
-    os = os.MAC_DEFAULT,
+    os = os.MAC_13,
     xcode = xcode.x14betabots,
 )
 

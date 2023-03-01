@@ -23,7 +23,7 @@ chromium-metrics-reviews@google.com.
 <histograms>
 
 <histogram name="InputMethod.ActiveCount" units="units"
-    expires_after="2023-06-25">
+    expires_after="2023-08-27">
   <owner>myy@chromium.org</owner>
   <owner>essential-inputs-team@google.com</owner>
   <summary>
@@ -425,6 +425,18 @@ chromium-metrics-reviews@google.com.
     <variant name="PK" summary="physical keyboard"/>
     <variant name="VK" summary="virtual keyboard"/>
   </token>
+</histogram>
+
+<histogram
+    name="InputMethod.Assistive.AutocorrectV2.UndoWindow.LearnMoreButtonShown"
+    enum="Boolean" expires_after="2023-09-17">
+  <owner>zacpartridge@google.com</owner>
+  <owner>essential-inputs-team@google.com</owner>
+  <summary>
+    This histogram is recorded when the learn more button is shown in a unique
+    undo window. The button will only be shown on the first 10 undo windows for
+    each user.
+  </summary>
 </histogram>
 
 <histogram
@@ -866,7 +878,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="InputMethod.Category" enum="InputMethodCategory"
-    expires_after="2023-06-25">
+    expires_after="2023-08-27">
   <owner>shend@chromium.org</owner>
   <owner>essential-inputs-team@google.com</owner>
   <summary>
@@ -1027,7 +1039,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="InputMethod.ID2" enum="InputMethodID2"
-    expires_after="2023-06-25">
+    expires_after="2023-08-27">
   <owner>tranbaoduy@chromium.org</owner>
   <owner>shuchen@chromium.org</owner>
   <owner>essential-inputs-team@google.com</owner>
@@ -1037,17 +1049,6 @@ chromium-metrics-reviews@google.com.
     method with that ID. Note: In this context, 'input method ID' refers to the
     'global' input method IDs, i.e. tuple of the extension ID the input method
     belongs to and the extension-local ID of the input method.
-  </summary>
-</histogram>
-
-<histogram name="InputMethod.ImeMenu.ActivationChanged"
-    enum="BooleanActivation" expires_after="M95">
-  <owner>dvallet@chromium.org</owner>
-  <owner>azurewei@chromium.org</owner>
-  <owner>shuchen@chromium.org</owner>
-  <owner>essential-inputs-team@google.com</owner>
-  <summary>
-    Whether the opt-in IME menu in the shelf has been activated.
   </summary>
 </histogram>
 
@@ -1198,7 +1199,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="InputMethod.PhysicalKeyboard.Korean.Action"
-    enum="KoreanAction" expires_after="2023-06-25">
+    enum="KoreanAction" expires_after="2023-08-27">
   <owner>shend@chromium.org</owner>
   <owner>essential-inputs-team@google.com</owner>
   <summary>

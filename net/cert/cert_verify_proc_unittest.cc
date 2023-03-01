@@ -252,30 +252,23 @@ scoped_refptr<CertVerifyProc> CreateCertVerifyProc(
 // TODO(crbug.com/649017): Enable CERT_VERIFY_PROC_BUILTIN everywhere. Right
 // now this is gated on having CertVerifyProcBuiltin understand the roots added
 // via TestRootCerts.
-const std::vector<CertVerifyProcType> kAllCertVerifiers = {
+constexpr CertVerifyProcType kAllCertVerifiers[] = {
 #if BUILDFLAG(IS_ANDROID)
     CERT_VERIFY_PROC_ANDROID,
-#if BUILDFLAG(CHROME_ROOT_STORE_SUPPORTED)
-    CERT_VERIFY_PROC_BUILTIN_CHROME_ROOTS
-#endif
 #elif BUILDFLAG(IS_IOS)
-    CERT_VERIFY_PROC_IOS
+    CERT_VERIFY_PROC_IOS,
 #elif BUILDFLAG(IS_MAC)
     CERT_VERIFY_PROC_MAC,
-#if BUILDFLAG(CHROME_ROOT_STORE_SUPPORTED)
-    CERT_VERIFY_PROC_BUILTIN_CHROME_ROOTS
-#endif
 #elif BUILDFLAG(IS_WIN)
     CERT_VERIFY_PROC_WIN,
-#if BUILDFLAG(CHROME_ROOT_STORE_SUPPORTED)
-    CERT_VERIFY_PROC_BUILTIN_CHROME_ROOTS
-#endif
 #elif BUILDFLAG(IS_FUCHSIA) || BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
-    CERT_VERIFY_PROC_BUILTIN
-#else
-#error Unsupported platform
+    CERT_VERIFY_PROC_BUILTIN,
 #endif
-};  // namespace
+#if BUILDFLAG(CHROME_ROOT_STORE_SUPPORTED)
+    CERT_VERIFY_PROC_BUILTIN_CHROME_ROOTS,
+#endif
+};
+static_assert(std::size(kAllCertVerifiers) != 0, "Unsupported platform");
 
 // Returns true if a test root added through ScopedTestRoot can verify
 // successfully as a target certificate with chain of length 1 on the given
@@ -917,8 +910,7 @@ TEST_P(CertVerifyProcInternalTest, UnnecessaryInvalidIntermediate) {
                                   &NetLogEntry::type);
   ASSERT_NE(event, events.end());
   EXPECT_EQ(net::NetLogEventPhase::BEGIN, event->phase);
-  ASSERT_TRUE(event->params.is_dict());
-  const std::string* host = event->params.FindStringKey("host");
+  const std::string* host = event->params.FindString("host");
   ASSERT_TRUE(host);
   EXPECT_EQ("127.0.0.1", *host);
 
@@ -928,8 +920,7 @@ TEST_P(CertVerifyProcInternalTest, UnnecessaryInvalidIntermediate) {
                            &NetLogEntry::type);
     ASSERT_NE(event, events.end());
     EXPECT_EQ(net::NetLogEventPhase::NONE, event->phase);
-    ASSERT_TRUE(event->params.is_dict());
-    const std::string* errors = event->params.FindStringKey("errors");
+    const std::string* errors = event->params.FindString("errors");
     ASSERT_TRUE(errors);
     EXPECT_EQ(
         "ERROR: Failed parsing Certificate SEQUENCE\nERROR: Failed parsing "

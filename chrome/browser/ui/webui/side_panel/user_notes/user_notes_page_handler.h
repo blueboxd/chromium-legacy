@@ -16,6 +16,10 @@
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 
+namespace bookmarks {
+class BookmarkModel;
+}
+
 namespace power_bookmarks {
 class PowerBookmarkService;
 }
@@ -58,6 +62,7 @@ class UserNotesPageHandler : public side_panel::mojom::UserNotesPageHandler,
       const ::GURL& url,
       ui::mojom::ClickModifiersPtr click_modifiers) override;
   void SetSortOrder(bool sort_by_newest) override;
+  void HasNotesInAnyPages(HasNotesInAnyPagesCallback callback) override;
 
   void OnSortByNewestPrefChanged();
 
@@ -88,7 +93,13 @@ class UserNotesPageHandler : public side_panel::mojom::UserNotesPageHandler,
   PrefChangeRegistrar pref_change_registrar_;
   const raw_ptr<power_bookmarks::PowerBookmarkService> service_;
   const raw_ptr<Browser> browser_;
+
   raw_ptr<UserNotesSidePanelUI> user_notes_ui_ = nullptr;
+
+  // Use a week pointer here because BookmarkModel may outlive the callback in
+  // `GetNoteOverviews`.
+  base::WeakPtr<bookmarks::BookmarkModel> bookmark_model_;
+
   bool start_creation_after_tab_change_ = false;
   GURL current_tab_url_;
 };

@@ -52,12 +52,21 @@ public interface OmniboxSuggestionsDropdownEmbedder {
          * Returns whether the difference from the given alignment object is solely in terms of
          * left or padding.
          */
-        public boolean isOnlyHorizontalDifference(@NonNull OmniboxAlignment other) {
+        public boolean isOnlyHorizontalDifference(@Nullable OmniboxAlignment other) {
             if (other == null) return false;
             return (this.left != other.left
                            || this.paddingLeft != other.paddingLeft
                                    && this.paddingRight != other.paddingRight)
                     && (this.top == other.top && this.width == other.width);
+        }
+
+        /**
+         * Returns whether the width of the given OmniboxAlignment differs from this alignment
+         * object's width. Returns true for a null argument.
+         */
+        public boolean doesWidthDiffer(@Nullable OmniboxAlignment other) {
+            if (other == null) return true;
+            return this.width != other.width;
         }
     }
 
@@ -73,12 +82,12 @@ public interface OmniboxSuggestionsDropdownEmbedder {
      */
     void removeAlignmentObserver(Callback<OmniboxAlignment> obs);
 
-    @NonNull
     /**
        Returns the current alignment values, but does not recalculate them. Will not return null
        but may return {@link OmniboxAlignment.UNSPECIFIED} if there is not a currently valid
        alignment.
      */
+    @NonNull
     OmniboxAlignment getCurrentAlignment();
 
     /** Return the delegate used to interact with the Window. */

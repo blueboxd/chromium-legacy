@@ -98,6 +98,13 @@ NET_EXPORT BASE_DECLARE_FEATURE(kEnableTLS13EarlyData);
 // https://datatracker.ietf.org/doc/html/draft-ietf-tls-esni-13
 NET_EXPORT BASE_DECLARE_FEATURE(kEncryptedClientHello);
 
+// Enables the TLS Encrypted ClientHello feature for QUIC. Only takes effect if
+// kEncryptedClientHello is also enabled.
+//
+// TODO(crbug.com/1287248): Remove this flag when ECH for QUIC is fully
+// implemented. This flag is just a temporary mechanism for now.
+NET_EXPORT BASE_DECLARE_FEATURE(kEncryptedClientHelloQuic);
+
 // Enables optimizing the network quality estimation algorithms in network
 // quality estimator (NQE).
 NET_EXPORT BASE_DECLARE_FEATURE(kNetworkQualityEstimator);
@@ -140,15 +147,6 @@ NET_EXPORT BASE_DECLARE_FEATURE(kPartitionSSLSessionsByNetworkIsolationKey);
 // cache, but internal objects can be created with them (e.g., endpoints), for
 // testing.
 NET_EXPORT BASE_DECLARE_FEATURE(kPartitionNelAndReportingByNetworkIsolationKey);
-
-// Creates a <double key + is_cross_site> NetworkAnonymizationKey which is used
-// to partition the network state. This double key will have the following
-// properties: `top_frame_site` -> the schemeful site of the top level page.
-// `frame_site ` -> nullopt
-// `is_cross_site` -> true if the `top_frame_site` is cross site when compared
-// to the frame site. The frame site will not be stored in this key so the value
-// of is_cross_site will be computed at key construction.
-NET_EXPORT BASE_DECLARE_FEATURE(kEnableCrossSiteFlagNetworkAnonymizationKey);
 
 // Enables sending TLS 1.3 Key Update messages on TLS 1.3 connections in order
 // to ensure that this corner of the spec is exercised. This is currently
@@ -301,10 +299,6 @@ NET_EXPORT BASE_DECLARE_FEATURE(kPartitionedCookies);
 // is used to create temporary cookie jar partitions for fenced and anonymous
 // frames.
 NET_EXPORT BASE_DECLARE_FEATURE(kNoncedPartitionedCookies);
-
-// Enable recording UMAs for network activities which can wake-up radio on
-// Android.
-NET_EXPORT BASE_DECLARE_FEATURE(kRecordRadioWakeupTrigger);
 
 // When enabled, cookies cannot have an expiry date further than 400 days in the
 // future.

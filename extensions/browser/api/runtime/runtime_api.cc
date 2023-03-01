@@ -625,16 +625,15 @@ ExtensionFunction::ResponseAction RuntimeOpenOptionsPageFunction::Run() {
 
 ExtensionFunction::ResponseAction RuntimeSetUninstallURLFunction::Run() {
   std::unique_ptr<api::runtime::SetUninstallURL::Params> params(
-      api::runtime::SetUninstallURL::Params::Create(args()));
+      api::runtime::SetUninstallURL::Params::CreateDeprecated(args()));
   EXTENSION_FUNCTION_VALIDATE(params);
   if (!params->url.empty() && !GURL(params->url).SchemeIsHTTPOrHTTPS()) {
     return RespondNow(Error(kInvalidUrlError, params->url));
   }
 
   ExtensionPrefs::Get(browser_context())
-      ->UpdateExtensionPref(
-          extension_id(), kUninstallUrl,
-          std::make_unique<base::Value>(std::move(params->url)));
+      ->UpdateExtensionPref(extension_id(), kUninstallUrl,
+                            base::Value(std::move(params->url)));
   return RespondNow(NoArguments());
 }
 
@@ -683,7 +682,7 @@ ExtensionFunction::ResponseAction RuntimeRestartAfterDelayFunction::Run() {
   }
 
   std::unique_ptr<api::runtime::RestartAfterDelay::Params> params(
-      api::runtime::RestartAfterDelay::Params::Create(args()));
+      api::runtime::RestartAfterDelay::Params::CreateDeprecated(args()));
   EXTENSION_FUNCTION_VALIDATE(params.get());
   int seconds = params->seconds;
 

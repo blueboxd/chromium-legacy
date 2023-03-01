@@ -57,8 +57,9 @@ public class CreatorActivity extends SnackbarActivity {
     public void onCreate(Bundle savedInstanceState) {
         byte[] mWebFeedId =
                 getIntent().getByteArrayExtra(CreatorIntentConstants.CREATOR_WEB_FEED_ID);
-        String mTitle = getIntent().getStringExtra(CreatorIntentConstants.CREATOR_TITLE);
-        String mUrl = getIntent().getStringExtra(CreatorIntentConstants.CREATOR_URL);
+        String url = getIntent().getStringExtra(CreatorIntentConstants.CREATOR_URL);
+        boolean following =
+                getIntent().getBooleanExtra(CreatorIntentConstants.CREATOR_FOLLOWING, false);
         int mEntryPoint = getIntent().getIntExtra(
                 CreatorIntentConstants.CREATOR_ENTRY_POINT, SingleWebFeedEntryPoint.OTHER);
         mActivityTabProvider = new ActivityTabProvider();
@@ -72,10 +73,9 @@ public class CreatorActivity extends SnackbarActivity {
         super.onCreate(savedInstanceState);
         IntentRequestTracker intentRequestTracker = IntentRequestTracker.createFromActivity(this);
         mWindowAndroid = new ActivityWindowAndroid(this, false, intentRequestTracker);
-        CreatorCoordinator coordinator =
-                new CreatorCoordinator(this, mWebFeedId, getSnackbarManager(), mWindowAndroid,
-                        mProfile, mTitle, mUrl, this::createWebContents, this::createNewTab,
-                        mTabShareDelegateSupplier, mEntryPoint);
+        CreatorCoordinator coordinator = new CreatorCoordinator(this, mWebFeedId,
+                getSnackbarManager(), mWindowAndroid, mProfile, url, this::createWebContents,
+                this::createNewTab, mTabShareDelegateSupplier, mEntryPoint, following);
 
         mBottomSheetController = coordinator.getBottomSheetController();
         ShareDelegate shareDelegate = new ShareDelegateImpl(mBottomSheetController,

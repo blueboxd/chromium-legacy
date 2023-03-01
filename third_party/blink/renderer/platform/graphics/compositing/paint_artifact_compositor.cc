@@ -232,8 +232,8 @@ bool NeedsFullUpdateAfterPaintingChunk(
   }
   // Whether background color is transparent affects cc::Layers's contents
   // opaque property.
-  if ((previous.background_color == Color()) !=
-      (repainted.background_color == Color())) {
+  if ((previous.background_color.color == SkColors::kTransparent) !=
+      (repainted.background_color.color == SkColors::kTransparent)) {
     return true;
   }
 
@@ -1048,7 +1048,7 @@ void PaintArtifactCompositor::ClearPropertyTreeChangedState() {
     CHECK(!layer.Chunks().IsEmpty());
     const auto& layer_state = layer.GetPropertyTreeState();
     const auto& first_chunk_state =
-        layer.Chunks().begin()->properties.GetPropertyTreeState();
+        layer.Chunks()[0].properties.GetPropertyTreeState();
     CHECK(layer_state.Transform().IsAncestorOf(first_chunk_state.Transform()));
     CHECK(layer_state.Clip().IsAncestorOf(first_chunk_state.Clip()));
     CHECK(layer_state.Effect().IsAncestorOf(first_chunk_state.Effect()));

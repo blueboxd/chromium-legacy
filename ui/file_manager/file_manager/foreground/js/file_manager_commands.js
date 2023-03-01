@@ -1900,7 +1900,8 @@ CommandHandler.COMMANDS_['invoke-sharesheet'] =
             fileManager.metadataModel.getCache(entries, ['sourceUrl'])
                 .map(m => m.sourceUrl || '');
         chrome.fileManagerPrivate.invokeSharesheet(
-            entries, launchSource, dlpSourceUrls, () => {
+            entries.map(e => util.unwrapEntry(e)), launchSource, dlpSourceUrls,
+            () => {
               if (chrome.runtime.lastError) {
                 console.warn(chrome.runtime.lastError.message);
                 return;
@@ -2587,15 +2588,14 @@ class GuestOsShareCommand extends FilesCommand {
     if (!entry || !entry.isDirectory) {
       return;
     }
-    const dir = /** @type {!DirectoryEntry} */ (entry);
-    const info = fileManager.volumeManager.getLocationInfo(dir);
+    const info = fileManager.volumeManager.getLocationInfo(entry);
     if (!info) {
       return;
     }
     const share = () => {
       // Always persist shares via right-click > Share with Linux.
       chrome.fileManagerPrivate.sharePathsWithCrostini(
-          this.vmName_, [dir], true /* persist */, () => {
+          this.vmName_, [util.unwrapEntry(entry)], true /* persist */, () => {
             if (chrome.runtime.lastError) {
               console.warn(
                   'Error sharing with guest: ' +
@@ -2615,7 +2615,7 @@ class GuestOsShareCommand extends FilesCommand {
     };
     // Show a confirmation dialog if we are sharing the root of a volume.
     // Non-Drive volume roots are always '/'.
-    if (dir.fullPath == '/') {
+    if (entry.fullPath == '/') {
       fileManager.ui.confirmDialog.showHtml(
           strf(`SHARE_ROOT_FOLDER_WITH_${this.typeForStrings_}_TITLE`),
           strf(

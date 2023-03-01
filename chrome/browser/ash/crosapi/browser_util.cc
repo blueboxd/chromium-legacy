@@ -94,7 +94,6 @@ constexpr auto kLacrosSelectionPolicyMap =
     base::MakeFixedFlatMap<base::StringPiece, LacrosSelectionPolicy>({
         {"user_choice", LacrosSelectionPolicy::kUserChoice},
         {"rootfs", LacrosSelectionPolicy::kRootfs},
-        {"stateful", LacrosSelectionPolicy::kStateful},
     });
 
 // Some account types require features that aren't yet supported by lacros.
@@ -430,12 +429,6 @@ bool IsProfileMigrationAvailable() {
   // |user| may be nullptr on unittests.
   if (!user ||
       !IsLacrosEnabledForMigration(user, PolicyInitState::kAfterInit)) {
-    return false;
-  }
-
-  // Profile migration is only available for is Lacros is the only browser i.e.
-  // LacrosOnly mode.
-  if (IsAshWebBrowserEnabled()) {
     return false;
   }
 
@@ -892,8 +885,6 @@ absl::optional<LacrosSelection> DetermineLacrosSelection() {
   switch (GetCachedLacrosSelectionPolicy()) {
     case LacrosSelectionPolicy::kRootfs:
       return LacrosSelection::kRootfs;
-    case LacrosSelectionPolicy::kStateful:
-      return LacrosSelection::kStateful;
     case LacrosSelectionPolicy::kUserChoice:
       break;
   }

@@ -70,6 +70,7 @@ class TestNetworkContext : public mojom::NetworkContext {
       mojom::RestrictedCookieManagerRole role,
       const url::Origin& origin,
       const net::IsolationInfo& isolation_info,
+      const net::CookieSettingOverrides& cookie_setting_overrides,
       mojo::PendingRemote<mojom::CookieAccessObserver> observer) override {}
   void GetTrustTokenQueryAnswerer(
       mojo::PendingReceiver<mojom::TrustTokenQueryAnswerer> receiver,
@@ -164,7 +165,7 @@ class TestNetworkContext : public mojom::NetworkContext {
       override {}
   void CreateTCPServerSocket(
       const net::IPEndPoint& local_addr,
-      uint32_t backlog,
+      mojom::TCPServerSocketOptionsPtr options,
       const net::MutableNetworkTrafficAnnotationTag& traffic_annotation,
       mojo::PendingReceiver<mojom::TCPServerSocket> socket,
       CreateTCPServerSocketCallback callback) override {}

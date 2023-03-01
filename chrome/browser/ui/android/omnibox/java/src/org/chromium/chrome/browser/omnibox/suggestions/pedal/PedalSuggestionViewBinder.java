@@ -4,25 +4,23 @@
 
 package org.chromium.chrome.browser.omnibox.suggestions.pedal;
 
-import android.graphics.Color;
 import android.view.View;
+import android.view.ViewGroup;
 
+import androidx.annotation.NonNull;
 import androidx.core.view.ViewCompat;
 
+import org.chromium.chrome.browser.omnibox.OmniboxFeatures;
 import org.chromium.chrome.browser.omnibox.R;
-import org.chromium.chrome.browser.omnibox.styles.OmniboxResourceProvider;
 import org.chromium.chrome.browser.omnibox.suggestions.DropdownCommonProperties;
 import org.chromium.chrome.browser.omnibox.suggestions.SuggestionCommonProperties;
 import org.chromium.chrome.browser.omnibox.suggestions.base.BaseSuggestionViewBinder;
-import org.chromium.chrome.browser.omnibox.suggestions.pedal.PedalViewProperties.PedalIcon;
 import org.chromium.chrome.browser.ui.theme.BrandedColorScheme;
-import org.chromium.components.omnibox.action.OmniboxPedal;
-import org.chromium.ui.modelutil.MVCListAdapter.ListItem;
+import org.chromium.components.browser_ui.widget.chips.ChipView;
+import org.chromium.components.browser_ui.widget.chips.ChipViewBinder;
 import org.chromium.ui.modelutil.PropertyKey;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.modelutil.PropertyModelChangeProcessor.ViewBinder;
-
-import java.util.List;
 
 /**
  * Binds chip suggestion view properties.
@@ -30,6 +28,7 @@ import java.util.List;
  */
 public final class PedalSuggestionViewBinder<T extends View>
         implements ViewBinder<PropertyModel, PedalSuggestionView<T>, PropertyKey> {
+    private static final ViewBinder<PropertyModel, View, PropertyKey> NOOP_BINDER = (m, v, p) -> {};
     private final BaseSuggestionViewBinder<T> mBaseViewBinder;
 
     /**
@@ -46,34 +45,52 @@ public final class PedalSuggestionViewBinder<T extends View>
         mBaseViewBinder.bind(model, view.getBaseSuggestionView(), propertyKey);
 
         if (PedalSuggestionViewProperties.PEDAL_LIST == propertyKey) {
-            List<ListItem> omniboxPedalList = model.get(PedalSuggestionViewProperties.PEDAL_LIST);
-            // Always get the first pedal item during the first step of Actions in Suggest.
-            ListItem omniboxPedalListItem = omniboxPedalList.get(0);
-            OmniboxPedal omniboxPedal = omniboxPedalListItem.model.get(PedalViewProperties.PEDAL);
-            final String hint = omniboxPedal.getHint();
-            final String contentDescription =
-                    view.getContext().getString(R.string.accessibility_omnibox_pedal, hint);
-            view.getPedalTextView().setText(hint);
-            view.getPedalTextView().setContentDescription(contentDescription);
-            final @BrandedColorScheme int brandedColorScheme =
-                    model.get(SuggestionCommonProperties.COLOR_SCHEME);
-            view.getPedalTextView().setTextColor(
-                    OmniboxResourceProvider.getSuggestionPrimaryTextColor(
-                            view.getContext(), brandedColorScheme));
-
-            // Set up icon and click listener from the pedal list item model.
-            PedalIcon icon = omniboxPedalListItem.model.get(PedalViewProperties.PEDAL_ICON);
-            view.getPedalChipView().setIcon(icon.iconRes, icon.tintWithTextColor);
-            view.getPedalChipView().setBackgroundColor(Color.TRANSPARENT);
-            view.getPedalChipView().setOnClickListener(
-                    omniboxPedalListItem.model.get(PedalViewProperties.ON_PEDAL_CLICK));
+            var isIncognito = model.get(SuggestionCommonProperties.COLOR_SCHEME)
+                    == BrandedColorScheme.INCOGNITO;
+            var chipList = model.get(PedalSuggestionViewProperties.PEDAL_LIST);
+            var adapter = new PedalViewAdapter(chipList);
+            adapter.registerType(PedalSuggestionViewProperties.ViewType.HEADER,
+                    PedalSuggestionViewBinder::createHeaderView, NOOP_BINDER);
+            adapter.registerType(PedalSuggestionViewProperties.ViewType.PEDAL_VIEW,
+                    parent -> createChipView(parent, isIncognito), ChipViewBinder::bind);
+            view.getPedalView().setAdapter(adapter);
         } else if (SuggestionCommonProperties.COLOR_SCHEME == propertyKey) {
-            BaseSuggestionViewBinder.applySelectableBackground(model, view.getPedalView());
+            BaseSuggestionViewBinder.applySelectableBackground(model, view);
         } else if (SuggestionCommonProperties.LAYOUT_DIRECTION == propertyKey) {
             ViewCompat.setLayoutDirection(
                     view.getPedalView(), model.get(SuggestionCommonProperties.LAYOUT_DIRECTION));
         } else if (DropdownCommonProperties.TOP_MARGIN == propertyKey) {
             BaseSuggestionViewBinder.updateMargin(model, view);
         }
+    }
+
+    /**
+     * Create a view element that provides horizontal alignment.
+     */
+    private static View createHeaderView(@NonNull ViewGroup parent) {
+        var res = parent.getResources();
+
+        boolean showModernizedSuggestionsList =
+                OmniboxFeatures.shouldShowModernizeVisualUpdate(parent.getContext());
+
+        int actionChipHeaderWidth =
+                res.getDimensionPixelSize(showModernizedSuggestionsList
+                                ? R.dimen.omnibox_suggestion_icon_area_size_modern
+                                : R.dimen.omnibox_suggestion_icon_area_size)
+                -
+                // We apply spacing to every element, 1/2 on the left and 1/2 on the right.
+                // Lead-in header receives both left and right spacing, but we also need to erase
+                // the space before the first chip.
+                res.getDimensionPixelSize(R.dimen.omnibox_action_chip_spacing) * 3 / 2;
+
+        var view = new View(parent.getContext());
+        view.setMinimumWidth(actionChipHeaderWidth);
+        return view;
+    }
+
+    public static ChipView createChipView(@NonNull ViewGroup parent, boolean isIncognito) {
+        return new ChipView(parent.getContext(),
+                isIncognito ? R.style.OmniboxIncognitoActionChipThemeOverlay
+                            : R.style.OmniboxActionChipThemeOverlay);
     }
 }

@@ -12,6 +12,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_refptr.h"
 #include "cc/slim/filter.h"
+#include "cc/slim/frame_data.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/geometry/point3_f.h"
 #include "ui/gfx/geometry/point_f.h"
@@ -161,7 +162,6 @@ class COMPONENT_EXPORT(CC_SLIM) Layer : public base::RefCounted<Layer> {
   // the layer itself has no content to contribute, even though the layer was
   // given SetIsDrawable(true).
   bool draws_content() const;
-  void SetDrawsContent(bool value);
 
   // Set or get if this layer and its subtree should be part of the compositor's
   // output to the screen. When set to true, the layer's subtree does not appear
@@ -191,8 +191,12 @@ class COMPONENT_EXPORT(CC_SLIM) Layer : public base::RefCounted<Layer> {
 
   // Called by LayerTree.
   gfx::Transform ComputeTransformToParent();
+
+  void UpdateDrawsContent();
   virtual bool HasDrawableContent() const;
+
   virtual void AppendQuads(viz::CompositorRenderPass& render_pass,
+                           FrameData& data,
                            const gfx::Transform& transform,
                            const gfx::Rect* clip);
 

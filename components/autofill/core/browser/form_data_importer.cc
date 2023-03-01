@@ -465,10 +465,10 @@ bool FormDataImporter::ExtractAddressProfileFromSection(
     if (!field->IsFieldFillable() || value.empty())
       continue;
 
-    // When `kAutofillImportFromAutoccompleteUnrecognized` is enabled, Autofill
+    // When `kAutofillImportFromAutocompleteUnrecognized` is enabled, Autofill
     // imports from fields despite an unrecognized autocomplete attribute.
     if (field->HasPredictionDespiteUnrecognizedAutocompleteAttribute()) {
-      if (!features::kAutofillImportFromAutoccompleteUnrecognized.Get()) {
+      if (!features::kAutofillImportFromAutocompleteUnrecognized.Get()) {
         continue;
       }
       import_metadata.num_autocomplete_unrecognized_fields++;
@@ -586,13 +586,9 @@ bool FormDataImporter::ExtractAddressProfileFromSection(
   // country or the app locale. For the `variation_country_code` to take
   // precedence over the app locale, country code complemention needs to happen
   // before `SetPhoneNumber()`.
-  bool complement_country_early =
-      base::FeatureList::IsEnabled(features::kAutofillComplementCountryEarly);
-  if (complement_country_early) {
-    import_metadata.did_complement_country =
-        should_complement_country &&
-        ComplementCountry(candidate_profile, predicted_country_code);
-  }
+  import_metadata.did_complement_country =
+      should_complement_country &&
+      ComplementCountry(candidate_profile, predicted_country_code);
 
   if (!SetPhoneNumber(candidate_profile, combined_phone)) {
     candidate_profile.ClearFields({PHONE_HOME_WHOLE_NUMBER});
@@ -627,12 +623,6 @@ bool FormDataImporter::ExtractAddressProfileFromSection(
     predicted_country_code =
         GetPredictedCountryCode(candidate_profile, variation_country_code,
                                 app_locale_, /*import_log_buffer=*/nullptr);
-  }
-
-  if (!complement_country_early) {
-    import_metadata.did_complement_country =
-        should_complement_country &&
-        ComplementCountry(candidate_profile, predicted_country_code);
   }
 
   // This relies on the profile's country code and must be done strictly after
@@ -917,6 +907,13 @@ absl::optional<IBAN> FormDataImporter::ExtractIBAN(const FormStructure& form) {
   IBAN candidate_iban = ExtractIBANFromForm(form);
   if (candidate_iban.value().empty())
     return absl::nullopt;
+
+  // Sets the `kAutofillHasSeenIban` pref to true indicating that the user has
+  // submitted a form with an IBAN, which indicates that the user is familiar
+  // with IBANs as a concept. We set the pref so that even if the user travels
+  // to a country where IBAN functionality is not typically used, they will
+  // still be able to save new IBANs from the settings page using this pref.
+  personal_data_manager_->SetAutofillHasSeenIban();
 
   bool found_existing_local_iban = base::ranges::any_of(
       personal_data_manager_->GetLocalIBANs(), [&](const auto& iban) {

@@ -30,7 +30,6 @@
 #include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/extension_allowlist.h"
 #include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/extensions/install_tracker.h"
 #include "chrome/browser/extensions/scoped_active_install.h"
 #include "chrome/browser/profiles/profile.h"
@@ -58,6 +57,7 @@
 #include "extensions/browser/extension_function_constants.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
+#include "extensions/browser/extension_util.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/manifest.h"
 #include "extensions/common/manifest_constants.h"
@@ -345,12 +345,12 @@ ExtensionInstallStatus AddExtensionToPendingList(
   ScopedDictPrefUpdate pending_requests_update(
       profile->GetPrefs(), prefs::kCloudExtensionRequestIds);
   DCHECK(!pending_requests_update->Find(id));
-  base::Value request_data(base::Value::Type::DICT);
-  request_data.SetKey(extension_misc::kExtensionRequestTimestamp,
-                      ::base::TimeToValue(base::Time::Now()));
+  base::Value::Dict request_data;
+  request_data.Set(extension_misc::kExtensionRequestTimestamp,
+                   ::base::TimeToValue(base::Time::Now()));
   if (!justification.empty()) {
-    request_data.SetKey(extension_misc::kExtensionWorkflowJustification,
-                        base::Value(justification));
+    request_data.Set(extension_misc::kExtensionWorkflowJustification,
+                     justification);
   }
   pending_requests_update->Set(id, std::move(request_data));
   // Query the new extension install status again. It should be changed from
@@ -452,7 +452,7 @@ std::u16string WebstorePrivateBeginInstallWithManifest3Function::
 
 ExtensionFunction::ResponseAction
 WebstorePrivateBeginInstallWithManifest3Function::Run() {
-  params_ = Params::Create(args());
+  params_ = Params::CreateDeprecated(args());
   EXTENSION_FUNCTION_VALIDATE(params_);
 
   profile_ = Profile::FromBrowserContext(browser_context());
@@ -953,7 +953,7 @@ WebstorePrivateCompleteInstallFunction::
 ExtensionFunction::ResponseAction
 WebstorePrivateCompleteInstallFunction::Run() {
   std::unique_ptr<CompleteInstall::Params> params(
-      CompleteInstall::Params::Create(args()));
+      CompleteInstall::Params::CreateDeprecated(args()));
   EXTENSION_FUNCTION_VALIDATE(params);
   Profile* const profile = Profile::FromBrowserContext(browser_context());
   if (profile->IsGuestSession() || profile->IsOffTheRecord()) {
@@ -1092,7 +1092,7 @@ WebstorePrivateSetStoreLoginFunction::~WebstorePrivateSetStoreLoginFunction() {}
 
 ExtensionFunction::ResponseAction WebstorePrivateSetStoreLoginFunction::Run() {
   std::unique_ptr<SetStoreLogin::Params> params(
-      SetStoreLogin::Params::Create(args()));
+      SetStoreLogin::Params::CreateDeprecated(args()));
   EXTENSION_FUNCTION_VALIDATE(params);
   SetWebstoreLogin(Profile::FromBrowserContext(browser_context()),
                    params->login);
@@ -1178,7 +1178,7 @@ WebstorePrivateIsPendingCustodianApprovalFunction::
 ExtensionFunction::ResponseAction
 WebstorePrivateIsPendingCustodianApprovalFunction::Run() {
   std::unique_ptr<IsPendingCustodianApproval::Params> params(
-      IsPendingCustodianApproval::Params::Create(args()));
+      IsPendingCustodianApproval::Params::CreateDeprecated(args()));
   EXTENSION_FUNCTION_VALIDATE(params);
 
   if (!Profile::FromBrowserContext(browser_context())->IsChild())
@@ -1277,7 +1277,7 @@ WebstorePrivateGetExtensionStatusFunction::
 ExtensionFunction::ResponseAction
 WebstorePrivateGetExtensionStatusFunction::Run() {
   std::unique_ptr<GetExtensionStatus::Params> params(
-      GetExtensionStatus::Params::Create(args()));
+      GetExtensionStatus::Params::CreateDeprecated(args()));
   EXTENSION_FUNCTION_VALIDATE(params);
 
   const ExtensionId& extension_id = params->id;

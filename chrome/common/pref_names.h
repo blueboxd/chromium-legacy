@@ -208,18 +208,7 @@ extern const char kPrintingAPIExtensionsAllowlist[];
 extern const char kEnableSyncConsent[];
 #endif
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-extern const char kTapToClickEnabled[];
-extern const char kEnableTouchpadThreeFingerClick[];
-extern const char kPrimaryPointingStickButtonRight[];
 extern const char kOwnerPrimaryPointingStickButtonRight[];
-extern const char kPointingStickAcceleration[];
-extern const char kTouchpadAcceleration[];
-extern const char kTouchpadScrollAcceleration[];
-extern const char kTouchpadHapticFeedback[];
-extern const char kTouchpadHapticClickSensitivity[];
-extern const char kTouchpadSensitivity[];
-extern const char kTouchpadScrollSensitivity[];
-extern const char kPointingStickSensitivity[];
 extern const char kUse24HourClock[];
 extern const char kUserTimezone[];
 extern const char kResolveTimezoneByGeolocationMethod[];
@@ -520,7 +509,6 @@ extern const char kGCMProductCategoryForSubtypes[];
 
 extern const char kEasyUnlockAllowed[];
 extern const char kEasyUnlockPairing[];
-extern const char kHasSeenSmartLockSignInRemovedNotification[];
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 extern const char kToolbarIconSurfacingBubbleAcknowledged[];
@@ -538,6 +526,7 @@ extern const char kWebRtcTextLogCollectionAllowed[];
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS) || BUILDFLAG(ENABLE_DICE_SUPPORT)
 extern const char kFirstRunFinished[];
+extern const char kFirstRunStudyGroup[];
 #endif
 
 #if !BUILDFLAG(IS_ANDROID)
@@ -618,6 +607,7 @@ extern const char kDefaultTasksBySuffix[];
 extern const char kDefaultHandlersForFileExtensions[];
 extern const char kOfficeSetupComplete[];
 extern const char kOfficeFilesAlwaysMove[];
+extern const char kOfficeMoveConfirmationShown[];
 extern const char kOfficeFileMovedToOneDrive[];
 extern const char kOfficeFileMovedToGoogleDrive[];
 #endif

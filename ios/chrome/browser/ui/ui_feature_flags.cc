@@ -11,6 +11,7 @@ BASE_FEATURE(kDefaultBrowserBlueDotPromo,
 constexpr base::FeatureParam<BlueDotPromoUserGroup>::Option
     kBlueDotPromoUserGroupOptions[] = {
         {BlueDotPromoUserGroup::kAllDBPromosDisabled, "all-db-promos-disabled"},
+        {BlueDotPromoUserGroup::kAllDBPromosEnabled, "all-db-promos-enabled"},
         {BlueDotPromoUserGroup::kOnlyBlueDotPromoEnabled,
          "only-blue-dot-promo-enabled"}};
 
@@ -38,10 +39,6 @@ BASE_FEATURE(kModernTabStrip,
 BASE_FEATURE(kIncognitoNtpRevamp,
              "IncognitoNtpRevamp",
              base::FEATURE_DISABLED_BY_DEFAULT);
-
-BASE_FEATURE(kIOS3PIntentsInIncognito,
-             "IOS3pIntentsInIncognito",
-             base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kDefaultBrowserFullscreenPromoExperiment,
              "DefaultBrowserFullscreenPromoExperiment",
@@ -185,3 +182,16 @@ bool ShouldShowPartialTranslateInIncognito() {
       kIOSEditMenuPartialTranslate,
       kIOSEditMenuPartialTranslateNoIncognitoParam, false);
 }
+
+BASE_FEATURE(kIndicateAccountStorageErrorInAccountCell,
+             "IndicatePassphraseErrorForSignedInUser",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+bool IsIndicateAccountStorageErrorInAccountCellEnabled() {
+  return base::FeatureList::IsEnabled(
+      kIndicateAccountStorageErrorInAccountCell);
+}
+
+BASE_FEATURE(kNewNTPOmniboxLayout,
+             "kNewNTPOmniboxLayout",
+             base::FEATURE_DISABLED_BY_DEFAULT);

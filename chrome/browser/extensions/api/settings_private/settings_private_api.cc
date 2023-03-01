@@ -27,7 +27,7 @@ SettingsPrivateSetPrefFunction::~SettingsPrivateSetPrefFunction() {
 
 ExtensionFunction::ResponseAction SettingsPrivateSetPrefFunction::Run() {
   std::unique_ptr<api::settings_private::SetPref::Params> parameters =
-      api::settings_private::SetPref::Params::Create(args());
+      api::settings_private::SetPref::Params::CreateDeprecated(args());
   EXTENSION_FUNCTION_VALIDATE(parameters.get());
 
   SettingsPrivateDelegate* delegate =
@@ -78,18 +78,19 @@ SettingsPrivateGetPrefFunction::~SettingsPrivateGetPrefFunction() {
 
 ExtensionFunction::ResponseAction SettingsPrivateGetPrefFunction::Run() {
   std::unique_ptr<api::settings_private::GetPref::Params> parameters =
-      api::settings_private::GetPref::Params::Create(args());
+      api::settings_private::GetPref::Params::CreateDeprecated(args());
   EXTENSION_FUNCTION_VALIDATE(parameters.get());
 
   SettingsPrivateDelegate* delegate =
       SettingsPrivateDelegateFactory::GetForBrowserContext(browser_context());
   DCHECK(delegate);
 
-  base::Value value = delegate->GetPref(parameters->name);
-  if (value.is_none())
+  absl::optional<base::Value::Dict> value = delegate->GetPref(parameters->name);
+  if (!value) {
     return RespondNow(Error("Pref * does not exist", parameters->name));
-  else
-    return RespondNow(OneArgument(std::move(value)));
+  }
+
+  return RespondNow(WithArguments(std::move(*value)));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -105,8 +106,7 @@ ExtensionFunction::ResponseAction
   SettingsPrivateDelegate* delegate =
       SettingsPrivateDelegateFactory::GetForBrowserContext(browser_context());
   DCHECK(delegate);
-  return RespondNow(
-      OneArgument(base::Value::FromUniquePtrValue(delegate->GetDefaultZoom())));
+  return RespondNow(WithArguments(delegate->GetDefaultZoom()));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -120,7 +120,7 @@ SettingsPrivateSetDefaultZoomFunction::
 ExtensionFunction::ResponseAction
     SettingsPrivateSetDefaultZoomFunction::Run() {
   std::unique_ptr<api::settings_private::SetDefaultZoom::Params> parameters =
-      api::settings_private::SetDefaultZoom::Params::Create(args());
+      api::settings_private::SetDefaultZoom::Params::CreateDeprecated(args());
   EXTENSION_FUNCTION_VALIDATE(parameters.get());
 
   SettingsPrivateDelegate* delegate =

@@ -110,7 +110,7 @@ void AddChromeColorMixer(ui::ColorProvider* provider,
   mixer[kColorAppMenuHighlightSeverityHigh] = {
       kColorAvatarButtonHighlightSyncError};
   mixer[kColorAppMenuHighlightSeverityMedium] = AdjustHighlightColorForContrast(
-      ui::kColorAlertMediumSeverity, kColorToolbar);
+      ui::kColorAlertMediumSeverityIcon, kColorToolbar);
   mixer[kColorAvatarButtonHighlightNormal] =
       AdjustHighlightColorForContrast(ui::kColorAccent, kColorToolbar);
   mixer[kColorAvatarButtonHighlightSyncError] = AdjustHighlightColorForContrast(
@@ -258,7 +258,7 @@ void AddChromeColorMixer(ui::ColorProvider* provider,
   mixer[kColorMediaRouterIconActive] =
       PickGoogleColor(ui::kColorAccent, kColorToolbar,
                       color_utils::kMinimumVisibleContrastRatio);
-  mixer[kColorMediaRouterIconWarning] = {ui::kColorAlertMediumSeverity};
+  mixer[kColorMediaRouterIconWarning] = {ui::kColorAlertMediumSeverityIcon};
   mixer[kColorNewTabButtonBackgroundFrameActive] = {
       kColorTabBackgroundInactiveFrameActive};
   mixer[kColorNewTabButtonBackgroundFrameInactive] = {
@@ -288,7 +288,7 @@ void AddChromeColorMixer(ui::ColorProvider* provider,
   mixer[kColorPaymentsFeedbackTipBorder] = {ui::kColorBubbleFooterBorder};
   mixer[kColorPaymentsFeedbackTipForeground] = {
       ui::kColorLabelForegroundSecondary};
-  mixer[kColorPaymentsFeedbackTipIcon] = {ui::kColorAlertMediumSeverity};
+  mixer[kColorPaymentsFeedbackTipIcon] = {ui::kColorAlertMediumSeverityIcon};
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
   mixer[kColorPaymentsGooglePayLogo] = {dark_mode ? SK_ColorWHITE
                                                   : gfx::kGoogleGrey700};
@@ -530,9 +530,10 @@ void AddChromeColorMixer(ui::ColorProvider* provider,
       kColorToolbarTopSeparatorFrameInactive};
   mixer[kColorTabstripLoadingProgressBackground] = ui::AlphaBlend(
       kColorTabstripLoadingProgressForeground, kColorToolbar, 0x32);
-  // 4.5 matches the default light theme contrast of accent-against-toolbar.
+  // 4.5 and 6.0 approximate the default light and dark theme contrasts of
+  // accent-against-toolbar.
   mixer[kColorTabstripLoadingProgressForeground] =
-      PickGoogleColor(ui::kColorAccent, kColorToolbar, 4.5f);
+      PickGoogleColor(ui::kColorAccent, kColorToolbar, 4.5f, 6.0f);
   mixer[kColorTabstripScrollContainerShadow] =
       ui::SetAlpha(ui::kColorShadowBase, 0x4D);
   mixer[kColorTabThrobber] = {ui::kColorThrobber};
@@ -681,8 +682,9 @@ void AddChromeColorMixer(ui::ColorProvider* provider,
       color_utils::kMinimumVisibleContrastRatio);
 
   // Apply high contrast recipes if necessary.
-  if (!ShouldApplyHighContrastColors(key))
+  if (!ShouldApplyHighContrastColors(key)) {
     return;
+  }
   mixer[kColorDownloadShelfContentAreaSeparator] = {
       kColorToolbarContentAreaSeparator};
   mixer[kColorInfoBarContentAreaSeparator] = {

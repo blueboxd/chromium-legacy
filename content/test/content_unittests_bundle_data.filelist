@@ -53,6 +53,7 @@
 //content/test/data/attribution_reporting/databases/version_44.sql
 //content/test/data/attribution_reporting/databases/version_45.sql
 //content/test/data/attribution_reporting/databases/version_46.sql
+//content/test/data/attribution_reporting/databases/version_47.sql
 //content/test/data/attribution_reporting/interop/aggregatable_budget.json
 //content/test/data/attribution_reporting/interop/aggregatable_contributions_creation.json
 //content/test/data/attribution_reporting/interop/aggregatable_dedup_key.json
@@ -64,13 +65,16 @@
 //content/test/data/attribution_reporting/interop/dedup_key.json
 //content/test/data/attribution_reporting/interop/default_config.json
 //content/test/data/attribution_reporting/interop/destination_limit.json
+//content/test/data/attribution_reporting/interop/event_level_report_time.json
 //content/test/data/attribution_reporting/interop/event_level_storage_limit.json
 //content/test/data/attribution_reporting/interop/event_level_trigger_filter_data.json
 //content/test/data/attribution_reporting/interop/event_level_trigger_priority.json
 //content/test/data/attribution_reporting/interop/event_report_window.json
 //content/test/data/attribution_reporting/interop/event_source.json
+//content/test/data/attribution_reporting/interop/event_source_trigger_priority.json
 //content/test/data/attribution_reporting/interop/expired_source.json
 //content/test/data/attribution_reporting/interop/most_recent_source.json
+//content/test/data/attribution_reporting/interop/multiple_destinations.json
 //content/test/data/attribution_reporting/interop/rate_limit_max_attribution_reporting_endpoints.json
 //content/test/data/attribution_reporting/interop/rate_limit_max_attributions.json
 //content/test/data/attribution_reporting/interop/rate_limit_max_source_registration_reporting_origin_endpoints.json
@@ -124,7 +128,6 @@
 //content/test/data/attribution_reporting/register_trigger_source_trigger.html.mock-http-headers
 //content/test/data/attribution_reporting/service_worker.js
 //content/test/data/autofill/autofill_form_devtools_issues_test.html
-//content/test/data/autofill/autofill_password_form_without_username_field_devtools_issue.html
 //content/test/data/back_forward_cache/allowed_path.html
 //content/test/data/back_forward_cache/charset_utf-8.html
 //content/test/data/back_forward_cache/charset_windows-1250.html
@@ -143,6 +146,7 @@
 //content/test/data/back_forward_cache/page_with_hung_iframe.html
 //content/test/data/back_forward_cache/page_with_indexedDB.html
 //content/test/data/back_forward_cache/page_with_indexedDB.js
+//content/test/data/back_forward_cache/page_with_non_existing_image.html
 //content/test/data/back_forward_cache/page_with_nonexistent_script.html
 //content/test/data/back_forward_cache/page_with_pageshow.html
 //content/test/data/back_forward_cache/page_with_same_origin_subframe_with_pageshow.html
@@ -394,6 +398,8 @@
 //content/test/data/fenced_frames/ad_that_leaves_interest_group.html
 //content/test/data/fenced_frames/ad_that_leaves_interest_group.html.mock-http-headers
 //content/test/data/fenced_frames/ad_with_components.html
+//content/test/data/fenced_frames/ad_with_fenced_frame_private_aggregation_reporting.html
+//content/test/data/fenced_frames/ad_with_fenced_frame_private_aggregation_reporting.html.mock-http-headers
 //content/test/data/fenced_frames/ad_with_fenced_frame_reporting.html
 //content/test/data/fenced_frames/ad_with_fenced_frame_reporting.html.mock-http-headers
 //content/test/data/fenced_frames/basic.html
@@ -1103,6 +1109,10 @@
 //content/test/data/media/bear_192kHz.wav
 //content/test/data/media/bear_3kHz.wav
 //content/test/data/media/bear_alaw.wav
+//content/test/data/media/bear_corp.flac
+//content/test/data/media/bear_corp.flac.mock-http-headers
+//content/test/data/media/bear_corp.webm
+//content/test/data/media/bear_corp.webm.mock-http-headers
 //content/test/data/media/bear_divx_mp3.avi
 //content/test/data/media/bear_gsm_ms.wav
 //content/test/data/media/bear_h264_aac.3gp
@@ -1551,6 +1561,8 @@
 //content/test/data/simple_links.html
 //content/test/data/simple_page.html
 //content/test/data/single_face.jpg
+//content/test/data/single_face_corp.jpg
+//content/test/data/single_face_corp.jpg.mock-http-headers
 //content/test/data/site_isolation/blank.html
 //content/test/data/site_isolation/comment_js.html
 //content/test/data/site_isolation/comment_valid.html

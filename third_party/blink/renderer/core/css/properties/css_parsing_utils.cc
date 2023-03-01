@@ -26,6 +26,7 @@
 #include "third_party/blink/renderer/core/css/css_grid_integer_repeat_value.h"
 #include "third_party/blink/renderer/core/css/css_grid_template_areas_value.h"
 #include "third_party/blink/renderer/core/css/css_identifier_value.h"
+#include "third_party/blink/renderer/core/css/css_image_set_option_value.h"
 #include "third_party/blink/renderer/core/css/css_image_set_value.h"
 #include "third_party/blink/renderer/core/css/css_image_value.h"
 #include "third_party/blink/renderer/core/css/css_inherited_value.h"
@@ -1463,7 +1464,7 @@ CSSPrimitiveValue* ConsumeTime(CSSParserTokenRange& range,
   return nullptr;
 }
 
-CSSPrimitiveValue* ConsumeResolution(CSSParserTokenRange& range) {
+CSSNumericLiteralValue* ConsumeResolution(CSSParserTokenRange& range) {
   const CSSParserToken& token = range.Peek();
 
   // Unlike the other types, calc() does not work with <resolution>.
@@ -3484,6 +3485,39 @@ static CSSImageValue* CreateCSSImageValueWithReferrer(
   return image_value;
 }
 
+static CSSImageSetOptionValue* ConsumeImageSetOption(
+    CSSParserTokenRange& range,
+    const CSSParserContext& context,
+    ConsumeGeneratedImagePolicy generated_image_policy) {
+  const ConsumeStringUrlImagePolicy string_url_image_policy =
+      RuntimeEnabledFeatures::CSSImageSetEnabled()
+          ? ConsumeStringUrlImagePolicy::kAllow
+          : ConsumeStringUrlImagePolicy::kForbid;
+
+  const CSSValue* image = ConsumeImage(range, context, generated_image_policy,
+                                       string_url_image_policy,
+                                       ConsumeImageSetImagePolicy::kForbid);
+  if (!image) {
+    return nullptr;
+  }
+
+  CSSNumericLiteralValue* resolution = nullptr;
+  if (range.Peek().GetType() == kDimensionToken ||
+      !RuntimeEnabledFeatures::CSSImageSetEnabled()) {
+    if (range.Peek().GetUnitType() != CSSPrimitiveValue::UnitType::kX &&
+        !RuntimeEnabledFeatures::CSSImageSetEnabled()) {
+      return nullptr;
+    }
+
+    resolution = ConsumeResolution(range);
+    if (!resolution || resolution->GetDoubleValue() <= 0.0) {
+      return nullptr;
+    }
+  }
+
+  return MakeGarbageCollected<CSSImageSetOptionValue>(image, resolution);
+}
+
 static CSSValue* ConsumeImageSet(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
@@ -3491,45 +3525,16 @@ static CSSValue* ConsumeImageSet(
         ConsumeGeneratedImagePolicy::kAllow) {
   CSSParserTokenRange range_copy = range;
   CSSParserTokenRange args = ConsumeFunction(range_copy);
+
   auto* image_set = MakeGarbageCollected<CSSImageSetValue>();
   do {
-    AtomicString url_value =
-        (RuntimeEnabledFeatures::CSSImageSetEnabled()
-             ? ConsumeUrlOrStringAsStringView(args, context)
-             : ConsumeUrlAsStringView(args, context))
-            .ToAtomicString();
-    if (!url_value.IsNull()) {
-      image_set->Append(*CreateCSSImageValueWithReferrer(url_value, context));
-    } else {
-      if (!RuntimeEnabledFeatures::CSSImageSetEnabled()) {
-        return nullptr;
-      }
-
-      CSSValue* gen_image = ConsumeGeneratedImage(args, context);
-      if (gen_image == nullptr) {
-        return nullptr;
-      }
-
-      image_set->Append(*gen_image);
+    auto* image_set_option =
+        ConsumeImageSetOption(args, context, generated_image_policy);
+    if (!image_set_option) {
+      return nullptr;
     }
 
-    if (args.Peek().GetType() != kDimensionToken &&
-        RuntimeEnabledFeatures::CSSImageSetEnabled()) {
-      image_set->Append(*CSSNumericLiteralValue::Create(
-          1.0, CSSPrimitiveValue::UnitType::kX));
-    } else {
-      if (args.Peek().GetUnitType() != CSSPrimitiveValue::UnitType::kX &&
-          !RuntimeEnabledFeatures::CSSImageSetEnabled()) {
-        return nullptr;
-      }
-
-      const CSSPrimitiveValue* resolution = ConsumeResolution(args);
-      if (resolution == nullptr || resolution->GetDoubleValue() <= 0.0) {
-        return nullptr;
-      }
-
-      image_set->Append(*resolution);
-    }
+    image_set->Append(*image_set_option);
   } while (ConsumeCommaIncludingWhitespace(args));
 
   if (!args.AtEnd()) {
@@ -3551,21 +3556,30 @@ static CSSValue* ConsumeImageSet(
   }
 
   range = range_copy;
+
   return image_set;
 }
 
-CSSValue* ConsumeImage(CSSParserTokenRange& range,
-                       const CSSParserContext& context,
-                       ConsumeGeneratedImagePolicy generated_image_policy) {
-  AtomicString uri = ConsumeUrlAsStringView(range, context).ToAtomicString();
+CSSValue* ConsumeImage(
+    CSSParserTokenRange& range,
+    const CSSParserContext& context,
+    const ConsumeGeneratedImagePolicy generated_image_policy,
+    const ConsumeStringUrlImagePolicy string_url_image_policy,
+    const ConsumeImageSetImagePolicy image_set_image_policy) {
+  AtomicString uri =
+      ((string_url_image_policy == ConsumeStringUrlImagePolicy::kAllow)
+           ? ConsumeUrlOrStringAsStringView(range, context)
+           : ConsumeUrlAsStringView(range, context))
+          .ToAtomicString();
   if (!uri.IsNull()) {
     return CreateCSSImageValueWithReferrer(uri, context);
   }
   if (range.Peek().GetType() == kFunctionToken) {
     CSSValueID id = range.Peek().FunctionId();
-    if (id == CSSValueID::kWebkitImageSet ||
-        (id == CSSValueID::kImageSet &&
-         RuntimeEnabledFeatures::CSSImageSetEnabled())) {
+    if ((id == CSSValueID::kWebkitImageSet ||
+         (id == CSSValueID::kImageSet &&
+          RuntimeEnabledFeatures::CSSImageSetEnabled())) &&
+        image_set_image_policy == ConsumeImageSetImagePolicy::kAllow) {
       return ConsumeImageSet(range, context, generated_image_policy);
     }
     if (generated_image_policy == ConsumeGeneratedImagePolicy::kAllow &&

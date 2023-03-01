@@ -99,6 +99,11 @@ BASE_FEATURE(kAmbientModeThrottleAnimation,
              "ChromeOSAmbientModeThrottleAnimation",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+// Controls whether the logic for managed screensaver is enabled or not.
+BASE_FEATURE(kAmbientModeManagedScreensaver,
+             "ChromeOSAmbientModeManagedScreensaver",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 BASE_FEATURE(kApnRevamp, "ApnRevamp", base::FEATURE_DISABLED_BY_DEFAULT);
 
 BASE_FEATURE(kAppCollectionFolderRefresh,
@@ -509,10 +514,6 @@ BASE_FEATURE(kCryptohomeRecovery,
              "CryptohomeRecovery",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-BASE_FEATURE(kDarkLightModeKMeansColor,
-             "DarkLightModeKMeansColor",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 // Enables or disables Sync for desk templates on ChromeOS.
 BASE_FEATURE(kDeskTemplateSync,
              "DeskTemplateSync",
@@ -525,7 +526,7 @@ BASE_FEATURE(kDesksTemplates,
 // Enables diacritics on longpress on the physical keyboard.
 BASE_FEATURE(kDiacriticsOnPhysicalKeyboardLongpress,
              "DiacriticsOnPhysicalKeyboardLongpress",
-             base::FEATURE_ENABLED_BY_DEFAULT);
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Disables the CryptAuth v1 DeviceSync flow. Note: During the first phase
 // of the v2 DeviceSync rollout, v1 and v2 DeviceSync run in parallel. This flag
@@ -775,6 +776,17 @@ BASE_FEATURE(kEolWarningNotifications,
              "EolWarningNotifications",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
+// Enables Device End Of Lifetime incentive notifications.
+BASE_FEATURE(kEolIncentive, "EolIncentive", base::FEATURE_DISABLED_BY_DEFAULT);
+
+const base::FeatureParam<EolIncentiveType>::Option eol_incentive_options[] = {
+    {EolIncentiveType::kNone, "none"},
+    {EolIncentiveType::kPerk, "perk"},
+    {EolIncentiveType::kCoupon, "coupon"}};
+const base::FeatureParam<EolIncentiveType> kEolIncentiveTypeParam{
+    &kEolIncentive, "incentive_type", EolIncentiveType::kNone,
+    &eol_incentive_options};
+
 // Enable or disable support for touchpad with haptic feedback.
 BASE_FEATURE(kExoHapticFeedbackSupport,
              "ExoHapticFeedbackSupport",
@@ -1013,6 +1025,11 @@ const base::FeatureParam<std::string> kGalleryAppPdfEditNotificationText{
 // Enable glanceables on login.
 BASE_FEATURE(kGlanceables, "Glanceables", base::FEATURE_DISABLED_BY_DEFAULT);
 
+// Enables glanceables on time management surface.
+BASE_FEATURE(kGlanceablesV2,
+             "GlanceablesV2",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // Enables the Gaia reauth endpoint.
 BASE_FEATURE(kGaiaReauthEndpoint,
              "GaiaReauthEndpoint",
@@ -1065,11 +1082,6 @@ BASE_FEATURE(kHandwritingLegacyRecognitionAllLang,
 BASE_FEATURE(kHandwritingLibraryDlc,
              "HandwritingLibraryDlc",
              base::FEATURE_DISABLED_BY_DEFAULT);
-
-// Enables the Background Page in the help app.
-BASE_FEATURE(kHelpAppBackgroundPage,
-             "HelpAppBackgroundPage",
-             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Enables or disables the Help App Discover tab notifications on non-stable
 // ChromeOS channels. Used for testing.
@@ -1179,6 +1191,11 @@ BASE_FEATURE(kVirtualKeyboardNewHeader,
 // If enabled, used to configure the heuristic rules for some advanced IME
 // features (e.g. auto-correct).
 BASE_FEATURE(kImeRuleConfig, "ImeRuleConfig", base::FEATURE_ENABLED_BY_DEFAULT);
+
+// If enabled, use the updated parameters for the decoder.
+BASE_FEATURE(kImeFstDecoderParamsUpdate,
+             "ImeFstDecoderParamsUpdate",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 // If enabled use the updated US English IME language models.
 BASE_FEATURE(kImeUsEnglishModelUpdate,
@@ -1363,7 +1380,7 @@ BASE_FEATURE(kMicMuteNotifications,
 // Migrates rule-based input methods from Chromium into an internal codebase.
 BASE_FEATURE(kMigrateRuleBasedInputMethods,
              "MigrateRuleBasedInputMethods",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Disables the deprecated Messages cross-device integration, to be used
 // along side the flag preinstall-by-default (kMessagesPreinstall).
@@ -1397,7 +1414,7 @@ BASE_FEATURE(kEcheLauncherListView,
 // Switch the "More Apps" button in eche launcher to show small app icons
 BASE_FEATURE(kEcheLauncherIconsInMoreAppsButton,
              "EcheLauncherIconsInMoreAppsButton",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Enables multi-zone rgb keyboard customization.
 BASE_FEATURE(kMultiZoneRgbKeyboard,
@@ -1533,7 +1550,12 @@ BASE_FEATURE(kOverviewButton,
 // gesture or keyboard shortcut.
 BASE_FEATURE(kOverviewDeskNavigation,
              "OverviewDeskNavigation",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
+// Enables user to provision PasspointARCSupport credentials.
+BASE_FEATURE(kPasspointARCSupport,
+             "PasspointARCSupport",
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Enables a notification warning users that their Thunderbolt device is not
 // supported on their CrOS device.
@@ -1652,11 +1674,6 @@ BASE_FEATURE(kProjectorAppDebug,
              "ProjectorAppDebug",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-// Controls whether the Projector exclude transcript feature is enabled.
-BASE_FEATURE(kProjectorExcludeTranscript,
-             "ProjectorExcludeTranscript",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 // Controls whether to fold short gap between transcript into the previous
 // transcript.
 BASE_FEATURE(kProjectorFoldShortGapIntoPreviousTranscript,
@@ -1739,6 +1756,9 @@ BASE_FEATURE(kPromiseIcons, "PromiseIcons", base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Controls whether the quick dim prototype is enabled.
 BASE_FEATURE(kQuickDim, "QuickDim", base::FEATURE_ENABLED_BY_DEFAULT);
+
+// Controls whether the smart reader feature is enabled.
+BASE_FEATURE(kSmartReader, "SmartReader", base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Controls whether the video conference feature is enabled.
 BASE_FEATURE(kVideoConference,
@@ -2311,6 +2331,10 @@ bool IsAmbientModeDevUseProdEnabled() {
   return base::FeatureList::IsEnabled(kAmbientModeDevUseProdFeature);
 }
 
+bool IsAmbientModeManagedScreensaverEnabled() {
+  return base::FeatureList::IsEnabled(kAmbientModeManagedScreensaver);
+}
+
 bool IsAmbientModePhotoPreviewEnabled() {
   return base::FeatureList::IsEnabled(kAmbientModePhotoPreviewFeature);
 }
@@ -2461,11 +2485,6 @@ bool IsDarkLightModeEnabled() {
   return chromeos::features::IsDarkLightModeEnabled();
 }
 
-bool IsDarkLightModeKMeansColorEnabled() {
-  return IsDarkLightModeEnabled() &&
-         base::FeatureList::IsEnabled(kDarkLightModeKMeansColor);
-}
-
 bool IsDeskTemplateSyncEnabled() {
   return base::FeatureList::IsEnabled(kDeskTemplateSync);
 }
@@ -2518,6 +2537,10 @@ bool IsEcheSWADebugModeEnabled() {
 
 bool IsEcheSWAMeasureLatencyEnabled() {
   return base::FeatureList::IsEnabled(kEcheSWAMeasureLatency);
+}
+
+bool IsEOLIncentiveEnabled() {
+  return base::FeatureList::IsEnabled(kEolIncentive);
 }
 
 bool IsExperimentalRgbKeyboardPatternsEnabled() {
@@ -2641,6 +2664,10 @@ bool IsGifRenderingEnabled() {
 
 bool AreGlanceablesEnabled() {
   return base::FeatureList::IsEnabled(kGlanceables);
+}
+
+bool AreGlanceablesV2Enabled() {
+  return base::FeatureList::IsEnabled(kGlanceablesV2);
 }
 
 bool IsHibernateEnabled() {
@@ -2918,6 +2945,10 @@ bool IsOverviewDeskNavigationEnabled() {
   return base::FeatureList::IsEnabled(kOverviewDeskNavigation);
 }
 
+bool IsPasspointARCSupportEnabled() {
+  return base::FeatureList::IsEnabled(kPasspointARCSupport);
+}
+
 bool IsPcieBillboardNotificationEnabled() {
   return base::FeatureList::IsEnabled(kPcieBillboardNotification);
 }
@@ -2989,10 +3020,6 @@ bool IsProjectorManagedUserEnabled() {
 
 bool IsProjectorAppDebugMode() {
   return base::FeatureList::IsEnabled(kProjectorAppDebug);
-}
-
-bool IsProjectorExcludeTranscriptEnabled() {
-  return base::FeatureList::IsEnabled(kProjectorExcludeTranscript);
 }
 
 bool IsProjectorTutorialVideoViewEnabled() {
@@ -3121,6 +3148,10 @@ bool IsShimlessRMADarkModeDisabled() {
 
 bool IsSimLockPolicyEnabled() {
   return base::FeatureList::IsEnabled(kSimLockPolicy);
+}
+
+bool IsSmartReaderEnabled() {
+  return base::FeatureList::IsEnabled(kSmartReader);
 }
 
 bool IsSnapGroupEnabled() {
@@ -3255,21 +3286,6 @@ bool ShouldUseV1DeviceSync() {
 bool ShouldUseV2DeviceSync() {
   return base::FeatureList::IsEnabled(kCryptAuthV2Enrollment) &&
          base::FeatureList::IsEnabled(kCryptAuthV2DeviceSync);
-}
-
-namespace {
-
-// The boolean flag indicating if "WebUITabStrip" feature is enabled in Chrome.
-bool g_webui_tab_strip_enabled = false;
-
-}  // namespace
-
-void SetWebUITabStripEnabled(bool enabled) {
-  g_webui_tab_strip_enabled = enabled;
-}
-
-bool IsWebUITabStripEnabled() {
-  return g_webui_tab_strip_enabled;
 }
 
 }  // namespace features

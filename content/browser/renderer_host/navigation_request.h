@@ -260,7 +260,8 @@ class CONTENT_EXPORT NavigationRequest
       blink::mojom::NavigationInitiatorActivationAndAdStatus
           initiator_activation_and_ad_status,
       bool is_pdf,
-      bool is_embedder_initiated_fenced_frame_navigation = false);
+      bool is_embedder_initiated_fenced_frame_navigation = false,
+      bool is_container_initiated = false);
 
   // Creates a request for a renderer-initiated navigation.
   static std::unique_ptr<NavigationRequest> CreateRendererInitiated(
@@ -567,6 +568,11 @@ class CONTENT_EXPORT NavigationRequest
   // does not have a parent, or if the navigation was cancelled before
   // a request was made.
   void MaybeAddResourceTimingEntryForCancelledNavigation();
+
+  // Adds a resource timing entry to the parent in case of cancelled navigations
+  // and failed <object> navigations.
+  void AddResourceTimingEntryForFailedSubframeNavigation(
+      const network::URLLoaderCompletionStatus& status);
 
   // Lazily initializes and returns the mojo::NavigationClient interface used
   // for commit.
@@ -1128,6 +1134,16 @@ class CONTENT_EXPORT NavigationRequest
   TakeCookieChangeListener() {
     return std::move(cookie_change_listener_);
   }
+
+  // When this returns true, the user has specified that third-party cookies
+  // should remain enabled for this navigation.
+  // It does so by checking the Blink runtime-enabled feature (BREF) for
+  // third-party cookie deprecation user bypass. This pulls the BREF from a
+  // pending navigation request context; for a committed frame use
+  // RenderFrameHostImpl::GetIsThirdPartyCookiesUserBypassEnabled.
+  // For a subframe, the BREF is *not* pulled from the pending navigation
+  // request and is instead pulled from the committed context on the main frame.
+  bool GetIsThirdPartyCookiesUserBypassEnabled();
 
  private:
   friend class NavigationRequestTest;

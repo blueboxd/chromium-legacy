@@ -13,6 +13,9 @@
 #include "chrome/browser/new_tab_page/modules/history_clusters/history_clusters.mojom.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
+#include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/side_panel/history_clusters/history_clusters_tab_helper.h"
 #include "components/history_clusters/core/history_cluster_type_utils.h"
 #include "components/history_clusters/core/history_clusters_service.h"
 #include "components/history_clusters/core/history_clusters_service_task.h"
@@ -72,9 +75,10 @@ base::Time GetBeginTime() {
 HistoryClustersPageHandler::HistoryClustersPageHandler(
     mojo::PendingReceiver<ntp::history_clusters::mojom::PageHandler>
         pending_receiver,
-    Profile* profile)
+    content::WebContents* web_contents)
     : receiver_(this, std::move(pending_receiver)),
-      profile_(profile),
+      profile_(Profile::FromBrowserContext(web_contents->GetBrowserContext())),
+      web_contents_(web_contents),
       filter_params_(GetFilterParamsFromFeatureFlags()) {}
 
 HistoryClustersPageHandler::~HistoryClustersPageHandler() = default;
@@ -92,6 +96,12 @@ void HistoryClustersPageHandler::CallbackWithClusterData(
     std::move(callback).Run(nullptr);
     return;
   }
+
+  base::UmaHistogramCounts100("NewTabPage.HistoryClusters.Candidate.Visits",
+                              clusters.front().visits.size());
+  base::UmaHistogramCounts100(
+      "NewTabPage.HistoryClusters.Candidate.RelatedSearches",
+      clusters.front().related_searches.size());
 
   auto cluster_mojom = history_clusters::ClusterToMojom(
       TemplateURLServiceFactory::GetForProfile(profile_), clusters.front());
@@ -111,4 +121,50 @@ void HistoryClustersPageHandler::GetCluster(GetClusterCallback callback) {
       /*recluster=*/false,
       base::BindOnce(&HistoryClustersPageHandler::CallbackWithClusterData,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+}
+
+void HistoryClustersPageHandler::ShowJourneysSidePanel(
+    const std::string& query) {
+  // TODO(crbug.com/1341399): Revisit integration with the side panel once the
+  // referenced bug is resolved.
+  auto* history_clusters_tab_helper =
+      side_panel::HistoryClustersTabHelper::FromWebContents(web_contents_);
+  history_clusters_tab_helper->ShowJourneysSidePanel(query);
+}
+
+void HistoryClustersPageHandler::OpenUrlsInTabGroup(
+    const std::vector<GURL>& urls) {
+  if (urls.empty()) {
+    return;
+  }
+
+  Browser* browser = chrome::FindLastActive();
+  if (!browser) {
+    return;
+  }
+
+  browser->OpenURL({urls.front(), content::Referrer(),
+                    WindowOpenDisposition::CURRENT_TAB,
+                    ui::PAGE_TRANSITION_AUTO_BOOKMARK,
+                    /*is_renderer_initiated=*/false});
+
+  auto* model = browser->tab_strip_model();
+  std::vector<int> tab_indices;
+  tab_indices.reserve(urls.size());
+  for (size_t i = 1; i < urls.size(); i++) {
+    auto* opened_web_contents = browser->OpenURL(content::OpenURLParams(
+        urls[i], content::Referrer(), WindowOpenDisposition::NEW_BACKGROUND_TAB,
+        ui::PAGE_TRANSITION_AUTO_BOOKMARK, false));
+
+    // Only add those tabs to a new group that actually opened in this
+    // browser.
+    const int tab_index = model->GetIndexOfWebContents(opened_web_contents);
+    if (tab_index != TabStripModel::kNoTab) {
+      tab_indices.push_back(tab_index);
+    }
+  }
+
+  tab_indices.insert(tab_indices.begin(), model->GetIndexOfWebContents(
+                                              model->GetActiveWebContents()));
+  model->AddToNewGroup(tab_indices);
 }

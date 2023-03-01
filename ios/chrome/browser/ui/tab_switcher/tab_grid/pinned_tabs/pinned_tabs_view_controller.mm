@@ -85,6 +85,9 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
 
   // YES if the dragged tab moved to a new index.
   BOOL _dragEndAtNewIndex;
+
+  // YES if view controller's content has appeared.
+  BOOL _contentAppeared;
 }
 
 - (instancetype)init {
@@ -103,6 +106,7 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
   _visible = YES;
   _dragActionInProgress = NO;
   _dropAnimationInProgress = NO;
+  _contentAppeared = NO;
 
   [self configureCollectionView];
   [self configureEmptyCollectionViewLabel];
@@ -124,9 +128,11 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
   [self.delegate pinnedTabsViewController:self didChangeItemCount:_items.count];
 
   _lastInsertedItemID = nil;
+  _contentAppeared = YES;
 }
 
 - (void)contentWillDisappear {
+  _contentAppeared = NO;
 }
 
 - (void)dragSessionEnabled:(BOOL)enabled {
@@ -367,11 +373,6 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
       completion:^(BOOL completed) {
         collectionViewUpdatesCompletion();
       }];
-}
-
-- (void)advertizeInactiveTabsWithCount:(NSUInteger)count {
-  // Should never be called for this class.
-  NOTREACHED();
 }
 
 - (void)dismissModals {
@@ -698,6 +699,8 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
     [_emptyCollectionViewLabel.centerXAnchor
         constraintEqualToAnchor:self.view.centerXAnchor],
   ]];
+
+  [self updateEmptyCollectionViewLabelVisibility];
 }
 
 // Configures `cell`'s identifier and title synchronously, favicon and snapshot
@@ -776,7 +779,7 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
 
   // Scroll the collection view to the newly added item, so it doesn't
   // disappear from the user's sight.
-  [self scrollCollectionViewToLastItemAnimated:NO];
+  [self scrollCollectionViewToLastItemAnimated:YES];
 
   [self pinnedTabsAvailable:_available];
 }
@@ -815,6 +818,11 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
 // Tells the delegate that the user tapped the item with identifier
 // corresponding to `indexPath`.
 - (void)tappedItemAtIndexPath:(NSIndexPath*)indexPath {
+  // Do not track item taps during tab grid transitions.
+  if (!_contentAppeared) {
+    return;
+  }
+
   NSUInteger index = base::checked_cast<NSUInteger>(indexPath.item);
   DCHECK_LT(index, _items.count);
 

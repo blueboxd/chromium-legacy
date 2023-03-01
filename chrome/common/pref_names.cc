@@ -438,54 +438,9 @@ const char kEnableSyncConsent[] = "sync_consent.enabled";
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-// A boolean pref set to true if touchpad tap-to-click is enabled.
-const char kTapToClickEnabled[] = "settings.touchpad.enable_tap_to_click";
-
-// A boolean pref set to true if touchpad three-finger-click is enabled.
-const char kEnableTouchpadThreeFingerClick[] =
-    "settings.touchpad.enable_three_finger_click";
-
-// A boolean pref set to true if primary pointing stick button is the left
-// button.
-const char kPrimaryPointingStickButtonRight[] =
-    "settings.pointing_stick.primary_right";
-
 // Copy of the primary pointing stick buttons option to use on login screen.
 const char kOwnerPrimaryPointingStickButtonRight[] =
     "owner.pointing_stick.primary_right";
-
-// A boolean pref set to true if pointing stick acceleration is enabled. When
-// disabled only simple linear scaling is applied based on sensitivity.
-const char kPointingStickAcceleration[] =
-    "settings.pointing_stick.acceleration";
-
-// A boolean pref set to true if touchpad acceleration is enabled. When
-// disabled only simple linear scaling is applied based on sensitivity.
-const char kTouchpadAcceleration[] = "settings.touchpad.acceleration";
-
-// A boolean pref set to true if touchpad scroll acceleration is enabled. When
-// disabled only simple linear scaling is applied based on sensitivity.
-const char kTouchpadScrollAcceleration[] =
-    "settings.touchpad.scroll_acceleration";
-
-// A boolean pref set to true if touchpad haptic feedback is enabled.
-const char kTouchpadHapticFeedback[] = "settings.touchpad.haptic_feedback";
-
-// A integer pref for the touchpad haptic click sensitivity ranging from Soft
-// feedback to Firm feedback [1, 3, 5].
-const char kTouchpadHapticClickSensitivity[] =
-    "settings.touchpad.haptic_click_sensitivity";
-
-// A integer pref for the touchpad sensitivity.
-const char kTouchpadSensitivity[] = "settings.touchpad.sensitivity2";
-
-// A integer pref for the touchpad scroll sensitivity, in the range
-// [PointerSensitivity::kLowest, PointerSensitivity::kHighest].
-const char kTouchpadScrollSensitivity[] =
-    "settings.touchpad.scroll_sensitivity";
-
-// A integer pref for pointing stick sensitivity.
-const char kPointingStickSensitivity[] = "settings.pointing_stick.sensitivity";
 
 // A boolean pref set to true if time should be displayed in 24-hour clock.
 const char kUse24HourClock[] = "settings.clock.use_24hour_clock";
@@ -1596,9 +1551,6 @@ const char kEasyUnlockAllowed[] = "easy_unlock.allowed";
 // Preference storing Easy Unlock pairing data.
 const char kEasyUnlockPairing[] = "easy_unlock.pairing";
 
-const char kHasSeenSmartLockSignInRemovedNotification[] =
-    "easy_unlock.has_seen_smart_lock_sign_in_removed_notification";
-
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 // Used to indicate whether or not the toolbar redesign bubble has been shown
 // and acknowledged, and the last time the bubble was shown.
@@ -1630,6 +1582,11 @@ const char kWebRtcTextLogCollectionAllowed[] =
 // Boolean that indicates that the first run experience has been finished (or
 // skipped by some policy) for this browser install.
 const char kFirstRunFinished[] = "browser.first_run_finished";
+
+// String that refers to the study group in which this install was enrolled.
+// Used to implement the sticky experiment tracking.
+// TODO(crbug.com/1418017): Clean up experiment setup.
+const char kFirstRunStudyGroup[] = "browser.first_run_study_group";
 #endif
 
 #if !BUILDFLAG(IS_ANDROID)
@@ -1869,6 +1826,10 @@ const char kOfficeSetupComplete[] = "filebrowser.office.setup_complete";
 
 // Whether we should always move office files without prompting the user first.
 const char kOfficeFilesAlwaysMove[] = "filebrowser.office.always_move";
+
+// Whether the move confirmation dialog has been shown before.
+const char kOfficeMoveConfirmationShown[] =
+    "filebrowser.office.move_confirmation_shown";
 
 // Whether at least one file has been moved to OneDrive.
 const char kOfficeFileMovedToOneDrive[] =

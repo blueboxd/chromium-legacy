@@ -8,6 +8,7 @@
 
 #include "cc/layers/ui_resource_layer.h"
 #include "cc/slim/features.h"
+#include "cc/slim/frame_data.h"
 #include "cc/slim/layer_tree_impl.h"
 #include "components/viz/common/quads/compositor_render_pass.h"
 #include "components/viz/common/quads/texture_draw_quad.h"
@@ -115,7 +116,7 @@ void UIResourceLayer::SetLayerTree(LayerTree* tree) {
 
   Layer::SetLayerTree(tree);
   RefreshResource();
-  SetDrawsContent(HasDrawableContent());
+  UpdateDrawsContent();
 }
 
 bool UIResourceLayer::HasDrawableContent() const {
@@ -133,11 +134,12 @@ void UIResourceLayer::SetUIResourceIdInternal(cc::UIResourceId resource_id) {
     return;
   }
   resource_id_ = resource_id;
-  SetDrawsContent(HasDrawableContent());
+  UpdateDrawsContent();
   NotifyPropertyChanged();
 }
 
 void UIResourceLayer::AppendQuads(viz::CompositorRenderPass& render_pass,
+                                  FrameData& data,
                                   const gfx::Transform& transform,
                                   const gfx::Rect* clip) {
   viz::ResourceId viz_resource_id =

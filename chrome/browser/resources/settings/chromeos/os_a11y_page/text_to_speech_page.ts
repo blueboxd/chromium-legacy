@@ -44,20 +44,24 @@ class SettingsTextToSpeechPageElement extends
   static get properties() {
     return {
       /**
-       * Whether to show the toggle button for PDF OCR.
-       */
-      showPdfOcrSetting_: {
-        type: Boolean,
-        value: function() {
-          return loadTimeData.getBoolean('pdfOcrEnabled');
-        },
-      },
-
-      /**
        * |hasKeyboard_| starts undefined so observer doesn't trigger until it
        * has been populated.
        */
       hasKeyboard_: Boolean,
+
+      /**
+       * |hasScreenReader| is being passed from os_a11y_page.html on page load.
+       * Indicate whether a screen reader is enabled.
+       */
+      hasScreenReader: Boolean,
+
+      isAccessibilityChromeVoxPageMigrationEnabled_: {
+        type: Boolean,
+        value() {
+          return loadTimeData.getBoolean(
+              'isAccessibilityChromeVoxPageMigrationEnabled');
+        },
+      },
 
       isAccessibilitySelectToSpeakPageMigrationEnabled_: {
         type: Boolean,
@@ -65,6 +69,14 @@ class SettingsTextToSpeechPageElement extends
           return loadTimeData.getBoolean(
               'isAccessibilitySelectToSpeakPageMigrationEnabled');
         },
+      },
+
+      /**
+       * Whether to show the toggle button for PDF OCR.
+       */
+      showPdfOcrToggle_: {
+        type: Boolean,
+        computed: 'computeShowPdfOcrToggle_(hasScreenReader)',
       },
 
       /**
@@ -80,11 +92,14 @@ class SettingsTextToSpeechPageElement extends
     };
   }
 
+  hasScreenReader: boolean;
   private deviceBrowserProxy_: DevicePageBrowserProxy;
   private hasKeyboard_: boolean;
+  private isAccessibilityChromeVoxPageMigrationEnabled_: boolean;
+  private isAccessibilitySelectToSpeakPageMigrationEnabled_: boolean;
   private route_: Route;
+  private showPdfOcrToggle_: boolean;
   private textToSpeechBrowserProxy_: TextToSpeechPageBrowserProxy;
-  private showPdfOcrSetting_: boolean;
 
   constructor() {
     super();
@@ -130,6 +145,15 @@ class SettingsTextToSpeechPageElement extends
   }
 
   /**
+   * Return whether to show a PDF OCR toggle button based on:
+   *    1. A PDF OCR feature flag is enabled.
+   *    2. Whether a screen reader (i.e. ChromeVox) is enabled.
+   */
+  private computeShowPdfOcrToggle_(): boolean {
+    return loadTimeData.getBoolean('pdfOcrEnabled') && this.hasScreenReader;
+  }
+
+  /**
    * Return ChromeVox description text based on whether ChromeVox is enabled.
    */
   private getChromeVoxDescription_(enabled: boolean): string {
@@ -159,6 +183,10 @@ class SettingsTextToSpeechPageElement extends
 
   private onChromeVoxSettingsTap_(): void {
     this.textToSpeechBrowserProxy_.showChromeVoxSettings();
+  }
+
+  private onChromeVoxNewSettingsTap_(): void {
+    Router.getInstance().navigateTo(routes.A11Y_CHROMEVOX);
   }
 
   private onChromeVoxTutorialTap_(): void {

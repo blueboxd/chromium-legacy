@@ -15,7 +15,6 @@
 #include "base/feature_list.h"
 #include "base/ranges/algorithm.h"
 #include "base/strings/string_util.h"
-#include "content/common/aggregatable_report.mojom.h"
 #include "content/common/private_aggregation_features.h"
 #include "content/services/auction_worklet/auction_v8_helper.h"
 #include "content/services/auction_worklet/public/mojom/private_aggregation_request.mojom.h"
@@ -24,6 +23,8 @@
 #include "gin/dictionary.h"
 #include "third_party/abseil-cpp/absl/numeric/int128.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
+#include "third_party/blink/public/common/features.h"
+#include "third_party/blink/public/mojom/private_aggregation/aggregatable_report.mojom.h"
 #include "v8/include/v8-exception.h"
 #include "v8/include/v8-external.h"
 #include "v8/include/v8-function-callback.h"
@@ -301,7 +302,8 @@ void PrivateAggregationBindings::FillInGlobalTemplate(
       v8_helper_->CreateStringFromLiteral("sendHistogramReport"),
       send_histogram_report_template);
 
-  if (content::kPrivateAggregationApiFledgeExtensionsEnabled.Get()) {
+  if (base::FeatureList::IsEnabled(
+          blink::features::kPrivateAggregationApiFledgeExtensions)) {
     v8::Local<v8::FunctionTemplate> report_contribution_for_event_template =
         v8::FunctionTemplate::New(
             v8_helper_->isolate(),
@@ -344,7 +346,7 @@ PrivateAggregationBindings::TakePrivateAggregationRequests() {
         return auction_worklet::mojom::PrivateAggregationRequest::New(
             std::move(contribution),
             // TODO(alexmt): consider allowing this to be set
-            content::mojom::AggregationServiceMode::kDefault,
+            blink::mojom::AggregationServiceMode::kDefault,
             debug_mode_details_.Clone());
       });
   private_aggregation_contributions_.clear();
@@ -358,7 +360,7 @@ void PrivateAggregationBindings::SendHistogramReport(
       static_cast<PrivateAggregationBindings*>(
           v8::External::Cast(*args.Data())->Value());
 
-  content::mojom::AggregatableReportHistogramContributionPtr contribution =
+  blink::mojom::AggregatableReportHistogramContributionPtr contribution =
       worklet_utils::ParseSendHistogramReportArguments(
           gin::Arguments(args),
           bindings->private_aggregation_permissions_policy_allowed_);

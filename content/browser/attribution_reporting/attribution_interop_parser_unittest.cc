@@ -89,15 +89,15 @@ bool operator==(AttributionConfig::AggregateLimit a,
 
 bool operator==(AttributionConfig a, AttributionConfig b) {
   const auto tie = [](AttributionConfig config) {
-    return std::make_tuple(
-        config.max_sources_per_origin, config.source_event_id_cardinality,
-        config.rate_limit, config.event_level_limit, config.aggregate_limit);
+    return std::make_tuple(config.max_sources_per_origin, config.rate_limit,
+                           config.event_level_limit, config.aggregate_limit);
   };
   return tie(a) == tie(b);
 }
 
 namespace {
 
+using ::testing::ElementsAre;
 using ::testing::HasSubstr;
 using ::testing::IsEmpty;
 
@@ -179,8 +179,8 @@ TEST(AttributionInteropParserTest, ValidSourceParses) {
             *SuitableOrigin::Deserialize("https://a.r.test"));
   EXPECT_EQ(source1->common_info().source_origin(),
             *SuitableOrigin::Deserialize("https://a.s.test"));
-  EXPECT_EQ(source1->common_info().destination_site(),
-            net::SchemefulSite::Deserialize("https://d.test"));
+  EXPECT_THAT(source1->common_info().destination_sites().destinations(),
+              ElementsAre(net::SchemefulSite::Deserialize("https://d.test")));
   EXPECT_FALSE(source1->is_within_fenced_frame());
   EXPECT_TRUE(result->front().debug_permission);
 
@@ -192,8 +192,8 @@ TEST(AttributionInteropParserTest, ValidSourceParses) {
             *SuitableOrigin::Deserialize("https://b.r.test"));
   EXPECT_EQ(source2->common_info().source_origin(),
             *SuitableOrigin::Deserialize("https://b.s.test"));
-  EXPECT_EQ(source2->common_info().destination_site(),
-            net::SchemefulSite::Deserialize("https://d.test"));
+  EXPECT_THAT(source2->common_info().destination_sites().destinations(),
+              ElementsAre(net::SchemefulSite::Deserialize("https://d.test")));
   EXPECT_FALSE(source2->is_within_fenced_frame());
   EXPECT_FALSE(result->back().debug_permission);
 }
@@ -589,10 +589,6 @@ TEST(AttributionInteropParserTest, ValidConfig) {
        false,
        AttributionConfig{.max_destinations_per_source_site_reporting_origin =
                              100}},
-      {R"json({"source_event_id_cardinality":"0"})json", false,
-       AttributionConfig{.source_event_id_cardinality = absl::nullopt}},
-      {R"json({"source_event_id_cardinality":"10"})json", false,
-       AttributionConfig{.source_event_id_cardinality = 10}},
       {R"json({"rate_limit_time_window":"30"})json", false,
        AttributionConfig{.rate_limit = {.time_window = base::Days(30)}}},
       {R"json({"rate_limit_max_source_registration_reporting_origins":"10"})json",
@@ -643,7 +639,6 @@ TEST(AttributionInteropParserTest, ValidConfig) {
       {R"json({
         "max_sources_per_origin":"10",
         "max_destinations_per_source_site_reporting_origin":"10",
-        "source_event_id_cardinality":"100",
         "rate_limit_time_window":"10",
         "rate_limit_max_source_registration_reporting_origins":"20",
         "rate_limit_max_attribution_reporting_origins":"15",
@@ -663,7 +658,6 @@ TEST(AttributionInteropParserTest, ValidConfig) {
        true,
        AttributionConfig{
            .max_sources_per_origin = 10,
-           .source_event_id_cardinality = 100,
            .max_destinations_per_source_site_reporting_origin = 10,
            .rate_limit = {.time_window = base::Days(10),
                           .max_source_registration_reporting_origins = 20,
@@ -751,7 +745,6 @@ TEST(AttributionInteropParserTest, InvalidConfigPositiveIntegers) {
 
 TEST(AttributionInteropParserTest, InvalidConfigNonNegativeIntegers) {
   const char* const kFields[] = {
-      "source_event_id_cardinality",
       "aggregatable_report_min_delay",
       "aggregatable_report_delay_span",
   };

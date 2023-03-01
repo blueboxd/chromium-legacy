@@ -815,9 +815,6 @@ interface CanvasCaptureMediaStreamTrack : MediaStreamTrack
     getter canvas
     method constructor
     method requestFrame
-interface CanvasFilter
-    attribute @@toStringTag
-    method constructor
 interface CanvasGradient
     attribute @@toStringTag
     method addColorStop
@@ -8322,6 +8319,7 @@ interface URLPattern
     method test
 interface URLSearchParams
     attribute @@toStringTag
+    getter size
     method @@iterator
     method append
     method constructor

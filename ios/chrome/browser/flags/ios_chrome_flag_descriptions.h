@@ -206,6 +206,11 @@ extern const char kDefaultBrowserIntentsShowSettingsDescription[];
 extern const char kDetectMainThreadFreezeName[];
 extern const char kDetectMainThreadFreezeDescription[];
 
+// Title and description for the flag to enable the bookmarks account storage
+// and related UI features.
+extern const char kEnableBookmarksAccountStorageName[];
+extern const char kEnableBookmarksAccountStorageDescription[];
+
 // Title and description for the flag to enable checking feed visibility on
 // attention log start.
 extern const char kEnableCheckVisibilityOnAttentionLogStartName[];
@@ -279,8 +284,8 @@ extern const char kEnableDiscoverFeedDiscoFeedEndpointDescription[];
 
 // Title and description for the flag to enable the hiding the Most Visited
 // Tiles and Shortcuts for new users.
-extern const char kTileAblationMVTAndShortcutsForNewUsersName[];
-extern const char kTileAblationMVTAndShortcutsForNewUsersDescription[];
+extern const char kTileAblationName[];
+extern const char kTileAblationDescription[];
 
 // Title and description for the flag to remove the Feed from the NTP.
 extern const char kEnableFeedAblationName[];
@@ -387,15 +392,15 @@ extern const char kHttpsOnlyModeDescription[];
 extern const char kIncognitoNtpRevampName[];
 extern const char kIncognitoNtpRevampDescription[];
 
+// Title and description for the flag to indicate the Account Storage error in
+// the account cell when Sync is turned OFF.
+extern const char kIndicateAccountStorageErrorInAccountCellName[];
+extern const char kIndicateAccountStorageErrorInAccountCellDescription[];
+
 // Title and description for the flag to enable feature_engagement::Tracker
 // demo mode.
 extern const char kInProductHelpDemoModeName[];
 extern const char kInProductHelpDemoModeDescription[];
-
-// Title and description for the flag to enable third-party intents in
-// Incognito.
-extern const char kIOS3PIntentsInIncognitoName[];
-extern const char kIOS3PIntentsInIncognitoDescription[];
 
 // Title and description for the flag to enable new API for browser edit menu.
 extern const char kIOSCustomBrowserEditMenuName[];
@@ -499,6 +504,10 @@ extern const char kMultilineFadeTruncatingLabelDescription[];
 // for iOS 16 and later.
 extern const char kNativeFindInPageName[];
 extern const char kNativeFindInPageDescription[];
+
+// Title and description for the flag to enable the new NTP omnibox layout.
+extern const char kNewNTPOmniboxLayoutName[];
+extern const char kNewNTPOmniboxLayoutDescription[];
 
 // Title and description for the flag to enable the new overflow menu.
 extern const char kNewOverflowMenuName[];
@@ -650,6 +659,10 @@ extern const char kPasswordNotesWithBackupDescription[];
 // detection.
 extern const char kPasswordReuseDetectionName[];
 extern const char kPasswordReuseDetectionDescription[];
+
+// Title and description for the flag to enable chrome://policy/logs on iOS
+extern const char kPolicyLogsPageIOSName[];
+extern const char kPolicyLogsPageIOSDescription[];
 
 // Title and description for the flag to have the Promos Manager use the FET as
 // its impression tracking system.
@@ -845,6 +858,11 @@ extern const char kWaitThresholdMillisecondsForCapabilitiesApiDescription[];
 // should use the sandbox servers.
 extern const char kWalletServiceUseSandboxName[];
 extern const char kWalletServiceUseSandboxDescription[];
+
+// Title and description for the flag to control whether to send discover
+// feedback to a new product destination
+extern const char kWebFeedFeedbackRerouteName[];
+extern const char kWebFeedFeedbackRerouteDescription[];
 
 // Title and description for the flag to tie the default text zoom level to
 // the dynamic type setting.

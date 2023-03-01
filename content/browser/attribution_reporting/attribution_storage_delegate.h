@@ -13,7 +13,7 @@
 #include "base/time/time.h"
 #include "components/attribution_reporting/source_type.mojom-forward.h"
 #include "content/browser/attribution_reporting/attribution_config.h"
-#include "content/browser/attribution_reporting/attribution_report.h"
+#include "content/browser/attribution_reporting/attribution_reporting.mojom-forward.h"
 #include "content/common/content_export.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
@@ -23,6 +23,7 @@ class GUID;
 
 namespace content {
 
+class AttributionReport;
 class CommonSourceInfo;
 
 // Storage delegate that can supplied to extend basic attribution storage
@@ -82,7 +83,8 @@ class CONTENT_EXPORT AttributionStorageDelegate {
   // reporting origins are the actual entities that invoke attribution
   // registration, we could consider changing this limit to be keyed by an
   // <attribution origin, reporting origin> tuple.
-  int GetMaxReportsPerDestination(AttributionReport::Type) const;
+  int GetMaxReportsPerDestination(
+      attribution_reporting::mojom::ReportType) const;
 
   // Returns the maximum number of distinct attribution destinations that can
   // be in storage at any time for sources with the same <source site,
@@ -137,9 +139,6 @@ class CONTENT_EXPORT AttributionStorageDelegate {
   // Sanitizes `trigger_data` according to the data limits for `source_type`.
   uint64_t SanitizeTriggerData(uint64_t trigger_data,
                                attribution_reporting::mojom::SourceType) const;
-
-  // Sanitizes `source_event_id` according to the data limit.
-  uint64_t SanitizeSourceEventId(uint64_t source_event_id) const;
 
  protected:
   uint64_t TriggerDataCardinality(

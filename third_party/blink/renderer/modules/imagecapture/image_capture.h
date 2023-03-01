@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "media/capture/mojom/image_capture.mojom-blink.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/mojom/permissions/permission.mojom-blink.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context_lifecycle_observer.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
@@ -59,10 +60,14 @@ class MODULES_EXPORT ImageCapture final
   ScriptPromise takePhoto(ScriptState*, const PhotoSettings*);
   ScriptPromise grabFrame(ScriptState*);
 
+  bool CheckAndApplyMediaTrackConstraintsToSettings(
+      media::mojom::blink::PhotoSettings*,
+      const MediaTrackConstraints*,
+      ScriptPromiseResolver*);
   void GetMediaTrackCapabilities(MediaTrackCapabilities*) const;
   void SetMediaTrackConstraints(ScriptPromiseResolver*,
                                 const MediaTrackConstraints* constraints);
-  const MediaTrackConstraintSet* GetMediaTrackConstraints() const;
+  MediaTrackConstraints* GetMediaTrackConstraints() const;
   void ClearMediaTrackConstraints();
   void GetMediaTrackSettings(MediaTrackSettings*) const;
 
@@ -134,7 +139,7 @@ class MODULES_EXPORT ImageCapture final
   // Get the name a constraint for which there are no corresponding
   // capabilities or permission to access them.
   const absl::optional<String> GetConstraintWithNonExistingCapability(
-      const MediaTrackConstraintSet* constraints);
+      const MediaTrackConstraintSet* constraint_set);
 
   Member<MediaStreamTrack> stream_track_;
   std::unique_ptr<ImageCaptureFrameGrabber> frame_grabber_;
@@ -149,7 +154,7 @@ class MODULES_EXPORT ImageCapture final
 
   Member<MediaTrackCapabilities> capabilities_;
   Member<MediaTrackSettings> settings_;
-  Member<MediaTrackConstraintSet> current_constraints_;
+  Member<MediaTrackConstraintSet> current_constraint_set_;
   Member<PhotoSettings> photo_settings_;
 
   Member<PhotoCapabilities> photo_capabilities_;

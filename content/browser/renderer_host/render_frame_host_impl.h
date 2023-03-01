@@ -98,6 +98,7 @@
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "net/base/isolation_info.h"
 #include "net/base/network_isolation_key.h"
+#include "net/cookies/cookie_setting_override.h"
 #include "net/net_buildflags.h"
 #include "ppapi/buildflags/buildflags.h"
 #include "services/device/public/mojom/sensor_provider.mojom-forward.h"
@@ -174,7 +175,7 @@
 #include "third_party/blink/public/mojom/serial/serial.mojom-forward.h"
 #endif
 
-#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_FUCHSIA)
+#if BUILDFLAG(IS_CHROMEOS)
 #include "third_party/blink/public/mojom/smart_card/smart_card.mojom-forward.h"
 #endif
 
@@ -185,6 +186,7 @@
 namespace blink {
 class AssociatedInterfaceRegistry;
 class DocumentPolicy;
+class RuntimeFeatureStateReadContext;
 struct FramePolicy;
 struct TransferableMessage;
 struct UntrustworthyContextMenuParams;
@@ -272,7 +274,6 @@ class RenderFrameProxyHost;
 class RenderProcessHost;
 class RenderViewHostImpl;
 class RenderWidgetHostView;
-class RuntimeFeatureStateControllerImpl;
 class ServiceWorkerContainerHost;
 class SiteInfo;
 class SpeechSynthesisImpl;
@@ -476,6 +477,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
       blink::mojom::SuddenTerminationDisablerType disabler_type) override;
   bool IsFeatureEnabled(
       blink::mojom::PermissionsPolicyFeature feature) override;
+  const blink::PermissionsPolicy* GetPermissionsPolicy() override;
+  const blink::ParsedPermissionsPolicy& GetPermissionsPolicyHeader() override;
   void ViewSource() override;
   void ExecuteMediaPlayerActionAtLocation(
       const gfx::Point&,
@@ -1435,6 +1438,16 @@ class CONTENT_EXPORT RenderFrameHostImpl
       const absl::optional<std::string>& error_page_content,
       const blink::DocumentToken& document_token);
 
+  void AddResourceTimingEntryForFailedSubframeNavigation(
+      FrameTreeNode* child_frame,
+      base::TimeTicks start_time,
+      base::TimeTicks redirect_time,
+      const GURL& initial_url,
+      const GURL& final_url,
+      network::mojom::URLResponseHeadPtr response_head,
+      bool allow_response_details,
+      const network::URLLoaderCompletionStatus& completion_status);
+
   // Sends a renderer-debug URL to the renderer process for handling.
   void HandleRendererDebugURL(const GURL& url);
 
@@ -1899,7 +1912,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
       mojo::PendingReceiver<blink::mojom::SerialService> receiver);
 #endif
 
-#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_FUCHSIA)
+#if BUILDFLAG(IS_CHROMEOS)
   void GetSmartCardService(
       mojo::PendingReceiver<blink::mojom::SmartCardService> receiver);
 #endif
@@ -1995,7 +2008,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void BindRestrictedCookieManagerWithOrigin(
       mojo::PendingReceiver<network::mojom::RestrictedCookieManager> receiver,
       const net::IsolationInfo& isolation_info,
-      const url::Origin& origin);
+      const url::Origin& origin,
+      net::CookieSettingOverrides cookie_setting_overrides);
 
   // Requires the following preconditions, reporting a bad message otherwise.
   //
@@ -2353,6 +2367,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
       const std::string& event_data,
       const std::vector<blink::FencedFrame::ReportingDestination>& destination)
       override;
+  void SendPrivateAggregationRequestsForFencedFrameEvent(
+      const std::string& event_type) override;
   void CreatePortal(
       mojo::PendingAssociatedReceiver<blink::mojom::Portal> pending_receiver,
       mojo::PendingAssociatedRemote<blink::mojom::PortalClient> client,
@@ -2654,12 +2670,19 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // opaque origin instead).
   void SetOriginDependentStateOfNewFrame(RenderFrameHostImpl* creator_frame);
 
+  // Returns the value of `this`'s main frame's
+  // RuntimeFeatureStateReadContext::IsThirdPartyStoragePartitioningEnabled()
+  bool IsMainFrameThirdPartyStoragePartitioningEnabled();
+
   // Calculates the storage key for this RenderFrameHostImpl using the passed
-  // `new_rfh_origin`, and `nonce` and calculating the storage key's
-  // top_level_site` and `ancestor_bit` parameters. This takes into account
-  // possible host permissions of the top_level RenderFrameHostImpl.
-  blink::StorageKey CalculateStorageKey(const url::Origin& new_rfh_origin,
-                                        const base::UnguessableToken* nonce);
+  // `new_rfh_origin`, and `nonce`, and
+  // `is_third_party_storage_partitioning_allowed` and deriving the storage
+  // key's top_level_site` and `ancestor_bit` parameters. This takes into
+  // account possible host permissions of the top_level RenderFrameHostImpl.
+  blink::StorageKey CalculateStorageKey(
+      const url::Origin& new_rfh_origin,
+      const base::UnguessableToken* nonce,
+      bool is_third_party_storage_partitioning_allowed);
 
   // Returns the BrowsingContextState associated with this RenderFrameHostImpl.
   // See class comments in BrowsingContextState for a more detailed description.
@@ -2823,6 +2846,17 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // a CookieSettingOverrides pertaining to the last committed document in the
   // frame. Can only be called on a frame with a committed navigation.
   net::CookieSettingOverrides GetCookieSettingOverrides();
+
+  // When this returns true, the user has specified that third-party cookies
+  // should remain enabled for this frame.
+  // It does so by checking the Blink runtime-enabled feature (BREF) for
+  // third-party cookie deprecation user bypass. This pulls the BREF from the
+  // committed document context; for a committing navigation use
+  // NavigationRequest::GetIsThirdPartyCookiesUserBypassEnabled.
+  // For a subframe, the BREF is pulled from the main frame context. If the main
+  // frame has no committed navigation (eg. an empty initial document), then
+  // false is returned.
+  bool GetIsThirdPartyCookiesUserBypassEnabled();
 
   // Retrieves the information about the cookie changes that are observed on the
   // last committed document.
@@ -4303,10 +4337,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   // Hosts blink::mojom::PushMessaging for the RenderFrame.
   std::unique_ptr<PushMessagingManager> push_messaging_manager_;
-
-  // Hosts blink::mojom::RuntimeFeatureStateController for the RenderFrame.
-  std::unique_ptr<RuntimeFeatureStateControllerImpl>
-      runtime_feature_state_controller_;
 
   // Hosts blink::mojom::SpeechSynthesis for the RenderFrame.
   std::unique_ptr<SpeechSynthesisImpl> speech_synthesis_impl_;

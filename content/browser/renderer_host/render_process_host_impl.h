@@ -324,9 +324,6 @@ class CONTENT_EXPORT RenderProcessHostImpl
   void ResumeSocketManagerForRenderFrameHost(
       const GlobalRenderFrameHostId& render_frame_host_id) override;
 
-  void SetOsSupportForAttributionReporting(
-      attribution_reporting::mojom::OsSupport os_support) override;
-
   // IPC::Sender via RenderProcessHost.
   bool Send(IPC::Message* msg) override;
 
@@ -374,6 +371,10 @@ class CONTENT_EXPORT RenderProcessHostImpl
 
   // Implementation of FilterURL below that can be shared with the mock class.
   static void FilterURL(RenderProcessHost* rph, bool empty_allowed, GURL* url);
+
+  // Returns the current count of renderer processes. For the count used when
+  // comparing against the process limit, see `GetProcessCountForLimit`.
+  static size_t GetProcessCount();
 
   // Returns the current process count for comparisons against
   // GetMaxRendererProcessCount, taking into account any processes the embedder

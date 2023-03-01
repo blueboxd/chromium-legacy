@@ -377,11 +377,7 @@ static bool IsSingleProcess() {
 }  // namespace
 
 RenderThreadImpl::HistogramCustomizer::HistogramCustomizer() {
-  custom_histograms_.insert("V8.MemoryExternalFragmentationTotal");
   custom_histograms_.insert("V8.MemoryHeapSampleTotalCommitted");
-  custom_histograms_.insert("V8.MemoryHeapSampleTotalUsed");
-  custom_histograms_.insert("V8.MemoryHeapUsed");
-  custom_histograms_.insert("V8.MemoryHeapCommitted");
 }
 
 RenderThreadImpl::HistogramCustomizer::~HistogramCustomizer() {}
@@ -1845,11 +1841,6 @@ gfx::ColorSpace RenderThreadImpl::GetRenderingColorSpace() {
 attribution_reporting::mojom::OsSupport
 RenderThreadImpl::GetOsSupportForAttributionReporting() {
   return attribution_os_support_;
-}
-
-void RenderThreadImpl::SetOsSupportForAttributionReporting(
-    attribution_reporting::mojom::OsSupport attribution_os_support) {
-  attribution_os_support_ = attribution_os_support;
 }
 
 std::unique_ptr<CodecFactory> RenderThreadImpl::CreateMediaCodecFactory(

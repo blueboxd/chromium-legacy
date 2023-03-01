@@ -10,7 +10,6 @@
 
 #import "base/mac/bundle_locations.h"
 #import "base/mac/foundation_util.h"
-#import "base/metrics/histogram_macros.h"
 #import "base/metrics/user_metrics.h"
 #import "base/metrics/user_metrics_action.h"
 #import "base/strings/sys_string_conversions.h"
@@ -765,7 +764,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 - (void)openNewTabFromOriginPoint:(CGPoint)originPoint
                      focusOmnibox:(BOOL)focusOmnibox
                     inheritOpener:(BOOL)inheritOpener {
-  const base::TimeTicks startTime = base::TimeTicks::Now();
   const BOOL offTheRecord = _isOffTheRecord;
   ProceduralBlock oldForegroundTabWasAddedCompletionBlock =
       self.foregroundTabWasAddedCompletionBlock;
@@ -773,13 +771,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   self.foregroundTabWasAddedCompletionBlock = ^{
     if (oldForegroundTabWasAddedCompletionBlock) {
       oldForegroundTabWasAddedCompletionBlock();
-    }
-    const base::TimeDelta duration = base::TimeTicks::Now() - startTime;
-    if (offTheRecord) {
-      UMA_HISTOGRAM_TIMES("Toolbar.Menu.NewIncognitoTabPresentationDuration",
-                          duration);
-    } else {
-      UMA_HISTOGRAM_TIMES("Toolbar.Menu.NewTabPresentationDuration", duration);
     }
     if (focusOmnibox) {
       [omniboxCommandHandler focusOmnibox];
@@ -3088,6 +3079,16 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   }
 }
 
+#pragma mark - TabConsumer (Public)
+
+- (void)resetTab {
+  self.browserContainerViewController.contentView = nil;
+}
+
+- (void)animateNewBackgroundTab {
+  [self initiateNewTabAnimationForWebState:nil willOpenInBackground:YES];
+}
+
 #pragma mark - WebStateListObserving methods
 
 // TODO(crbug.com/1329088): Move BVC's tab lifeceyle event updates to a
@@ -3115,14 +3116,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   [self webStateSelected:newWebState notifyToolbar:YES];
 }
 
-- (void)webStateList:(WebStateList*)webStateList
-    willDetachWebState:(web::WebState*)webState
-               atIndex:(int)atIndex {
-  if (webState == self.currentWebState) {
-    self.browserContainerViewController.contentView = nil;
-  }
-}
-
 // Observer method, WebState replaced in `webStateList`.
 - (void)webStateList:(WebStateList*)webStateList
     didReplaceWebState:(web::WebState*)oldWebState
@@ -3131,21 +3124,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   // Add `newTab`'s view to the hierarchy if it's the current Tab.
   if (self.active && self.currentWebState == newWebState)
     [self displayWebState:newWebState];
-}
-
-// Observer method, `webState` inserted in `webStateList`.
-- (void)webStateList:(WebStateList*)webStateList
-    didInsertWebState:(web::WebState*)webState
-              atIndex:(int)index
-           activating:(BOOL)activating {
-  DCHECK(webState);
-
-  DCHECK_EQ(self.browser->GetWebStateList(), webStateList);
-  // If activating, action will be taken when the didChangeActiveWebState
-  // call is received.
-  if (!activating) {
-    [self initiateNewTabAnimationForWebState:webState willOpenInBackground:YES];
-  }
 }
 
 #pragma mark - WebStateListObserver helpers (new tab animations)
@@ -3185,14 +3163,13 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 
   BOOL inBackground =
       (NTPHelper && NTPHelper->ShouldShowStartSurface()) || !animated;
+
   [self initiateNewTabAnimationForWebState:webState
                       willOpenInBackground:inBackground];
 }
 
 - (void)initiateNewTabAnimationForWebState:(web::WebState*)webState
                       willOpenInBackground:(BOOL)background {
-  DCHECK(webState);
-
   // The rest of this function initiates the new tab animation, which is
   // phone-specific.  Call the foreground tab added completion block; for
   // iPhones, this will get executed after the animation has finished.
@@ -3208,6 +3185,9 @@ NSString* const kBrowserViewControllerSnackbarCategory =
                                                                     background];
           }));
     }
+    if (background) {
+      self.inNewTabAnimation = NO;
+    }
     return;
   }
 
@@ -3216,16 +3196,14 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   if (!self.visible || !self.webUsageEnabled)
     return;
 
-  if (background) {
-    self.inNewTabAnimation = NO;
-  } else {
-    self.inNewTabAnimation = YES;
-    __weak __typeof(self) weakSelf = self;
-    [self animateNewTabForWebState:webState
-        inForegroundWithCompletion:^{
-          [weakSelf startVoiceSearchIfNecessary];
-        }];
-  }
+  // WebState is needed only for non-background animation.
+  DCHECK(webState);
+  self.inNewTabAnimation = YES;
+  __weak __typeof(self) weakSelf = self;
+  [self animateNewTabForWebState:webState
+      inForegroundWithCompletion:^{
+        [weakSelf startVoiceSearchIfNecessary];
+      }];
 }
 
 // Helper which execute and then clears `foregroundTabWasAddedCompletionBlock`

@@ -243,13 +243,6 @@ BASE_FEATURE(kNavigationPredictor,
 // Anchor Element Interaction
 BASE_FEATURE(kAnchorElementInteraction,
              "AnchorElementInteraction",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
-// Enable "interoperable" Android virtual-keyboard. i.e. the keyboard doesn't
-// affect page layout, resizing only the visual viewport. This matches WebKit
-// and ChromeOS behavior.
-BASE_FEATURE(kOSKResizesVisualViewportByDefault,
-             "OSKResizesVisualViewportByDefault",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Enable browser-initiated dedicated worker script loading
@@ -316,10 +309,13 @@ const base::FeatureParam<int>
 BASE_FEATURE(kSharedStorageSelectURLLimit,
              "SharedStorageSelectURLLimit",
              base::FEATURE_DISABLED_BY_DEFAULT);
+const base::FeatureParam<int> kSharedStorageSelectURLBitBudgetPerPageLoad = {
+    &kSharedStorageSelectURLLimit, "SharedStorageSelectURLBitBudgetPerPageLoad",
+    60};
 const base::FeatureParam<int>
-    kSharedStorageMaxAllowedSelectURLCallsPerOriginPerPageLoad = {
+    kSharedStorageSelectURLBitBudgetPerOriginPerPageLoad = {
         &kSharedStorageSelectURLLimit,
-        "SharedStorageMaxAllowedSelectURLCallsPerOriginPerPageLoad", 3};
+        "SharedStorageSelectURLBitBudgetPerOriginPerPageLoad", 24};
 
 BASE_FEATURE(kSharedStorageReportEventLimit,
              "SharedStorageReportEventLimit",
@@ -346,18 +342,9 @@ const char kPrerender2MemoryThresholdParamName[] = "memory_threshold_in_mb";
 const char kPrerender2MemoryAcceptablePercentOfSystemMemoryParamName[] =
     "acceptable_percent_of_system_memory";
 
-BASE_FEATURE(kPrerender2InBackground,
-             "Prerender2InBackground",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 BASE_FEATURE(kPrerender2InNewTab,
              "Prerender2InNewTab",
              base::FEATURE_DISABLED_BY_DEFAULT);
-
-bool OSKResizesVisualViewportByDefault() {
-  return base::FeatureList::IsEnabled(
-      blink::features::kOSKResizesVisualViewportByDefault);
-}
 
 bool IsFencedFramesEnabled() {
   return base::FeatureList::IsEnabled(blink::features::kFencedFrames);
@@ -847,13 +834,6 @@ BASE_FEATURE(kCompressParkableStrings,
 BASE_FEATURE(kUseSnappyForParkableStrings,
              "UseSnappyForParkableStrings",
              base::FEATURE_DISABLED_BY_DEFAULT);
-
-// Enabling this will delay the first aging of strings by 60 seconds instead of
-// the default. See comment around the use of the feature for the logic behind
-// the delay.
-BASE_FEATURE(kDelayFirstParkingOfStrings,
-             "DelayFirstParkingOfStrings",
-             base::FEATURE_ENABLED_BY_DEFAULT);
 
 bool ParkableStringsUseSnappy() {
   return base::FeatureList::IsEnabled(kUseSnappyForParkableStrings);
@@ -1537,8 +1517,8 @@ BASE_FEATURE(kStylusWritingToInput,
              "StylusWritingToInput",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
-BASE_FEATURE(kAndroidExtendedEditingCommands,
-             "AndroidExtendedEditingCommands",
+BASE_FEATURE(kAndroidExtendedKeyboardShortcuts,
+             "AndroidExtendedKeyboardShortcuts",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 BASE_FEATURE(kStylusPointerAdjustment,

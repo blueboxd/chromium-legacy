@@ -99,11 +99,6 @@
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/origin.h"
 
-#if BUILDFLAG(IS_ANDROID)
-#include "net/base/features.h"
-#include "services/network/radio_monitor_android.h"
-#endif
-
 namespace network {
 
 namespace {
@@ -673,7 +668,7 @@ URLLoader::URLLoader(
       pervasive_payload_requested_ = true;
       url_request_->set_pervasive_payloads_index_for_logging(index.value());
       base::UmaHistogramExactLinear("Network.CacheTransparency.URLMatched",
-                                    index.value(), 101);
+                                    index.value(), 323);
       DVLOG(2) << "Found pervasive payload: " << request.url.spec();
     }
   }
@@ -741,11 +736,11 @@ URLLoader::URLLoader(
         net::CookieSettingOverride::kTopLevelStorageAccessGrantEligible);
   }
 
-#if BUILDFLAG(IS_ANDROID)
-  if (base::FeatureList::IsEnabled(net::features::kRecordRadioWakeupTrigger)) {
-    MaybeRecordURLLoaderCreationForWakeupTrigger(request, traffic_annotation);
-  }
-#endif
+  // The `kStorageAccessGrantEligible` override will be applied (in-place) by
+  // individual request jobs as appropriate, but should not be present
+  // initially.
+  DCHECK(!url_request_->cookie_setting_overrides().Has(
+      net::CookieSettingOverride::kStorageAccessGrantEligible));
 
   // Resolve elements from request_body and prepare upload data.
   if (request.request_body.get()) {
@@ -1177,15 +1172,14 @@ PrivateNetworkAccessCheckResult URLLoader::PrivateNetworkAccessCheck(
 
   url_request_->net_log().AddEvent(
       net::NetLogEventType::PRIVATE_NETWORK_ACCESS_CHECK, [&] {
-        base::Value dict(base::Value::Type::DICT);
-        dict.SetStringKey(
-            "client_address_space",
-            IPAddressSpaceToStringPiece(
-                private_network_access_checker_.ClientAddressSpace()));
-        dict.SetStringKey("resource_address_space",
-                          IPAddressSpaceToStringPiece(response_address_space));
-        dict.SetStringKey("result",
-                          PrivateNetworkAccessCheckResultToStringPiece(result));
+        base::Value::Dict dict;
+        dict.Set("client_address_space",
+                 IPAddressSpaceToStringPiece(
+                     private_network_access_checker_.ClientAddressSpace()));
+        dict.Set("resource_address_space",
+                 IPAddressSpaceToStringPiece(response_address_space));
+        dict.Set("result",
+                 PrivateNetworkAccessCheckResultToStringPiece(result));
         return dict;
       });
 

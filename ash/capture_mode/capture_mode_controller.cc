@@ -74,6 +74,7 @@ CaptureModeController* g_instance = nullptr;
 // consecutive.
 constexpr base::TimeDelta kConsecutiveScreenshotThreshold = base::Seconds(5);
 
+constexpr char kScreenCaptureNotificationId[] = "capture_mode_notification";
 constexpr char kScreenCaptureStoppedNotificationId[] =
     "capture_mode_stopped_notification";
 constexpr char kScreenCaptureNotifierId[] = "ash.capture_mode_controller";
@@ -197,10 +198,8 @@ base::FilePath SelectFilePathForCapturedFile(
 base::FilePath DoSaveFile(scoped_refptr<base::RefCountedMemory> data,
                           const base::FilePath& path) {
   DCHECK(data);
-  const int size = static_cast<int>(data->size());
-  DCHECK(size);
-  if (size != base::WriteFile(
-                  path, reinterpret_cast<const char*>(data->front()), size)) {
+  DCHECK(data->size());
+  if (!base::WriteFile(path, *data)) {
     LOG(ERROR) << "Failed to save file: " << path;
     return base::FilePath();
   }
@@ -308,7 +307,7 @@ int GetDisabledNotificationMessageId(CaptureAllowance allowance,
 void ShowDisabledNotification(CaptureAllowance allowance) {
   DCHECK(allowance != CaptureAllowance::kAllowed);
   ShowNotification(
-      capture_mode_util::kScreenCaptureNotificationId,
+      kScreenCaptureNotificationId,
       GetDisabledNotificationMessageId(allowance, /*for_title=*/true),
       GetDisabledNotificationMessageId(allowance, /*for_title=*/false),
       /*optional_fields=*/{}, /*delegate=*/nullptr,
@@ -376,6 +375,10 @@ void EmitServiceRecordingStatus(recording::mojom::RecordingStatus status) {
     case RecordingStatus::kLowDriveFsQuota:
       RecordEndRecordingReason(EndRecordingReason::kLowDriveFsQuota);
       break;
+    case RecordingStatus::kVideoEncoderReconfigurationFailure:
+      RecordEndRecordingReason(
+          EndRecordingReason::kVideoEncoderReconfigurationFailure);
+      break;
   }
 }
 
@@ -393,6 +396,19 @@ base::FilePath GetTempDir() {
   if (!base::GetTempDir(&temp_dir))
     LOG(ERROR) << "Failed to find the temporary directory.";
   return temp_dir;
+}
+
+int GetNotificationTitleIdForFile(const base::FilePath& file_path) {
+  if (file_path.MatchesExtension(".gif")) {
+    return IDS_ASH_SCREEN_CAPTURE_GIF_RECORDING_TITLE;
+  }
+
+  if (file_path.MatchesExtension(".webm")) {
+    return IDS_ASH_SCREEN_CAPTURE_RECORDING_TITLE;
+  }
+
+  DCHECK(file_path.MatchesExtension(".png"));
+  return IDS_ASH_SCREEN_CAPTURE_SCREENSHOT_TITLE;
 }
 
 }  // namespace
@@ -850,9 +866,8 @@ void CaptureModeController::OnActiveUserSessionChanged(
 
   // Remove the previous notification when switching to another user.
   auto* message_center = message_center::MessageCenter::Get();
-  message_center->RemoveNotificationsForNotifierId(message_center::NotifierId(
-      message_center::NotifierType::SYSTEM_COMPONENT, kScreenCaptureNotifierId,
-      NotificationCatalogName::kScreenCapture));
+  message_center->RemoveNotification(kScreenCaptureNotificationId,
+                                     /*by_user=*/false);
 }
 
 void CaptureModeController::OnSessionStateChanged(
@@ -1294,6 +1309,7 @@ void CaptureModeController::OnVideoFileSaved(
   if (!success) {
     ShowFailureNotification();
   } else {
+    const bool is_gif = saved_video_file_path.MatchesExtension(".gif");
     if (!in_projector_mode) {
       ShowPreviewNotification(saved_video_file_path,
                               gfx::Image(video_thumbnail),
@@ -1301,16 +1317,15 @@ void CaptureModeController::OnVideoFileSaved(
       // NOTE: Holding space `client` may be `nullptr` in tests.
       if (auto* client = HoldingSpaceController::Get()->client()) {
         client->AddScreenCapture(
-            recording_type_ == RecordingType::kGif
-                ? HoldingSpaceItem::Type::kScreenRecordingGif
-                : HoldingSpaceItem::Type::kScreenRecording,
+            is_gif ? HoldingSpaceItem::Type::kScreenRecordingGif
+                   : HoldingSpaceItem::Type::kScreenRecording,
             saved_video_file_path);
       }
     }
     DCHECK(!recording_start_time_.is_null());
     RecordCaptureModeRecordTime(
-        (base::TimeTicks::Now() - recording_start_time_).InSeconds(),
-        in_projector_mode);
+        (base::TimeTicks::Now() - recording_start_time_), in_projector_mode,
+        is_gif);
   }
   if (Shell::Get()->session_controller()->IsActiveUserSessionStarted())
     RecordSaveToLocation(GetSaveToOption(saved_video_file_path));
@@ -1324,8 +1339,7 @@ void CaptureModeController::ShowPreviewNotification(
     const gfx::Image& preview_image,
     const CaptureModeType type) {
   const bool for_video = type == CaptureModeType::kVideo;
-  const int title_id = for_video ? IDS_ASH_SCREEN_CAPTURE_RECORDING_TITLE
-                                 : IDS_ASH_SCREEN_CAPTURE_SCREENSHOT_TITLE;
+  const int title_id = GetNotificationTitleIdForFile(screen_capture_path);
   const int message_id = for_video && low_disk_space_threshold_reached_
                              ? IDS_ASH_SCREEN_CAPTURE_LOW_STORAGE_SPACE_MESSAGE
                              : IDS_ASH_SCREEN_CAPTURE_MESSAGE;
@@ -1343,9 +1357,7 @@ void CaptureModeController::ShowPreviewNotification(
   optional_fields.image_path = screen_capture_path;
 
   ShowNotification(
-      capture_mode_util::GetScreenCaptureNotificationIdForPath(
-          screen_capture_path),
-      title_id, message_id, optional_fields,
+      kScreenCaptureNotificationId, title_id, message_id, optional_fields,
       base::MakeRefCounted<message_center::HandleNotificationClickDelegate>(
           base::BindRepeating(&CaptureModeController::HandleNotificationClicked,
                               weak_ptr_factory_.GetWeakPtr(),
@@ -1394,9 +1406,7 @@ void CaptureModeController::HandleNotificationClicked(
   // to this function. The callback's state owns any passed-by-ref arguments,
   // such as |screen_capture_path| which we use in this function.
   message_center::MessageCenter::Get()->RemoveNotification(
-      capture_mode_util::GetScreenCaptureNotificationIdForPath(
-          screen_capture_path),
-      /*by_user=*/false);
+      kScreenCaptureNotificationId, /*by_user=*/false);
 }
 
 base::FilePath CaptureModeController::BuildImagePath() const {
@@ -1843,6 +1853,7 @@ void CaptureModeController::
   RecordCaptureModeEntryType(CaptureModeEntryType::kCaptureAllDisplays);
   RecordCaptureModeConfiguration(
       CaptureModeType::kImage, CaptureModeSource::kFullscreen,
+      recording_type_,  // This parameter will be ignored.
       /*audio_on=*/false, /*is_in_projector_mode=*/false);
 }
 

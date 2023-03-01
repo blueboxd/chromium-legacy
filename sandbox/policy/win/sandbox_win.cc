@@ -676,11 +676,14 @@ ResultCode GenerateConfigForSandboxedProcess(const base::CommandLine& cmd_line,
   }
 
 #if !defined(NACL_WIN64)
-  if (process_type == switches::kRendererProcess ||
-      process_type == switches::kPpapiPluginProcess ||
-      sandbox_type == Sandbox::kPrintCompositor) {
-    AddDirectory(base::DIR_WINDOWS_FONTS, NULL, true,
-                 Semantics::kFilesAllowReadonly, config);
+  if (base::FeatureList::IsEnabled(
+          sandbox::policy::features::kWinSboxAllowSystemFonts)) {
+    if (process_type == switches::kRendererProcess ||
+        process_type == switches::kPpapiPluginProcess ||
+        sandbox_type == Sandbox::kPrintCompositor) {
+      AddDirectory(base::DIR_WINDOWS_FONTS, NULL, true,
+                   Semantics::kFilesAllowReadonly, config);
+    }
   }
 #endif
 
@@ -1015,11 +1018,7 @@ ResultCode SandboxWin::StartSandboxedProcess(
                                 process);
   }
 
-  std::string tag;
-  if (base::FeatureList::IsEnabled(features::kSharedSandboxPolicies))
-    tag = delegate->GetSandboxTag();
-
-  auto policy = g_broker_services->CreatePolicy(tag);
+  auto policy = g_broker_services->CreatePolicy(delegate->GetSandboxTag());
   ResultCode result = GeneratePolicyForSandboxedProcess(
       cmd_line, process_type, handles_to_inherit, delegate, policy.get());
   if (SBOX_ALL_OK != result)

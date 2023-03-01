@@ -519,12 +519,6 @@ bool IsSubtreePrunedForAccessibility(const Element* node) {
       return true;
   }
 
-  if (const HTMLSlotElement* slot =
-          ToHTMLSlotElementIfSupportsAssignmentOrNull(node)) {
-    if (!AXObjectCacheImpl::IsRelevantSlotElement(*slot))
-      return true;
-  }
-
   // <optgroup> is irrelevant inside of a <select> menulist.
   if (auto* opt_group = DynamicTo<HTMLOptGroupElement>(node)) {
     if (auto* select = opt_group->OwnerSelectElement()) {
@@ -1133,57 +1127,6 @@ bool AXObjectCacheImpl::ShouldCreateAXMenuListFor(LayoutObject* layout_object) {
 }
 
 // static
-bool AXObjectCacheImpl::IsRelevantSlotElement(const HTMLSlotElement& slot) {
-  // A <slot> descendant of a node that is still in the DOM but no longer
-  // rendered will return true for Node::isConnected() and false for
-  // AXObject::IsDetached(). But from the perspective of platform ATs, this
-  // subtree is not connected and is detached unless it is canvas fallback
-  // content. In order to detect this condition, we look to the first non-slot
-  // parent. If it has a layout object, the <slot>'s contents are rendered.
-  // If it doesn't, but it's in the canvas subtree, those contents should be
-  // treated as canvas fallback content.
-  //
-  // The alternative way to determine whether the <slot> is still relevant for
-  // rendering is to iterate FlatTreeTraversal::Parent until you get to the last
-  // parent, and see if it's a document. If it is not a document, then it is not
-  // relevant. This seems much slower than just checking GetLayoutObject() as it
-  // needs to iterate the parent chain. However, checking GetLayoutObject()
-  // could produce null in the case of something that is
-  // content-visibility:auto. This means that any slotted content inside
-  // content-visibility:auto may be removed from the AX tree depending on
-  // whether it was recently rendered.
-  //
-  // TODO(accessibility) This fails for the web test
-  // detach-locked-slot-children-crash.html with --force-renderer-accessibility.
-  // See web_tests/FlagExpectations/force-renderer-accessibility.
-  // There should be a better way to accomplish this.
-  // Could a new function be added to the slot element?
-  const Node* parent = LayoutTreeBuilderTraversal::Parent(slot);
-  if (const HTMLSlotElement* parent_slot =
-          ToHTMLSlotElementIfSupportsAssignmentOrNull(parent)) {
-    return AXObjectCacheImpl::IsRelevantSlotElement(*parent_slot);
-  }
-
-  if (parent && parent->GetLayoutObject())
-    return true;
-
-  const Element* parent_element = DynamicTo<Element>(parent);
-  if (!parent_element)
-    return false;
-
-  // Authors can include elements as "Fallback content" inside a <canvas> in
-  // order to provide an alternative means to interact with the canvas using
-  // a screen reader. Those should always be included.
-  if (parent_element->IsInCanvasSubtree())
-    return true;
-
-  // LayoutObject::CreateObject() will not create an object for elements
-  // with display:contents. If we do not include a <slot> for that reason,
-  // any descendants will be not be included in the accessibility tree.
-  return parent_element->HasDisplayContentsStyle();
-}
-
-// static
 bool AXObjectCacheImpl::IsRelevantPseudoElement(const Node& node) {
   DCHECK(node.IsPseudoElement());
   if (!node.GetLayoutObject())
@@ -1615,6 +1558,15 @@ void AXObjectCacheImpl::Remove(LayoutObject* layout_object) {
     if (node->IsPseudoElement()) {
       DeferTreeUpdate(&AXObjectCacheImpl::EnsureMarkDirtyWithCleanLayout, node);
     }
+    // If an image is removed, ensure it's entire subtree is deleted as there
+    // may have been children supplied via a map.
+    if (IsA<HTMLImageElement>(node)) {
+      if (AXObject* ax_image = SafeGet(node)) {
+        RemoveSubtree(ax_image);
+        return;
+      }
+    }
+
     Remove(node);
     return;
   }
@@ -1675,6 +1627,14 @@ void AXObjectCacheImpl::Remove(AbstractInlineTextBox* inline_text_box) {
   inline_text_box_object_mapping_.erase(iter);
 
   Remove(ax_id);
+}
+
+void AXObjectCacheImpl::RemoveSubtree(AXObject* object) {
+  DCHECK(object);
+  for (AXObject* child : object->CachedChildrenIncludingIgnored()) {
+    RemoveSubtree(child);
+  }
+  Remove(object);
 }
 
 AXID AXObjectCacheImpl::GenerateAXID() const {
@@ -2095,12 +2055,25 @@ void AXObjectCacheImpl::UpdateCacheAfterNodeIsAttachedWithCleanLayout(
   // descendants of the attached node, thus ChildrenChangedWithCleanLayout()
   // must be called. It handles ignored logic, ensuring that the first ancestor
   // that should have this as a child will be updated.
-  ChildrenChangedWithCleanLayout(
-      Get(LayoutTreeBuilderTraversal::Parent(*node)));
+  ChildrenChangedWithCleanLayout(LayoutTreeBuilderTraversal::Parent(*node));
 
   // If an image map area is added, we need to update children on the image.
   if (IsA<HTMLAreaElement>(node))
     ChildrenChangedWithCleanLayout(AXObject::ComputeNonARIAParent(*this, node));
+
+  // Rare edge case: if an image is added, it could have changed the order of
+  // images with the same usemap in the document. Only the first image for a
+  // given <map> should have the <area> children. Therefore, get the current
+  // primary image before it's updated, and ensure its children are
+  // recalculated.
+  if (IsA<HTMLImageElement>(node)) {
+    if (HTMLMapElement* map = AXObject::GetMapForImage(node)) {
+      HTMLImageElement* primary_image_element = map->ImageElement();
+      if (node != primary_image_element) {
+        ChildrenChangedWithCleanLayout(SafeGet(primary_image_element));
+      }
+    }
+  }
 
   // Once we have reached the threshold number of roles that forces a data
   // table, invalidate the AXTable if it was previously a layout table, so that
@@ -3640,18 +3613,6 @@ AXObject* AXObjectCacheImpl::GetSerializationTarget(AXObject* obj) {
       !obj->GetDocument()->View() ||
       !obj->GetDocument()->View()->GetFrame().GetPage()) {
     return nullptr;
-  }
-
-  // A <slot> descendant of a node that is still in the DOM but no longer
-  // rendered will return true for Node::isConnected() and false for
-  // AXObject::IsDetached(). But from the perspective of platform ATs, this
-  // subtree is not connected and is detached.
-  // TODO(accessibility): The relevance check probably applies to all nodes
-  // not just slot elements.
-  if (const HTMLSlotElement* slot =
-          ToHTMLSlotElementIfSupportsAssignmentOrNull(obj->GetNode())) {
-    if (!AXObjectCacheImpl::IsRelevantSlotElement(*slot))
-      return nullptr;
   }
 
   // Ensure still in tree.

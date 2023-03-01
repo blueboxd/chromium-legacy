@@ -237,7 +237,6 @@
   'blink_web_tests': {
     'remove_from': [
       'Win10 Tests x64 (dbg)',
-      'mac-osxbeta-rel',
     ],
     'modifications': {
       'Linux Tests': {
@@ -494,6 +493,16 @@
           'shards': 8,
         },
       },
+      'mac-osxbeta-rel': {
+        'swarming': {
+          'dimension_sets': [
+            {
+              'gpu': None
+            }
+          ],
+          'shards': 10,
+        },
+      },
       'mac-rel-cft': {
         'swarming': {
           'dimension_sets': [
@@ -583,7 +592,6 @@
       'Win10 Tests x64 (dbg)',
       'devtools_frontend_linux_blink_light_rel',
       'devtools_frontend_linux_blink_light_rel_fastbuild',
-      'mac-osxbeta-rel',
     ],
     'modifications': {
       'Linux Tests': {
@@ -826,6 +834,16 @@
           'shards': 10,
         },
       },
+      'mac-osxbeta-rel': {
+        'swarming': {
+          'dimension_sets': [
+            {
+              'gpu': None
+            }
+          ],
+          'shards': 7,
+        },
+      },
       'mac-rel-cft': {
         'args': [
           '--driver-logging',
@@ -1020,6 +1038,11 @@
           '--test-launcher-filter-file=../../testing/buildbot/filters/mac.mac-rel.browser_tests.filter',
         ],
         'experiment_percentage': 100, # https://crbug.com/1251657
+      },
+      'Mac Builder Next': {
+        'swarming': {
+          'shards': 20,  # crbug.com/1419045
+        },
       },
       'Mac10.15 Tests': {
         # crbug.com/1042757
@@ -1509,6 +1532,7 @@
     ],
     'modifications': {
       'android-12-x64-rel': {
+        'ci_only': True,
         'args': [
           '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator_12.chrome_public_unit_test_apk.filter',
         ],
@@ -1547,16 +1571,6 @@
         },
       },
       'lacros-amd64-generic-chrome-skylab': {
-        'swarming': {
-          'dimension_sets': [
-            {
-              'cpu': 'x86-64',
-              'os': 'Ubuntu-18.04',
-            },
-          ],
-        },
-      },
-      'lacros-arm-generic-chrome': {
         'swarming': {
           'dimension_sets': [
             {
@@ -2738,9 +2752,6 @@
   },
   'lacros_all_tast_tests jacuzzi': {
     'modifications': {
-      'lacros-arm-generic-chrome': {
-        'experiment_percentage': 100,
-      },
       'lacros-arm-generic-rel': {
         'ci_only': True,
       },

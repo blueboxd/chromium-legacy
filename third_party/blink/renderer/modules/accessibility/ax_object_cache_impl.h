@@ -160,7 +160,7 @@ class MODULES_EXPORT AXObjectCacheImpl
   void Remove(Node*) override;
   void Remove(Document*) override;
   void Remove(AbstractInlineTextBox*) override;
-  void Remove(AXObject*);  // Calls more specific Remove methods as necessary.
+  void RemoveSubtree(AXObject* object);
 
   // For any ancestor that could contain the passed-in AXObject* in their cached
   // children, clear their children and set needs to update children on them.
@@ -338,8 +338,6 @@ class MODULES_EXPORT AXObjectCacheImpl
 
   bool InlineTextBoxAccessibilityEnabled();
 
-  void RemoveAXID(AXObject*);
-
   AXID GenerateAXID() const override;
 
   void AddAriaNotification(Node*,
@@ -422,7 +420,6 @@ class MODULES_EXPORT AXObjectCacheImpl
   static bool IsRelevantPseudoElement(const Node& node);
   static bool IsRelevantPseudoElementDescendant(
       const LayoutObject& layout_object);
-  static bool IsRelevantSlotElement(const HTMLSlotElement& slot);
 
   bool HasBeenDisposed() { return has_been_disposed_; }
 
@@ -522,8 +519,6 @@ class MODULES_EXPORT AXObjectCacheImpl
   // de-dupes extra object refreshes and ChildrenChanged() calls.
   void Invalidate(Document&, AXID);
 
-  void Remove(AXID);
-
  private:
   struct AXDirtyObject : public GarbageCollected<AXDirtyObject> {
     AXDirtyObject(AXObject* obj_arg,
@@ -559,11 +554,19 @@ class MODULES_EXPORT AXObjectCacheImpl
                           LayoutObject*,
                           AXObject* parent_if_known,
                           AXID use_axid = 0);
-  // Helpers for CreateAndInitIfRelevant() methods..
+  // Helpers for CreateAndInit().
   AXObject* CreateFromRenderer(LayoutObject*);
   AXObject* CreateFromNode(Node*);
 
   AXObject* CreateFromInlineTextBox(AbstractInlineTextBox*);
+
+  // Call Remove() when an AXObject should be removed from the cache.
+  // It will also notify the parent that its children have changed, so that the
+  // parent will recompute its children and be reserialized.
+  void Remove(AXObject*);
+  // These helpers not be called directly.
+  void Remove(AXID);
+  void RemoveAXID(AXObject*);
 
   mojo::Remote<mojom::blink::RenderAccessibilityHost>&
   GetOrCreateRemoteRenderAccessibilityHost();

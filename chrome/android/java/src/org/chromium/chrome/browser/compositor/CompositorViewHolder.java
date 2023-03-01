@@ -22,6 +22,7 @@ import android.view.MotionEvent;
 import android.view.PointerIcon;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewGroup.LayoutParams;
 import android.view.accessibility.AccessibilityEvent;
 import android.widget.FrameLayout;
 
@@ -104,9 +105,11 @@ public class CompositorViewHolder extends FrameLayout
                    ChromeAccessibilityUtil.Observer, TabObscuringHandler.Observer,
                    ViewGroup.OnHierarchyChangeListener {
     private static final long SYSTEM_UI_VIEWPORT_UPDATE_DELAY_MS = 500;
-    private static MutableFlagWithSafeDefault sDeferKeepScreenOnFlag =
+    private static final MutableFlagWithSafeDefault sDeferKeepScreenOnFlag =
             new MutableFlagWithSafeDefault(
                     ChromeFeatureList.DEFER_KEEP_SCREEN_ON_DURING_GESTURE, false);
+    private static final MutableFlagWithSafeDefault sDeferNotifyInMotion =
+            new MutableFlagWithSafeDefault(ChromeFeatureList.DEFER_NOTIFY_IN_MOTION, false);
     private Runnable mSetBackgroundRunnable;
 
     /**
@@ -206,11 +209,12 @@ public class CompositorViewHolder extends FrameLayout
      */
     private boolean mHasKeyboardGeometryChangeFired;
 
+    /**
+     * By default, the virtual keyboard overlays content, only resizing the visual viewport.
+     * Web content can use APIs that can change this to cause the WebContents to be resized.
+     */
     @VirtualKeyboardMode.EnumType
-    private int mVirtualKeyboardMode =
-            ChromeFeatureList.sOSKResizesVisualViewportByDefault.isEnabled()
-            ? VirtualKeyboardMode.RESIZES_VISUAL
-            : VirtualKeyboardMode.RESIZES_CONTENT;
+    private int mVirtualKeyboardMode = VirtualKeyboardMode.RESIZES_VISUAL;
 
     private OnscreenContentProvider mOnscreenContentProvider;
 
@@ -433,8 +437,7 @@ public class CompositorViewHolder extends FrameLayout
         // contents.
         //
         // [1] - https://developer.android.com/reference/android/view/WindowManager.LayoutParams.html#FLAG_FULLSCREEN
-        if (mShowingFullscreen
-                && (!ChromeFeatureList.sOSKResizesVisualViewportByDefault.isEnabled())
+        if (mShowingFullscreen && mVirtualKeyboardMode == VirtualKeyboardMode.RESIZES_CONTENT
                 && KeyboardVisibilityDelegate.getInstance().isKeyboardShowing(getContext(), this)) {
             getWindowVisibleDisplayFrame(mCacheRect);
 
@@ -754,7 +757,9 @@ public class CompositorViewHolder extends FrameLayout
             mInGesture = false;
             updateViewportSize();
         }
-        updateInMotion();
+        if (!sDeferNotifyInMotion.isEnabled()) {
+            updateInMotion();
+        }
     }
 
     private void updateInMotion() {
@@ -805,7 +810,16 @@ public class CompositorViewHolder extends FrameLayout
         updateLastActiveTouchEvent(e);
         updateIsInGesture(e);
         for (TouchEventObserver o : mTouchEventObservers) o.handleTouchEvent(e);
-        return super.dispatchTouchEvent(e);
+
+        // This is where input events go from android through native to the web content. This
+        // process is latency sensitive. Ideally observers that might be expensive, such as
+        // notifying in motion, should be done after this.
+        boolean handled = super.dispatchTouchEvent(e);
+
+        if (sDeferNotifyInMotion.isEnabled()) {
+            updateInMotion();
+        }
+        return handled;
     }
 
     private void updateLastActiveTouchEvent(MotionEvent e) {
@@ -947,10 +961,7 @@ public class CompositorViewHolder extends FrameLayout
         if (mPrefService.getBoolean(Pref.VIRTUAL_KEYBOARD_RESIZES_LAYOUT_BY_DEFAULT)) {
             return VirtualKeyboardMode.RESIZES_CONTENT;
         }
-        if (ChromeFeatureList.sOSKResizesVisualViewportByDefault.isEnabled()) {
-            return VirtualKeyboardMode.RESIZES_VISUAL;
-        }
-        return VirtualKeyboardMode.RESIZES_CONTENT;
+        return VirtualKeyboardMode.RESIZES_VISUAL;
     }
 
     private boolean oskResizesVisualViewport() {

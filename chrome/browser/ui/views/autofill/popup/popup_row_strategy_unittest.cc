@@ -110,9 +110,7 @@ class PopupRowStrategyTest : public ChromeViewsTestBase {
   void TestContentCallbacks(const PopupCellView& cell, int index) {
     base::RepeatingClosure on_accept_callback = cell.GetOnAcceptedCallback();
     ASSERT_TRUE(on_accept_callback);
-    EXPECT_CALL(
-        controller(),
-        AcceptSuggestion(index, /*show_threshold=*/base::Milliseconds(500)));
+    EXPECT_CALL(controller(), AcceptSuggestion(index));
     on_accept_callback.Run();
 
     base::RepeatingClosure on_select_callback = cell.GetOnSelectedCallback();
@@ -170,9 +168,13 @@ TEST_F(PopupRowStrategyTest, AutocompleteDeleteButtonRemovesEntry) {
 TEST_F(PopupRowStrategyTest, AutocompleteDeleteButtonSetsAccessibility) {
   base::test::ScopedFeatureList feature_list{
       features::kAutofillShowAutocompleteDeleteButton};
-  SetSuggestions({POPUP_ITEM_ID_AUTOCOMPLETE_ENTRY,
-                  POPUP_ITEM_ID_AUTOCOMPLETE_ENTRY,
-                  POPUP_ITEM_ID_AUTOCOMPLETE_ENTRY});
+  // Set the suggestion manually to check that the correct voice over text is
+  // returned.
+  controller().set_suggestions(
+      {Suggestion("Jane Doe", "", "", "", POPUP_ITEM_ID_AUTOCOMPLETE_ENTRY),
+       Suggestion("John Miller", "", "", "", POPUP_ITEM_ID_AUTOCOMPLETE_ENTRY),
+       Suggestion("Lori Smith", "", "", "", POPUP_ITEM_ID_AUTOCOMPLETE_ENTRY)});
+
   std::unique_ptr<PopupRowStrategy> strategy =
       CreateStrategy(StrategyType::kSuggestion, /*line_number=*/1);
 
@@ -183,6 +185,10 @@ TEST_F(PopupRowStrategyTest, AutocompleteDeleteButtonSetsAccessibility) {
   cell->GetAccessibleNodeData(&node_data);
 
   EXPECT_EQ(node_data.role, ax::mojom::Role::kButton);
+  EXPECT_EQ(l10n_util::GetStringFUTF16(
+                IDS_AUTOFILL_DELETE_AUTOCOMPLETE_SUGGESTION_A11Y_HINT,
+                u"John Miller"),
+            node_data.GetString16Attribute(ax::mojom::StringAttribute::kName));
 }
 
 TEST_F(PopupRowStrategyTest, AutocompleteDeleteButtonHasTooltip) {

@@ -82,6 +82,12 @@ BASE_FEATURE(kOmniboxRemoveExcessiveRecycledViewClearCalls,
              "OmniboxRemoveExcessiveRecycledViewClearCalls",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
+// Determines which are culled when both tail and history cluster suggestions
+// are available. See `MaybeCullTailSuggestions()`.
+BASE_FEATURE(kPreferTailOverHistoryClusterSuggestions,
+             "OmniboxPreferTailOverHistoryClusterSuggestions",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // Feature to tweak how the default suggestion is preserved. Feature params
 // control which tweaks specifically are enabled. Enabling this feature without
 // params is a no-op.
@@ -423,6 +429,12 @@ BASE_FEATURE(kOmniboxAssistantVoiceSearch,
 // match GM3 guidelines.
 BASE_FEATURE(kOmniboxSteadyStateHeight,
              "OmniboxSteadyStateHeight",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// If enabled, switching tabs will not restore the omnibox state.
+// TODO(manukh): Should also blur the omnibox on tab switch.
+BASE_FEATURE(kDiscardTemporaryInputOnTabSwitch,
+             "OmniboxDiscardTemporaryInputOnTabSwitch",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 BASE_FEATURE(kClosePopupWithEscape,

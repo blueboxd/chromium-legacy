@@ -36,14 +36,12 @@ void AddMaterialUiColorMixer(ColorProvider* provider,
   mixer[kColorButtonBorder] = {kColorSysOutline};
   mixer[kColorButtonBorderDisabled] = {kColorSysStateDisabled};
   mixer[kColorButtonForeground] = {kColorSysOnSurfacePrimary};
-  mixer[kColorButtonForegroundChecked] = {kColorButtonForeground};
   mixer[kColorButtonForegroundDisabled] = {kColorSysStateDisabled};
   mixer[kColorButtonForegroundProminent] = {kColorSysOnPrimary};
-  mixer[kColorButtonForegroundUnchecked] = {kColorSysOnSurfaceVariant};
   mixer[kColorCheckboxBackgroundDisabled] = {kColorSysStateDisabledContainer};
   mixer[kColorCheckboxForegroundChecked] = {kColorSysOnSurfacePrimary};
   mixer[kColorCheckboxForegroundDisabled] = {kColorSysStateDisabled};
-  mixer[kColorCheckboxForegroundUnchecked] = {kColorSysOnSurfaceVariant};
+  mixer[kColorCheckboxForegroundUnchecked] = {kColorSysOutline};
   mixer[kColorComboboxBackground] = {kColorSysSurface};
   mixer[kColorComboboxBackgroundDisabled] = {GetResultingPaintColor(
       {kColorSysStateDisabledContainer}, {kColorComboboxBackground})};
@@ -52,6 +50,10 @@ void AddMaterialUiColorMixer(ColorProvider* provider,
   mixer[kColorFrameActive] = {kColorSysHeader};
   mixer[kColorFrameActiveUnthemed] = {kColorSysHeader};
   mixer[kColorFrameInactive] = {kColorSysHeaderInactive};
+  mixer[kColorRadioButtonForegroundChecked] = {kColorSysOnSurfacePrimary};
+  mixer[kColorRadioButtonForegroundDisabled] = {
+      kColorSysStateDisabledContainer};
+  mixer[kColorRadioButtonForegroundUnchecked] = {kColorSysOutline};
   mixer[kColorSliderThumb] = {kColorSysPrimary};
   mixer[kColorSliderThumbMinimal] = {kColorSysSecondary};
   mixer[kColorSliderTrack] = {kColorSysOnPrimary};
@@ -65,11 +67,13 @@ void AddMaterialUiColorMixer(ColorProvider* provider,
   mixer[kColorTextfieldForegroundDisabled] = {kColorSysStateDisabled};
   mixer[kColorTextfieldForegroundPlaceholder] = {kColorSysOnSurface};
   mixer[kColorTextfieldInvalidOutline] = {kColorTextfieldForegroundInvalid};
+  mixer[kColorTextfieldSelectionBackground] = {kColorSysTonalContainer};
   mixer[kColorToggleButtonShadow] = {kColorSysOutline};
   mixer[kColorToggleButtonThumbOff] = {kColorSysOutline};
   mixer[kColorToggleButtonThumbOffDisabled] = {kColorSysStateDisabled};
   mixer[kColorToggleButtonThumbOn] = {kColorSysOnPrimary};
   mixer[kColorToggleButtonThumbOnDisabled] = {kColorSysSurface};
+  mixer[kColorToggleButtonThumbOnHoverPressed] = {kColorSysPrimaryContainer};
   mixer[kColorToggleButtonThumbOnIcon] = {kColorSysOnPrimaryContainer};
   mixer[kColorToggleButtonTrackOff] = {kColorSysSurfaceVariant};
   mixer[kColorToggleButtonTrackOn] = {kColorSysPrimary};

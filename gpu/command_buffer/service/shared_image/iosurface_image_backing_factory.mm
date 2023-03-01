@@ -111,7 +111,8 @@ constexpr uint32_t kSupportedUsage =
     SHARED_IMAGE_USAGE_WEBGPU_SWAP_CHAIN_TEXTURE |
     SHARED_IMAGE_USAGE_MACOS_VIDEO_TOOLBOX |
     SHARED_IMAGE_USAGE_RASTER_DELEGATED_COMPOSITING |
-    SHARED_IMAGE_USAGE_HIGH_PERFORMANCE_GPU;
+    SHARED_IMAGE_USAGE_HIGH_PERFORMANCE_GPU |
+    SHARED_IMAGE_USAGE_WEBGPU_STORAGE_TEXTURE;
 
 }  // anonymous namespace
 
@@ -236,9 +237,7 @@ bool IOSurfaceImageBackingFactory::IsSupported(
   if (gmb_type == gfx::SHARED_MEMORY_BUFFER) {
     return false;
   }
-  if (usage & SHARED_IMAGE_USAGE_CPU_UPLOAD) {
-    return false;
-  }
+
   // On macOS, there is no separate interop factory. Any GpuMemoryBuffer-backed
   // image can be used with both OpenGL and Metal
 

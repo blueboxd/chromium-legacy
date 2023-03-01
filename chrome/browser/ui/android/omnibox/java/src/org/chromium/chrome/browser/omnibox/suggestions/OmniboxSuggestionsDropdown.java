@@ -54,7 +54,6 @@ public class OmniboxSuggestionsDropdown extends RecyclerView {
     private final int mStandardBgColor;
     private final int mIncognitoBgColor;
 
-    private final int[] mTempPosition = new int[2];
     private final Rect mTempRect = new Rect();
     private final SuggestionLayoutScrollListener mLayoutScrollListener;
 
@@ -566,18 +565,30 @@ public class OmniboxSuggestionsDropdown extends RecyclerView {
     private void onOmniboxAlignmentChanged(@NonNull OmniboxAlignment omniboxAlignment) {
         boolean isOnlyHorizontalDifference =
                 omniboxAlignment.isOnlyHorizontalDifference(mOmniboxAlignment);
+        boolean isWidthDifference = omniboxAlignment.doesWidthDiffer(mOmniboxAlignment);
         mOmniboxAlignment = omniboxAlignment;
         if (isOnlyHorizontalDifference) {
             adjustHorizontalPosition();
-        } else {
-            ViewUtils.requestLayout(OmniboxSuggestionsDropdown.this,
-                    "OmniboxSuggestionsDropdown.onOmniboxAlignmentChanged");
+            return;
+        } else if (isWidthDifference) {
+            // If our width has changed, we may have views in our pool that are now the wrong width.
+            // Recycle them by calling swapAdapter() to avoid showing views of the wrong size.
+            swapAdapter(mAdapter, true);
         }
+        ViewUtils.requestLayout(OmniboxSuggestionsDropdown.this,
+                "OmniboxSuggestionsDropdown.onOmniboxAlignmentChanged");
     }
 
     private void adjustHorizontalPosition() {
-        setPadding(mOmniboxAlignment.paddingLeft, getPaddingTop(), mOmniboxAlignment.paddingRight,
-                getPaddingBottom());
+        if (OmniboxFeatures.shouldShowModernizeVisualUpdate(getContext())) {
+            // Set our left edge using translation x. This avoids needing to relayout (like setting
+            // a left margin would) and is less risky than calling View#setLeft(), which is intended
+            // for use by the layout system.
+            setTranslationX(mOmniboxAlignment.left);
+        } else {
+            setPadding(mOmniboxAlignment.paddingLeft, getPaddingTop(),
+                    mOmniboxAlignment.paddingRight, getPaddingBottom());
+        }
     }
 
     public void emitWindowContentChanged() {

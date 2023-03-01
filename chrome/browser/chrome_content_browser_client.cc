@@ -405,6 +405,7 @@
 #include "chrome/browser/ash/system/input_device_settings.h"
 #include "chrome/browser/ash/system_extensions/system_extensions_profile_utils.h"
 #include "chrome/browser/ash/system_extensions/system_extensions_provider.h"
+#include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/browser/speech/tts_chromeos.h"
 #include "chrome/browser/ui/ash/chrome_browser_main_extra_parts_ash.h"
 #include "chrome/browser/ui/ash/system_web_apps/system_web_app_ui_utils.h"
@@ -1524,7 +1525,21 @@ void HandleStringData(
 
 #endif
 
+std::unique_ptr<blocked_content::PopupNavigationDelegate>
+CreatePopupNavigationDelegate(NavigateParams params) {
+  return std::make_unique<ChromePopupNavigationDelegate>(std::move(params));
+}
+
+ChromeContentBrowserClient::PopupNavigationDelegateFactory
+    g_popup_navigation_delegate_factory = &CreatePopupNavigationDelegate;
+
 }  // namespace
+
+// static
+ChromeContentBrowserClient::PopupNavigationDelegateFactory&
+ChromeContentBrowserClient::GetPopupNavigationDelegateFactoryForTesting() {
+  return g_popup_navigation_delegate_factory;
+}
 
 ChromeContentBrowserClient::ChromeContentBrowserClient() {
 #if BUILDFLAG(ENABLE_PLUGINS)
@@ -2361,7 +2376,7 @@ void ChromeContentBrowserClient::SiteInstanceGotProcess(
     InstantService* instant_service =
         InstantServiceFactory::GetForProfile(profile);
     if (instant_service)
-      instant_service->AddInstantProcess(site_instance->GetProcess()->GetID());
+      instant_service->AddInstantProcess(site_instance->GetProcess());
   }
 #endif
 
@@ -2529,12 +2544,12 @@ void MaybeAppendBlinkSettingsSwitchForFieldTrial(
     // to make sure that clients that specify the blink-settings flag on the
     // command line are excluded from the experiment groups. To make
     // sure we assign clients that specify this flag to the forcing_flag
-    // group, we must call GetVariationParams for each field trial first
+    // group, we must call GetFieldTrialParams for each field trial first
     // (for example, before checking HasSwitch() and returning), since
-    // GetVariationParams has the side-effect of assigning the client to
+    // GetFieldTrialParams has the side-effect of assigning the client to
     // a field trial group.
     std::map<std::string, std::string> params;
-    if (variations::GetVariationParams(field_trial_name, &params)) {
+    if (base::GetFieldTrialParams(field_trial_name, &params)) {
       for (const auto& param : params) {
         blink_settings.push_back(base::StringPrintf(
             "%s=%s", param.first.c_str(), param.second.c_str()));
@@ -3463,7 +3478,7 @@ std::string ChromeContentBrowserClient::GetGeolocationApiKey() {
 
 device::GeolocationManager*
 ChromeContentBrowserClient::GetGeolocationManager() {
-#if BUILDFLAG(IS_MAC)
+#if PLATFORM_REQUIRES_SINGLETON_GEOPOSITION_OBSERVER
   return g_browser_process->platform_part()->geolocation_manager();
 #else
   return nullptr;
@@ -3852,8 +3867,7 @@ bool ChromeContentBrowserClient::CanCreateWindow(
   return !blocked_content::ConsiderForPopupBlocking(disposition) ||
          blocked_content::MaybeBlockPopup(
              web_contents, &opener_top_level_frame_url,
-             std::make_unique<ChromePopupNavigationDelegate>(
-                 std::move(nav_params)),
+             (*g_popup_navigation_delegate_factory)(std::move(nav_params)),
              nullptr /*=open_url_params*/, blocked_params.features(),
              HostContentSettingsMapFactory::GetForProfile(profile)) != nullptr;
 }
@@ -7442,14 +7456,16 @@ bool ChromeContentBrowserClient::OpenExternally(
 
   // If Lacros is the only browser, we intercept any WebUI URLs that would be
   // opened in a regular browser window. We open these with the OsUrlHandler SWA
-  // instead, which will load them in an app window.
-  bool should_open_in_ash_app =
+  // instead, which will load them in an app window (no navigation bar).
+  bool open_with_os_url_handler =
       from_webui && !crosapi::browser_util::IsAshWebBrowserEnabled() &&
+      // Kiosk sessions don't support SWA and already hide the navigation bar.
+      !profiles::IsKioskSession() &&
       // Terminal's tabs must remain in the Terminal SWA.
       !url.SchemeIs(content::kChromeUIUntrustedScheme) &&
       ChromeWebUIControllerFactory::GetInstance()->CanHandleUrl(url) &&
       !ash::GetCapturingSystemAppForURL(profile, url);
-  if (should_open_in_ash_app) {
+  if (open_with_os_url_handler) {
     ash::SystemAppLaunchParams launch_params;
     launch_params.url = url;
     int64_t display_id =
@@ -7502,8 +7518,12 @@ bool ChromeContentBrowserClient::IsFileSystemURLNavigationAllowed(
   // host() is the extension-id
   const url::Origin origin = url::Origin::Create(url);
   if (origin.scheme() == extensions::kExtensionScheme) {
-    const std::string& extension_id = origin.host();
-    return extensions::util::IsChromeApp(extension_id, browser_context);
+    const Extension* extension =
+        extensions::ExtensionRegistry::Get(browser_context)
+            ->enabled_extensions()
+            .GetByID(origin.host());
+    DCHECK(extension);
+    return extension->is_platform_app();
   }
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
   return false;

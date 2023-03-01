@@ -670,14 +670,6 @@ class BASE_EXPORT GSL_OWNER Value {
 
   // ===== DEPRECATED methods that require `type() == Type::DICT` =====
 
-  // `FindKey` looks up `key` in the underlying dictionary. If found, it returns
-  // a pointer to the element. Otherwise it returns nullptr.
-  //
-  // DEPRECATED: prefer `Value::Dict::Find()`.
-  // TODO(https://crbug.com/1406815): Remove this API.
-  Value* FindKey(StringPiece key);
-  const Value* FindKey(StringPiece key) const;
-
   // `FindKeyOfType` is similar to `FindKey`, but it also requires the found
   // value to have type `type`. If no type is found, or the found value is of a
   // different type nullptr is returned.
@@ -746,14 +738,6 @@ class BASE_EXPORT GSL_OWNER Value {
   //
   // Deprecated: Prefer `Value::Dict::Remove()`.
   bool RemoveKey(StringPiece key);
-
-  // This attempts to extract the value associated with `key`. In case of
-  // failure, e.g. the key does not exist, nullopt is returned and the
-  // underlying dictionary is not changed. In case of success, `key` is deleted
-  // from the dictionary and the method returns the extracted Value.
-  //
-  // DEPRECATED: Prefer `Value::Dict::Extract()`.
-  absl::optional<Value> ExtractKey(StringPiece key);
 
   // Searches a hierarchy of dictionary values for a given value. If a path
   // of dictionaries exist, returns the item at that path. If any of the path
@@ -870,17 +854,6 @@ class BASE_EXPORT GSL_OWNER Value {
 
   // DEPRECATED: prefer `Value::Dict::empty()`.
   bool DictEmpty() const;
-
-  // Merge `dictionary` into this value. This is done recursively, i.e. any
-  // sub-dictionaries will be merged as well. In case of key collisions, the
-  // passed in dictionary takes precedence and data already present will be
-  // replaced. Values within `dictionary` are deep-copied, so `dictionary` may
-  // be freed any time after this call.
-  // Note: This requires that `type()` and `dictionary->type()` is
-  // Type::DICT.
-  //
-  // DEPRECATED: prefer `Value::Dict::Merge()`.
-  void MergeDictionary(const Value* dictionary);
 
   // Note: Do not add more types. See the file-level comment above for why.
 

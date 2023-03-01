@@ -1485,8 +1485,6 @@ class CORE_EXPORT Document : public ContainerNode,
 
   int RequestAnimationFrame(FrameCallback*);
   void CancelAnimationFrame(int id);
-  void ServiceScriptedAnimations(base::TimeTicks monotonic_animation_start_time,
-                                 bool can_throttle = false);
 
   int RequestIdleCallback(IdleTask*, const IdleRequestOptions*);
   void CancelIdleCallback(int id);
@@ -1547,12 +1545,14 @@ class CORE_EXPORT Document : public ContainerNode,
 
   HTMLDialogElement* ActiveModalDialog() const;
 
+  HTMLElement* PopoverHintShowing() const { return popover_hint_showing_; }
+  void SetPopoverHintShowing(HTMLElement* element);
   HeapVector<Member<HTMLElement>>& PopoverStack() { return popover_stack_; }
   const HeapVector<Member<HTMLElement>>& PopoverStack() const {
     return popover_stack_;
   }
   bool PopoverAutoShowing() const { return !popover_stack_.empty(); }
-  HTMLElement* TopmostPopover() const;
+  HTMLElement* TopmostPopoverOrHint() const;
   HeapHashSet<Member<HTMLElement>>& PopoversWaitingToHide() {
     return popovers_waiting_to_hide_;
   }
@@ -2427,6 +2427,8 @@ class CORE_EXPORT Document : public ContainerNode,
   // The stack of currently-displayed `popover=auto` elements. Elements in the
   // stack go from earliest (bottom-most) to latest (top-most).
   HeapVector<Member<HTMLElement>> popover_stack_;
+  // The `popover=hint` that is currently showing, if any.
+  Member<HTMLElement> popover_hint_showing_;
   // The popover (if any) that received the most recent pointerdown event.
   Member<const HTMLElement> popover_pointerdown_target_;
   // A set of popovers for which hidePopover() has been called, but animations

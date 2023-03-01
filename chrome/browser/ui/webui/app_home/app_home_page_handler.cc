@@ -70,7 +70,7 @@ namespace webapps {
 
 namespace {
 
-const int kWebAppIconSize = 128;
+const int kWebAppIconSize = 64;
 
 // The Youtube app is incorrectly hardcoded to be a 'bookmark app'. However, it
 // is a platform app.
@@ -405,11 +405,10 @@ void AppHomePageHandler::FillWebAppInfoList(
 void AppHomePageHandler::FillExtensionInfoList(
     std::vector<app_home::mojom::AppInfoPtr>* result) {
   ExtensionRegistry* registry = ExtensionRegistry::Get(profile_);
-  std::unique_ptr<ExtensionSet> extension_apps =
-      registry->GenerateInstalledExtensionsSet(ExtensionRegistry::ENABLED |
-                                               ExtensionRegistry::DISABLED |
-                                               ExtensionRegistry::TERMINATED);
-  for (const auto& extension : *extension_apps) {
+  const ExtensionSet extension_apps = registry->GenerateInstalledExtensionsSet(
+      ExtensionRegistry::ENABLED | ExtensionRegistry::DISABLED |
+      ExtensionRegistry::TERMINATED);
+  for (const auto& extension : extension_apps) {
     if (!extensions::ui_util::ShouldDisplayInNewTabPage(extension.get(),
                                                         profile_) ||
         extension->id() == extensions::kWebStoreAppId) {

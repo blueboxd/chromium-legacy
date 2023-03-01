@@ -128,6 +128,11 @@ public abstract class PartialCustomTabBaseStrategy
 
         mHandleStrategyFactory = handleStrategyFactory;
         mIsFullscreen = fullscreenManager::getPersistentFullscreenMode;
+
+        // Initialize size info used for resize callback to skip the very first one that settles
+        // down to the initial height/width.
+        mHeight = MATCH_PARENT;
+        mWidth = MATCH_PARENT;
     }
 
     @Override
@@ -194,8 +199,8 @@ public abstract class PartialCustomTabBaseStrategy
         attrs.y = 0;
         attrs.x = 0;
         mActivity.getWindow().setAttributes(attrs);
-        mOnResizedCallback.onResized(
-                mVersionCompat.getDisplayHeight(), mVersionCompat.getDisplayWidth());
+        updateShadowOffset();
+        maybeInvokeResizeCallback();
     }
 
     @Override
@@ -203,9 +208,24 @@ public abstract class PartialCustomTabBaseStrategy
         // |mNavbarHeight| is zero now. Post the task instead.
         new Handler().post(() -> {
             initializeSize();
-            var attrs = mActivity.getWindow().getAttributes();
-            mOnResizedCallback.onResized(attrs.height, attrs.width);
+            updateShadowOffset();
+            maybeInvokeResizeCallback();
         });
+    }
+
+    protected void maybeInvokeResizeCallback() {
+        WindowManager.LayoutParams attrs = mActivity.getWindow().getAttributes();
+        if (isFullHeight() || isFullscreen()) {
+            mOnResizedCallback.onResized(mDisplayHeight, mDisplayWidth);
+            mHeight = mDisplayHeight;
+            mWidth = mDisplayWidth;
+        } else {
+            if ((mHeight != attrs.height && mHeight > 0) || (mWidth != attrs.width && mWidth > 0)) {
+                mOnResizedCallback.onResized(attrs.height, attrs.width);
+            }
+            mHeight = attrs.height;
+            mWidth = attrs.width;
+        }
     }
 
     @PartialCustomTabType
@@ -265,7 +285,7 @@ public abstract class PartialCustomTabBaseStrategy
     }
 
     protected void updateShadowOffset() {
-        if (isFullHeight() || mDrawOutlineShadow || shouldHaveNoShadowOffset()) {
+        if (isFullHeight() || isFullscreen() || mDrawOutlineShadow || shouldHaveNoShadowOffset()) {
             mShadowOffset = 0;
         } else {
             mShadowOffset = mActivity.getResources().getDimensionPixelSize(
@@ -413,5 +433,10 @@ public abstract class PartialCustomTabBaseStrategy
     int getTopMarginForTesting() {
         var mlp = (ViewGroup.MarginLayoutParams) mToolbarCoordinator.getLayoutParams();
         return mlp.topMargin;
+    }
+
+    @VisibleForTesting
+    int getShadowOffsetForTesting() {
+        return mShadowOffset;
     }
 }

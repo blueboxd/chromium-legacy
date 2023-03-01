@@ -35,6 +35,7 @@
 #include "net/base/privacy_mode.h"
 #include "net/base/url_util.h"
 #include "net/cert/signed_certificate_timestamp_and_status.h"
+#include "net/dns/public/host_resolver_results.h"
 #include "net/http/transport_security_state.h"
 #include "net/log/net_log_event_type.h"
 #include "net/log/net_log_source_type.h"
@@ -188,23 +189,23 @@ void RecordConnectionCloseErrorCode(const quic::QuicConnectionCloseFrame& frame,
   }
 }
 
-base::Value NetLogQuicMigrationFailureParams(
+base::Value::Dict NetLogQuicMigrationFailureParams(
     quic::QuicConnectionId connection_id,
     base::StringPiece reason) {
   base::Value::Dict dict;
   dict.Set("connection_id", connection_id.ToString());
   dict.Set("reason", reason);
-  return base::Value(std::move(dict));
+  return dict;
 }
 
-base::Value NetLogQuicMigrationSuccessParams(
+base::Value::Dict NetLogQuicMigrationSuccessParams(
     quic::QuicConnectionId connection_id) {
   base::Value::Dict dict;
   dict.Set("connection_id", connection_id.ToString());
-  return base::Value(std::move(dict));
+  return dict;
 }
 
-base::Value NetLogProbingResultParams(
+base::Value::Dict NetLogProbingResultParams(
     handles::NetworkHandle network,
     const quic::QuicSocketAddress* peer_address,
     bool is_success) {
@@ -212,15 +213,15 @@ base::Value NetLogProbingResultParams(
   dict.Set("network", base::NumberToString(network));
   dict.Set("peer address", peer_address->ToString());
   dict.Set("is_success", is_success);
-  return base::Value(std::move(dict));
+  return dict;
 }
 
-base::Value NetLogAcceptChFrameReceivedParams(
+base::Value::Dict NetLogAcceptChFrameReceivedParams(
     spdy::AcceptChOriginValuePair entry) {
   base::Value::Dict dict;
   dict.Set("origin", entry.origin);
   dict.Set("accept_ch", entry.value);
-  return base::Value(std::move(dict));
+  return dict;
 }
 
 // Histogram for recording the different reasons that a QUIC session is unable
@@ -289,7 +290,7 @@ std::string MigrationCauseToString(MigrationCause cause) {
   return "InvalidCause";
 }
 
-base::Value NetLogQuicClientSessionParams(
+base::Value::Dict NetLogQuicClientSessionParams(
     const QuicSessionKey* session_key,
     const quic::QuicConnectionId& connection_id,
     const quic::QuicConnectionId& client_connection_id,
@@ -310,10 +311,10 @@ base::Value NetLogQuicClientSessionParams(
     dict.Set("client_connection_id", client_connection_id.ToString());
   }
   dict.Set("versions", ParsedQuicVersionVectorToString(supported_versions));
-  return base::Value(std::move(dict));
+  return dict;
 }
 
-base::Value NetLogQuicPushPromiseReceivedParams(
+base::Value::Dict NetLogQuicPushPromiseReceivedParams(
     const spdy::Http2HeaderBlock* headers,
     spdy::SpdyStreamId stream_id,
     spdy::SpdyStreamId promised_stream_id,
@@ -322,7 +323,7 @@ base::Value NetLogQuicPushPromiseReceivedParams(
   dict.Set("headers", ElideHttp2HeaderBlockForNetLog(*headers, capture_mode));
   dict.Set("id", static_cast<int>(stream_id));
   dict.Set("promised_stream_id", static_cast<int>(promised_stream_id));
-  return base::Value(std::move(dict));
+  return dict;
 }
 
 // TODO(fayang): Remove this when necessary data is collected.
@@ -998,6 +999,7 @@ QuicChromiumClientSession::QuicChromiumClientSession(
     const base::TickClock* tick_clock,
     base::SequencedTaskRunner* task_runner,
     std::unique_ptr<SocketPerformanceWatcher> socket_performance_watcher,
+    const HostResolverEndpointResult& endpoint_result,
     NetLog* net_log)
     : quic::QuicSpdyClientSessionBase(connection,
                                       /*visitor=*/nullptr,
@@ -1040,7 +1042,8 @@ QuicChromiumClientSession::QuicChromiumClientSession(
       http3_logger_(std::make_unique<QuicHttp3Logger>(net_log_)),
       push_delegate_(push_delegate),
       push_promise_index_(std::move(push_promise_index)),
-      path_validation_writer_delegate_(this, task_runner_) {
+      path_validation_writer_delegate_(this, task_runner_),
+      ech_config_list_(endpoint_result.metadata.ech_config_list) {
   default_network_ = default_network;
   auto* socket_raw = socket.get();
   sockets_.push_back(std::move(socket));
@@ -1440,6 +1443,7 @@ bool QuicChromiumClientSession::GetSSLInfo(SSLInfo* ssl_info) const {
 
   ssl_info->key_exchange_group = crypto_params.key_exchange_group;
   ssl_info->peer_signature_algorithm = crypto_params.peer_signature_algorithm;
+  ssl_info->encrypted_client_hello = crypto_params.encrypted_client_hello;
   return true;
 }
 
@@ -1651,6 +1655,18 @@ void QuicChromiumClientSession::OnCanCreateNewOutgoingStream(
         CreateOutgoingReliableStreamImpl(request->traffic_annotation())
             ->CreateHandle());
   }
+}
+
+quic::QuicSSLConfig QuicChromiumClientSession::GetSSLConfig() const {
+  quic::QuicSSLConfig config = quic::QuicSpdyClientSessionBase::GetSSLConfig();
+  if (ssl_config_service_->GetSSLContextConfig()
+          .EncryptedClientHelloEnabled() &&
+      base::FeatureList::IsEnabled(features::kEncryptedClientHelloQuic)) {
+    config.ech_grease_enabled = true;
+    config.ech_config_list.assign(ech_config_list_.begin(),
+                                  ech_config_list_.end());
+  }
+  return config;
 }
 
 void QuicChromiumClientSession::OnConfigNegotiated() {
@@ -3458,7 +3474,7 @@ void QuicChromiumClientSession::HistogramAndLogMigrationSuccess(
   LogMigrationResultToHistogram(MIGRATION_STATUS_SUCCESS);
 }
 
-base::Value QuicChromiumClientSession::GetInfoAsValue(
+base::Value::Dict QuicChromiumClientSession::GetInfoAsValue(
     const std::set<HostPortPair>& aliases) {
   base::Value::Dict dict;
   dict.Set("version", ParsedQuicVersionToString(connection()->version()));
@@ -3498,7 +3514,7 @@ base::Value QuicChromiumClientSession::GetInfoAsValue(
   }
   dict.Set("aliases", std::move(alias_list));
 
-  return base::Value(std::move(dict));
+  return dict;
 }
 
 bool QuicChromiumClientSession::gquic_zero_rtt_disabled() const {

@@ -57,6 +57,14 @@ extern const char kDeviceWiFiFastTransitionEnabled[];
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const char kInputNoiseCancellationEnabled[];
 COMPONENT_EXPORT(ASH_CONSTANTS)
+extern const char kMultitaskMenuNudgeClamshellShownCount[];
+COMPONENT_EXPORT(ASH_CONSTANTS)
+extern const char kMultitaskMenuNudgeTabletShownCount[];
+COMPONENT_EXPORT(ASH_CONSTANTS)
+extern const char kMultitaskMenuNudgeClamshellLastShown[];
+COMPONENT_EXPORT(ASH_CONSTANTS)
+extern const char kMultitaskMenuNudgeTabletLastShown[];
+COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const char kSamlPasswordModifiedTime[];
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const char kSamlPasswordExpirationTime[];
@@ -631,6 +639,32 @@ COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kMouseScrollSensitivity[];
 
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kMouseScrollAcceleration[];
 
+COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kTouchpadSensitivity[];
+
+COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kTouchpadAcceleration[];
+
+COMPONENT_EXPORT(ASH_CONSTANTS)
+extern const char kEnableTouchpadThreeFingerClick[];
+
+COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kTapToClickEnabled[];
+
+COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kTouchpadScrollSensitivity[];
+
+COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kTouchpadScrollAcceleration[];
+
+COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kTouchpadHapticFeedback[];
+
+COMPONENT_EXPORT(ASH_CONSTANTS)
+extern const char kTouchpadHapticClickSensitivity[];
+
+COMPONENT_EXPORT(ASH_CONSTANTS)
+extern const char kPointingStickSensitivity[];
+
+COMPONENT_EXPORT(ASH_CONSTANTS)
+extern const char kPrimaryPointingStickButtonRight[];
+
+COMPONENT_EXPORT(ASH_CONSTANTS)
+extern const char kPointingStickAcceleration[];
 }  // namespace prefs
 }  // namespace ash
 

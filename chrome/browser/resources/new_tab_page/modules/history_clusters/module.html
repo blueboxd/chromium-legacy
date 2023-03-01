@@ -7,6 +7,14 @@
     height: var(--cr-icon-size);
     width: var(--cr-icon-size);
   }
+
+  #showAllButton {
+    background-color: white;
+    border: none;
+    color: var(--google-blue-700);
+    cursor: pointer;
+    font-size: 13px;
+  }
 </style>
 <div id="content">
   <ntp-module-header
@@ -17,8 +25,24 @@
     show-info-button on-info-button-click="onInfoButtonClick_"
     icon-src="chrome://resources/images/icon_journeys.svg">
     [[i18n('modulesJourneysResumeJourney', cluster.label)]]
+    <button id="showAllButton" type="button" on-click="onShowAllClick_"
+            slot="title-actions">
+        [[i18n('modulesJourneyShowAll')]]
+    </button>
   </ntp-module-header>
   <ntp-history-clusters-tile id="main-tile" large-format
-                             visit="[[cluster.visits.0]]">
+                             visit="[[cluster.visits.1]]">
   </ntp-history-clusters-tile>
+  <ntp-history-clusters-suggest-tile id="related-searches-tile"
+                                 related-searches="[[cluster.relatedSearches]]">
+  </ntp-history-clusters-suggest-tile>
+  <template is="dom-if" if="[[isLayout_(1, layoutType)]]" restamp>
+    <div id="layout1" class="layout">Layout 1</div>
+  </template>
+  <template is="dom-if" if="[[isLayout_(2, layoutType)]]" restamp>
+    <div id="layout2" class="layout">Layout 2</div>
+  </template>
+  <template is="dom-if" if="[[isLayout_(3, layoutType)]]" restamp>
+    <div id="layout3" class="layout">Layout 3</div>
+  </template>
 </div>

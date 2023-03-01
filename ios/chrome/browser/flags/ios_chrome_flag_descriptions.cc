@@ -274,6 +274,11 @@ const char kEnableAutofillAddressSavePromptName[] =
 const char kEnableAutofillAddressSavePromptDescription[] =
     "Enable the Autofill address save prompts.";
 
+const char kEnableBookmarksAccountStorageName[] =
+    "Enable Bookmarks Account Storage";
+const char kEnableBookmarksAccountStorageDescription[] =
+    "Enable bookmarks account storage and related UI features.";
+
 const char kEnableCBDSignOutName[] = "Enable Clear Browsing Data Sign-out";
 const char kEnableCBDSignOutDescription[] =
     "Offer signed-in user to sign-out from Clear Browsing Data settings.";
@@ -294,10 +299,9 @@ const char kEnableDiscoverFeedDiscoFeedEndpointName[] =
 const char kEnableDiscoverFeedDiscoFeedEndpointDescription[] =
     "Enable using the discofeed endpoint for the discover feed.";
 
-const char kTileAblationMVTAndShortcutsForNewUsersName[] =
-    "Enable hiding the Most Visited Tiles and Shortcuts";
-const char kTileAblationMVTAndShortcutsForNewUsersDescription[] =
-    "Enable hiding the Most Visited Tiles and Shortcuts for new users";
+const char kTileAblationName[] = "Enables tile ablation";
+const char kTileAblationDescription[] =
+    "Hides the shortcuts and most visited tiles on the NTP for new users.";
 
 const char kEnableFeedAblationName[] = "Enables Feed Ablation";
 const char kEnableFeedAblationDescription[] =
@@ -447,17 +451,18 @@ const char kIncognitoNtpRevampName[] = "Revamped Incognito New Tab Page";
 const char kIncognitoNtpRevampDescription[] =
     "When enabled, Incognito new tab page will have an updated UI.";
 
+const char kIndicateAccountStorageErrorInAccountCellName[] =
+    "Indicate Account Storage Error in Account Cell";
+const char kIndicateAccountStorageErrorInAccountCellDescription[] =
+    "When enabled, the Account Cell indicates the Account"
+    " Storage error when Sync is turned OFF";
+
 const char kInProductHelpDemoModeName[] = "In-Product Help Demo Mode";
 const char kInProductHelpDemoModeDescription[] =
     "When enabled, in-product help promotions occur exactly once per cold "
     "start. Enabled causes all in-product help promotions to occur. Enabling "
     "an individual promotion causes that promotion but no other promotions to "
     "occur.";
-
-const char kIOS3PIntentsInIncognitoName[] = "Third-party intents in Incognito";
-const char kIOS3PIntentsInIncognitoDescription[] =
-    "When enabled, an additional setting lets the user open links from other "
-    "apps in Incognito.";
 
 const char kIOSCustomBrowserEditMenuName[] = "Custom browser edit menu";
 const char kIOSCustomBrowserEditMenuDescription[] =
@@ -565,6 +570,11 @@ const char kNativeFindInPageDescription[] =
     "When enabled, the JavaScript implementation of the Find in Page feature "
     "is replaced with a native implementation which also enables searching "
     "text in PDF files. Available for iOS 16 or later.";
+
+const char kNewNTPOmniboxLayoutName[] = "New NTP Omnibox Layout";
+const char kNewNTPOmniboxLayoutDescription[] =
+    "Enables the new NTP omnibox layout with leading-edge aligned hint label "
+    "and magnifying glass icon.";
 
 const char kNewOverflowMenuName[] = "New Overflow Menu";
 const char kNewOverflowMenuDescription[] = "Enables the new overflow menu";
@@ -734,6 +744,11 @@ const char kPasswordReuseDetectionName[] =
 const char kPasswordReuseDetectionDescription[] =
     "Displays warning when user types or pastes a saved password into a "
     "phishing website.";
+
+const char kPolicyLogsPageIOSName[] = "Policy Logs Page on IOS";
+const char kPolicyLogsPageIOSDescription[] =
+    "Enable the new chrome://policy/logs page containing logs for debugging "
+    "policy related issues on IOS.";
 
 const char kPromosManagerUsesFETName[] = "Promos Manager using FET";
 const char kPromosManagerUsesFETDescription[] =
@@ -965,6 +980,12 @@ const char kWaitThresholdMillisecondsForCapabilitiesApiDescription[] =
 const char kWalletServiceUseSandboxName[] = "Use Google Payments sandbox";
 const char kWalletServiceUseSandboxDescription[] =
     "Uses the sandbox service for Google Payments API calls.";
+
+const char kWebFeedFeedbackRerouteName[] =
+    "Send discover feed feedback to a updated destination";
+const char kWebFeedFeedbackRerouteDescription[] =
+    "Directs discover feed feedback to a new target for better handling of the"
+    "feedback reports.";
 
 const char kWebPageDefaultZoomFromDynamicTypeName[] =
     "Use dynamic type size for default text zoom level";

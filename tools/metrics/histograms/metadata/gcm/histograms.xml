@@ -33,7 +33,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="GCM.CheckinRequestStatus" enum="GCMCheckinRequestStatus"
-    expires_after="2023-06-25">
+    expires_after="2023-08-27">
   <owner>peter@chromium.org</owner>
   <owner>knollr@chromium.org</owner>
   <summary>Status code of the outcome of a GCM checkin request.</summary>
@@ -67,16 +67,6 @@ chromium-metrics-reviews@google.com.
   <summary>
     Result of decryption on a received GCM message, which includes unencrypted
     messages, successfully decrypted messages and decryption failures.
-  </summary>
-</histogram>
-
-<histogram name="GCM.Crypto.EncryptMessageResult" enum="GCMEncryptionResult"
-    expires_after="M92">
-  <owner>peter@chromium.org</owner>
-  <owner>alexchau@chromium.org</owner>
-  <summary>
-    Result of encryption of outgoing GCM message, which includes successfully
-    encrypted messages and encryption failures.
   </summary>
 </histogram>
 
@@ -186,15 +176,6 @@ chromium-metrics-reviews@google.com.
     <variant name=".FcmInvalidations" summary="FCM invalidations"/>
     <variant name=".SyncInvalidations" summary="Sync standalone invalidations"/>
   </token>
-</histogram>
-
-<histogram name="GCM.HeartbeatMissedDelta" units="ms"
-    expires_after="2018-08-30">
-  <owner>zea@chromium.org</owner>
-  <summary>
-    If a heartbeat was missed, the time delta by which it was missed (in system
-    time, not ticks).
-  </summary>
 </histogram>
 
 <histogram name="GCM.IncomingSendErrors" units="messages" expires_after="M98">
@@ -339,7 +320,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="GCM.SendWebPushMessageResult" enum="SendWebPushMessageResult"
-    expires_after="2023-06-25">
+    expires_after="2023-08-27">
   <owner>knollr@chromium.org</owner>
   <owner>peter@chromium.org</owner>
   <summary>
@@ -386,11 +367,6 @@ chromium-metrics-reviews@google.com.
     Success indicates successfully updating the GCM persistent store on message
     update. Failure indicates a failure updating the persistence store.
   </summary>
-</histogram>
-
-<histogram name="GCM.SuspendTime" units="ms" expires_after="2018-08-30">
-  <owner>zea@chromium.org</owner>
-  <summary>Time elapsed from machine suspend until resume.</summary>
 </histogram>
 
 <histogram name="GCM.UnregistrationRequestStatus"

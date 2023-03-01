@@ -240,7 +240,7 @@ class BrowserManagerTest : public testing::Test {
                              browser_util::LacrosSelection::kRootfs,
                          const std::string& lacros_path = "/run/lacros") {
     EXPECT_CALL(*browser_loader_, Load(_))
-        .WillOnce([load_selection, &lacros_path](
+        .WillOnce([load_selection, lacros_path](
                       BrowserLoader::LoadCompletionCallback callback) {
           std::move(callback).Run(base::FilePath(lacros_path), load_selection,
                                   base::Version());

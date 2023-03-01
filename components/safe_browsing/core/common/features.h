@@ -165,6 +165,14 @@ BASE_DECLARE_FEATURE(kFileTypePoliciesTag);
 // `kFileTypePoliciesTag`.
 const char kFileTypePoliciesTagParamName[] = "policy_omaha_tag";
 
+// Enables sending real time hash lookup requests over OHTTP to anonymize the
+// source of the requests.
+BASE_DECLARE_FEATURE(kHashRealTimeOverOhttp);
+
+// This parameter controls the relay URL that will forward the lookup requests
+// to the Safe Browsing server.
+extern const base::FeatureParam<std::string> kHashRealTimeOverOhttpRelayUrl;
+
 // Enable logging of the account enhanced protection setting in Protego pings.
 BASE_DECLARE_FEATURE(kLogAccountEnhancedProtectionStateInProtegoPings);
 
@@ -208,6 +216,10 @@ BASE_DECLARE_FEATURE(kSafeBrowsingLookupMechanismExperiment);
 
 // Controls whether cookies are removed when the access token is present.
 BASE_DECLARE_FEATURE(kSafeBrowsingRemoveCookiesInAuthRequests);
+
+// Controls whether to skip Safe Browsing checks on images, CSS and font URLs in
+// renderer URL loader throttle.
+BASE_DECLARE_FEATURE(kSafeBrowsingSkipImageCssFont);
 
 // Controls whether the new 7z evaluation is performed on downloads.
 BASE_DECLARE_FEATURE(kSevenZipEvaluationEnabled);
@@ -270,6 +282,9 @@ std::string GetFileTypePoliciesTag();
 // Enables OptimizationGuide to deliver the client side phishing model instead
 // of through component updater.
 BASE_DECLARE_FEATURE(kClientSideDetectionModelOptimizationGuide);
+
+// Enables new ESB specific threshold fields in Visual TF Lite model files
+BASE_DECLARE_FEATURE(kSafeBrowsingPhishingClassificationESBThreshold);
 
 }  // namespace safe_browsing
 #endif  // COMPONENTS_SAFE_BROWSING_CORE_COMMON_FEATURES_H_

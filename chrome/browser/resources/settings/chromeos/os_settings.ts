@@ -7,7 +7,10 @@
  * imports all of the necessary modules and custom elements to load the page.
  */
 
+/** Necessary imports to load the app */
 import '../strings.m.js';
+import './os_settings_ui/os_settings_ui.js';
+/** Other imports */
 import '../prefs/prefs.js';
 import './device_page/audio.js';
 import './device_page/cros_audio_config.js';
@@ -31,6 +34,7 @@ import './device_page/per_device_touchpad.js';
 import './device_page/per_device_touchpad_subsection.js';
 import './device_page/pointers.js';
 import './device_page/power.js';
+import './device_page/keyboard_remap_modifier_key_row.js';
 import './device_page/storage.js';
 import './device_page/storage_external.js';
 import './device_page/storage_external_entry.js';
@@ -75,7 +79,6 @@ import './os_apps_page/app_management_page/arc_detail_view.js';
 import './os_apps_page/app_management_page/borealis_page/borealis_detail_view.js';
 import './os_apps_page/app_management_page/chrome_app_detail_view.js';
 import './os_apps_page/app_management_page/dom_switch.js';
-import 'chrome://resources/cr_components/app_management/icons.html.js';
 import './os_apps_page/app_management_page/main_view.js';
 import './os_apps_page/app_management_page/pin_to_shelf_item.js';
 import './os_apps_page/app_management_page/plugin_vm_page/plugin_vm_detail_view.js';
@@ -85,8 +88,6 @@ import './os_apps_page/app_management_page/app_management_cros_shared_vars.css.j
 import './os_apps_page/app_management_page/supported_links_overlapping_apps_dialog.js';
 import './os_apps_page/app_management_page/supported_links_dialog.js';
 import './os_apps_page/app_management_page/supported_links_item.js';
-import 'chrome://resources/cr_components/app_management/toggle_row.js';
-import 'chrome://resources/cr_components/app_management/uninstall_button.js';
 import './os_apps_page/app_notifications_page/mojo_interface_provider.js';
 import './os_apps_page/os_apps_page.js';
 import './os_bluetooth_page/os_bluetooth_devices_subpage.js';
@@ -113,7 +114,6 @@ import './os_settings_main/os_settings_main.js';
 import './os_settings_page/os_settings_page.js';
 import './os_settings_page/settings_idle_load.js';
 import './os_settings_menu/os_settings_menu.js';
-import './os_settings_ui/os_settings_ui.js';
 import './os_settings_icons.css.js';
 import './os_settings_search_box/os_search_result_row.js';
 import './os_settings_search_box/os_settings_search_box.js';
@@ -121,17 +121,18 @@ import './os_toolbar/os_toolbar.js';
 import './parental_controls_page/parental_controls_page.js';
 import './settings_scheduler_slider/settings_scheduler_slider.js';
 
+import * as nearbyShareMojom from '/shared/mojo/nearby_share.mojom-webui.js';
 import {startColorChangeUpdater} from 'chrome://resources/cr_components/color_change_listener/colors_css_updater.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
 
 import * as appNotificationHandlerMojom from '../mojom-webui/app_notification_handler.mojom-webui.js';
 import * as crosAudioConfigMojom from '../mojom-webui/cros_audio_config.mojom-webui.js';
-import * as routesMojomWebui from '../mojom-webui/routes.mojom-webui.js';
+import * as routesMojom from '../mojom-webui/routes.mojom-webui.js';
 import * as personalizationSearchMojom from '../mojom-webui/search/personalization_search.mojom-webui.js';
 import * as searchMojomWebui from '../mojom-webui/search/search.mojom-webui.js';
 import * as searchResultIconMojomWebui from '../mojom-webui/search/search_result_icon.mojom-webui.js';
 import * as userActionRecorderMojomWebui from '../mojom-webui/search/user_action_recorder.mojom-webui.js';
-import * as settingMojomWebui from '../mojom-webui/setting.mojom-webui.js';
+import * as settingMojom from '../mojom-webui/setting.mojom-webui.js';
 
 import * as fakeCrosAudioConfig from './device_page/fake_cros_audio_config.js';
 
@@ -143,11 +144,6 @@ import * as fakeCrosAudioConfig from './device_page/fake_cros_audio_config.js';
 export {getContactManager, observeContactManager, setContactManagerForTesting} from '/shared/nearby_contact_manager.js';
 export {getNearbyShareSettings, observeNearbyShareSettings, setNearbyShareSettingsForTesting} from '/shared/nearby_share_settings.js';
 export {NearbySettings, NearbyShareSettingsMixin} from '/shared/nearby_share_settings_mixin.js';
-export {PermissionType, TriState} from 'chrome://resources/cr_components/app_management/app_management.mojom-webui.js';
-export {BrowserProxy as AppManagementComponentBrowserProxy} from 'chrome://resources/cr_components/app_management/browser_proxy.js';
-export {PageType, WindowMode} from 'chrome://resources/cr_components/app_management/constants.js';
-export {createBoolPermission, createTriStatePermission, getBoolPermissionValue, isBoolValue} from 'chrome://resources/cr_components/app_management/permission_util.js';
-export {convertOptionalBoolToBool, createEmptyState, createInitialState, getPermissionValueBool} from 'chrome://resources/cr_components/app_management/util.js';
 export {OpenWindowProxyImpl} from 'chrome://resources/js/open_window_proxy.js';
 export {LifetimeBrowserProxyImpl} from '../lifetime_browser_proxy.js';
 export {ProfileInfoBrowserProxyImpl} from '../people_page/profile_info_browser_proxy.js';
@@ -160,6 +156,7 @@ export {fakeKeyboards, fakeMice, fakePointingSticks, fakeTouchpads} from './devi
 export {FakeInputDeviceSettingsProvider} from './device_page/fake_input_device_settings_provider.js';
 export {getInputDeviceSettingsProvider, setInputDeviceSettingsProviderForTesting, setupFakeInputDeviceSettingsProvider} from './device_page/input_device_mojo_interface_provider.js';
 export {MetaKey, ModifierKey} from './device_page/input_device_settings_types.js';
+export {KeyboardRemapModifierKeyRowElement} from './device_page/keyboard_remap_modifier_key_row.js';
 export {SettingsPerDeviceKeyboardElement} from './device_page/per_device_keyboard.js';
 export {SettingsPerDeviceKeyboardRemapKeysElement} from './device_page/per_device_keyboard_remap_keys.js';
 export {SettingsPerDeviceKeyboardSubsectionElement} from './device_page/per_device_keyboard_subsection.js';
@@ -189,7 +186,7 @@ export {DeviceNameBrowserProxyImpl} from './os_about_page/device_name_browser_pr
 export {DeviceNameState, SetDeviceNameResult} from './os_about_page/device_name_util.js';
 export {AndroidAppsBrowserProxyImpl} from './os_apps_page/android_apps_browser_proxy.js';
 export {addApp, changeApp, removeApp, updateSelectedAppId} from './os_apps_page/app_management_page/actions.js';
-export {AppManagementBrowserProxy} from './os_apps_page/app_management_page/browser_proxy.js';
+export {AppManagementBrowserProxy, AppManagementComponentBrowserProxy} from './os_apps_page/app_management_page/browser_proxy.js';
 export {FakePageHandler} from './os_apps_page/app_management_page/fake_page_handler.js';
 export {PluginVmBrowserProxyImpl} from './os_apps_page/app_management_page/plugin_vm_page/plugin_vm_browser_proxy.js';
 export {reduceAction, updateApps} from './os_apps_page/app_management_page/reducers.js';
@@ -200,6 +197,7 @@ export {OsBluetoothDevicesSubpageBrowserProxyImpl} from './os_bluetooth_page/os_
 export {FastPairSavedDevicesOptInStatus} from './os_bluetooth_page/settings_fast_pair_constants.js';
 export {osPageVisibility} from './os_page_visibility.js';
 export {AccountManagerBrowserProxy, AccountManagerBrowserProxyImpl} from './os_people_page/account_manager_browser_proxy.js';
+export {SettingsUsersAddUserDialogElement} from './os_people_page/add_user_dialog.js';
 export {FingerprintBrowserProxyImpl, FingerprintResultType} from './os_people_page/fingerprint_browser_proxy.js';
 export {OsSyncBrowserProxyImpl} from './os_people_page/os_sync_browser_proxy.js';
 export {FingerprintSetupStep} from './os_people_page/setup_fingerprint_dialog.js';
@@ -218,11 +216,12 @@ export {
   appNotificationHandlerMojom,
   crosAudioConfigMojom,
   fakeCrosAudioConfig,
+  nearbyShareMojom,
   personalizationSearchMojom,
-  routesMojomWebui,
+  routesMojom,
   searchMojomWebui,
   searchResultIconMojomWebui,
-  settingMojomWebui,
+  settingMojom,
   userActionRecorderMojomWebui,
 };
 

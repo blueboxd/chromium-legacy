@@ -53,7 +53,6 @@
 #include "content/browser/loader/navigation_early_hints_manager.h"
 #include "content/browser/loader/navigation_url_loader.h"
 #include "content/browser/loader/object_navigation_fallback_body_loader.h"
-#include "content/browser/loader/resource_timing_utils.h"
 #include "content/browser/navigation_or_document_handle.h"
 #include "content/browser/network/cross_origin_embedder_policy_reporter.h"
 #include "content/browser/network/cross_origin_opener_policy_reporter.h"
@@ -79,6 +78,7 @@
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_view_host_delegate.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
+#include "content/browser/runtime_feature_state/runtime_feature_state_document_data.h"
 #include "content/browser/scoped_active_url.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/service_worker/service_worker_main_resource_handle.h"
@@ -140,6 +140,7 @@
 #include "services/network/public/cpp/web_sandbox_flags.h"
 #include "services/network/public/mojom/fetch_api.mojom.h"
 #include "services/network/public/mojom/supports_loading_mode.mojom.h"
+#include "services/network/public/mojom/url_response_head.mojom-forward.h"
 #include "services/network/public/mojom/url_response_head.mojom-shared.h"
 #include "services/network/public/mojom/url_response_head.mojom.h"
 #include "services/network/public/mojom/web_client_hints_types.mojom-shared.h"
@@ -169,6 +170,7 @@
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom.h"
 #include "third_party/blink/public/mojom/loader/mixed_content.mojom.h"
 #include "third_party/blink/public/mojom/loader/transferrable_url_loader.mojom.h"
+#include "third_party/blink/public/mojom/navigation/navigation_params.mojom-shared.h"
 #include "third_party/blink/public/mojom/navigation/navigation_params.mojom.h"
 #include "third_party/blink/public/mojom/navigation/prefetched_signed_exchange_info.mojom.h"
 #include "third_party/blink/public/mojom/runtime_feature_state/runtime_feature_state.mojom.h"
@@ -220,9 +222,9 @@ const char kIsolatedAppCSP[] =
     "frame-src 'self' https:;"
     "connect-src 'self' https:;"
     "script-src 'self' 'wasm-unsafe-eval';"
-    "img-src 'self' data:;"
-    "media-src 'self' data:;"
-    "font-src 'self' data:;"
+    "img-src 'self' https: blob: data:;"
+    "media-src 'self' https: blob: data:;"
+    "font-src 'self' blob: data:;"
     "require-trusted-types-for 'script';";
 
 // Corresponds to the "NavigationURLScheme" histogram enumeration type in
@@ -456,9 +458,12 @@ void AddAdditionalRequestHeaders(
 
     if (base::FeatureList::IsEnabled(
             blink::features::kAttributionReportingCrossAppWeb)) {
-      headers->SetHeader("Attribution-Reporting-Support",
-                         attribution_reporting::GetSupportHeader(
-                             AttributionManager::GetOsSupport()));
+      if (auto* attribution_manager =
+              AttributionManager::FromBrowserContext(browser_context)) {
+        headers->SetHeader("Attribution-Reporting-Support",
+                           attribution_reporting::GetSupportHeader(
+                               attribution_manager->GetOsSupport()));
+      }
     }
   }
 }
@@ -1095,7 +1100,8 @@ std::unique_ptr<NavigationRequest> NavigationRequest::Create(
     blink::mojom::NavigationInitiatorActivationAndAdStatus
         initiator_activation_and_ad_status,
     bool is_pdf,
-    bool is_embedder_initiated_fenced_frame_navigation) {
+    bool is_embedder_initiated_fenced_frame_navigation,
+    bool is_container_initiated) {
   TRACE_EVENT1("navigation", "NavigationRequest::Create", "browser_initiated",
                browser_initiated);
 
@@ -1125,7 +1131,8 @@ std::unique_ptr<NavigationRequest> NavigationRequest::Create(
       nullptr /* trust_token_params */, impression,
       base::TimeTicks() /* renderer_before_unload_start */,
       base::TimeTicks() /* renderer_before_unload_end */,
-      std::move(web_bundle_token_params), initiator_activation_and_ad_status);
+      std::move(web_bundle_token_params), initiator_activation_and_ad_status,
+      is_container_initiated);
 
   // Shift-Reload forces bypassing caches and service workers.
   if (common_params->navigation_type ==
@@ -1450,13 +1457,21 @@ NavigationRequest::CreateForSynchronousRendererCommit(
   } else {
     // Otherwise we need to derive the top_level_site and ancestor_chain_bit.
     net::SchemefulSite top_level_site(top_level_origin);
+
+    blink::mojom::AncestorChainBit ancestor_chain_bit =
+        blink::mojom::AncestorChainBit::kSameSite;
+    if (render_frame_host->ComputeSiteForCookies().IsNull() ||
+        net::SchemefulSite(origin) != top_level_site ||
+        !top_level_site.opaque() || origin.opaque()) {
+      ancestor_chain_bit = blink::mojom::AncestorChainBit::kCrossSite;
+    }
+
+    // Because this is a synchronous commit from the renderer the RFH won't
+    // change meaning we can always query the main frame RFH for the status of
+    // storage partitioning.
     navigation_request->commit_params_->storage_key = blink::StorageKey::Create(
-        origin, top_level_site,
-        render_frame_host->ComputeSiteForCookies().IsNull() ||
-                net::SchemefulSite(origin) != top_level_site ||
-                origin.opaque() || top_level_site.opaque()
-            ? blink::mojom::AncestorChainBit::kCrossSite
-            : blink::mojom::AncestorChainBit::kSameSite);
+        origin, top_level_site, ancestor_chain_bit,
+        render_frame_host->IsMainFrameThirdPartyStoragePartitioningEnabled());
   }
   navigation_request->commit_params_->session_storage_key =
       frame_tree_node->frame_tree().GetSessionStorageKey(
@@ -1620,6 +1635,24 @@ NavigationRequest::NavigationRequest(
     if (initiator_rfh)
       initiator_document_ = initiator_rfh->GetWeakDocumentPtr();
   }
+
+  // Spec: https://github.com/whatwg/html/issues/8846
+  // We only allow the parent to access a subframe resource timing if the
+  // navigation is container-initiated, e.g. iframe changed src.
+  if (begin_params_->is_container_initiated) {
+    // Only same-origin navigations without cross-origin redirects can
+    // expose response details (status-code / mime-type).
+    // https://github.com/whatwg/fetch/issues/1602
+    // Note that this condition checks this navigation is not cross origin.
+    // Cross-origin redirects are checked as part of OnRequestRedirected().
+    commit_params_->navigation_timing->parent_resource_timing_access =
+        GetParentFrame()->GetLastCommittedOrigin().IsSameOriginWith(GetURL())
+            ? blink::mojom::ParentResourceTimingAccess::
+                  kReportWithResponseDetails
+            : blink::mojom::ParentResourceTimingAccess::
+                  kReportWithoutResponseDetails;
+  }
+
   navigation_or_document_handle_ =
       NavigationOrDocumentHandle::CreateForNavigation(*this);
 
@@ -3055,6 +3088,18 @@ void NavigationRequest::OnRequestRedirected(
   const bool is_same_origin_redirect =
       url::Origin::Create(common_params_->url)
           .IsSameOriginWith(redirect_info.new_url);
+
+  // Only same-origin navigations without cross-origin redirects can
+  // expose response details (status-code / mime-type).
+  // https://github.com/whatwg/fetch/issues/1602
+  if (!is_same_origin_redirect &&
+      commit_params_->navigation_timing->parent_resource_timing_access ==
+          blink::mojom::ParentResourceTimingAccess::
+              kReportWithResponseDetails) {
+    commit_params_->navigation_timing->parent_resource_timing_access =
+        blink::mojom::ParentResourceTimingAccess::kReportWithoutResponseDetails;
+  }
+
   did_receive_early_hints_before_cross_origin_redirect_ |=
       did_create_early_hints_manager_params_ && !is_same_origin_redirect;
 
@@ -3775,6 +3820,12 @@ void NavigationRequest::OnResponseStarted(
     // DO NOT ADD CODE after this. The previous call to OnRequestFailedInternal
     // has destroyed the NavigationRequest.
     return;
+  }
+
+  // See https://github.com/whatwg/fetch/pull/1579
+  if (!response_head_->timing_allow_passed) {
+    commit_params_->navigation_timing->parent_resource_timing_access =
+        blink::mojom::ParentResourceTimingAccess::kDoNotReport;
   }
 
   MaybeInjectIsolatedAppHeaders();
@@ -4706,34 +4757,40 @@ void NavigationRequest::MaybeAddResourceTimingEntryForCancelledNavigation() {
     return;
   }
 
-  RenderFrameHostImpl* parent_rfh = GetParentFrame();
-
-  // Do not add ResourceTiming entries if the navigated URL does not have a
-  // parent.
-  if (!parent_rfh) {
-    return;
-  }
-
   // Some navigation are cancelled even before requesting and receiving a
   // response. Those cases are not supported and the ResourceTiming is not
   // reported to the parent.
-  if (!response_head_) {
+  if (!response()) {
     return;
   }
 
-  if (initiator_document_.AsRenderFrameHostIfValid() != parent_rfh) {
+  network::URLLoaderCompletionStatus status;
+  status.encoded_data_length = response()->encoded_data_length;
+  status.completion_time = base::TimeTicks::Now();
+  AddResourceTimingEntryForFailedSubframeNavigation(status);
+}
+
+void NavigationRequest::AddResourceTimingEntryForFailedSubframeNavigation(
+    const network::URLLoaderCompletionStatus& status) {
+  // For TAO-fail navigations, we would resort to fallback timing.
+  // See HTMLFrameOwnerElement::ReportFallbackResourceTimingIfNeeded().
+  DCHECK(response());
+  if (commit_params().navigation_timing->parent_resource_timing_access ==
+      blink::mojom::ParentResourceTimingAccess::kDoNotReport) {
     return;
   }
 
-  blink::mojom::ResourceTimingInfoPtr timing_info =
-      GenerateResourceTimingForNavigation(parent_rfh->GetLastCommittedOrigin(),
-                                          *common_params_, *commit_params_,
-                                          *response_head_);
-  timing_info->response_end = base::TimeTicks::Now();
-  parent_rfh->GetAssociatedLocalFrame()
-      ->AddResourceTimingEntryFromNonNavigatedFrame(
-          std::move(timing_info),
-          frame_tree_node()->frame_owner_element_type());
+  network::mojom::URLResponseHeadPtr response_head = response()->Clone();
+
+  bool allow_response_details =
+      commit_params().navigation_timing->parent_resource_timing_access ==
+      blink::mojom::ParentResourceTimingAccess::kReportWithResponseDetails;
+
+  GetParentFrame()->AddResourceTimingEntryForFailedSubframeNavigation(
+      frame_tree_node(), common_params().navigation_start,
+      commit_params().navigation_timing->redirect_end,
+      commit_params().original_url, common_params().url,
+      std::move(response_head), allow_response_details, status);
 }
 
 void NavigationRequest::OnRedirectChecksComplete(
@@ -4981,8 +5038,8 @@ void NavigationRequest::OnWillProcessResponseChecksComplete(
       // fallback / resource timing are only reported if the navigation request
       // is logically still pending.
       ObjectNavigationFallbackBodyLoader::CreateAndStart(
-          *this, *common_params_, *commit_params_, *response(),
-          std::move(response_body_), std::move(url_loader_client_endpoints_),
+          *this, std::move(response_body_),
+          std::move(url_loader_client_endpoints_),
           base::BindOnce(&NavigationRequest::OnRequestFailedInternal,
                          weak_factory_.GetWeakPtr(),
                          network::URLLoaderCompletionStatus(net::ERR_ABORTED),
@@ -5004,6 +5061,7 @@ void NavigationRequest::OnWillProcessResponseChecksComplete(
       result.action() == NavigationThrottle::CANCEL ||
       !response_should_be_rendered_) {
     MaybeAddResourceTimingEntryForCancelledNavigation();
+
     // Reset the RenderFrameHost that had been computed for the commit of the
     // navigation.
     render_frame_host_ = nullptr;
@@ -5225,8 +5283,22 @@ void NavigationRequest::CommitNavigation() {
   absl::optional<base::UnguessableToken> nonce =
       render_frame_host_->ComputeNonce(is_credentialless(),
                                        ComputeFencedFrameNonce());
+
+  // Determine if we should allow partitioned StorageKeys.
+  //
+  // If this is a main frame navigation then the value of
+  // third_party_storage_partitioning_enabled is irrelevant because main frames
+  // are always first-party by definition. If this is a subframe navigation
+  // then the main frame will have the correct value.
+  bool third_party_storage_partitioning_enabled = false;
+  if (!IsInMainFrame()) {
+    third_party_storage_partitioning_enabled =
+        GetRenderFrameHost()->IsMainFrameThirdPartyStoragePartitioningEnabled();
+  }
+
   commit_params_->storage_key = render_frame_host_->CalculateStorageKey(
-      GetOriginToCommit().value(), base::OptionalToPtr(nonce));
+      GetOriginToCommit().value(), base::OptionalToPtr(nonce),
+      third_party_storage_partitioning_enabled);
   commit_params_->session_storage_key =
       frame_tree_node()->frame_tree().GetSessionStorageKey(
           commit_params_->storage_key);
@@ -5440,13 +5512,6 @@ void NavigationRequest::CommitPageActivation() {
         commit_params_->pending_history_list_offset;
     page_restore_params->current_history_list_length =
         commit_params_->current_history_list_length;
-    page_restore_params->view_transition_state =
-        std::move(commit_params_->view_transition_state);
-    // Since we moved the view transition state to page restore params, we
-    // should reset the commit params one (move doesn't clear the optional).
-    // This ensures that we don't erroneously think that view_transition_state
-    // is unhandled and attempt to clean it up.
-    commit_params_->view_transition_state.reset();
     activated_entry = controller->GetBackForwardCache().RestoreEntry(
         nav_entry_id_, std::move(page_restore_params));
     // The only time activated_entry can be nullptr here, is if the
@@ -5488,6 +5553,11 @@ void NavigationRequest::CommitPageActivation() {
     // NavigationRequest to be destroyed. Return if this is the case.
     if (!weak_self)
       return;
+
+    // Use std::exchange instead of move, so that we clear out the optional on
+    // the commit_params.
+    activated_entry->SetViewTransitionState(
+        std::exchange(commit_params_->view_transition_state, {}));
 
     // Move the BackForwardCacheImpl::Entry into RenderFrameHostManager, in
     // preparation for committing. This entry may be either restored from the
@@ -5550,9 +5620,14 @@ void NavigationRequest::CommitPageActivation() {
     if (!weak_self)
       return;
 
+    DCHECK(stored_page);
+    // Use std::exchange instead of move, so that we clear out the optional on
+    // the commit_params.
+    stored_page->SetViewTransitionState(
+        std::exchange(commit_params_->view_transition_state, {}));
+
     // Move the StoredPage into RenderFrameHostManager, in
     // preparation for committing. This entry may be used for prerendering.
-    DCHECK(stored_page);
     frame_tree_node_->render_manager()->ActivatePrerender(
         std::move(stored_page));
   }
@@ -7957,6 +8032,19 @@ NavigationRequest::EnforceCOEP() {
 }
 
 bool NavigationRequest::CoopCoepSanityCheck() {
+  // Same-document navigations simply reuse the current document and do not use
+  // the PolicyContainer, which may contain erroneous information. For example
+  // in pushState/popState history navigations. See https://crbug.com/1413081.
+  if (IsSameDocument()) {
+    return true;
+  }
+
+  // Credentialless iframes allow frames to be crossOriginIsolated without ever
+  // setting COEP, so the below check does not apply.
+  if (is_credentialless_) {
+    return true;
+  }
+
   const PolicyContainerPolicies& policies =
       policy_container_builder_->FinalPolicies();
   // Use GetParentFrameOrOuterDocument() to respect the outer frame's COEP for
@@ -7973,8 +8061,7 @@ bool NavigationRequest::CoopCoepSanityCheck() {
   if (coop_value ==
           network::mojom::CrossOriginOpenerPolicyValue::kSameOriginPlusCoep &&
       !CompatibleWithCrossOriginIsolated(
-          policies.cross_origin_embedder_policy) &&
-      !is_credentialless_) {
+          policies.cross_origin_embedder_policy)) {
     NOTREACHED();
     base::debug::DumpWithoutCrashing();
     return false;
@@ -8696,10 +8783,14 @@ void NavigationRequest::RendererCancellationWindowEnded() {
   // ended, so the navigation can resume if it is currently waiting for this
   // signal.
   renderer_cancellation_window_ended_ = true;
+  renderer_cancellation_listener_.reset();
   if (renderer_cancellation_window_ended_callback_) {
     std::move(renderer_cancellation_window_ended_callback_).Run();
+    // DO NOT ADD CODE after this. The callback triggers
+    // RendererCancellationThrottle::NavigationCancellationWindowEnded() and
+    // eventually NavigationThrottle::Resume(), which might have destroyed the
+    // NavigationRequest.
   }
-  renderer_cancellation_listener_.reset();
 }
 
 bool NavigationRequest::ShouldWaitForRendererCancellationWindowToEnd() {
@@ -8839,6 +8930,18 @@ StoragePartition* NavigationRequest::GetStoragePartitionWithCurrentSiteInfo() {
       .controller()
       .GetBrowserContext()
       ->GetStoragePartition(site_info_.storage_partition_config());
+}
+
+// TODO(crbug.com/1386190): Follow up on whether any inner page scenarios
+// (eg. portals, guestview) require escaping out using GetOutermostMainFrame
+// or GetOutermostMainFrameOrEmbedder.
+bool NavigationRequest::GetIsThirdPartyCookiesUserBypassEnabled() {
+  if (IsInMainFrame()) {
+    blink::RuntimeFeatureStateContext state_context =
+        GetRuntimeFeatureStateContext();
+    return state_context.IsThirdPartyCookiesUserBypassEnabled();
+  }
+  return GetParentFrame()->GetIsThirdPartyCookiesUserBypassEnabled();
 }
 
 }  // namespace content

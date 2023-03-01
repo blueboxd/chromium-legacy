@@ -1264,7 +1264,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="V8.LiftoffBailoutReasons" enum="LiftoffBailoutReason"
-    expires_after="2023-06-25">
+    expires_after="2023-08-27">
   <owner>ecmziegler@chromium.org</owner>
   <owner>adamk@chromium.org</owner>
   <owner>clemensb@chromium.org</owner>
@@ -1309,14 +1309,6 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="V8.MemoryExternalFragmentationTotal" units="%"
-    expires_after="M81">
-  <owner>hpayer@chromium.org</owner>
-  <summary>
-    Total external memory fragmentation after each GC in percent.
-  </summary>
-</histogram>
-
 <histogram name="V8.MemoryHeapSampleCodeSpaceCommitted" units="KB"
     expires_after="M77">
   <owner>hpayer@chromium.org</owner>
@@ -1342,18 +1334,10 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="V8.MemoryHeapSampleTotalCommitted" units="KB"
-    expires_after="2023-06-25">
+    expires_after="2023-08-27">
   <owner>hpayer@chromium.org</owner>
   <summary>
     The total size of committed memory used by V8 after each GC in KB.
-  </summary>
-</histogram>
-
-<histogram name="V8.MemoryHeapSampleTotalUsed" units="KB"
-    expires_after="2021-09-12">
-  <owner>hpayer@chromium.org</owner>
-  <summary>
-    The total size of live memory used by V8 after each GC in KB.
   </summary>
 </histogram>
 

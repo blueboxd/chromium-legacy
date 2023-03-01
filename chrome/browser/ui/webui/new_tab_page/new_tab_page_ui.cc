@@ -101,6 +101,13 @@ namespace {
 
 constexpr char kPrevNavigationTimePrefName[] = "NewTabPage.PrevNavigationTime";
 
+bool HasCredentials(Profile* profile) {
+  auto* identity_manager = IdentityManagerFactory::GetForProfile(profile);
+  return
+      /* Can be null if Chrome signin is disabled. */ identity_manager &&
+      identity_manager->GetAccountsInCookieJar().signed_in_accounts.size() > 0;
+}
+
 void AddRawStringOrDefault(content::WebUIDataSource* source,
                            const char key[],
                            const std::string str,
@@ -207,6 +214,13 @@ content::WebUIDataSource* CreateAndAddNewTabPageUiHtmlSource(Profile* profile) {
                                                ntp_features::kNtpModulesLoad));
   source->AddInteger("modulesLoadTimeout",
                      ntp_features::GetModulesLoadTimeout().InMilliseconds());
+  source->AddBoolean(
+      "historyClustersModuleEnabled",
+      base::FeatureList::IsEnabled(ntp_features::kNtpHistoryClustersModule));
+  source->AddBoolean("historyClustersModuleLoadEnabled",
+                     base::FeatureList::IsEnabled(
+                         ntp_features::kNtpHistoryClustersModuleLoad) &&
+                         HasCredentials(profile));
 
   static constexpr webui::LocalizedString kStrings[] = {
       {"doneButton", IDS_DONE},
@@ -454,6 +468,7 @@ content::WebUIDataSource* CreateAndAddNewTabPageUiHtmlSource(Profile* profile) {
       {"modulesFirstRunExperienceOptOutToast",
        IDS_NTP_MODULES_FIRST_RUN_EXPERIENCE_OPT_OUT_TOAST},
       {"modulesJourneysResumeJourney", IDS_NTP_MODULES_RESUME_YOUR_JOURNEY},
+      {"modulesJourneyShowAll", IDS_NTP_MODULES_SHOW_ALL},
 
       // Middle slot promo.
       {"undoDismissPromoButtonToast", IDS_NTP_UNDO_DISMISS_PROMO_BUTTON_TOAST},
@@ -529,13 +544,6 @@ content::WebUIDataSource* CreateAndAddNewTabPageUiHtmlSource(Profile* profile) {
                          chrome::kChromeUIUntrustedNewTabPageUrl));
 
   return source;
-}
-
-bool HasCredentials(Profile* profile) {
-  auto* identity_manager = IdentityManagerFactory::GetForProfile(profile);
-  return
-      /* Can be null if Chrome signin is disabled. */ identity_manager &&
-      identity_manager->GetAccountsInCookieJar().signed_in_accounts.size() > 0;
 }
 
 }  // namespace
@@ -764,7 +772,7 @@ void NewTabPageUI::BindInterface(
     mojo::PendingReceiver<ntp::history_clusters::mojom::PageHandler>
         pending_page_handler) {
   history_clusters_handler_ = std::make_unique<HistoryClustersPageHandler>(
-      std::move(pending_page_handler), profile_);
+      std::move(pending_page_handler), web_contents());
 }
 
 void NewTabPageUI::BindInterface(

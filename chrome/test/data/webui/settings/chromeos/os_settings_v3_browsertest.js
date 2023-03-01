@@ -99,22 +99,6 @@ TEST_F(
     'OSSettingsPeoplePageAccountManagerWithArcAccountRestrictionsEnabledV3Test',
     'All', () => mocha.run());
 
-var OSSettingsNearbyShareSubPageV3Test = class extends OSSettingsV3BrowserTest {
-  /** @override */
-  get browsePreload() {
-    return 'chrome://os-settings/test_loader.html?module=settings/chromeos/nearby_share_subpage_tests.js';
-  }
-
-  /** @override */
-  get featureList() {
-    return {
-      enabled: super.featureList.enabled.concat(['features::kNearbySharing']),
-    };
-  }
-};
-
-TEST_F('OSSettingsNearbyShareSubPageV3Test', 'All', () => mocha.run());
-
 var OSSettingsPeoplePageOsSyncV3Test = class extends OSSettingsV3BrowserTest {
   /** @override */
   get browsePreload() {
@@ -323,7 +307,6 @@ TEST_F('OSSettingsCrostiniExtraContainerPageV3Test', 'AllJsTests', () => {
 
 [['AccessibilityPage', 'os_a11y_page_tests.js'],
  ['AboutPage', 'os_about_page_tests.js'],
- ['AccountsPage', 'add_users_tests.js'],
  ['ApnDetailDialog', 'apn_detail_dialog_tests.js'],
  ['AppsPage', 'apps_page_test.js'],
  ['AppNotificationsSubpage', 'app_notifications_subpage_tests.js'],
@@ -456,6 +439,11 @@ TEST_F('OSSettingsCrostiniExtraContainerPageV3Test', 'AllJsTests', () => {
  ['NearbyShareConfirmPage', 'nearby_share_confirm_page_test.js'],
  ['NearbyShareHighVisibilityPage', 'nearby_share_high_visibility_page_test.js'],
  ['NearbyShareReceiveDialog', 'nearby_share_receive_dialog_tests.js'],
+ [
+   'NearbyShareSubpage',
+   'nearby_share_subpage_tests.js',
+   {enabled: ['features::kNearbySharing']},
+ ],
  ['NetworkAlwaysOnVpn', 'network_always_on_vpn_test.js'],
  ['NetworkProxySection', 'network_proxy_section_test.js'],
  ['NetworkSummary', 'network_summary_test.js'],
@@ -485,6 +473,7 @@ TEST_F('OSSettingsCrostiniExtraContainerPageV3Test', 'AllJsTests', () => {
    'os_bluetooth_true_wireless_images_tests.js',
  ],
  ['OsPairedBluetoothListItem', 'os_paired_bluetooth_list_item_tests.js'],
+ ['OsPeoplePageAddUserDialog', 'os_people_page/add_user_dialog_tests.js'],
  ['OsSettingsPage', 'os_settings_page_test.js'],
  ['OsSettingsUi', 'os_settings_ui_test.js'],
  /*

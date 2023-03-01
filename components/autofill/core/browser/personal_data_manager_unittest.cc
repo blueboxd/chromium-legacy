@@ -915,6 +915,18 @@ TEST_F(PersonalDataManagerTest, NoIBANsAddedIfDisabled) {
   EXPECT_EQ(0U, personal_data_->GetLocalIBANs().size());
 }
 
+TEST_F(PersonalDataManagerTest, AddingIbanUpdatesPref) {
+  prefs::SetAutofillIBANEnabled(prefs_.get(), true);
+  // The pref should always start disabled.
+  ASSERT_FALSE(personal_data_->IsAutofillHasSeenIbanPrefEnabled());
+  IBAN iban = test::GetIBAN();
+
+  personal_data_->AddIBAN(iban);
+  WaitForOnPersonalDataChanged();
+  // Adding an IBAN permanently enables the pref.
+  EXPECT_TRUE(personal_data_->IsAutofillHasSeenIbanPrefEnabled());
+}
+
 TEST_F(PersonalDataManagerTest, AddUpdateRemoveIBANs) {
   prefs::SetAutofillIBANEnabled(prefs_.get(), true);
   IBAN iban0(base::GenerateGUID());
@@ -4922,7 +4934,7 @@ TEST_F(PersonalDataManagerTest, OnSyncServiceInitialized_NotActiveSyncService) {
 
   // Call OnSyncServiceInitialized with a sync service in auth error.
   syncer::TestSyncService sync_service;
-  sync_service.SetPersistentAuthErrorOtherThanWebSignout();
+  sync_service.SetPersistentAuthError();
   personal_data_->OnSyncServiceInitialized(&sync_service);
   WaitForOnPersonalDataChanged();
 

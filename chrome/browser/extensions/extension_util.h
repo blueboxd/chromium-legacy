@@ -19,10 +19,6 @@ namespace extensions {
 class PermissionSet;
 }
 
-namespace gfx {
-class ImageSkia;
-}
-
 class Profile;
 
 namespace extensions {
@@ -37,10 +33,6 @@ namespace util {
 // the Chrome OS sign-in profile.
 bool HasIsolatedStorage(const std::string& extension_id,
                         content::BrowserContext* context);
-
-// Returns true if the extension associated with `extension_id` is a Chrome App.
-bool IsChromeApp(const std::string& extension_id,
-                 content::BrowserContext* context);
 
 // Sets whether |extension_id| can run in an incognito window. Reloads the
 // extension if it's enabled since this permission is applied at loading time
@@ -71,11 +63,6 @@ bool IsExtensionIdle(const std::string& extension_id,
 // Sets the name, id, and icon resource path of the given extension into the
 // returned dictionary.
 base::Value::Dict GetExtensionInfo(const Extension* extension);
-
-// Returns the default extension/app icon (for extensions or apps that don't
-// have one).
-const gfx::ImageSkia& GetDefaultExtensionIcon();
-const gfx::ImageSkia& GetDefaultAppIcon();
 
 // Returns a PermissionSet configured with the permissions that should be
 // displayed in an extension installation prompt for the specified |extension|.

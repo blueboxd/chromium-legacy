@@ -17,6 +17,7 @@ BASE_DECLARE_FEATURE(kDefaultBrowserBlueDotPromo);
 // default browser promos, which are already shipped.
 enum class BlueDotPromoUserGroup {
   kAllDBPromosDisabled,
+  kAllDBPromosEnabled,
   kOnlyBlueDotPromoEnabled,
 };
 extern const base::FeatureParam<BlueDotPromoUserGroup>
@@ -39,9 +40,6 @@ BASE_DECLARE_FEATURE(kModernTabStrip);
 
 // Feature flag to enable revamped Incognito NTP page.
 BASE_DECLARE_FEATURE(kIncognitoNtpRevamp);
-
-// Feature flag to enable third-party intents in Incognito.
-BASE_DECLARE_FEATURE(kIOS3PIntentsInIncognito);
 
 // Feature flag that experiments with the default browser fullscreen promo UI.
 BASE_DECLARE_FEATURE(kDefaultBrowserFullscreenPromoExperiment);
@@ -144,9 +142,22 @@ bool IsConsistencyNewAccountInterfaceEnabled();
 
 // Feature flag to enable add to home screen in share menu.
 BASE_DECLARE_FEATURE(kAddToHomeScreen);
+
 // Param to disable the feature in incognito.
 extern const char kAddToHomeScreenDisableIncognitoParam[];
+
 // Helper function to check the feature add to home screen.
 bool ShouldAddToHomeScreen(bool in_incognito);
+
+// Feature flag to enable indicating the Account Storage error in the Account
+// Cell when Sync is turned OFF.
+BASE_DECLARE_FEATURE(kIndicateAccountStorageErrorInAccountCell);
+
+// Returns true if the `kIndicateAccountStorageErrorInAccountCell` feature is
+// enabled.
+bool IsIndicateAccountStorageErrorInAccountCellEnabled();
+
+// Feature flag to enable the new layout of the NTP omnibox.
+BASE_DECLARE_FEATURE(kNewNTPOmniboxLayout);
 
 #endif  // IOS_CHROME_BROWSER_UI_UI_FEATURE_FLAGS_H_

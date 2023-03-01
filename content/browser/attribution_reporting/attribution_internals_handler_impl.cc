@@ -74,8 +74,9 @@ attribution_internals::mojom::WebUISourcePtr WebUISource(
   const CommonSourceInfo& common_info = source.common_info();
   return attribution_internals::mojom::WebUISource::New(
       common_info.source_event_id(), common_info.source_origin(),
-      std::vector<net::SchemefulSite>(common_info.destination_sites().begin(),
-                                      common_info.destination_sites().end()),
+      std::vector<net::SchemefulSite>(
+          common_info.destination_sites().destinations().begin(),
+          common_info.destination_sites().destinations().end()),
       common_info.reporting_origin(), common_info.source_time().ToJsTime(),
       common_info.expiry_time().ToJsTime(),
       common_info.event_report_window_time().ToJsTime(),
@@ -254,12 +255,10 @@ void AttributionInternalsHandlerImpl::GetActiveSources(
 }
 
 void AttributionInternalsHandlerImpl::GetReports(
-    AttributionReport::Type report_type,
     attribution_internals::mojom::Handler::GetReportsCallback callback) {
   if (AttributionManager* manager =
           AttributionManager::FromWebContents(web_ui_->GetWebContents())) {
     manager->GetPendingReportsForInternalUse(
-        AttributionReport::Types{report_type},
         /*limit=*/1000,
         base::BindOnce(&ForwardReportsToWebUI, std::move(callback)));
   } else {
@@ -295,9 +294,8 @@ void AttributionInternalsHandlerImpl::OnSourcesChanged() {
   observer_->OnSourcesChanged();
 }
 
-void AttributionInternalsHandlerImpl::OnReportsChanged(
-    AttributionReport::Type report_type) {
-  observer_->OnReportsChanged(report_type);
+void AttributionInternalsHandlerImpl::OnReportsChanged() {
+  observer_->OnReportsChanged();
 }
 
 namespace {

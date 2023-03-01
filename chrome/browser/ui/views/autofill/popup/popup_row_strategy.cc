@@ -57,12 +57,6 @@ namespace autofill {
 
 namespace {
 
-// The duration for which clicks on the just-shown Autofill popup should be
-// ignored. This is to prevent users accidentally accepting suggestions
-// (crbug.com/1279268).
-static constexpr base::TimeDelta kIgnoreEarlyClicksOnPopupDuration =
-    base::Milliseconds(500);
-
 // Max width for the username and masked password.
 constexpr int kAutofillPopupUsernameMaxWidth = 272;
 constexpr int kAutofillPopupPasswordMaxWidth = 108;
@@ -450,8 +444,7 @@ void AddCallbacksToContentView(
   content_view.SetOnUnselectedCallback(base::BindRepeating(
       &AutofillPopupController::SelectSuggestion, controller, absl::nullopt));
   content_view.SetOnAcceptedCallback(base::BindRepeating(
-      &AutofillPopupController::AcceptSuggestion, controller, line_number,
-      /*show_threshold=*/kIgnoreEarlyClicksOnPopupDuration));
+      &AutofillPopupController::AcceptSuggestion, controller, line_number));
 }
 
 // ********************* AccessibilityDelegate implementations *****************
@@ -517,20 +510,33 @@ void ContentItemAccessibilityDelegate::GetAccessibleNodeData(
 class DeleteButtonAccessibilityDelegate
     : public PopupCellView::AccessibilityDelegate {
  public:
-  DeleteButtonAccessibilityDelegate() = default;
+  DeleteButtonAccessibilityDelegate(
+      base::WeakPtr<AutofillPopupController> controller,
+      int line_number);
   ~DeleteButtonAccessibilityDelegate() override = default;
 
   void GetAccessibleNodeData(bool is_selected,
                              ui::AXNodeData* node_data) const override;
+
+ private:
+  std::u16string voice_over_string_;
 };
+
+DeleteButtonAccessibilityDelegate::DeleteButtonAccessibilityDelegate(
+    base::WeakPtr<AutofillPopupController> controller,
+    int line_number) {
+  DCHECK(controller);
+  voice_over_string_ = l10n_util::GetStringFUTF16(
+      IDS_AUTOFILL_DELETE_AUTOCOMPLETE_SUGGESTION_A11Y_HINT,
+      GetVoiceOverStringFromSuggestion(
+          controller->GetSuggestionAt(line_number)));
+}
 
 void DeleteButtonAccessibilityDelegate::GetAccessibleNodeData(
     bool is_selected,
     ui::AXNodeData* node_data) const {
   node_data->role = ax::mojom::Role::kButton;
-  // TODO(crbug.com/1417187): Add voice over text of original suggestion here?
-  node_data->SetNameChecked(l10n_util::GetStringUTF16(
-      IDS_AUTOFILL_DELETE_AUTOCOMPLETE_SUGGESTION_TOOLTIP));
+  node_data->SetNameChecked(voice_over_string_);
 }
 
 }  // namespace
@@ -658,7 +664,8 @@ std::unique_ptr<PopupCellView> PopupSuggestionStrategy::CreateControl() {
     std::unique_ptr<PopupCellView> view =
         views::Builder<PopupCellView>()
             .SetAccessibilityDelegate(
-                std::make_unique<DeleteButtonAccessibilityDelegate>())
+                std::make_unique<DeleteButtonAccessibilityDelegate>(
+                    GetController(), GetLineNumber()))
             .Build();
 
     view->SetLayoutManager(std::make_unique<views::BoxLayout>(

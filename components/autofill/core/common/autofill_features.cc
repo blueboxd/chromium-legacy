@@ -4,6 +4,7 @@
 
 #include "components/autofill/core/common/autofill_features.h"
 
+#include "base/feature_list.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 
@@ -22,10 +23,10 @@ BASE_FEATURE(kAutofillAddressProfileSavePromptAddressVerificationSupport,
              "AutofillAddressProfileSavePromptAddressVerificationSupport",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-// Use the heuristic parser to detected unfillable numeric types in field labels
+// Use the heuristic parser to detect unfillable numeric types in field labels
 // and grant the heuristic precedence over non-override server predictions.
-BASE_FEATURE(kAutofillGivePrecedenceToNumericQuantitites,
-             "AutofillGivePrecedenceToNumericQuantitites",
+BASE_FEATURE(kAutofillGivePrecedenceToNumericQuantities,
+             "AutofillGivePrecedenceToNumericQuantities",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Controls if `kAccount` profiles are loaded from AutofillTable and
@@ -82,14 +83,6 @@ BASE_FEATURE(kAutofillInferCountryCallingCode,
              "AutofillInferCountryCallingCode",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-// If enabled, complementing the country happens before setting the phone number
-// on profile import. This way, the variation country code takes precedence over
-// the app locale.
-// TODO(crbug.com/1295721): Cleanup when launched.
-BASE_FEATURE(kAutofillComplementCountryEarly,
-             "AutofillComplementCountryEarly",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 // If enabled, label inference considers strings entirely made up of  '(', ')'
 // and '-' as valid labels.
 // TODO(crbug.com/1311937): Cleanup when launched.
@@ -137,7 +130,7 @@ BASE_FEATURE(kAutofillFillAndImportFromMoreFields,
 const base::FeatureParam<bool> kAutofillFillAutocompleteUnrecognized{
     &kAutofillFillAndImportFromMoreFields, "fill_unrecognized_autocomplete",
     false};
-const base::FeatureParam<bool> kAutofillImportFromAutoccompleteUnrecognized{
+const base::FeatureParam<bool> kAutofillImportFromAutocompleteUnrecognized{
     &kAutofillFillAndImportFromMoreFields,
     "import_from_unrecognized_autocomplete", false};
 
@@ -308,6 +301,31 @@ BASE_FEATURE(kAutofillExtractAllDatalists,
 BASE_FEATURE(kAutofillFeedback,
              "AutofillFeedback",
              base::FEATURE_DISABLED_BY_DEFAULT);
+BASE_FEATURE(kAutofillStreetNameOrHouseNumberPrecedenceOverAutocomplete,
+             "AutofillStreetNameOrHouseNumberPrecedenceOverAutocomplete",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+const base::FeatureParam<PrecedenceOverAutocompleteScope>::Option
+    kPrecedenceOverAutocompleteScope[] = {
+        {PrecedenceOverAutocompleteScope::kNone, "none"},
+        {PrecedenceOverAutocompleteScope::kAddressLine1Or2,
+         "address_line_1_and_2"},
+        {PrecedenceOverAutocompleteScope::kRecognized, "recognized"},
+        {PrecedenceOverAutocompleteScope::kSpecified, "specified"}};
+
+const base::FeatureParam<PrecedenceOverAutocompleteScope>
+    kAutofillHeuristicPrecedenceScopeOverAutocomplete{
+        &kAutofillStreetNameOrHouseNumberPrecedenceOverAutocomplete,
+        "AutofillHeuristicPrecedenceOverAutocompleteScope",
+        PrecedenceOverAutocompleteScope::kAddressLine1Or2,
+        &kPrecedenceOverAutocompleteScope};
+
+const base::FeatureParam<PrecedenceOverAutocompleteScope>
+    kAutofillServerPrecedenceScopeOverAutocomplete{
+        &kAutofillStreetNameOrHouseNumberPrecedenceOverAutocomplete,
+        "AutofillServerPrecedenceOverAutocompleteScope",
+        PrecedenceOverAutocompleteScope::kNone,
+        &kPrecedenceOverAutocompleteScope};
 
 // When enabled, HTML autocomplete values that do not map to any known type, but
 // look reasonable (e.g. contain "address") are simply ignored. Without the
@@ -407,6 +425,15 @@ BASE_FEATURE(kAutofillParseNameAsAutocompleteType,
 // TODO(crbug.com/1317961): Remove once launched.
 BASE_FEATURE(kAutofillAlwaysParsePlaceholders,
              "AutofillAlwaysParsePlaceholders",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// If enabled, the same 500ms threshold will be applied for accepting keyboard
+// enter strokes that is already applied to mouse and gesture events.
+// It will also be applied to tap events on popup menus on Android (but not the
+// keyboard accessory, at the screen is outside of the render surface).
+// TODO(crbug.com/1418364): Remove once launched.
+BASE_FEATURE(kAutofillPopupUseThresholdForKeyboardAndMobileAccept,
+             "AutofillPopupUseThresholdForKeyboardAndMobileAccept",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // If the feature is enabled, FormTracker's probable-form-submission detection
@@ -598,11 +625,6 @@ BASE_FEATURE(kAutofillKeyboardAccessory,
 // present on Android.
 BASE_FEATURE(kAutofillManualFallbackAndroid,
              "AutofillManualFallbackAndroid",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
-// Controls whether to use modernized style for the Autofill dropdown.
-BASE_FEATURE(kAutofillRefreshStyleAndroid,
-             "AutofillRefreshStyleAndroid",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Controls whether the touch to fill surface is shown for credit cards on

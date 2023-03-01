@@ -1456,21 +1456,20 @@ int MenuItemView::GetMaxIconViewWidth() const {
     return 0;
 
   std::vector<int> widths(menu_items.size());
-  const auto get_width = [](MenuItemView* item) {
+  base::ranges::transform(menu_items, widths.begin(), [](MenuItemView* item) {
     if (item->type_ == Type::kCheckbox || item->type_ == Type::kRadio) {
       // If this item has a radio or checkbox, the icon will not affect
       // alignment of other items.
       return 0;
     }
-    if (item->HasSubmenu())
+    if (item->HasSubmenu()) {
       return item->GetMaxIconViewWidth();
+    }
     return (item->icon_view_ && !MenuConfig::instance().icons_in_label)
                ? item->icon_view_->GetPreferredSize().width()
                : 0;
-  };
-  std::transform(menu_items.cbegin(), menu_items.cend(), widths.begin(),
-                 get_width);
-  return *std::max_element(widths.cbegin(), widths.cend());
+  });
+  return base::ranges::max(widths);
 }
 
 bool MenuItemView::HasChecksOrRadioButtons() const {
@@ -1514,8 +1513,8 @@ void MenuItemView::UpdateSelectionBasedState(bool paint_as_selected) {
     const gfx::VectorIcon& radio_icon =
         toggled ? kMenuRadioSelectedIcon : kMenuRadioEmptyIcon;
     const SkColor radio_icon_color = GetColorProvider()->GetColor(
-        toggled ? ui::kColorButtonForegroundChecked
-                : ui::kColorButtonForegroundUnchecked);
+        toggled ? ui::kColorRadioButtonForegroundChecked
+                : ui::kColorRadioButtonForegroundUnchecked);
     radio_check_image_view_->SetImage(ui::ImageModel::FromVectorIcon(
         radio_icon, radio_icon_color, kMenuCheckSize));
   }

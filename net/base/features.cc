@@ -77,6 +77,10 @@ BASE_FEATURE(kEncryptedClientHello,
              "EncryptedClientHello",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+BASE_FEATURE(kEncryptedClientHelloQuic,
+             "EncryptedClientHelloQuic",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 BASE_FEATURE(kNetworkQualityEstimator,
              "NetworkQualityEstimator",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -107,10 +111,6 @@ BASE_FEATURE(kPartitionSSLSessionsByNetworkIsolationKey,
 
 BASE_FEATURE(kPartitionNelAndReportingByNetworkIsolationKey,
              "PartitionNelAndReportingByNetworkIsolationKey",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
-BASE_FEATURE(kEnableCrossSiteFlagNetworkAnonymizationKey,
-             "EnableCrossSiteFlagNetworkAnonymizationKey",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 BASE_FEATURE(kTLS13KeyUpdate,
@@ -246,10 +246,6 @@ BASE_FEATURE(kPartitionedCookies,
 BASE_FEATURE(kNoncedPartitionedCookies,
              "NoncedPartitionedCookies",
              base::FEATURE_ENABLED_BY_DEFAULT);
-
-BASE_FEATURE(kRecordRadioWakeupTrigger,
-             "RecordRadioWakeupTrigger",
-             base::FEATURE_DISABLED_BY_DEFAULT);
 
 BASE_FEATURE(kClampCookieExpiryTo400Days,
              "ClampCookieExpiryTo400Days",

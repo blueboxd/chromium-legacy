@@ -1469,7 +1469,17 @@ void Document::SetReadyState(DocumentReadyState ready_state) {
   }
 
   ready_state_ = ready_state;
-  DispatchEvent(*Event::Create(event_type_names::kReadystatechange));
+  if (GetFrame() && GetFrame()->GetPage() &&
+      GetFrame()->GetPage()->GetPageScheduler()->IsInBackForwardCache()) {
+    // Enqueue the event when the page is in back/forward cache, so that it
+    // would not cause JavaScript execution. The event will be dispatched upon
+    // restore.
+    EnqueueEvent(*Event::Create(event_type_names::kReadystatechange),
+                 TaskType::kInternalDefault);
+  } else {
+    // Synchronously dispatch event when the page is not in back/forward cache.
+    DispatchEvent(*Event::Create(event_type_names::kReadystatechange));
+  }
 }
 
 bool Document::IsLoadCompleted() const {
@@ -7819,16 +7829,6 @@ void Document::AddToTopLayer(Element* element, const Element* before) {
   DCHECK(!top_layer_elements_pending_removal_.Contains(element));
   DCHECK(!before || top_layer_elements_.Contains(before));
 
-  // The view transition root pseudo-element should always be the last element
-  // in the top layer so it paints on top of all other top layer elements.
-  auto* transition_pseudo =
-      documentElement()->GetPseudoElement(kPseudoIdViewTransition);
-  if (transition_pseudo && element != transition_pseudo) {
-    DCHECK(transition_pseudo->IsInTopLayer());
-    DCHECK(top_layer_elements_.back() == *transition_pseudo);
-    top_layer_elements_.pop_back();
-  }
-
   if (before) {
     DCHECK(element->IsBackdropPseudoElement())
         << "If this invariant changes, we might need to revisit Container "
@@ -7838,9 +7838,6 @@ void Document::AddToTopLayer(Element* element, const Element* before) {
   } else {
     top_layer_elements_.push_back(element);
   }
-
-  if (transition_pseudo && element != transition_pseudo)
-    top_layer_elements_.push_back(transition_pseudo);
 
   element->SetIsInTopLayer(true);
   display_lock_document_state_->ElementAddedToTopLayer(element);
@@ -7909,7 +7906,17 @@ HTMLDialogElement* Document::ActiveModalDialog() const {
   return nullptr;
 }
 
-HTMLElement* Document::TopmostPopover() const {
+void Document::SetPopoverHintShowing(HTMLElement* element) {
+  DCHECK(!element || element->HasPopoverAttribute());
+  DCHECK(RuntimeEnabledFeatures::HTMLPopoverHintEnabled());
+  popover_hint_showing_ = element;
+}
+
+HTMLElement* Document::TopmostPopoverOrHint() const {
+  if (PopoverHintShowing()) {
+    DCHECK(RuntimeEnabledFeatures::HTMLPopoverHintEnabled());
+    return PopoverHintShowing();
+  }
   if (PopoverStack().empty())
     return nullptr;
   return PopoverStack().back();
@@ -7992,19 +7999,6 @@ int Document::RequestAnimationFrame(FrameCallback* callback) {
 
 void Document::CancelAnimationFrame(int id) {
   scripted_animation_controller_->CancelFrameCallback(id);
-}
-
-void Document::ServiceScriptedAnimations(
-    base::TimeTicks monotonic_animation_start_time,
-    bool can_throttle) {
-  base::TimeTicks start_time =
-      can_throttle ? base::TimeTicks() : base::TimeTicks::Now();
-  scripted_animation_controller_->ServiceScriptedAnimations(
-      monotonic_animation_start_time, can_throttle);
-  if (!can_throttle && GetFrame()) {
-    GetFrame()->GetFrameScheduler()->AddTaskTime(base::TimeTicks::Now() -
-                                                 start_time);
-  }
 }
 
 ScriptedIdleTaskController& Document::EnsureScriptedIdleTaskController() {
@@ -8680,6 +8674,7 @@ void Document::Trace(Visitor* visitor) const {
   visitor->Trace(top_layer_elements_);
   visitor->Trace(top_layer_elements_pending_removal_);
   visitor->Trace(popover_stack_);
+  visitor->Trace(popover_hint_showing_);
   visitor->Trace(popover_pointerdown_target_);
   visitor->Trace(popovers_waiting_to_hide_);
   visitor->Trace(elements_with_css_toggles_);

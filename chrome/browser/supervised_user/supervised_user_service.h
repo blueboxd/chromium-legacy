@@ -253,9 +253,11 @@ class SupervisedUserService : public KeyedService,
 
   // Use |SupervisedUserServiceFactory::GetForProfile(..)| to get
   // an instance of this service.
-  explicit SupervisedUserService(
+  SupervisedUserService(
       Profile* profile,
       signin::IdentityManager* identity_manager,
+      PrefService& user_prefs,
+      supervised_user::SupervisedUserSettingsService& settings_service,
       ValidateURLSupportCallback check_webstore_url_callback);
 
   void SetActive(bool active);
@@ -326,12 +328,6 @@ class SupervisedUserService : public KeyedService,
   void SetExtensionsActive();
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 
-  // Returns the SupervisedUserSettingsService associated with |profile_|.
-  supervised_user::SupervisedUserSettingsService* GetSettingsService();
-
-  // Returns the PrefService associated with |profile_|.
-  PrefService* GetPrefService();
-
   void OnSupervisedUserIdChanged();
 
   void OnDefaultFilteringBehaviorChanged();
@@ -373,6 +369,11 @@ class SupervisedUserService : public KeyedService,
   // Updates the manual overrides for URLs in the URL filters when the
   // corresponding preference is changed.
   void UpdateManualURLs();
+
+  const raw_ref<PrefService> user_prefs_;
+
+  const raw_ref<supervised_user::SupervisedUserSettingsService>
+      settings_service_;
 
   // Owns us via the KeyedService mechanism.
   raw_ptr<Profile> profile_;

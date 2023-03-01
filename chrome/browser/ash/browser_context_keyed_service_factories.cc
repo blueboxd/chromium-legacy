@@ -85,15 +85,18 @@
 #include "chrome/browser/ash/printing/history/print_job_history_service_factory.h"
 #include "chrome/browser/ash/printing/print_management/printing_manager_factory.h"
 #include "chrome/browser/ash/printing/synced_printers_manager_factory.h"
+#include "chrome/browser/ash/remote_apps/remote_apps_manager_factory.h"
 #include "chrome/browser/ash/secure_channel/nearby_connector_factory.h"
 #include "chrome/browser/ash/smb_client/smb_service_factory.h"
 #include "chrome/browser/ash/sync/sync_error_notifier_factory.h"
 #include "chrome/browser/ash/tether/tether_service_factory.h"
 #include "chrome/browser/ash/web_applications/personalization_app/personalization_app_manager_factory.h"
 #include "chrome/browser/browser_process_platform_part_ash.h"
+#include "chrome/browser/sharesheet/sharesheet_service_factory.h"
 #include "chrome/browser/speech/cros_speech_recognition_service_factory.h"
 #include "chrome/browser/speech/extension_api/tts_engine_extension_observer_chromeos.h"
 #include "chrome/browser/ui/ash/calendar/calendar_keyed_service_factory.h"
+#include "chrome/browser/ui/ash/glanceables/glanceables_keyed_service_factory.h"
 #include "chrome/browser/ui/ash/global_media_controls/cast_media_notification_producer_keyed_service_factory.h"
 #include "chrome/browser/ui/ash/holding_space/holding_space_keyed_service_factory.h"
 #include "chrome/browser/ui/webui/settings/ash/os_settings_manager_factory.h"
@@ -128,6 +131,7 @@ void EnsureBrowserContextKeyedServiceFactoriesBuilt() {
   ash::OfflineSigninLimiterFactory::GetInstance();
   ash::PasswordSyncTokenVerifierFactory::GetInstance();
   ash::RecentModelFactory::GetInstance();
+  ash::RemoteAppsManagerFactory::GetInstance();
   ash::ScreenTimeControllerFactory::GetInstance();
   ash::SigninErrorNotifierFactory::GetInstance();
   ash::SyncErrorNotifierFactory::GetInstance();
@@ -202,10 +206,12 @@ void EnsureBrowserContextKeyedServiceFactoriesBuilt() {
   printing::print_management::PrintingManagerFactory::GetInstance();
   PrintJobHistoryServiceFactory::GetInstance();
   secure_channel::NearbyConnectorFactory::GetInstance();
+  sharesheet::SharesheetServiceFactory::GetInstance();
   smb_client::SmbServiceFactory::GetInstance();
   SyncedPrintersManagerFactory::GetInstance();
   tether::TetherServiceFactory::GetInstance();
   TtsEngineExtensionObserverChromeOS::EnsureFactoryBuilt();
+  GlanceablesKeyedServiceFactory::GetInstance();
 }
 
 }  // namespace ash

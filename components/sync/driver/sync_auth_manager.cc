@@ -13,7 +13,6 @@
 #include "components/signin/public/identity_manager/access_token_info.h"
 #include "components/signin/public/identity_manager/scope_set.h"
 #include "components/sync/base/stop_source.h"
-#include "components/sync/base/sync_prefs.h"
 #include "components/sync/engine/sync_credentials.h"
 #include "google_apis/gaia/gaia_constants.h"
 #include "google_apis/gaia/google_service_auth_error.h"
@@ -351,34 +350,10 @@ void SyncAuthManager::OnRefreshTokenRemovedForAccount(
     return;
   }
 
-  if (UpdateSyncAccountIfNecessary()) {
-    // If the syncing account was updated as a result of this, then all that's
-    // necessary has been handled; nothing else to be done here.
-    return;
-  }
-
-  // TODO(crbug.com/1383912): If kSyncIgnoreAccountWithoutRefreshToken sticks,
-  // the code below can be removed.
-
-  // If we're still here, then that means Chrome is still signed in to this
-  // account. Keep Sync alive but set an auth error.
-  DCHECK_EQ(
-      sync_account_.account_info.account_id,
-      identity_manager_->GetPrimaryAccountId(signin::ConsentLevel::kSignin));
-
-  // TODO(crbug.com/1371572): Reconsider setting auth errors created
-  // artificially here that were never received from IdentityManager.
-  SetLastAuthError(
-      GoogleServiceAuthError(GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS));
-  DCHECK(IsSyncPaused());
-
-  // Note: It's possible that we're in the middle of a signout, and the "refresh
-  // token removed" event just arrived before the "signout" event. In that case,
-  // OnPrimaryAccountChanged() will get called momentarily and stop sync.
-
-  ClearAccessTokenAndRequest();
-
-  credentials_changed_callback_.Run();
+  bool changed = UpdateSyncAccountIfNecessary();
+  // This should have removed the syncing account.
+  DCHECK(changed);
+  DCHECK(sync_account_.account_info.IsEmpty());
 }
 
 void SyncAuthManager::OnErrorStateOfRefreshTokenUpdatedForAccount(
@@ -522,37 +497,12 @@ void SyncAuthManager::AccessTokenFetched(
   DCHECK_EQ(access_token_.empty(),
             error.state() != GoogleServiceAuthError::NONE);
 
-  switch (error.state()) {
-    case GoogleServiceAuthError::NONE:
-      SetLastAuthError(GoogleServiceAuthError::AuthErrorNone());
-      break;
-    case GoogleServiceAuthError::CONNECTION_FAILED:
-    case GoogleServiceAuthError::REQUEST_CANCELED:
-    case GoogleServiceAuthError::SERVICE_UNAVAILABLE:
-      // Transient error. Retry after some time.
-      DCHECK(error.IsTransientError());
-      [[fallthrough]];
-      // TODO(crbug.com/1156584): SERVICE_ERROR is actually considered a
-      // persistent error. Should we use .IsTransientError() instead of manually
-      // listing cases here?
-    case GoogleServiceAuthError::SERVICE_ERROR:
-      request_access_token_backoff_.InformOfRequest(false);
-      ScheduleAccessTokenRequest();
-      break;
-    case GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS:
-      DCHECK(error.IsPersistentError());
-      SetLastAuthError(error);
-      break;
-    case GoogleServiceAuthError::USER_NOT_SIGNED_UP:
-    case GoogleServiceAuthError::UNEXPECTED_SERVICE_RESPONSE:
-    case GoogleServiceAuthError::SCOPE_LIMITED_UNRECOVERABLE_ERROR:
-      DCHECK(error.IsPersistentError());
-      DLOG(ERROR) << "Unexpected persistent error: " << error.ToString();
-      SetLastAuthError(error);
-      break;
-    case GoogleServiceAuthError::NUM_STATES:
-      NOTREACHED();
-      break;
+  if (error.IsTransientError()) {
+    // Transient error. Retry after some time.
+    request_access_token_backoff_.InformOfRequest(false);
+    ScheduleAccessTokenRequest();
+  } else {
+    SetLastAuthError(error);
   }
 
   credentials_changed_callback_.Run();

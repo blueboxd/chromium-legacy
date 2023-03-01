@@ -11,6 +11,7 @@
 import '../../icons.html.js';
 import '../../settings_shared.css.js';
 import '../../controls/settings_dropdown_menu.js';
+import './keyboard_remap_modifier_key_row.js';
 import '../../prefs/prefs.js';
 
 import {I18nMixin, I18nMixinInterface} from 'chrome://resources/cr_elements/i18n_mixin.js';
@@ -48,7 +49,7 @@ export class SettingsPerDeviceKeyboardRemapKeysElement extends
         type: Object,
         value() {
           return {
-            key: 'fakeAltKeyRemapPref',
+            key: 'fakeMetaKeyRemapPref',
             type: chrome.settingsPrivate.PrefType.NUMBER,
             value: ModifierKey.META,
           };
@@ -59,7 +60,7 @@ export class SettingsPerDeviceKeyboardRemapKeysElement extends
         type: Object,
         value() {
           return {
-            key: 'fakeAltKeyRemapPref',
+            key: 'fakeCtrlKeyRemapPref',
             type: chrome.settingsPrivate.PrefType.NUMBER,
             value: ModifierKey.CONTROL,
           };
@@ -81,7 +82,7 @@ export class SettingsPerDeviceKeyboardRemapKeysElement extends
         type: Object,
         value() {
           return {
-            key: 'fakeAltKeyRemapPref',
+            key: 'fakeEscKeyRemapPref',
             type: chrome.settingsPrivate.PrefType.NUMBER,
             value: ModifierKey.ESC,
           };
@@ -92,7 +93,7 @@ export class SettingsPerDeviceKeyboardRemapKeysElement extends
         type: Object,
         value() {
           return {
-            key: 'fakeAltKeyRemapPref',
+            key: 'fakeBackspaceKeyRemapPref',
             type: chrome.settingsPrivate.PrefType.NUMBER,
             value: ModifierKey.BACKSPACE,
           };
@@ -103,7 +104,7 @@ export class SettingsPerDeviceKeyboardRemapKeysElement extends
         type: Object,
         value() {
           return {
-            key: 'fakeAltKeyRemapPref',
+            key: 'fakeAssistantKeyRemapPref',
             type: chrome.settingsPrivate.PrefType.NUMBER,
             value: ModifierKey.ASSISTANT,
           };
@@ -114,7 +115,7 @@ export class SettingsPerDeviceKeyboardRemapKeysElement extends
         type: Object,
         value() {
           return {
-            key: 'fakeAltKeyRemapPref',
+            key: 'fakeCapsLockKeyRemapPref',
             type: chrome.settingsPrivate.PrefType.NUMBER,
             value: ModifierKey.CAPS_LOCK,
           };
@@ -154,6 +155,10 @@ export class SettingsPerDeviceKeyboardRemapKeysElement extends
           'fakeAssistantPref.value,' +
           'fakeCapsLockPref.value)',
     ];
+  }
+
+  protected get modifierKey(): typeof ModifierKey {
+    return ModifierKey;
   }
 
   protected keyboard: Keyboard;
@@ -212,6 +217,22 @@ export class SettingsPerDeviceKeyboardRemapKeysElement extends
         });
   }
 
+  onKeyboardListUpdated(keyboards: Keyboard[]): void {
+    if (Router.getInstance().currentRoute !==
+        routes.PER_DEVICE_KEYBOARD_REMAP_KEYS) {
+      return;
+    }
+
+    const updatedKeyboard =
+        keyboards.find(keyboard => keyboard.id === this.keyboard.id);
+
+    // If the keyboard is disconnected in remapping page, go back to
+    // per_device_keyboard page.
+    if (!updatedKeyboard) {
+      Router.getInstance().navigateTo(routes.PER_DEVICE_KEYBOARD);
+    }
+  }
+
   /**
    * Initializes the dropdown menu options for remapping keys.
    */
@@ -257,18 +278,16 @@ export class SettingsPerDeviceKeyboardRemapKeysElement extends
     this.set('fakeAltPref.value', ModifierKey.ALT);
     this.set('fakeAssitantPref.value', ModifierKey.ASSISTANT);
     this.set('fakeBackspacePref.value', ModifierKey.BACKSPACE);
-    this.set('fakeCtrlPref.value', ModifierKey.CONTROL);
+    this.set(
+        'fakeCtrlPref.value',
+        this.keyboard.metaKey === MetaKey.COMMAND ? ModifierKey.META :
+                                                    ModifierKey.CONTROL);
     this.set('fakeCapsLockPref.value', ModifierKey.CAPS_LOCK);
     this.set('fakeEscPref.value', ModifierKey.ESC);
-    this.set('fakeMetaPref.value', ModifierKey.META);
-  }
-
-  private restoreDefaults(): void {
-    this.defaultInitializePrefs();
-    if (this.keyboard.metaKey === MetaKey.COMMAND) {
-      this.set('fakeMetaPref.value', ModifierKey.CONTROL);
-      this.set('fakeCtrlPref.value', ModifierKey.META);
-    }
+    this.set(
+        'fakeMetaPref.value',
+        this.keyboard.metaKey === MetaKey.COMMAND ? ModifierKey.CONTROL :
+                                                    ModifierKey.META);
   }
 
   private setRemappedKey(originalKey: ModifierKey): void {
@@ -306,7 +325,7 @@ export class SettingsPerDeviceKeyboardRemapKeysElement extends
     }
   }
 
-  private onSettingsChanged() {
+  private onSettingsChanged(): void {
     // TODO(yyhyyh@): Call update keyboard settings API when user changes
     // settings value.
   }

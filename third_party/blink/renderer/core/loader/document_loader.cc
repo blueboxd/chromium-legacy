@@ -289,7 +289,6 @@ struct SameSizeAsDocumentLoader
   CommitReason commit_reason;
   uint64_t main_resource_identifier;
   mojom::blink::ResourceTimingInfoPtr resource_timing_info_for_parent;
-  base::TimeTicks last_redirect_end_time;
   WebScopedVirtualTimePauser virtual_time_pauser;
   Member<PrefetchedSignedExchangeManager> prefetched_signed_exchange_manager;
   ukm::SourceId ukm_source_id;
@@ -314,6 +313,7 @@ struct SameSizeAsDocumentLoader
   absl::optional<FencedFrame::RedactedFencedFrameProperties>
       fenced_frame_properties;
   bool has_storage_access;
+  mojom::blink::ParentResourceTimingAccess parent_resource_timing_access;
 };
 
 // Asserts size of DocumentLoader, so that whenever a new attribute is added to
@@ -533,6 +533,8 @@ DocumentLoader::DocumentLoader(
   document_policy_ = CreateDocumentPolicy();
 
   WebNavigationTimings& timings = params_->navigation_timings;
+  parent_resource_timing_access_ = timings.parent_resource_timing_access;
+
   if (!timings.input_start.is_null())
     document_load_timing_.SetInputStart(timings.input_start);
   if (timings.navigation_start.is_null()) {
@@ -826,7 +828,7 @@ void DocumentLoader::UpdateForSameDocumentNavigation(
       DCHECK(frame_->DomWindow());
       SoftNavigationHeuristics* heuristics =
           SoftNavigationHeuristics::From(*frame_->DomWindow());
-      heuristics->SetBackForwardNavigationURL(script_state, new_url);
+      heuristics->SetAsyncSoftNavigationURL(script_state, new_url);
     }
   }
   SinglePageAppNavigationType single_page_app_navigation_type =
@@ -1099,6 +1101,7 @@ void DocumentLoader::BodyLoadingFinished(
     const absl::optional<WebURLError>& error) {
   TRACE_EVENT0("loading", "DocumentLoader::BodyLoadingFinished");
 
+  DCHECK(frame_);
   if (!error) {
     GetFrameLoader().Progress().CompleteProgress(main_resource_identifier_);
     probe::DidFinishLoading(
@@ -1245,10 +1248,6 @@ void DocumentLoader::HandleRedirect(
   probe::WillSendNavigationRequest(
       probe::ToCoreProbeSink(GetFrame()), main_resource_identifier_, this,
       url_after_redirect, http_method_, http_body_.get());
-
-  if (ResourceLoadTiming* timing = redirect_response.GetResourceLoadTiming()) {
-    redirect_end_time_ = timing->ReceiveHeadersEnd();
-  }
 
   DCHECK(!GetTiming().FetchStart().is_null());
   GetTiming().AddRedirect(url_before_redirect, url_after_redirect);
@@ -1884,11 +1883,7 @@ void DocumentLoader::DidInstallNewDocument(Document* document) {
 
   WarnIfSandboxIneffective(document->domWindow());
 
-  if (view_transition_state_) {
-    ViewTransitionSupplement::CreateFromSnapshotForNavigation(
-        *document, std::move(*view_transition_state_));
-    view_transition_state_.reset();
-  }
+  StartViewTransitionIfNeeded(*document);
 }
 
 void DocumentLoader::WillCommitNavigation() {
@@ -2344,40 +2339,30 @@ void DocumentLoader::InitializeWindow(Document* owner_document) {
   frame_->DomWindow()->SetPolicyContainer(std::move(policy_container_));
   frame_->DomWindow()->SetContentSecurityPolicy(csp);
 
+  BlinkStorageKey storage_key(storage_key_);
+  // TODO(crbug.com/1199077): For some reason `storage_key_` is occasionally
+  // null. If that's the case this will create one based on the
+  // `security_origin`.
+  // TODO(crbug.com/1199077): Some tests (potentially other code?) rely on an
+  // opaque origin + nonce. Investigate whether this combination should be
+  // disallowed.
+  if (storage_key.GetSecurityOrigin()->IsOpaque() && !storage_key.GetNonce()) {
+    storage_key = BlinkStorageKey::CreateFirstParty(security_origin);
+  }
+
   // Now that we have the final window and Agent, ensure the security origin has
   // the appropriate agent cluster id. This may derive a new security origin.
   security_origin = security_origin->GetOriginForAgentCluster(
       frame_->DomWindow()->GetAgent()->cluster_id());
 
-  if (storage_key_.GetNonce()) {
-    // If the nonce isn't null, we can use the simpler form of the constructor.
-    frame_->DomWindow()->SetStorageKey(BlinkStorageKey::CreateWithNonce(
-        security_origin, *storage_key_.GetNonce()));
-  } else {
-    // TODO(crbug.com/1159586): Remove this when 3psp storage is on. It's here
-    // to preserve the information that is stripped due to the key being
-    // re-made.
-    const auto& storage_key_with_3psp =
-        storage_key_.CopyWithForceEnabledThirdPartyStoragePartitioning();
-    BlinkSchemefulSite top_level_site = storage_key_with_3psp.GetTopLevelSite();
-    // If `security_origin` is opaque or does not match `top_level_site` we
-    // must ensure `ancestor_chain_bit` is kCrossSite.
-    mojom::blink::AncestorChainBit ancestor_chain_bit =
-        storage_key_with_3psp.GetAncestorChainBit();
-    if (security_origin->IsOpaque() ||
-        BlinkSchemefulSite(security_origin) != top_level_site) {
-      ancestor_chain_bit = mojom::blink::AncestorChainBit::kCrossSite;
-    }
-    // TODO(https://crbug.com/888079): Just use the storage key sent by the
-    // browser once the browser will be able to compute the origin in all cases.
-    frame_->DomWindow()->SetStorageKey(BlinkStorageKey::Create(
-        security_origin, top_level_site, ancestor_chain_bit));
-  }
+  // TODO(https://crbug.com/888079): Just use the storage key sent by the
+  // browser once the browser will be able to compute the origin in all cases.
+  frame_->DomWindow()->SetStorageKey(storage_key.WithOrigin(security_origin));
 
-  if (storage_key_ == session_storage_key_ ||
-      storage_key_.GetSecurityOrigin()->IsOpaque() ||
+  if (storage_key == session_storage_key_ ||
+      storage_key.GetSecurityOrigin()->IsOpaque() ||
       session_storage_key_.GetSecurityOrigin()->IsOpaque()) {
-    // If the `storage_key_` and `session_storage_key_` match (or either are
+    // If the `storage_key` and `session_storage_key_` match (or either are
     // opaque), we should just use whatever storage key was built above as we
     // aren't preventing partition.
     frame_->DomWindow()->SetSessionStorageKey(
@@ -2640,27 +2625,32 @@ void DocumentLoader::CommitNavigation() {
 
   if (response_.ShouldPopulateResourceTiming() ||
       is_error_page_for_failed_navigation_) {
-    // We only report resource timing to the parent if:
-    // 1. We have a parent (owner)
-    // 2. Timing Allow Passed - otherwise we report fallback timing.
-    // 3. It's an external navigation (kWebNavigationTypeOther)
-    // TODO (crbug.com/1410705): Using navigation_type_ for this covers
-    // most cases but might still have very rare racy edge cases, such as
-    // extension or window.open with target cancelling an ongoing navigation
-    // and start a new navigation to the same URL.
-    if (frame_->Owner() && response_.TimingAllowPassed() &&
-        navigation_type_ == WebNavigationType::kWebNavigationTypeOther) {
-      resource_timing_info_for_parent_ = CreateResourceTimingInfo(
-          GetTiming().NavigationStart(), original_url_, &response_);
-      if (!is_same_origin_initiator ||
-          document_load_timing_.HasCrossOriginRedirect()) {
-        resource_timing_info_for_parent_->content_type = g_empty_string;
-        resource_timing_info_for_parent_->response_status = 0;
+    // We only report resource timing info to the parent if:
+    // 1. The navigation is container-initiated (e.g. iframe changed src)
+    // 2. TAO passed.
+    if (parent_resource_timing_access_ !=
+            mojom::blink::ParentResourceTimingAccess::kDoNotReport &&
+        response_.TimingAllowPassed()) {
+      ResourceResponse response_for_parent(response_);
+      if (parent_resource_timing_access_ ==
+          mojom::blink::ParentResourceTimingAccess::
+              kReportWithoutResponseDetails) {
+        response_for_parent.SetType(network::mojom::FetchResponseType::kOpaque);
       }
+
+      DCHECK(frame_->Owner());
+      DCHECK(GetRequestorOrigin());
+      resource_timing_info_for_parent_ = CreateResourceTimingInfo(
+          GetTiming().NavigationStart(), original_url_, &response_for_parent);
+
       resource_timing_info_for_parent_->last_redirect_end_time =
-          redirect_end_time_;
+          document_load_timing_.RedirectEnd();
     }
 
+    // TimingAllowPassed only applies to resource
+    // timing reporting. Navigation timing is always same-origin with the
+    // document that holds to the timing entry, as navigation timing represents
+    // the timing of that document itself.
     response_.SetTimingAllowPassed(true);
     mojom::blink::ResourceTimingInfoPtr navigation_timing_info =
         CreateResourceTimingInfo(base::TimeTicks(),
@@ -2668,8 +2658,9 @@ void DocumentLoader::CommitNavigation() {
                                      ? pre_redirect_url_for_failed_navigations_
                                      : url_,
                                  &response_);
-    navigation_timing_info->last_redirect_end_time = redirect_end_time_;
-    DCHECK(frame_);
+    navigation_timing_info->last_redirect_end_time =
+        document_load_timing_.RedirectEnd();
+
     DCHECK(frame_->DomWindow());
     DOMWindowPerformance::performance(*frame_->DomWindow())
         ->CreateNavigationTimingInstance(std::move(navigation_timing_info));
@@ -3101,6 +3092,10 @@ void DocumentLoader::NotifyPrerenderingDocumentActivated(
   }
 
   GetTiming().SetActivationStart(params.activation_start);
+
+  DCHECK(!view_transition_state_);
+  view_transition_state_ = std::move(params.view_transition_state);
+  StartViewTransitionIfNeeded(*frame_->GetDocument());
 }
 
 HashMap<KURL, EarlyHintsPreloadEntry>
@@ -3270,6 +3265,14 @@ WebArchiveInfo DocumentLoader::GetArchiveInfo() const {
       WebURL(),
       base::Time(),
   };
+}
+
+void DocumentLoader::StartViewTransitionIfNeeded(Document& document) {
+  if (view_transition_state_) {
+    ViewTransitionSupplement::CreateFromSnapshotForNavigation(
+        document, std::move(*view_transition_state_));
+    view_transition_state_.reset();
+  }
 }
 
 // static

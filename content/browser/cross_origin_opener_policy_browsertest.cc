@@ -16,6 +16,7 @@
 #include "content/public/browser/site_isolation_policy.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/url_constants.h"
+#include "content/public/test/back_forward_cache_util.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
@@ -172,11 +173,9 @@ class CrossOriginOpenerPolicyBrowserTest
     // Enable BackForwardCache:
     if (IsBackForwardCacheEnabled()) {
       feature_list_for_back_forward_cache_.InitWithFeaturesAndParameters(
-          {{features::kBackForwardCache, {{}}},
-           {features::kBackForwardCacheTimeToLiveControl,
-            {{"time_to_live_seconds", "3600"}}}},
-          // Allow BackForwardCache for all devices regardless of their memory.
-          {features::kBackForwardCacheMemoryControls});
+          GetDefaultEnabledBackForwardCacheFeaturesForTesting(
+              /*ignore_outstanding_network_request=*/false),
+          GetDefaultDisabledBackForwardCacheFeaturesForTesting());
     } else {
       feature_list_for_back_forward_cache_.InitWithFeatures(
           {}, {features::kBackForwardCache});
@@ -3732,6 +3731,44 @@ IN_PROC_BROWSER_TEST_P(CrossOriginOpenerPolicyBrowserTest,
   EXPECT_NE(rph_id_1, rph_id_2);
   EXPECT_NE(rph_id_2, rph_id_3);
   EXPECT_NE(rph_id_3, rph_id_1);
+}
+
+// Smoke test for an iframe in a crossOriginIsolated page doing a same-document
+// history navigation. Added to prevent regression of https://crbug.com/1413081.
+IN_PROC_BROWSER_TEST_P(CrossOriginOpenerPolicyBrowserTest,
+                       SmokeTest_CoopCoepSameDocumentIframeHistoryNavigation) {
+  GURL main_page_url(
+      https_server()->GetURL("a.test",
+                             "/set-header?"
+                             "Cross-origin-opener-policy: same-origin&"
+                             "Cross-origin-embedder-policy: require-corp"));
+  GURL iframe_url(
+      https_server()->GetURL("a.test",
+                             "/set-header?"
+                             "Cross-Origin-Embedder-Policy: require-corp&"
+                             "Cross-Origin-Resource-Policy: cross-origin"));
+
+  // Start with a cross-origin isolated document.
+  ASSERT_TRUE(NavigateToURL(shell(), main_page_url));
+
+  // Add an iframe that has the appropriate COEP and CORP headers.
+  ASSERT_TRUE(ExecJs(current_frame_host(), JsReplace(R"(
+    const frame = document.createElement('iframe');
+    frame.src = $1;
+    document.body.appendChild(frame);
+  )",
+                                                     iframe_url)));
+  ASSERT_TRUE(WaitForLoadStop(web_contents()));
+
+  // Do a pushState/popState in the iframe. This will generate a same-document
+  // history navigation.
+  RenderFrameHostImpl* child_rfh =
+      current_frame_host()->child_at(0)->current_frame_host();
+  ASSERT_TRUE(ExecJs(child_rfh, "history.pushState({}, '', '');"));
+  ASSERT_TRUE(ExecJs(child_rfh, "history.go(-1)"));
+
+  // We should commit and gracefully finish loading.
+  EXPECT_TRUE(WaitForLoadStop(web_contents()));
 }
 
 // TODO(https://crbug.com/1101339). Test inheritance of the virtual browsing

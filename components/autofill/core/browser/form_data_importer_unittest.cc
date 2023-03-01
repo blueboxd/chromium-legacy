@@ -840,10 +840,10 @@ TEST_P(FormDataImporterTest, ComplementCountry) {
   ImportWithCountry("", {kDefaultGermanProfile});
 }
 
-// Tests that by complementing the country before setting the phone number,
-// the variation country code is preferred over the app locale while parsing
-// nationally formatted phone numbers.
-TEST_P(FormDataImporterTest, ComplementCountryEarly) {
+// Tests that the country is complemented before parsing the phone number. This
+// is important, since the phone number validation relies on the profile's
+// country for nationally formatted numbers.
+TEST_P(FormDataImporterTest, ComplementCountry_PhoneNumberParsing) {
   // This is a nationally formatted German phone number, which libphonenumber
   // doesn't parse under the "US" region.
   const char* kNationalNumber = "01578 7912345";
@@ -865,38 +865,16 @@ TEST_P(FormDataImporterTest, ComplementCountryEarly) {
   // imported country will have country = "DE" assigned.
   autofill_client_->SetVariationConfigCountryCode("DE");
 
-  {
-    base::test::ScopedFeatureList complement_country_early_feature;
-    complement_country_early_feature.InitAndDisableFeature(
-        features::kAutofillComplementCountryEarly);
-
-    // Without the feature, the phone number parsing logic defaults to the
-    // "en_US" locale. Thus, parsing fails and the phone number is removed.
-    base::HistogramTester histogram_tester;
-    expected_profile.ClearFields({PHONE_HOME_WHOLE_NUMBER});
-    ExtractAddressProfilesAndVerifyExpectation(*form_structure,
-                                               {expected_profile});
-    EXPECT_THAT(histogram_tester.GetAllSamples(kHistogramName),
-                testing::UnorderedElementsAre(base::Bucket(false, 1)));
-  }
-
-  {
-    base::test::ScopedFeatureList complement_country_early_feature;
-    complement_country_early_feature.InitAndEnableFeature(
-        features::kAutofillComplementCountryEarly);
-
-    // With the feature enabled, the country complemention happens first. Thus,
-    // at the time the number is parsed, we correctly apply the German rules.
-    base::HistogramTester histogram_tester;
-    // The `expected_profile` can successfully parse the number, as the
-    // profile's country is "DE".
-    EXPECT_TRUE(expected_profile.SetInfo(
-        PHONE_HOME_WHOLE_NUMBER, base::UTF8ToUTF16(kNationalNumber), kLocale));
-    ExtractAddressProfilesAndVerifyExpectation(*form_structure,
-                                               {expected_profile});
-    EXPECT_THAT(histogram_tester.GetAllSamples(kHistogramName),
-                testing::UnorderedElementsAre(base::Bucket(true, 1)));
-  }
+  // Country complemention happens before parsing the phone number. Thus, at the
+  // time the number is parsed, we correctly apply the German rules.
+  base::HistogramTester histogram_tester;
+  // The `expected_profile` can successfully parse the number, as the
+  // profile's country is "DE".
+  EXPECT_TRUE(expected_profile.SetInfo(
+      PHONE_HOME_WHOLE_NUMBER, base::UTF8ToUTF16(kNationalNumber), kLocale));
+  ExtractAddressProfilesAndVerifyExpectation(*form_structure,
+                                             {expected_profile});
+  histogram_tester.ExpectUniqueSample(kHistogramName, true, 1);
 }
 
 // Tests how invalid countries in submitted forms are treated depending on
@@ -3216,6 +3194,44 @@ TEST_P(FormDataImporterTest, ExtractFormData_ImportIbanRecordType_NoIban) {
   ASSERT_FALSE(extracted_data.iban_import_candidate);
 }
 
+TEST_P(FormDataImporterTest, ExtractFormData_SubmittingIbanFormUpdatesPref) {
+  // Simulate a form submission with a new IBAN.
+  FormData form;
+  form.url = GURL("https://www.foo.com");
+  // The pref should always start disabled.
+  ASSERT_FALSE(personal_data_manager_->IsAutofillHasSeenIbanPrefEnabled());
+
+  AddIBANForm(&form, kIbanValue);
+
+  FormStructure form_structure(form);
+  form_structure.DetermineHeuristicTypes(nullptr, nullptr);
+  ExtractFormDataAndProcessAddressCandidates(
+      form_structure, /*profile_autofill_enabled=*/true,
+      /*payment_methods_autofill_enabled=*/true);
+  if (base::FeatureList::IsEnabled(features::kAutofillFillIbanFields)) {
+    // Submitting the IBAN form permanently enables the pref.
+    EXPECT_TRUE(personal_data_manager_->IsAutofillHasSeenIbanPrefEnabled());
+  } else {
+    // With the IBAN feature disabled, its form submission is not detected, and
+    // the pref remains unchanged.
+    EXPECT_FALSE(personal_data_manager_->IsAutofillHasSeenIbanPrefEnabled());
+  }
+}
+
+TEST_P(FormDataImporterTest,
+       ExtractFormData_SubmittingCreditCardFormDoesNotUpdateIbanPref) {
+  ASSERT_FALSE(personal_data_manager_->IsAutofillHasSeenIbanPrefEnabled());
+  std::unique_ptr<FormStructure> form_structure =
+      ConstructDefaultCreditCardFormStructure();
+  ExtractFormDataAndProcessAddressCandidates(
+      *form_structure, /*profile_autofill_enabled=*/true,
+      /*payment_methods_autofill_enabled=*/true);
+
+  // Submitting the credit card form won't enable the pref, even if the flag is
+  // on.
+  EXPECT_FALSE(personal_data_manager_->IsAutofillHasSeenIbanPrefEnabled());
+}
+
 TEST_P(FormDataImporterTest,
        ExtractFormData_ImportIbanRecordType_IbanAutofill_NewIban) {
   // Simulate a form submission with a new IBAN.
@@ -4149,7 +4165,8 @@ TEST_P(FormDataImporterTest, RemoveInaccessibleProfileValuesMetrics) {
       "Autofill.ProfileImport.InaccessibleFieldsRemoved.";
   histogram_tester.ExpectUniqueSample(metric + "Total", true, 1);
   histogram_tester.ExpectUniqueSample(
-      metric + "ByFieldType", SettingsVisibleFieldTypeForMetrics::kState, 1);
+      metric + "ByFieldType",
+      autofill_metrics::SettingsVisibleFieldTypeForMetrics::kState, 1);
 }
 
 // Tests a 2-page multi-step extraction.
@@ -4168,10 +4185,8 @@ TEST_P(FormDataImporterTest, MultiStepImport) {
 
 // Tests that a complemented country is discarded in favour of an observed one.
 TEST_P(FormDataImporterTest, MultiStepImport_ComplementCountryEarly) {
-  base::test::ScopedFeatureList features;
-  features.InitWithFeatures({features::kAutofillEnableMultiStepImports,
-                             features::kAutofillComplementCountryEarly},
-                            {});
+  base::test::ScopedFeatureList feature;
+  feature.InitAndEnableFeature(features::kAutofillEnableMultiStepImports);
 
   // Import a profile fragment with country information.
   TypeValuePairs type_value_pairs =

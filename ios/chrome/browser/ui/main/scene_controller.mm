@@ -1153,7 +1153,7 @@ void InjectNTP(Browser* browser) {
   // Don't show the default browser promo if the user is in the default browser
   // blue dot experiment.
   // TODO(crbug.com/1410229) clean-up experiment code when fully launched.
-  if (IsInBlueDotExperiment()) {
+  if (!AreDefaultBrowserPromosEnabled()) {
     return;
   }
 
@@ -2349,9 +2349,7 @@ void InjectNTP(Browser* browser) {
   if (targetMode == ApplicationModeForTabOpening::UNDETERMINED) {
     PrefService* prefs = self.mainInterface.browserState->GetPrefs();
     BOOL canShowIncognitoInterstitial =
-        base::FeatureList::IsEnabled(kIOS3PIntentsInIncognito) &&
         prefs->GetBoolean(prefs::kIncognitoInterstitialEnabled);
-
     if (!canShowIncognitoInterstitial) {
       targetMode = [self isIncognitoForced]
                        ? ApplicationModeForTabOpening::INCOGNITO

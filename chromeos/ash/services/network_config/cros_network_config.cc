@@ -220,6 +220,24 @@ std::string MojoSecurityTypeToOnc(mojom::SecurityType security_type) {
   return std::string();
 }
 
+mojom::MatchType PasspointMatchTypeToMojo(
+    const absl::optional<std::string>& match_type) {
+  if (!match_type || match_type->empty()) {
+    return mojom::MatchType::kNoMatch;
+  }
+  if (*match_type == shill::kPasspointMatchTypeHome) {
+    return mojom::MatchType::kHome;
+  }
+  if (*match_type == shill::kPasspointMatchTypeRoaming) {
+    return mojom::MatchType::kRoaming;
+  }
+  if (*match_type == shill::kPasspointMatchTypeUnknown) {
+    return mojom::MatchType::kUnknown;
+  }
+  NOTREACHED() << "Unsupported Passpoint match type: " << *match_type;
+  return mojom::MatchType::kUnknown;
+}
+
 mojom::VpnType OncVpnTypeToMojo(const std::string& onc_vpn_type) {
   if (onc_vpn_type == ::onc::vpn::kIPsec)
     return mojom::VpnType::kIKEv2;
@@ -1972,6 +1990,9 @@ mojom::ManagedPropertiesPtr ManagedPropertiesToMojo(
           wifi->security, result->source,
           /*log_result=*/false);
       wifi->is_configured_by_active_user = GetIsConfiguredByUser(result->guid);
+      wifi->passpoint_id = GetString(wifi_dict, ::onc::wifi::kPasspointId);
+      wifi->passpoint_match_type = PasspointMatchTypeToMojo(
+          GetString(wifi_dict, ::onc::wifi::kPasspointMatchType));
 
       result->type_properties =
           mojom::NetworkTypeManagedProperties::NewWifi(std::move(wifi));
@@ -3427,15 +3448,15 @@ void CrosNetworkConfig::PopulateTrafficCounters(
   std::vector<mojom::TrafficCounterPtr> counters;
   for (const base::Value& tc : traffic_counters->GetList()) {
     DCHECK(tc.is_dict());
-    const base::Value* source =
-        tc.FindKeyOfType("source", base::Value::Type::STRING);
+    const base::Value::Dict& tc_dict = tc.GetDict();
+    const std::string* source = tc_dict.FindString("source");
     DCHECK(source);
 
     // Since rx_bytes may be larger than the maximum value representable by
     // uint32_t, we must check whether it was implicitly converted to a double
     // during D-Bus deserialization.
     uint64_t rx_bytes;
-    const base::Value* rb = tc.GetDict().Find("rx_bytes");
+    const base::Value* rb = tc_dict.Find("rx_bytes");
     DCHECK(rb);
     if (rb->type() == base::Value::Type::INTEGER) {
       rx_bytes = rb->GetInt();
@@ -3449,7 +3470,7 @@ void CrosNetworkConfig::PopulateTrafficCounters(
     // uint32_t, we must check whether it was implicitly converted to a double
     // during D-Bus deserialization.
     uint64_t tx_bytes;
-    const base::Value* tb = tc.GetDict().Find("tx_bytes");
+    const base::Value* tb = tc_dict.Find("tx_bytes");
     DCHECK(tb);
     if (tb->type() == base::Value::Type::INTEGER) {
       tx_bytes = tb->GetInt();
@@ -3459,10 +3480,9 @@ void CrosNetworkConfig::PopulateTrafficCounters(
       NOTREACHED();
     }
 
-    counters.push_back(
-        mojom::TrafficCounter::New(ConvertToTrafficCounterSourceEnum(
-                                       base::ToLowerASCII(source->GetString())),
-                                   rx_bytes, tx_bytes));
+    counters.push_back(mojom::TrafficCounter::New(
+        ConvertToTrafficCounterSourceEnum(base::ToLowerASCII(*source)),
+        rx_bytes, tx_bytes));
   }
   std::move(callback).Run(std::move(counters));
 }

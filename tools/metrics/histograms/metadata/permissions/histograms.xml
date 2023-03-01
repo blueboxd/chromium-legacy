@@ -48,6 +48,26 @@ chromium-metrics-reviews@google.com.
   <variant name="WindowPlacement"/>
 </variants>
 
+<variants name="PermissionTypesSupportPermissionsPolicy">
+  <variant name="AR"/>
+  <variant name="AudioCapture"/>
+  <variant name="ClipboardReadWrite"/>
+  <variant name="ClipboardSanitizedWrite"/>
+  <variant name="DisplayCapture"/>
+  <variant name="Geolocation"/>
+  <variant name="IdleDetection"/>
+  <variant name="LocalFonts"/>
+  <variant name="Midi"/>
+  <variant name="MidiSysEx"/>
+  <variant name="ProtectedMedia"/>
+  <variant name="StorageAccess"/>
+  <variant name="TopLevelStorageAccess"/>
+  <variant name="VideoCapture"/>
+  <variant name="VR"/>
+  <variant name="WakeLockScreen"/>
+  <variant name="WindowPlacement"/>
+</variants>
+
 <variants name="PromptDisposition">
   <variant name="AnchoredBubble"/>
   <variant name="CustomModalDialog"/>
@@ -146,6 +166,33 @@ chromium-metrics-reviews@google.com.
     <variant name="NoneVisible" summary="There was no UI being shown"/>
     <variant name="NotApplicable" summary="No permission prompt at all"/>
   </token>
+</histogram>
+
+<histogram name="Permissions.Action.{PermissionType}.CrossOriginFrame"
+    enum="PermissionAction" expires_after="2023-10-26">
+  <owner>tungnh@chromium.org</owner>
+  <owner>src/components/permissions/PERMISSIONS_OWNERS</owner>
+  <summary>
+    Recorded when a permission prompt has been resolved and the permission
+    request was made from a cross-origin iframe. Records the action that a user
+    had taken.
+  </summary>
+  <token key="PermissionType" variants="AllPermissionTypes"/>
+</histogram>
+
+<histogram
+    name="Permissions.Action.{PermissionType}.CrossOriginFrame.TopLevelHeaderPolicy"
+    enum="PermissionsPolicyConfiguration" expires_after="2023-10-26">
+  <owner>tungnh@chromium.org</owner>
+  <owner>src/components/permissions/PERMISSIONS_OWNERS</owner>
+  <summary>
+    Recorded whenever a permission prompt is shown to the user which was
+    triggered by a request made from a cross-origin frame. Records what type of
+    type of permission header policy the top-level document defined for the
+    accessed feature.
+  </summary>
+  <token key="PermissionType"
+      variants="PermissionTypesSupportPermissionsPolicy"/>
 </histogram>
 
 <histogram name="Permissions.API.CreatedPermissionStatusObjects" units="units"
@@ -508,6 +555,32 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram
+    name="Permissions.Experimental.Usage.{PermissionType}.CrossOriginFrame.TopLevelHeaderPolicy"
+    enum="PermissionsPolicyConfiguration" expires_after="2023-10-26">
+  <owner>tungnh@chromium.org</owner>
+  <owner>src/components/permissions/PERMISSIONS_OWNERS</owner>
+  <summary>
+    Recorded whenever a permission is used in a cross-origin frame. Records what
+    type of permission header policy the top-level document defined for the
+    accessed feature.
+  </summary>
+  <token key="PermissionType"
+      variants="PermissionTypesSupportPermissionsPolicy"/>
+</histogram>
+
+<histogram
+    name="Permissions.Experimental.Usage.{PermissionType}.IsCrossOriginFrame"
+    enum="Boolean" expires_after="2023-10-26">
+  <owner>tungnh@chromium.org</owner>
+  <owner>src/components/permissions/PERMISSIONS_OWNERS</owner>
+  <summary>
+    Recorded whenever a permission is used. Records whether the permission is
+    used in a cross origin frame.
+  </summary>
+  <token key="PermissionType" variants="AllPermissionTypes"/>
+</histogram>
+
 <histogram name="Permissions.FCM.Revocation" enum="FcmTokenRevocation"
     expires_after="2023-10-31">
   <obsolete>
@@ -853,7 +926,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Permissions.Prompt.Notifications.EnabledAppLevel"
-    enum="Boolean" expires_after="2023-05-14">
+    enum="Boolean" expires_after="2023-08-27">
   <owner>engedy@chromium.org</owner>
   <owner>src/components/permissions/PERMISSIONS_OWNERS</owner>
   <summary>
@@ -1173,7 +1246,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Permissions.WebHid.ChooserClosed" enum="WebHidChooserClosed"
-    expires_after="2023-06-25">
+    expires_after="2023-08-27">
   <owner>mattreynolds@chromium.org</owner>
   <owner>deviceapi-team@google.com</owner>
   <summary>

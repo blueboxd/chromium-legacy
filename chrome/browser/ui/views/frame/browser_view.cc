@@ -526,6 +526,36 @@ class OverlayWidget : public ThemeCopyingWidget {
     return parent()->GetAccelerator(cmd_id, accelerator);
   }
 };
+
+// TabContainerOverlayView is a view that hosts the TabStripRegionView during
+// immersive fullscreen. The TopContainerView usually draws the background for
+// the tab strip. Since the tab strip has been reparented we need to handle
+// drawing the background here.
+class TabContainerOverlayView : public views::View {
+ public:
+  METADATA_HEADER(TabContainerOverlayView);
+  explicit TabContainerOverlayView(base::WeakPtr<BrowserView> browser_view)
+      : browser_view_(std::move(browser_view)) {}
+  ~TabContainerOverlayView() override = default;
+
+  // views::View override
+  void OnPaintBackground(gfx::Canvas* canvas) override {
+    SkColor frame_color = browser_view_->frame()->GetFrameView()->GetFrameColor(
+        BrowserFrameActiveState::kUseCurrent);
+    canvas->DrawColor(frame_color);
+
+    // TODO(https://crbug.com/1414521): Support extension based themes /
+    // backgrounds.
+  }
+
+ private:
+  // The BrowserView this overlay is created for. WeakPtr is used since
+  // this view is held in a different hierarchy.
+  base::WeakPtr<BrowserView> browser_view_;
+};
+
+BEGIN_METADATA(TabContainerOverlayView, views::View)
+END_METADATA
 #endif  // BUILDFLAG(IS_MAC)
 
 }  // namespace
@@ -579,11 +609,18 @@ class BrowserViewLayoutDelegateImpl : public BrowserViewLayoutDelegate {
 
   int GetTopInsetInBrowserView() const override {
     // BrowserView should fill the full window when window controls overlay
-    // is enabled.
+    // is enabled or when immersive fullscreen with tabs is enabled.
     if (browser_view_->IsWindowControlsOverlayEnabled() ||
         browser_view_->IsBorderlessModeEnabled()) {
       return 0;
     }
+#if BUILDFLAG(IS_MAC)
+    if (base::FeatureList::IsEnabled(features::kImmersiveFullscreenTabs) &&
+        browser_view_->immersive_mode_controller()->IsEnabled()) {
+      return 0;
+    }
+#endif
+
     return browser_view_->frame()->GetTopInset() - browser_view_->y();
   }
 
@@ -677,6 +714,18 @@ class BrowserViewLayoutDelegateImpl : public BrowserViewLayoutDelegate {
         available_titlebar_area.IsEmpty()
             ? gfx::Rect()
             : browser_view_->GetMirroredRect(available_titlebar_area));
+  }
+
+  bool ShouldLayoutTabStrip() const override {
+#if BUILDFLAG(IS_MAC)
+    // The tab strip is hosted in a separate widget in immersive fullscreen on
+    // macOS.
+    if (base::FeatureList::IsEnabled(features::kImmersiveFullscreenTabs) &&
+        browser_view_->immersive_mode_controller()->IsEnabled()) {
+      return false;
+    }
+#endif
+    return true;
   }
 
  private:
@@ -1123,10 +1172,6 @@ void BrowserView::SetDownloadShelfForTest(DownloadShelf* download_shelf) {
 // static
 void BrowserView::SetDisableRevealerDelayForTesting(bool disable) {
   g_disable_revealer_delay_for_testing = disable;
-}
-
-void BrowserView::DisableTopControlsSlideForTesting() {
-  top_controls_slide_controller_.reset();
 }
 
 void BrowserView::InitStatusBubble() {
@@ -2930,8 +2975,7 @@ remote_cocoa::mojom::CutCopyPasteCommand CommandFromBrowserCommand(
     return remote_cocoa::mojom::CutCopyPasteCommand::kCopy;
   else if (command_id == IDC_PASTE)
     return remote_cocoa::mojom::CutCopyPasteCommand::kPaste;
-  NOTREACHED();
-  return remote_cocoa::mojom::CutCopyPasteCommand::kPaste;
+  NOTREACHED_NORETURN();
 }
 }  // namespace
 #endif
@@ -3270,8 +3314,7 @@ std::u16string BrowserView::GetAccessibleTabLabel(bool include_app_name,
       return l10n_util::GetStringFUTF16(IDS_TAB_AX_LABEL_VR_PRESENTING, title);
   }
 
-  NOTREACHED();
-  return std::u16string();
+  NOTREACHED_NORETURN();
 }
 
 std::vector<views::NativeViewHost*>
@@ -3554,6 +3597,12 @@ views::View* BrowserView::CreateMacOverlayView() {
   if (base::FeatureList::IsEnabled(features::kImmersiveFullscreenTabs)) {
     // Create the tab overlay widget.
     tab_overlay_widget_ = create_overlay_widget();
+    std::unique_ptr<TabContainerOverlayView> tab_overlay_view =
+        std::make_unique<TabContainerOverlayView>(
+            weak_ptr_factory_.GetWeakPtr());
+    tab_overlay_view_ = tab_overlay_view.get();
+    tab_overlay_widget_->GetRootView()->AddChildView(
+        std::move(tab_overlay_view));
 
     // TODO(https://crbug.com/1414521): Figure out how to handle multiple view
     // targeters.

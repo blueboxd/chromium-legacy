@@ -19408,7 +19408,8 @@
       },
       {
         "args": [
-          "--extra-browser-args=--enable-crashpad"
+          "--extra-browser-args=--enable-crashpad",
+          "--xvfb"
         ],
         "isolate_name": "telemetry_perf_unittests",
         "isolate_profile_data": true,
@@ -20453,9 +20454,9 @@
       {
         "args": [
           "--test-launcher-filter-file=../../testing/buildbot/filters/linux-lacros.interactive_ui_tests.filter;../../testing/buildbot/filters/linux-lacros.interactive_ui_tests.skew.filter",
-          "--ash-chrome-path-override=../../lacros_version_skew_tests_v111.0.5563.31/test_ash_chrome"
+          "--ash-chrome-path-override=../../lacros_version_skew_tests_v111.0.5563.41/test_ash_chrome"
         ],
-        "description": "Run with ash-chrome version 111.0.5563.31",
+        "description": "Run with ash-chrome version 111.0.5563.41",
         "isolate_profile_data": true,
         "merge": {
           "args": [],
@@ -20467,8 +20468,8 @@
           "cipd_packages": [
             {
               "cipd_package": "chromium/testing/linux-ash-chromium/x86_64/ash.zip",
-              "location": "lacros_version_skew_tests_v111.0.5563.31",
-              "revision": "version:111.0.5563.31"
+              "location": "lacros_version_skew_tests_v111.0.5563.41",
+              "revision": "version:111.0.5563.41"
             }
           ],
           "dimension_sets": [
@@ -20486,9 +20487,9 @@
       {
         "args": [
           "--test-launcher-filter-file=../../testing/buildbot/filters/linux-lacros.interactive_ui_tests.filter;../../testing/buildbot/filters/linux-lacros.interactive_ui_tests.skew.filter",
-          "--ash-chrome-path-override=../../lacros_version_skew_tests_v112.0.5614.0/test_ash_chrome"
+          "--ash-chrome-path-override=../../lacros_version_skew_tests_v113.0.5624.0/test_ash_chrome"
         ],
-        "description": "Run with ash-chrome version 112.0.5614.0",
+        "description": "Run with ash-chrome version 113.0.5624.0",
         "isolate_profile_data": true,
         "merge": {
           "args": [],
@@ -20500,8 +20501,8 @@
           "cipd_packages": [
             {
               "cipd_package": "chromium/testing/linux-ash-chromium/x86_64/ash.zip",
-              "location": "lacros_version_skew_tests_v112.0.5614.0",
-              "revision": "version:112.0.5614.0"
+              "location": "lacros_version_skew_tests_v113.0.5624.0",
+              "revision": "version:113.0.5624.0"
             }
           ],
           "dimension_sets": [
@@ -20552,9 +20553,9 @@
       {
         "args": [
           "--test-launcher-filter-file=../../testing/buildbot/filters/linux-lacros.interactive_ui_tests.filter;../../testing/buildbot/filters/linux-lacros.interactive_ui_tests.skew.filter",
-          "--ash-chrome-path-override=../../lacros_version_skew_tests_v110.0.5481.112/test_ash_chrome"
+          "--ash-chrome-path-override=../../lacros_version_skew_tests_v110.0.5481.181/test_ash_chrome"
         ],
-        "description": "Run with ash-chrome version 110.0.5481.112",
+        "description": "Run with ash-chrome version 110.0.5481.181",
         "isolate_profile_data": true,
         "merge": {
           "args": [],
@@ -20566,8 +20567,8 @@
           "cipd_packages": [
             {
               "cipd_package": "chromium/testing/linux-ash-chromium/x86_64/ash.zip",
-              "location": "lacros_version_skew_tests_v110.0.5481.112",
-              "revision": "version:110.0.5481.112"
+              "location": "lacros_version_skew_tests_v110.0.5481.181",
+              "revision": "version:110.0.5481.181"
             }
           ],
           "dimension_sets": [
@@ -20625,9 +20626,9 @@
       {
         "args": [
           "--test-launcher-filter-file=../../testing/buildbot/filters/linux-lacros.lacros_chrome_browsertests.skew.filter",
-          "--ash-chrome-path-override=../../lacros_version_skew_tests_v111.0.5563.31/test_ash_chrome"
+          "--ash-chrome-path-override=../../lacros_version_skew_tests_v111.0.5563.41/test_ash_chrome"
         ],
-        "description": "Run with ash-chrome version 111.0.5563.31",
+        "description": "Run with ash-chrome version 111.0.5563.41",
         "isolate_profile_data": true,
         "merge": {
           "args": [],
@@ -20639,8 +20640,8 @@
           "cipd_packages": [
             {
               "cipd_package": "chromium/testing/linux-ash-chromium/x86_64/ash.zip",
-              "location": "lacros_version_skew_tests_v111.0.5563.31",
-              "revision": "version:111.0.5563.31"
+              "location": "lacros_version_skew_tests_v111.0.5563.41",
+              "revision": "version:111.0.5563.41"
             }
           ],
           "dimension_sets": [
@@ -20657,9 +20658,9 @@
       {
         "args": [
           "--test-launcher-filter-file=../../testing/buildbot/filters/linux-lacros.lacros_chrome_browsertests.skew.filter",
-          "--ash-chrome-path-override=../../lacros_version_skew_tests_v112.0.5614.0/test_ash_chrome"
+          "--ash-chrome-path-override=../../lacros_version_skew_tests_v113.0.5624.0/test_ash_chrome"
         ],
-        "description": "Run with ash-chrome version 112.0.5614.0",
+        "description": "Run with ash-chrome version 113.0.5624.0",
         "isolate_profile_data": true,
         "merge": {
           "args": [],
@@ -20671,8 +20672,8 @@
           "cipd_packages": [
             {
               "cipd_package": "chromium/testing/linux-ash-chromium/x86_64/ash.zip",
-              "location": "lacros_version_skew_tests_v112.0.5614.0",
-              "revision": "version:112.0.5614.0"
+              "location": "lacros_version_skew_tests_v113.0.5624.0",
+              "revision": "version:113.0.5624.0"
             }
           ],
           "dimension_sets": [
@@ -20721,9 +20722,9 @@
       {
         "args": [
           "--test-launcher-filter-file=../../testing/buildbot/filters/linux-lacros.lacros_chrome_browsertests.skew.filter",
-          "--ash-chrome-path-override=../../lacros_version_skew_tests_v110.0.5481.112/test_ash_chrome"
+          "--ash-chrome-path-override=../../lacros_version_skew_tests_v110.0.5481.181/test_ash_chrome"
         ],
-        "description": "Run with ash-chrome version 110.0.5481.112",
+        "description": "Run with ash-chrome version 110.0.5481.181",
         "isolate_profile_data": true,
         "merge": {
           "args": [],
@@ -20735,8 +20736,8 @@
           "cipd_packages": [
             {
               "cipd_package": "chromium/testing/linux-ash-chromium/x86_64/ash.zip",
-              "location": "lacros_version_skew_tests_v110.0.5481.112",
-              "revision": "version:110.0.5481.112"
+              "location": "lacros_version_skew_tests_v110.0.5481.181",
+              "revision": "version:110.0.5481.181"
             }
           ],
           "dimension_sets": [
@@ -20776,9 +20777,9 @@
       {
         "args": [
           "--test-launcher-filter-file=../../testing/buildbot/filters/linux-lacros.lacros_chrome_browsertests.skew.filter",
-          "--ash-chrome-path-override=../../lacros_version_skew_tests_v111.0.5563.31/test_ash_chrome"
+          "--ash-chrome-path-override=../../lacros_version_skew_tests_v111.0.5563.41/test_ash_chrome"
         ],
-        "description": "Run with ash-chrome version 111.0.5563.31",
+        "description": "Run with ash-chrome version 111.0.5563.41",
         "isolate_profile_data": true,
         "merge": {
           "args": [],
@@ -20790,8 +20791,8 @@
           "cipd_packages": [
             {
               "cipd_package": "chromium/testing/linux-ash-chromium/x86_64/ash.zip",
-              "location": "lacros_version_skew_tests_v111.0.5563.31",
-              "revision": "version:111.0.5563.31"
+              "location": "lacros_version_skew_tests_v111.0.5563.41",
+              "revision": "version:111.0.5563.41"
             }
           ],
           "dimension_sets": [
@@ -20809,9 +20810,9 @@
       {
         "args": [
           "--test-launcher-filter-file=../../testing/buildbot/filters/linux-lacros.lacros_chrome_browsertests.skew.filter",
-          "--ash-chrome-path-override=../../lacros_version_skew_tests_v112.0.5614.0/test_ash_chrome"
+          "--ash-chrome-path-override=../../lacros_version_skew_tests_v113.0.5624.0/test_ash_chrome"
         ],
-        "description": "Run with ash-chrome version 112.0.5614.0",
+        "description": "Run with ash-chrome version 113.0.5624.0",
         "isolate_profile_data": true,
         "merge": {
           "args": [],
@@ -20823,8 +20824,8 @@
           "cipd_packages": [
             {
               "cipd_package": "chromium/testing/linux-ash-chromium/x86_64/ash.zip",
-              "location": "lacros_version_skew_tests_v112.0.5614.0",
-              "revision": "version:112.0.5614.0"
+              "location": "lacros_version_skew_tests_v113.0.5624.0",
+              "revision": "version:113.0.5624.0"
             }
           ],
           "dimension_sets": [
@@ -20875,9 +20876,9 @@
       {
         "args": [
           "--test-launcher-filter-file=../../testing/buildbot/filters/linux-lacros.lacros_chrome_browsertests.skew.filter",
-          "--ash-chrome-path-override=../../lacros_version_skew_tests_v110.0.5481.112/test_ash_chrome"
+          "--ash-chrome-path-override=../../lacros_version_skew_tests_v110.0.5481.181/test_ash_chrome"
         ],
-        "description": "Run with ash-chrome version 110.0.5481.112",
+        "description": "Run with ash-chrome version 110.0.5481.181",
         "isolate_profile_data": true,
         "merge": {
           "args": [],
@@ -20889,8 +20890,8 @@
           "cipd_packages": [
             {
               "cipd_package": "chromium/testing/linux-ash-chromium/x86_64/ash.zip",
-              "location": "lacros_version_skew_tests_v110.0.5481.112",
-              "revision": "version:110.0.5481.112"
+              "location": "lacros_version_skew_tests_v110.0.5481.181",
+              "revision": "version:110.0.5481.181"
             }
           ],
           "dimension_sets": [

@@ -68,7 +68,6 @@ BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kEditingNG);
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kMixedContentAutoupgrade);
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kNavigationPredictor);
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kAnchorElementInteraction);
-BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kOSKResizesVisualViewportByDefault);
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kPlzDedicatedWorker);
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kPortalsCrossOrigin);
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kFencedFrames);
@@ -134,11 +133,15 @@ BLINK_COMMON_EXPORT extern const base::FeatureParam<int>
 // If enabled, limits the number of times per origin per pageload that
 // `sharedStorage.selectURL()` is allowed to be invoked.
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kSharedStorageSelectURLLimit);
-// Maximum number of times per origin per pageload that
-// `sharedStorage.selectURL()` is allowed to be invoked, if
-// `kSharedStorageSelectURLLimit` is enabled.
+// Maximum number of bits of entropy per pageload that are allowed to leak via
+// `sharedStorage.selectURL()`, if `kSharedStorageSelectURLLimit` is enabled.
 BLINK_COMMON_EXPORT extern const base::FeatureParam<int>
-    kSharedStorageMaxAllowedSelectURLCallsPerOriginPerPageLoad;
+    kSharedStorageSelectURLBitBudgetPerPageLoad;
+// Maximum number of bits of entropy per origin per pageload that are allowed to
+// leak via `sharedStorage.selectURL()`, if `kSharedStorageSelectURLLimit` is
+// enabled.
+BLINK_COMMON_EXPORT extern const base::FeatureParam<int>
+    kSharedStorageSelectURLBitBudgetPerOriginPerPageLoad;
 
 // If enabled, limits the maximum bits of entropy per pageload that
 // `fence.reportEvent()` is allowed to leak when called with
@@ -176,16 +179,9 @@ BLINK_COMMON_EXPORT extern const char kPrerender2MemoryThresholdParamName[];
 // pages will not be prerendered even when kPrerender2 is enabled.
 BLINK_COMMON_EXPORT extern const char
     kPrerender2MemoryAcceptablePercentOfSystemMemoryParamName[];
-// Enables to keep prerenderings alive in the background when their visibility
-// state changes to HIDDEN.
-BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kPrerender2InBackground);
 // Enables to run prerendering for new tabs (e.g., target="_blank").
 // See https://crbug.com/1350676.
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kPrerender2InNewTab);
-
-// Returns true if the Android On-Screen-Keyboard is in "resize visual
-// viewport" mode.
-BLINK_COMMON_EXPORT bool OSKResizesVisualViewportByDefault();
 
 // Fenced Frames:
 BLINK_COMMON_EXPORT bool IsFencedFramesEnabled();
@@ -360,7 +356,6 @@ BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kCompressParkableStrings);
 BLINK_COMMON_EXPORT bool ParkableStringsUseSnappy();
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kUseSnappyForParkableStrings);
 BLINK_COMMON_EXPORT bool IsParkableStringsToDiskEnabled();
-BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kDelayFirstParkingOfStrings);
 
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kReducedReferrerGranularity);
 
@@ -759,8 +754,8 @@ BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kStylusRichGestures);
 // Stylus handwriting recognition to text input feature.
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kStylusWritingToInput);
 
-// Physical keyboard shortcuts for Android with respect to editing.
-BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kAndroidExtendedEditingCommands);
+// Extended physical keyboard shortcuts for Android.
+BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kAndroidExtendedKeyboardShortcuts);
 
 // Apply touch adjustment for stylus pointer events. This feature allows
 // enabling functions like writing into a nearby input element.

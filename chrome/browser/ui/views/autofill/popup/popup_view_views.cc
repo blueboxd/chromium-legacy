@@ -288,11 +288,12 @@ bool PopupViewViews::AcceptSelectedCell(bool tab_key_pressed) {
     }
   }
 
-  // TODO(crbug.com/1411172): Use different actions depending on which cell is
-  // selected.
-  // No show threshold is used for key pressed - they can be accepted
-  // immediately after the popup is shown.
-  controller_->AcceptSuggestion(index->first, base::TimeDelta());
+  if (base::FeatureList::IsEnabled(
+          features::kAutofillPopupUseThresholdForKeyboardAndMobileAccept)) {
+    controller_->AcceptSuggestion(index->first);
+  } else {
+    controller_->AcceptSuggestionWithoutThreshold(index->first);
+  }
   return true;
 }
 
@@ -582,12 +583,16 @@ bool PopupViewViews::DoUpdateBoundsAndRedrawPopup() {
   return true;
 }
 
+base::WeakPtr<AutofillPopupView> PopupViewViews::GetWeakPtr() {
+  return weak_ptr_factory_.GetWeakPtr();
+}
+
 BEGIN_METADATA(PopupViewViews, PopupBaseView)
 ADD_PROPERTY_METADATA(absl::optional<PopupViewViews::CellIndex>, SelectedCell)
 END_METADATA
 
 // static
-AutofillPopupView* AutofillPopupView::Create(
+base::WeakPtr<AutofillPopupView> AutofillPopupView::Create(
     base::WeakPtr<AutofillPopupController> controller) {
 #if BUILDFLAG(IS_MAC)
   // It's possible for the container_view to not be in a window. In that case,
@@ -610,7 +615,7 @@ AutofillPopupView* AutofillPopupView::Create(
   }
 #endif
 
-  return new PopupViewViews(controller, observing_widget);
+  return (new PopupViewViews(controller, observing_widget))->GetWeakPtr();
 }
 
 }  // namespace autofill

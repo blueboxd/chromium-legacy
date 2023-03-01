@@ -706,15 +706,21 @@ void OmniboxEditModel::StartPrefetch() {
     return;
   }
 
-  const bool interaction_clobber_focus_type =
-      base::FeatureList::IsEnabled(
-          omnibox::kOmniboxOnClobberFocusTypeOnContent) &&
-      !BaseSearchProvider::IsNTPPage(page_classification);
+  const bool is_ntp_page = BaseSearchProvider::IsNTPPage(page_classification);
+  const bool interaction_clobber_focus_type = base::FeatureList::IsEnabled(
+      omnibox::kOmniboxOnClobberFocusTypeOnContent);
 
-  AutocompleteInput input(u"", page_classification,
+  GURL current_url = client()->GetURL();
+  std::u16string text = base::UTF8ToUTF16(current_url.spec());
+
+  if (is_ntp_page || interaction_clobber_focus_type) {
+    text.clear();
+  }
+
+  AutocompleteInput input(text, page_classification,
                           client()->GetSchemeClassifier());
-  input.set_current_url(client()->GetURL());
-  input.set_focus_type(interaction_clobber_focus_type
+  input.set_current_url(current_url);
+  input.set_focus_type(interaction_clobber_focus_type && !is_ntp_page
                            ? metrics::OmniboxFocusType::INTERACTION_CLOBBER
                            : metrics::OmniboxFocusType::INTERACTION_FOCUS);
   autocomplete_controller()->StartPrefetch(input);
@@ -1145,6 +1151,65 @@ void OmniboxEditModel::OpenMatch(AutocompleteMatch match,
   BookmarkModel* bookmark_model = client_->GetBookmarkModel();
   if (bookmark_model && bookmark_model->IsBookmarked(match.destination_url))
     client_->OnBookmarkLaunched();
+}
+
+void OmniboxEditModel::OpenSelection(OmniboxPopupSelection selection,
+                                     base::TimeTicks timestamp,
+                                     WindowOpenDisposition disposition) {
+  // Intentionally accept input when selection has no line.
+  // This will reach `OpenMatch` indirectly.
+  if (selection.line >= result().size()) {
+    AcceptInput(disposition, timestamp);
+    return;
+  }
+
+  // Keyword mode is handled separately, and other selections should
+  // only be opened when there is a popup view.
+  DCHECK_NE(selection.state, OmniboxPopupSelection::KEYWORD_MODE);
+  DCHECK(popup_view_);
+
+  const AutocompleteMatch& match = result().match_at(selection.line);
+
+  // TODO(crbug/1408506): This is an exceptional quirk for the new
+  //  match takeover actions mechanism, and can likely be simplified.
+  const OmniboxAction* action = match.GetPrimaryAction();
+  if (selection.state == OmniboxPopupSelection::NORMAL &&
+      (action == nullptr || !action->TakesOverMatch())) {
+    AcceptInput(disposition, timestamp);
+    return;
+  }
+
+  if (selection.state == OmniboxPopupSelection::FOCUSED_BUTTON_HEADER) {
+    DCHECK(match.suggestion_group_id.has_value());
+
+    const bool current_visibility = result().IsSuggestionGroupHidden(
+        GetPrefService(), match.suggestion_group_id.value());
+    result().SetSuggestionGroupHidden(GetPrefService(),
+                                      match.suggestion_group_id.value(),
+                                      !current_visibility);
+  } else if (selection.state ==
+             OmniboxPopupSelection::FOCUSED_BUTTON_REMOVE_SUGGESTION) {
+    TryDeletingPopupLine(selection.line);
+  } else if (selection.state == OmniboxPopupSelection::FOCUSED_BUTTON_ACTION) {
+    // TODO(crbug/1408506): Either handle in OpenMatch or convert OpenMatch
+    //  usage to OpenSelection so this can keep a consistent code
+    //  and metrics flow. The broad goal is to eliminate one or the other,
+    //  or at least hide one as private so call sites are all consistent.
+    DCHECK(timestamp != base::TimeTicks());
+    ExecuteAction(selection, disposition, timestamp);
+  } else {
+    DCHECK(timestamp != base::TimeTicks());
+    if (selection.state == OmniboxPopupSelection::FOCUSED_BUTTON_TAB_SWITCH) {
+      disposition = WindowOpenDisposition::SWITCH_TO_TAB;
+    }
+    OpenMatch(match, disposition, GURL(), std::u16string(),
+              GetPopupSelection().line, timestamp);
+  }
+}
+
+void OmniboxEditModel::OpenSelection(base::TimeTicks timestamp,
+                                     WindowOpenDisposition disposition) {
+  OpenSelection(GetPopupSelection(), timestamp, disposition);
 }
 
 bool OmniboxEditModel::InExplicitExperimentalKeywordMode() {
@@ -2124,56 +2189,6 @@ bool OmniboxEditModel::IsPopupControlPresentOnMatch(
     OmniboxPopupSelection selection) const {
   DCHECK(popup_view_);
   return selection.IsControlPresentOnMatch(result(), GetPrefService());
-}
-
-bool OmniboxEditModel::TriggerPopupSelectionAction(
-    OmniboxPopupSelection selection,
-    base::TimeTicks timestamp,
-    WindowOpenDisposition disposition) {
-  DCHECK(popup_view_);
-
-  // Early exit for the kNoMatch case. Also exits if the calling UI passes in
-  // an invalid |selection|.
-  if (selection.line >= result().size())
-    return false;
-
-  auto& match = result().match_at(selection.line);
-  switch (selection.state) {
-    case OmniboxPopupSelection::FOCUSED_BUTTON_HEADER: {
-      DCHECK(match.suggestion_group_id.has_value());
-
-      const bool current_visibility = result().IsSuggestionGroupHidden(
-          GetPrefService(), match.suggestion_group_id.value());
-      result().SetSuggestionGroupHidden(GetPrefService(),
-                                        match.suggestion_group_id.value(),
-                                        !current_visibility);
-      break;
-    }
-    case OmniboxPopupSelection::NORMAL: {
-      return ExecuteTakeoverAction(selection.line, disposition, timestamp);
-    }
-    case OmniboxPopupSelection::FOCUSED_BUTTON_TAB_SWITCH: {
-      DCHECK(timestamp != base::TimeTicks());
-      OpenMatch(match, WindowOpenDisposition::SWITCH_TO_TAB, GURL(),
-                std::u16string(), GetPopupSelection().line, timestamp);
-      break;
-    }
-    case OmniboxPopupSelection::FOCUSED_BUTTON_ACTION: {
-      DCHECK(timestamp != base::TimeTicks());
-      ExecuteAction(selection, disposition, timestamp);
-      break;
-    }
-    case OmniboxPopupSelection::FOCUSED_BUTTON_REMOVE_SUGGESTION: {
-      TryDeletingPopupLine(selection.line);
-      break;
-    }
-    default: {
-      // Behavior is not yet supported.
-      return false;
-    }
-  }
-
-  return true;
 }
 
 void OmniboxEditModel::TryDeletingPopupLine(size_t line) {

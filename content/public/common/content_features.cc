@@ -465,6 +465,11 @@ const char kFedCmIdpSigninStatusFieldTrialParamName[] = "IdpSigninStatus";
 const char kFedCmIdpSigninStatusMetricsOnlyFieldTrialParamName[] =
     "IdpSigninStatusMetricsOnly";
 
+// Enables the MDocs API in the IdentityCredential.
+BASE_FEATURE(kWebIdentityMDocs,
+             "WebIdentityMDocs",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // Enables usage of First Party Sets to determine cookie availability.
 BASE_FEATURE(kFirstPartySets,
              "FirstPartySets",
@@ -1048,6 +1053,16 @@ constexpr base::FeatureParam<bool> kStartServiceWorkerForEmptyFetchHandler{
     false,
 };
 
+// This feature param controls if the service worker is started for an
+// empty service worker fetch handler while `kSkipEmptyFetchHandler` is on.
+// Unlike the feature param `kStartServiceWorkerForEmptyFetchHandler`,
+// this starts service worker in `TaskRunner::PostTask`.
+constexpr base::FeatureParam<bool> kAsyncStartServiceWorkerForEmptyFetchHandler{
+    &kServiceWorkerSkipIgnorableFetchHandler,
+    "AsyncStartServiceWorkerForEmptyFetchHandler",
+    false,
+};
+
 // Run video capture service in the Browser process as opposed to a dedicated
 // utility process
 BASE_FEATURE(kRunVideoCaptureServiceInBrowserProcess,
@@ -1079,7 +1094,7 @@ BASE_FEATURE(kSecurePaymentConfirmationDebug,
 // https://crbug.com/1356224 .
 BASE_FEATURE(kSecurePaymentConfirmationRemoveRpField,
              "SecurePaymentConfirmationRemoveRpField",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Make sendBeacon throw for a Blob with a non simple type.
 BASE_FEATURE(kSendBeaconThrowForBlobWithNonSimpleType,
@@ -1450,12 +1465,6 @@ BASE_FEATURE(kBackgroundMediaRendererHasModerateBinding,
 BASE_FEATURE(kBindingManagerConnectionLimit,
              "BindingManagerConnectionLimit",
              base::FEATURE_DISABLED_BY_DEFAULT);
-
-// When this feature is enabled the BindingManager for non-low-end devices will
-// use a not perceptible binding for background renderers on Android Q+.
-BASE_FEATURE(kBindingManagerUseNotPerceptibleBinding,
-             "BindingManagerUseNotPerceptibleBinding",
-             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Reduce the priority of GPU process when in background so it is more likely
 // to be killed first if the OS needs more memory.

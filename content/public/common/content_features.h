@@ -96,6 +96,7 @@ CONTENT_EXPORT BASE_DECLARE_FEATURE(kFedCmRpContext);
 CONTENT_EXPORT BASE_DECLARE_FEATURE(kFedCmUserInfo);
 CONTENT_EXPORT BASE_DECLARE_FEATURE(kFedCmSelectiveDisclosure);
 CONTENT_EXPORT BASE_DECLARE_FEATURE(kFedCmLoginHint);
+CONTENT_EXPORT BASE_DECLARE_FEATURE(kWebIdentityMDocs);
 CONTENT_EXPORT BASE_DECLARE_FEATURE(kFirstPartySets);
 CONTENT_EXPORT extern const base::FeatureParam<bool>
     kFirstPartySetsClearSiteDataOnChangedSets;
@@ -265,6 +266,8 @@ CONTENT_EXPORT BASE_DECLARE_FEATURE(kServiceWorkerSkipIgnorableFetchHandler);
 CONTENT_EXPORT extern const base::FeatureParam<bool> kSkipEmptyFetchHandler;
 CONTENT_EXPORT extern const base::FeatureParam<bool>
     kStartServiceWorkerForEmptyFetchHandler;
+CONTENT_EXPORT extern const base::FeatureParam<bool>
+    kAsyncStartServiceWorkerForEmptyFetchHandler;
 CONTENT_EXPORT BASE_DECLARE_FEATURE(kUserMediaCaptureOnFocus);
 CONTENT_EXPORT BASE_DECLARE_FEATURE(kWebLockScreenApi);
 CONTENT_EXPORT BASE_DECLARE_FEATURE(kWebOTP);
@@ -317,7 +320,6 @@ CONTENT_EXPORT BASE_DECLARE_FEATURE(kAccessibilityPageZoom);
 CONTENT_EXPORT BASE_DECLARE_FEATURE(kAutoDisableAccessibilityV2);
 CONTENT_EXPORT BASE_DECLARE_FEATURE(kBackgroundMediaRendererHasModerateBinding);
 CONTENT_EXPORT BASE_DECLARE_FEATURE(kBindingManagerConnectionLimit);
-CONTENT_EXPORT BASE_DECLARE_FEATURE(kBindingManagerUseNotPerceptibleBinding);
 CONTENT_EXPORT BASE_DECLARE_FEATURE(kReduceGpuPriorityOnBackground);
 CONTENT_EXPORT BASE_DECLARE_FEATURE(kOnDemandAccessibilityEvents);
 CONTENT_EXPORT BASE_DECLARE_FEATURE(kRequestDesktopSiteAdditions);

@@ -9,9 +9,9 @@
 
 @protocol ApplicationCommands;
 class Browser;
-class IOSChromePasswordCheckManager;
 @class PasswordIssuesCoordinator;
 @class ReauthenticationModule;
+enum class WarningType;
 
 // Delegate for PasswordIssuesCoordinator.
 @protocol PasswordIssuesCoordinatorDelegate
@@ -25,12 +25,9 @@ class IOSChromePasswordCheckManager;
 // This coordinator presents a list of compromised credentials for the user.
 @interface PasswordIssuesCoordinator : ChromeCoordinator
 
-- (instancetype)initWithBaseNavigationController:
-                    (UINavigationController*)navigationController
-                                         browser:(Browser*)browser
-                            passwordCheckManager:
-                                (IOSChromePasswordCheckManager*)manager
-    NS_DESIGNATED_INITIALIZER;
+- (instancetype)initForWarningType:(WarningType)warningType
+          baseNavigationController:(UINavigationController*)navigationController
+                           browser:(Browser*)browser NS_DESIGNATED_INITIALIZER;
 
 - (instancetype)initWithBaseViewController:(UIViewController*)viewController
                                    browser:(Browser*)browser NS_UNAVAILABLE;

@@ -480,6 +480,8 @@ source_set("ash") {
     "arc/nearby_share/ui/nearby_share_overlay_view.h",
     "arc/nearby_share/ui/progress_bar_dialog_view.cc",
     "arc/nearby_share/ui/progress_bar_dialog_view.h",
+    "arc/net/browser_url_opener_impl.cc",
+    "arc/net/browser_url_opener_impl.h",
     "arc/net/cert_manager_impl.cc",
     "arc/net/cert_manager_impl.h",
     "arc/notification/arc_boot_error_notification.cc",
@@ -645,8 +647,6 @@ source_set("ash") {
     "authpolicy/data_pipe_utils.h",
     "authpolicy/kerberos_files_handler.cc",
     "authpolicy/kerberos_files_handler.h",
-    "base/file_flusher.cc",
-    "base/file_flusher.h",
     "base/locale_util.cc",
     "base/locale_util.h",
     "bluetooth/debug_logs_manager.cc",
@@ -1379,12 +1379,12 @@ source_set("ash") {
     "idle_detector.h",
     "input_method/accessibility.cc",
     "input_method/accessibility.h",
+    "input_method/assistive_prefs.cc",
+    "input_method/assistive_prefs.h",
     "input_method/assistive_suggester.cc",
     "input_method/assistive_suggester.h",
     "input_method/assistive_suggester_client_filter.cc",
     "input_method/assistive_suggester_client_filter.h",
-    "input_method/assistive_suggester_prefs.cc",
-    "input_method/assistive_suggester_prefs.h",
     "input_method/assistive_suggester_switch.h",
     "input_method/assistive_window_controller.cc",
     "input_method/assistive_window_controller.h",
@@ -1561,8 +1561,6 @@ source_set("ash") {
     "login/easy_unlock/chrome_proximity_auth_client.h",
     "login/easy_unlock/easy_unlock_auth_attempt.cc",
     "login/easy_unlock/easy_unlock_auth_attempt.h",
-    "login/easy_unlock/easy_unlock_challenge_wrapper.cc",
-    "login/easy_unlock/easy_unlock_challenge_wrapper.h",
     "login/easy_unlock/easy_unlock_key_names.cc",
     "login/easy_unlock/easy_unlock_key_names.h",
     "login/easy_unlock/easy_unlock_metrics.cc",
@@ -4512,6 +4510,8 @@ static_library("test_support") {
     "settings/scoped_testing_cros_settings.h",
     "wallpaper_handlers/mock_wallpaper_handlers.cc",
     "wallpaper_handlers/mock_wallpaper_handlers.h",
+    "web_applications/personalization_app/personalization_app_browsertest_fixture.cc",
+    "web_applications/personalization_app/personalization_app_browsertest_fixture.h",
   ]
   allow_circular_includes_from = [
     "//chrome/test:test_support",
@@ -4603,6 +4603,7 @@ static_library("test_support") {
     "//ash/components/arc:notification_test_support",
     "//ash/components/arc/session",
     "//ash/constants",
+    "//ash/webui/personalization_app:test_support",
     "//ash/webui/personalization_app/mojom",
     "//base/test:test_config",
     "//chrome/browser:browser_process",
@@ -4654,12 +4655,6 @@ static_library("test_support") {
     "//ui/views:test_support",
     "//ui/views/controls/webview",
     "//ui/wm",
-  ]
-
-  data = [
-    # TODO(crbug/1393862): Script should create binarypb from textpb.
-    # Required for policy/enrollment/psm/rlwe_test_support.cc
-    "//third_party/private_membership/src/internal/testing/regression_test_data/test_data.binarypb",
   ]
 }
 
@@ -4968,7 +4963,6 @@ source_set("unit_tests") {
     "attestation/tpm_challenge_key_unittest.cc",
     "authpolicy/authpolicy_credentials_manager_unittest.cc",
     "authpolicy/authpolicy_helper_unittest.cc",
-    "base/file_flusher_unittest.cc",
     "bluetooth/debug_logs_manager_unittest.cc",
     "borealis/borealis_app_launcher_unittest.cc",
     "borealis/borealis_app_uninstaller_unittest.cc",
@@ -5238,7 +5232,6 @@ source_set("unit_tests") {
     "login/demo_mode/demo_session_unittest.cc",
     "login/demo_mode/demo_setup_controller_unittest.cc",
     "login/easy_unlock/easy_unlock_auth_attempt_unittest.cc",
-    "login/easy_unlock/easy_unlock_challenge_wrapper_unittest.cc",
     "login/easy_unlock/easy_unlock_notification_controller_unittest.cc",
     "login/easy_unlock/easy_unlock_service_regular_unittest.cc",
     "login/easy_unlock/easy_unlock_tpm_key_manager_unittest.cc",
@@ -5426,7 +5419,10 @@ source_set("unit_tests") {
     "policy/remote_commands/device_command_fetch_crd_availability_info_job_unittest.cc",
     "policy/remote_commands/device_command_get_available_routines_job_unittest.cc",
     "policy/remote_commands/device_command_get_routine_update_job_unittest.cc",
+    "policy/remote_commands/device_command_reboot_job_test_util.cc",
+    "policy/remote_commands/device_command_reboot_job_test_util.h",
     "policy/remote_commands/device_command_reboot_job_unittest.cc",
+    "policy/remote_commands/device_command_reboot_job_with_scheduled_reboot_policy_test.cc",
     "policy/remote_commands/device_command_refresh_machine_certificate_job_unittest.cc",
     "policy/remote_commands/device_command_remote_powerwash_job_unittest.cc",
     "policy/remote_commands/device_command_reset_euicc_job_unittest.cc",
@@ -6225,10 +6221,7 @@ source_set("unit_tests") {
     ]
   }
 
-  data = [
-    "//chromeos/test/data/",
-    "//third_party/private_membership/src/internal/testing/regression_test_data/test_data.binarypb",
-  ]
+  data = [ "//chromeos/test/data/" ]
 }
 
 config("allow_shadow_variables") {

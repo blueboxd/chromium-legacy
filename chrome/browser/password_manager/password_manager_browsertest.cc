@@ -196,12 +196,8 @@ class PasswordManagerBackForwardCacheBrowserTest
     // whether setup is completing.
     LOG(INFO) << "SetUpCommandLine started.";
     scoped_feature_list_.InitWithFeaturesAndParameters(
-        {{::features::kBackForwardCache,
-          {{"ignore_outstanding_network_request_for_testing", "true"}}},
-         {::features::kBackForwardCacheTimeToLiveControl,
-          {{"time_to_live_seconds", "3600"}}}},
-        // Allow BackForwardCache for all devices regardless of their memory.
-        {::features::kBackForwardCacheMemoryControls});
+        content::GetDefaultEnabledBackForwardCacheFeaturesForTesting(),
+        content::GetDefaultDisabledBackForwardCacheFeaturesForTesting());
     PasswordManagerBrowserTest::SetUpCommandLine(command_line);
     LOG(INFO) << "SetUpCommandLine complete.";
   }
@@ -2053,7 +2049,7 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
       ObservingAutofillClient::FromWebContents(WebContents());
   password_manager::ContentPasswordManagerDriver* driver =
       driver_factory->GetDriverForFrame(WebContents()->GetPrimaryMainFrame());
-  driver->GetPasswordAutofillManager()->set_autofill_client(
+  driver->GetPasswordAutofillManager()->set_autofill_client_for_test(
       observing_autofill_client);
 
   // Trigger in page navigation.

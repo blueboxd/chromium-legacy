@@ -49,6 +49,7 @@ namespace ash::settings {
 namespace mojom {
 using ::chromeos::settings::mojom::kAccessibilitySectionPath;
 using ::chromeos::settings::mojom::kAudioAndCaptionsSubpagePath;
+using ::chromeos::settings::mojom::kChromeVoxSubpagePath;
 using ::chromeos::settings::mojom::kCursorAndTouchpadSubpagePath;
 using ::chromeos::settings::mojom::kDisplayAndMagnificationSubpagePath;
 using ::chromeos::settings::mojom::kKeyboardAndTextInputSubpagePath;
@@ -421,6 +422,10 @@ bool IsLiveCaptionEnabled() {
   return captions::IsLiveCaptionFeatureSupported();
 }
 
+bool IsAccessibilityChromeVoxPageMigrationEnabled() {
+  return ::features::IsAccessibilityChromeVoxPageMigrationEnabled();
+}
+
 bool IsAccessibilitySelectToSpeakPageMigrationEnabled() {
   return ::features::IsAccessibilitySelectToSpeakPageMigrationEnabled();
 }
@@ -562,6 +567,14 @@ void AccessibilitySection::AddLoadTimeData(
       {"chromeVoxDescriptionOn", IDS_SETTINGS_CHROMEVOX_DESCRIPTION_ON},
       {"chromeVoxLabel", IDS_SETTINGS_CHROMEVOX_LABEL},
       {"chromeVoxOptionsLabel", IDS_SETTINGS_CHROMEVOX_OPTIONS_LABEL},
+      {"chromeVoxGeneralLabel", IDS_SETTINGS_CHROMEVOX_GENERAL_LABEL},
+      {"chromeVoxUseVerboseMode", IDS_SETTINGS_CHROMEVOX_USE_VERBOSE_MODE},
+      {"chromeVoxAutoRead", IDS_SETTINGS_CHROMEVOX_AUTO_READ},
+      {"chromeVoxSpeakTextUnderMouse",
+       IDS_SETTINGS_CHROMEVOX_SPEAK_TEXT_UNDER_MOUSE},
+      {"chromeVoxUsePitchChanges", IDS_SETTINGS_CHROMEVOX_USE_PITCH_CHANGES},
+      {"chromeVoxAnnounceRichTextAttributes",
+       IDS_SETTINGS_CHROMEVOX_ANNOUNCE_RICH_TEXT_ATTRIBUTES},
       {"chromeVoxTutorialLabel", IDS_SETTINGS_CHROMEVOX_TUTORIAL_LABEL},
       {"clickOnStopDescription", IDS_SETTINGS_CLICK_ON_STOP_DESCRIPTION},
       {"clickOnStopLabel", IDS_SETTINGS_CLICK_ON_STOP_LABEL},
@@ -963,6 +976,9 @@ void AccessibilitySection::AddLoadTimeData(
   html_source->AddString("tabletModeShelfNavigationButtonsLearnMoreUrl",
                          chrome::kTabletModeGesturesLearnMoreURL);
 
+  html_source->AddBoolean("isAccessibilityChromeVoxPageMigrationEnabled",
+                          IsAccessibilityChromeVoxPageMigrationEnabled());
+
   html_source->AddBoolean("isAccessibilitySelectToSpeakPageMigrationEnabled",
                           IsAccessibilitySelectToSpeakPageMigrationEnabled());
 
@@ -1049,6 +1065,13 @@ void AccessibilitySection::RegisterHierarchy(
       IDS_SETTINGS_ACCESSIBILITY_TEXT_TO_SPEECH_LINK_TITLE,
       mojom::Subpage::kTextToSpeechPage, mojom::SearchResultIcon::kA11y,
       mojom::SearchResultDefaultRank::kMedium, mojom::kTextToSpeechPagePath);
+  // ChromeVox settings page.
+  if (IsAccessibilityChromeVoxPageMigrationEnabled()) {
+    generator->RegisterTopLevelSubpage(
+        IDS_SETTINGS_CHROMEVOX_OPTIONS_LABEL, mojom::Subpage::kChromeVox,
+        mojom::SearchResultIcon::kA11y, mojom::SearchResultDefaultRank::kMedium,
+        mojom::kChromeVoxSubpagePath);
+  }
   // Select to speak options page.
   if (IsAccessibilitySelectToSpeakPageMigrationEnabled()) {
     generator->RegisterTopLevelSubpage(

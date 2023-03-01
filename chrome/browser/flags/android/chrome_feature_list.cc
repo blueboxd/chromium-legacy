@@ -95,7 +95,6 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &autofill::features::kAutofillEnableManualFallbackForVirtualCards,
     &autofill::features::kAutofillKeyboardAccessory,
     &autofill::features::kAutofillManualFallbackAndroid,
-    &autofill::features::kAutofillRefreshStyleAndroid,
     &autofill::features::kAutofillEnableSupportForHonorificPrefixes,
     &autofill::features::kAutofillEnableUpdateVirtualCardEnrollment,
     &autofill::features::kAutofillEnableVirtualCardMetadata,
@@ -103,7 +102,6 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &autofill::features::kAutofillEnableCardProductName,
     &autofill::features::kAutofillTouchToFillForCreditCardsAndroid,
     &blink::features::kForceWebContentsDarkMode,
-    &blink::features::kOSKResizesVisualViewportByDefault,
     &blink::features::kPrerender2,
     &commerce::kCommerceMerchantViewer,
     &commerce::kCommercePriceTracking,
@@ -166,8 +164,6 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &kAndroidSearchEngineChoiceNotification,
     &kAndroidImprovedBookmarks,
     &kAnimatedImageDragShadow,
-    &kAssistantConsentSimplifiedText,
-    &kAssistantConsentV2,
     &kAssistantIntentExperimentId,
     &kAssistantIntentTranslateInfo,
     &kAssistantNonPersonalizedVoiceSearch,
@@ -206,7 +202,6 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &kDontAutoHideBrowserControls,
     &kCacheDeprecatedSystemLocationSetting,
     &kChromeNewDownloadTab,
-    &kChromeShareLongScreenshot,
     &kChromeSharingHub,
     &kChromeSharingHubLaunchAdjacent,
     &kChromeSurveyNextAndroid,
@@ -225,6 +220,7 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &kContextualSearchSuppressShortView,
     &kContextualSearchThinWebViewImplementation,
     &kDeferKeepScreenOnDuringGesture,
+    &kDeferNotifyInMotion,
     &kExperimentsForAgsa,
     &kExploreSites,
     &kFocusOmniboxInIncognitoTabIntents,
@@ -258,7 +254,6 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &kRecordSuppressionMetrics,
     &kReengagementNotification,
     &kRelatedSearches,
-    &kRelatedSearchesUi,
     &kReportParentalControlSitesChild,
     &kRequestDesktopSiteDefaults,
     &kRequestDesktopSiteDefaultsControl,
@@ -275,6 +270,7 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &kRequestDesktopSiteOptInControlSynthetic,
     &kRequestDesktopSiteOptInSynthetic,
     &kRequestDesktopSiteDefaultsDowngrade,
+    &kRequestDesktopSiteDefaultsLogging,
     &kRequestDesktopSitePerSiteIph,
     &kSafeModeForCachedFlags,
     &kShowScrollableMVTOnNTPAndroid,
@@ -291,7 +287,6 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &kTabEngagementReportingAndroid,
     &kTabGroupsAndroid,
     &kTabGroupsContinuationAndroid,
-    &kTabGroupsUiImprovementsAndroid,
     &kTabGroupsForTablets,
     &kDiscoverFeedMultiColumn,
     &kTabStripRedesign,
@@ -463,14 +458,6 @@ BASE_FEATURE(kAnimatedImageDragShadow,
              "AnimatedImageDragShadow",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-BASE_FEATURE(kAssistantConsentSimplifiedText,
-             "AssistantConsentSimplifiedText",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
-BASE_FEATURE(kAssistantConsentV2,
-             "AssistantConsentV2",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
 BASE_FEATURE(kAssistantIntentExperimentId,
              "AssistantIntentExperimentId",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -622,10 +609,6 @@ BASE_FEATURE(kChromeNewDownloadTab,
              "ChromeNewDownloadTab",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-BASE_FEATURE(kChromeShareLongScreenshot,
-             "ChromeShareLongScreenshot",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 BASE_FEATURE(kChromeSharingHub,
              "ChromeSharingHub",
              base::FEATURE_ENABLED_BY_DEFAULT);
@@ -704,6 +687,10 @@ BASE_FEATURE(kContextualSearchThinWebViewImplementation,
 
 BASE_FEATURE(kDeferKeepScreenOnDuringGesture,
              "DeferKeepScreenOnDuringGesture",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+BASE_FEATURE(kDeferNotifyInMotion,
+             "DeferNotifyInMotion",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 BASE_FEATURE(kDownloadAutoResumptionThrottling,
@@ -830,10 +817,6 @@ BASE_FEATURE(kRelatedSearches,
              "RelatedSearches",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
-BASE_FEATURE(kRelatedSearchesUi,
-             "RelatedSearchesUi",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 BASE_FEATURE(kReportParentalControlSitesChild,
              "ReportParentalControlSitesChild",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -898,6 +881,10 @@ BASE_FEATURE(kRequestDesktopSiteDefaultsDowngrade,
              "RequestDesktopSiteDefaultsDowngrade",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+BASE_FEATURE(kRequestDesktopSiteDefaultsLogging,
+             "RequestDesktopSiteDefaultsLogging",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 BASE_FEATURE(kRequestDesktopSitePerSiteIph,
              "RequestDesktopSitePerSiteIph",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -942,6 +929,9 @@ BASE_FEATURE(kTabEngagementReportingAndroid,
              "TabEngagementReportingAndroid",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+// Enabled, but used in tests to simulate behaviors for configurations where tab
+// groups are currently unsupported (low-end devices and users of the
+// accessibility tab switcher).
 BASE_FEATURE(kTabGroupsAndroid,
              "TabGroupsAndroid",
              base::FEATURE_ENABLED_BY_DEFAULT);
@@ -950,13 +940,9 @@ BASE_FEATURE(kTabGroupsContinuationAndroid,
              "TabGroupsContinuationAndroid",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-BASE_FEATURE(kTabGroupsUiImprovementsAndroid,
-             "TabGroupsUiImprovementsAndroid",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 BASE_FEATURE(kTabGroupsForTablets,
              "TabGroupsForTablets",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kTabGridLayoutAndroid,
              "TabGridLayoutAndroid",
@@ -982,6 +968,8 @@ BASE_FEATURE(kTabStripRedesign,
              "TabStripRedesign",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+// Enabled, but often disabled in tests to reduce animation flakes and test
+// low-end device behavior where this animation is disabled.
 BASE_FEATURE(kTabToGTSAnimation,
              "TabToGTSAnimation",
              base::FEATURE_ENABLED_BY_DEFAULT);

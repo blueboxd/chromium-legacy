@@ -25,6 +25,7 @@
 #import "components/autofill/core/common/autofill_payments_features.h"
 #import "components/autofill/core/common/autofill_switches.h"
 #import "components/autofill/ios/browser/autofill_switches.h"
+#import "components/bookmarks/common/bookmark_features.h"
 #import "components/breadcrumbs/core/features.h"
 #import "components/commerce/core/commerce_feature_list.h"
 #import "components/commerce/core/flag_descriptions.h"
@@ -550,12 +551,11 @@ const FeatureEntry::FeatureVariation kTabInactivityThresholdVariations[] = {
      std::size(kTabInactivityThresholdThreeWeeks), nullptr},
 };
 
-const FeatureEntry::FeatureParam kTileAblationMVTOnlyForNewUsers[] = {
-    {kTileAblationMVTAndShortcutsForNewUsersParam, "true"}};
-const FeatureEntry::FeatureVariation
-    kTileAblationMVTAndShortcutsForNewUsersVariations[] = {
-        {"Hide Only Most Visited", kTileAblationMVTOnlyForNewUsers,
-         std::size(kTileAblationMVTOnlyForNewUsers), nullptr}};
+const FeatureEntry::FeatureParam kTileAblationMVTOnly[] = {
+    {kTileAblationMVTOnlyParam, "true"}};
+const FeatureEntry::FeatureVariation kTileAblationVariations[] = {
+    {"Hide Only Most Visited", kTileAblationMVTOnly,
+     std::size(kTileAblationMVTOnly), nullptr}};
 
 const FeatureEntry::FeatureParam
     kCredentialProviderExtensionPromoOnPasswordSaved[] = {
@@ -877,14 +877,11 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      FEATURE_WITH_PARAMS_VALUE_TYPE(kFeedHeaderSettings,
                                     kFeedHeaderSettingsVariations,
                                     "FeedHeaderSettings")},
-    {"enable-hiding-mvt-shortcuts",
-     flag_descriptions::kTileAblationMVTAndShortcutsForNewUsersName,
-     flag_descriptions::kTileAblationMVTAndShortcutsForNewUsersDescription,
-     flags_ui::kOsIos,
-     FEATURE_WITH_PARAMS_VALUE_TYPE(
-         kTileAblationMVTAndShortcutsForNewUsers,
-         kTileAblationMVTAndShortcutsForNewUsersVariations,
-         "TileAblationMVTAndShortcutsForNewUser")},
+    {"enable-tile-ablation", flag_descriptions::kTileAblationName,
+     flag_descriptions::kTileAblationDescription, flags_ui::kOsIos,
+     FEATURE_WITH_PARAMS_VALUE_TYPE(kTileAblation,
+                                    kTileAblationVariations,
+                                    "TileAblation")},
     {"shared-highlighting-amp",
      flag_descriptions::kIOSSharedHighlightingAmpName,
      flag_descriptions::kIOSSharedHighlightingAmpDescription, flags_ui::kOsIos,
@@ -1078,9 +1075,6 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
          kContentSuggestionsUIModuleRefresh,
          kModuleRefreshVariations,
          kContentSuggestionsUIModuleRefreshFlagOverrideFieldTrialName)},
-    {"3p-intents-in-incognito", flag_descriptions::kIOS3PIntentsInIncognitoName,
-     flag_descriptions::kIOS3PIntentsInIncognitoDescription, flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(kIOS3PIntentsInIncognito)},
     {"default-browser-intents-show-settings",
      flag_descriptions::kDefaultBrowserIntentsShowSettingsName,
      flag_descriptions::kDefaultBrowserIntentsShowSettingsDescription,
@@ -1391,6 +1385,26 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      FEATURE_WITH_PARAMS_VALUE_TYPE(kAddToHomeScreen,
                                     kAddToHomeScreenVariations,
                                     "IOSEditMenuPartialTranslate")},
+    {"policy-logs-page-ios", flag_descriptions::kPolicyLogsPageIOSName,
+     flag_descriptions::kPolicyLogsPageIOSDescription, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(policy::features::kPolicyLogsPageIOS)},
+    {"indicate-account-storage-error-in-account-cell",
+     flag_descriptions::kIndicateAccountStorageErrorInAccountCellName,
+     flag_descriptions::kIndicateAccountStorageErrorInAccountCellDescription,
+     flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(kIndicateAccountStorageErrorInAccountCell)},
+    {"enable-bookmarks-account-storage",
+     flag_descriptions::kEnableBookmarksAccountStorageName,
+     flag_descriptions::kEnableBookmarksAccountStorageDescription,
+     flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(bookmarks::kEnableBookmarksAccountStorage)},
+    {"web-feed-feedback-reroute",
+     flag_descriptions::kWebFeedFeedbackRerouteName,
+     flag_descriptions::kWebFeedFeedbackRerouteDescription, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(kWebFeedFeedbackReroute)},
+    {"new-ntp-omnibox-layout", flag_descriptions::kNewNTPOmniboxLayoutName,
+     flag_descriptions::kNewNTPOmniboxLayoutDescription, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(kNewNTPOmniboxLayout)},
 };
 
 bool SkipConditionalFeatureEntry(const flags_ui::FeatureEntry& entry) {

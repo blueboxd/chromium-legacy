@@ -35,6 +35,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "components/autofill/core/browser/autofill_data_util.h"
+#include "components/autofill/core/browser/autofill_field.h"
 #include "components/autofill/core/browser/autofill_type.h"
 #include "components/autofill/core/browser/field_type_utils.h"
 #include "components/autofill/core/browser/field_types.h"
@@ -47,6 +48,7 @@
 #include "components/autofill/core/browser/logging/log_manager.h"
 #include "components/autofill/core/browser/metrics/autofill_metrics.h"
 #include "components/autofill/core/browser/metrics/autofill_metrics_utils.h"
+#include "components/autofill/core/browser/metrics/precedence_over_autocomplete_metrics.h"
 #include "components/autofill/core/browser/metrics/shadow_prediction_metrics.h"
 #include "components/autofill/core/browser/randomized_encoder.h"
 #include "components/autofill/core/browser/validation.h"
@@ -65,6 +67,7 @@
 #include "components/autofill/core/common/form_data_predictions.h"
 #include "components/autofill/core/common/form_field_data.h"
 #include "components/autofill/core/common/form_field_data_predictions.h"
+#include "components/autofill/core/common/html_field_types.h"
 #include "components/autofill/core/common/logging/log_buffer.h"
 #include "components/autofill/core/common/signatures.h"
 #include "components/security_state/core/security_state.h"
@@ -110,7 +113,7 @@ std::string EncodeFieldTypes(const ServerFieldTypeSet& available_field_types) {
   for (; data_end > 0 && !bit_field[data_end - 1]; --data_end) {
   }
 
-  // Print all meaningfull bytes into a string.
+  // Print all meaningful bytes into a string.
   std::string data_presence;
   data_presence.reserve(data_end * 2 + 1);
   for (size_t i = 0; i < data_end; ++i) {
@@ -325,6 +328,7 @@ FormStructure::FormStructure(const FormData& form)
   // Do further processing on the fields, as needed.
   ProcessExtractedFields();
   SetFieldTypesFromAutocompleteAttribute();
+  DetermineFieldRanks();
 }
 
 FormStructure::FormStructure(
@@ -333,9 +337,29 @@ FormStructure::FormStructure(
     : form_signature_(form_signature) {
   for (const auto& signature : field_signatures)
     fields_.push_back(AutofillField::CreateForPasswordManagerUpload(signature));
+  DetermineFieldRanks();
 }
 
 FormStructure::~FormStructure() = default;
+
+void FormStructure::DetermineFieldRanks() {
+  size_t rank = 0;
+  std::map<FormGlobalId, size_t> rank_in_host_form;
+  std::map<FieldSignature, size_t> rank_in_signature_group;
+  std::map<std::pair<FormGlobalId, FieldSignature>, size_t>
+      rank_in_host_form_signature_group;
+
+  for (auto& field : fields_) {
+    field->set_rank(rank++);
+    field->set_rank_in_host_form(
+        rank_in_host_form[field->renderer_form_id()]++);
+    field->set_rank_in_signature_group(
+        rank_in_signature_group[field->GetFieldSignature()]++);
+    field->set_rank_in_host_form_signature_group(
+        rank_in_host_form_signature_group[std::make_pair(
+            field->renderer_form_id(), field->GetFieldSignature())]++);
+  }
+}
 
 void FormStructure::DetermineHeuristicTypes(
     AutofillMetrics::FormInteractionsUkmLogger* form_interactions_ukm_logger,
@@ -734,6 +758,12 @@ std::vector<FormDataPredictions> FormStructure::GetFieldTypePredictions(
       annotated_field.parseable_name =
           base::UTF16ToUTF8(field->parseable_name());
       annotated_field.section = field->section.ToString();
+      annotated_field.rank = field->rank();
+      annotated_field.rank_in_signature_group =
+          field->rank_in_signature_group();
+      annotated_field.rank_in_host_form = field->rank_in_host_form();
+      annotated_field.rank_in_host_form_signature_group =
+          field->rank_in_host_form_signature_group();
       form.fields.push_back(annotated_field);
     }
 
@@ -1001,7 +1031,7 @@ void FormStructure::RetrieveFromCache(const FormStructure& cached_form,
               features::kAutofillRetrieveOverallPredictionsFromCache)) {
         // During import the final field type is used to decide which
         // information to store in an address profile or credit card. As
-        // rationalization is an important component of determinig the final
+        // rationalization is an important component of determining the final
         // field type, the output should be preserved.
         field->SetTypeTo(cached_field->Type());
       }
@@ -1047,8 +1077,8 @@ void FormStructure::LogQualityMetrics(
 
   // Tracks how many fields are filled, unfilled or corrected for the address
   // and credit card forms.
-  FormGroupFillingStats address_field_stats;
-  FormGroupFillingStats cc_field_stats;
+  autofill_metrics::FormGroupFillingStats address_field_stats;
+  autofill_metrics::FormGroupFillingStats cc_field_stats;
 
   // Count the number of filled (and corrected) fields which used to not get a
   // type prediction due to autocomplete=unrecognized. Note that credit card
@@ -1100,7 +1130,7 @@ void FormStructure::LogQualityMetrics(
         form_interactions_ukm_logger, *this, *field, metric_type);
     AutofillMetrics::LogOverallPredictionQualityMetrics(
         form_interactions_ukm_logger, *this, *field, metric_type);
-    autofill::metrics::LogShadowPredictionComparison(*field);
+    autofill_metrics::LogShadowPredictionComparison(*field);
     // We count fields that were autofilled but later modified, regardless of
     // whether the data now in the field is recognized.
     if (field->previously_autofilled())
@@ -1114,6 +1144,16 @@ void FormStructure::LogQualityMetrics(
     if (!field->value.empty() && !field->is_autofilled)
       perfect_filling = false;
 
+    // If the field was identified by heuristic or server predictions as a
+    // street name or a house number, log the value of the autocomplete
+    // attribute that was used to represent the field.
+    if (IsStreetNameOrHouseNumberType(field->server_type()) ||
+        IsStreetNameOrHouseNumberType(field->heuristic_type())) {
+      autofill_metrics::
+          LogHtmlTypesForAutofilledFieldWithStreetNameOrHouseNumberPredictions(
+              *field);
+    }
+
     // Field filling statistics that are only emitted if the form was submitted
     // but independent of the existence of a possible type.
     if (observed_submission) {
@@ -1122,6 +1162,40 @@ void FormStructure::LogQualityMetrics(
       if (field->is_autofilled || field->previously_autofilled()) {
         AutofillMetrics::LogEditedAutofilledFieldAtSubmission(
             form_interactions_ukm_logger, *this, *field);
+        // To emit the StreetNameOrHouseNumberPrecedenceCorrectness metric, we
+        // should check if the feature
+        // `kAutofillStreetNameOrHouseNumberPrecedenceOverAutocomplete` had an
+        // effect on the current field. This lambda takes care of that.
+        auto precedence_feature_had_effect = [](const AutofillField& field) {
+          // When server override happens, `ComputedType()` isn't called and
+          // hence the feature's logic doesn't apply.
+          bool no_server_override =
+              !field.server_type_prediction_is_override() ||
+              field.server_type() == NO_SERVER_DATA;
+          // When the autocomplete attribute is unspecified, it is
+          // unconditionally overridden, regardless of the feature.
+          bool specified_autocomplete =
+              field.html_type() != HtmlFieldType::kUnspecified;
+          // We are not interested in cases where the autocomplete attribute
+          // agrees with server or heuristic predictions, since in that case
+          // precedence wouldn't change the behavior of the program.
+          bool autocomplete_disagree_with_type =
+              field.Type().GetStorableType() !=
+              AutofillType(field.html_type(), field.html_mode())
+                  .GetStorableType();
+          // The feature is only active for street name and house number types.
+          bool is_street_name_or_house_number =
+              IsStreetNameOrHouseNumberType(field.Type().GetStorableType());
+
+          return no_server_override && specified_autocomplete &&
+                 autocomplete_disagree_with_type &&
+                 is_street_name_or_house_number;
+        };
+        if (precedence_feature_had_effect(*field)) {
+          autofill_metrics::
+              LogEditedAutofilledFieldWithStreetNameOrHouseNumberPrecedenceAtSubmission(
+                  *field);
+        }
       }
 
       // For any field that belongs to either an address or a credit card form,
@@ -1136,12 +1210,13 @@ void FormStructure::LogQualityMetrics(
 
       if (is_address_form_field || credit_card_form_field) {
         // Address and credit cards fields are mutually exclusive.
-        FormGroupFillingStats& group_stats =
+        autofill_metrics::FormGroupFillingStats& group_stats =
             is_address_form_field ? address_field_stats : cc_field_stats;
 
         // Get the filling status of this field and add it to the form group
         // counter.
-        group_stats.AddFieldFillingStatus(GetFieldFillingStatus(*field));
+        group_stats.AddFieldFillingStatus(
+            autofill_metrics::GetFieldFillingStatus(*field));
       }
     }
 
@@ -1173,7 +1248,7 @@ void FormStructure::LogQualityMetrics(
       if ((field->is_autofilled || field->previously_autofilled()) &&
           field_has_non_empty_server_prediction &&
           !base::FeatureList::IsEnabled(
-              features::kAutofillGivePrecedenceToNumericQuantitites)) {
+              features::kAutofillGivePrecedenceToNumericQuantities)) {
         AutofillMetrics::
             LogAcceptedFilledFieldWithNumericQuantityHeuristicPrediction(
                 !field->previously_autofilled());
@@ -1225,7 +1300,7 @@ void FormStructure::LogQualityMetrics(
     if (observed_submission) {
       if (field->is_autofilled || field->previously_autofilled()) {
         // TODO(crbug.com/1368096): This metric is defective because it is
-        // confitioned on having a possible field type. Remove after M112.
+        // conditioned on having a possible field type. Remove after M112.
         AutofillMetrics::LogEditedAutofilledFieldAtSubmissionDeprecated(
             form_interactions_ukm_logger, *this, *field);
       }
@@ -1263,7 +1338,7 @@ void FormStructure::LogQualityMetrics(
       // Log the number of autofilled fields with an unrecognized autocomplete
       // attribute at submission time.
       // Note that credit card fields are not counted since they generally
-      // ignore an unrecognized autocompelte attribute.
+      // ignore an unrecognized autocomplete attribute.
       AutofillMetrics::
           LogNumberOfAutofilledFieldsWithAutocompleteUnrecognizedAtSubmission(
               num_of_accepted_autofilled_fields_with_autocomplete_unrecognized,
@@ -2169,6 +2244,14 @@ LogBuffer& operator<<(LogBuffer& buffer, const FormStructure& form) {
            << (field->IsFocusable() ? "Yes (focusable)" : "No (unfocusable)");
     buffer << Tr{} << "Is visible:"
            << (field->is_visible ? "Yes (visible)" : "No (invisible)");
+    buffer << Tr{} << "Ranks: "
+           << base::StringPrintf(
+                  "Field rank: %zu, rank in signature group: %zu, "
+                  "field rank in host form: %zu, rank in host form signature "
+                  "group: %zu",
+                  field->rank(), field->rank_in_signature_group(),
+                  field->rank_in_host_form(),
+                  field->rank_in_host_form_signature_group());
     buffer << CTag{"table"};
     buffer << CTag{"td"};
     buffer << CTag{"tr"};

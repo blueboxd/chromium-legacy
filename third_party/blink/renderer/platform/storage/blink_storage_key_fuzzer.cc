@@ -6,18 +6,19 @@
 #include "base/i18n/icu_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "mojo/core/embedder/embedder.h"
-#include "mojo/public/cpp/bindings/message.h"
 #include "net/base/features.h"
 #include "third_party/blink/public/common/storage_key/storage_key.h"
 #include "third_party/blink/public/common/storage_key/storage_key_mojom_traits.h"
 #include "third_party/blink/public/mojom/storage_key/storage_key.mojom-shared.h"
 #include "third_party/blink/renderer/platform/storage/blink_storage_key.h"
 #include "third_party/blink/renderer/platform/storage/blink_storage_key_mojom_traits.h"
+#include "third_party/blink/renderer/platform/wtf/allocator/partitions.h"
 
 struct Environment {
   Environment() {
     CHECK(base::i18n::InitializeICU());
     mojo::core::Init();
+    WTF::Partitions::Initialize();
   }
   // used by ICU integration.
   base::AtExitManager at_exit_manager;
@@ -39,20 +40,21 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
     }
 
     // Test mojom conversion path.
-    mojo::Message message =
-        blink::mojom::StorageKey::SerializeAsMessage(&*maybe_storage_key);
-    mojo::ScopedMessageHandle handle = message.TakeMojoMessage();
-    message = mojo::Message::CreateFromMessageHandle(&handle);
+    std::vector<uint8_t> mojom_serialized =
+        blink::mojom::StorageKey::Serialize(&*maybe_storage_key);
+    WTF::Vector<uint8_t> mojom_serialized_as_wtf;
+    mojom_serialized_as_wtf.AppendRange(mojom_serialized.begin(),
+                                        mojom_serialized.end());
     blink::BlinkStorageKey mojom_blink_storage_key;
-    blink::mojom::blink::StorageKey::DeserializeFromMessage(
-        std::move(message), &mojom_blink_storage_key);
-    message = blink::mojom::blink::StorageKey::SerializeAsMessage(
-        &mojom_blink_storage_key);
-    handle = message.TakeMojoMessage();
-    message = mojo::Message::CreateFromMessageHandle(&handle);
+    assert(blink::mojom::blink::StorageKey::Deserialize(
+        mojom_serialized_as_wtf, &mojom_blink_storage_key));
+    WTF::Vector<uint8_t> mojom_blink_serialized =
+        blink::mojom::blink::StorageKey::Serialize(&mojom_blink_storage_key);
+    std::vector<uint8_t> mojom_blink_serialized_as_std(
+        mojom_blink_serialized.begin(), mojom_blink_serialized.end());
     blink::StorageKey mojom_storage_key;
-    blink::mojom::StorageKey::DeserializeFromMessage(std::move(message),
-                                                     &mojom_storage_key);
+    assert(blink::mojom::StorageKey::Deserialize(mojom_blink_serialized_as_std,
+                                                 &mojom_storage_key));
     assert(maybe_storage_key->ExactMatchForTesting(mojom_storage_key));
 
     // Test type conversion path.

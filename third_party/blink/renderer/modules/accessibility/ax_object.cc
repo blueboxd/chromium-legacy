@@ -932,15 +932,6 @@ bool AXObject::CanComputeAsNaturalParent(Node* node) {
     return false;
   }
 
-  // Image map parent-child relationships work as follows:
-  // - The image is the parent
-  // - The DOM children of the associated <map> are the children
-  // This is accomplished by having GetParentNodeForComputeParent() return the
-  // <img> instead of the <map> for the map's children.
-  if (IsA<HTMLMapElement>(node)) {
-    return false;
-  }
-
   // An image cannot be the natural DOM parent of another AXObject, it can only
   // have <area> children, which are from another part of the DOM tree.
   if (IsA<HTMLImageElement>(node)) {
@@ -952,7 +943,15 @@ bool AXObject::CanComputeAsNaturalParent(Node* node) {
 
 // static
 bool AXObject::CanHaveChildren(Element& element) {
-  DCHECK(!IsA<HTMLMapElement>(element));
+  // Image map parent-child relationships work as follows:
+  // - The image is the parent
+  // - The DOM children of the associated <map> are the children
+  // This is accomplished by having GetParentNodeForComputeParent() return the
+  // <img> instead of the <map> for the map's children.
+  if (IsA<HTMLMapElement>(element)) {
+    return false;
+  }
+
   // Placeholder gets exposed as an attribute on the input accessibility node,
   // so there's no need to add its text children. Placeholder text is a separate
   // node that gets removed when it disappears, so this will only be present if
@@ -5432,6 +5431,52 @@ void AXObject::ClearChildren() const {
       ax_child_from_node->DetachFromParent();
     }
   }
+}
+
+void AXObject::ChildrenChangedWithCleanLayout() {
+  DCHECK(!IsDetached()) << "Don't call on detached node: "
+                        << ToString(true, true);
+
+  // When children changed on a <map> that means we need to forward the
+  // children changed to the <img> that parents the <area> elements.
+  // TODO(accessibility) Consider treating <img usemap> as aria-owns so that
+  // we get implementation "for free" vai relation cache, etc.
+  if (HTMLMapElement* map_element = DynamicTo<HTMLMapElement>(GetNode())) {
+    HTMLImageElement* image_element = map_element->ImageElement();
+    if (image_element) {
+      AXObject* ax_image = AXObjectCache().Get(image_element);
+      if (ax_image) {
+        ax_image->ChildrenChangedWithCleanLayout();
+        return;
+      }
+    }
+  }
+
+  // Always invalidate |children_| even if it was invalidated before, because
+  // now layout is clean.
+  SetNeedsToUpdateChildren();
+
+  // Between the time that AXObjectCacheImpl::ChildrenChanged() determines
+  // which included parent to use and now, it's possible that the parent will
+  // no longer be ignored. This is rare, but is covered by this test:
+  // external/wpt/accessibility/crashtests/delayed-ignored-change.html/
+  // In this case, first ancestor that's still included in the tree will used.
+  if (!LastKnownIsIncludedInTreeValue()) {
+    if (AXObject* ax_parent = CachedParentObject()) {
+      ax_parent->ChildrenChangedWithCleanLayout();
+      return;
+    }
+  }
+
+  // TODO(accessibility) Move this up.
+  if (!CanHaveChildren()) {
+    return;
+  }
+
+  DCHECK(!IsDetached()) << "None of the above should be able to detach |this|: "
+                        << ToString(true, true);
+
+  AXObjectCache().MarkAXObjectDirtyWithCleanLayout(this);
 }
 
 Node* AXObject::GetNode() const {

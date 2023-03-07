@@ -745,7 +745,7 @@ bool VTVideoEncodeAccelerator::CreateCompressionSession(
     VideoCodec codec,
     const gfx::Size& input_size) {
 
-  DCHECK_CALLED_ON_VALID_SEQUENCE(client_sequence_checker_);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   typedef OSStatus (*VTCompressionSessionCreatePtr)(CFAllocatorRef, int32_t, int32_t, CMVideoCodecType, CFDictionaryRef, CFDictionaryRef, CFAllocatorRef, VTCompressionOutputCallback, void *, VTCompressionSessionRef  _Nullable *);
   static const VTCompressionSessionCreatePtr VTCompressionSessionCreateFuncPtr =
       reinterpret_cast<VTCompressionSessionCreatePtr>(dlsym(((void *) -2), "VTCompressionSessionCreate"));

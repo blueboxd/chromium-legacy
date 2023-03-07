@@ -120,16 +120,6 @@ void TouchIdAuthenticator::GetAssertion(CtapGetAssertionRequest request,
   NOTREACHED();
 }
 
-void TouchIdAuthenticator::GetNextAssertion(GetAssertionCallback callback) {
-  if (__builtin_available(macOS 10.12.2, *)) {
-    DCHECK(operation_);
-    reinterpret_cast<GetAssertionOperation*>(operation_.get())
-        ->GetNextAssertion(std::move(callback));
-    return;
-  }
-  NOTREACHED();
-}
-
 void TouchIdAuthenticator::Cancel() {
   // If there is an operation pending, delete it, which will clean up any
   // pending callbacks, e.g. if the operation is waiting for a response from

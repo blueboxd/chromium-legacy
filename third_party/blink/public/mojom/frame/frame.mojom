@@ -10,7 +10,6 @@ import "mojo/public/mojom/base/text_direction.mojom";
 import "mojo/public/mojom/base/time.mojom";
 import "mojo/public/mojom/base/unguessable_token.mojom";
 import "mojo/public/mojom/base/values.mojom";
-import "services/data_decoder/public/mojom/resource_snapshot_for_web_bundle.mojom";
 import "services/network/public/mojom/content_security_policy.mojom";
 import "services/network/public/mojom/cross_origin_opener_policy.mojom";
 import "services/network/public/mojom/fetch_api.mojom";
@@ -567,16 +566,6 @@ interface LocalFrameHost {
   DidChangeSrcDoc(blink.mojom.FrameToken child_frame_token,
                   string srcdoc_value);
 
-  // Notifies the browser that a document's base url has changed, and sends the
-  // new value to the browser. The base url is subsequently shared with srcdoc
-  // subframes. The base url is only sent if (1) the frame's base url is changed
-  // from the default value the browser would expect (e.g. it sets a <base>
-  // element), or (2) if the value is reset to the default the browser would
-  // expect, in which case an empty url is sent to 'reset' the previously sent
-  // value.
-  // Note: this is currently only used when IsolateSandboxedIframes is enabled.
-  DidChangeBaseURL(url.mojom.Url base_url);
-
   // Notifies the browser that this frame received a message from a local frame
   // with a delegated capability (https://wicg.github.io/capability-delegation).
   // `delegated_capability` is the capability delegated via postMessage().
@@ -766,13 +755,6 @@ interface LocalFrame {
 
   // Notifies this frame to clear the focused element (if any).
   ClearFocusedElement();
-
-  // Gets the resource snapshot of the frame for creating Web Bundle.
-  // The instance of ResourceSnapshotForWebBundle in the renderer process will
-  // be kept alive as far as the Mojo endpoint is held and the renderer process
-  // is alive.
-  GetResourceSnapshotForWebBundle(
-      pending_receiver<data_decoder.mojom.ResourceSnapshotForWebBundle> receiver);
 
   // Copies the image at |window_point| to the clipboard (if there indeed is an
   // image at that |window_point|).

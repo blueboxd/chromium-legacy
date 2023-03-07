@@ -7,6 +7,8 @@ import './commerce/shopping_list.js';
 import './icons.html.js';
 import './power_bookmarks_context_menu.js';
 import './power_bookmark_row.js';
+import './power_bookmarks_context_menu.js';
+import './power_bookmarks_edit_dialog.js';
 import '//bookmarks-side-panel.top-chrome/shared/sp_empty_state.js';
 import '//bookmarks-side-panel.top-chrome/shared/sp_filter_chip.js';
 import '//bookmarks-side-panel.top-chrome/shared/sp_footer.js';
@@ -22,6 +24,7 @@ import '//resources/cr_elements/cr_toolbar/cr_toolbar_selection_overlay.js';
 import '//resources/cr_elements/icons.html.js';
 import '//resources/polymer/v3_0/iron-list/iron-list.js';
 
+import {startColorChangeUpdater} from '//resources/cr_components/color_change_listener/colors_css_updater.js';
 import {getInstance as getAnnouncerInstance} from '//resources/cr_elements/cr_a11y_announcer/cr_a11y_announcer.js';
 import {CrActionMenuElement} from '//resources/cr_elements/cr_action_menu/cr_action_menu.js';
 import {CrLazyRenderElement} from '//resources/cr_elements/cr_lazy_render/cr_lazy_render.js';
@@ -34,6 +37,7 @@ import {DomRepeatEvent, PolymerElement} from '//resources/polymer/v3_0/polymer/p
 import {ActionSource} from './bookmarks.mojom-webui.js';
 import {BookmarksApiProxy, BookmarksApiProxyImpl} from './bookmarks_api_proxy.js';
 import {PowerBookmarksContextMenuElement} from './power_bookmarks_context_menu.js';
+import {PowerBookmarksEditDialogElement} from './power_bookmarks_edit_dialog.js';
 import {getTemplate} from './power_bookmarks_list.html.js';
 import {Label, PowerBookmarksService} from './power_bookmarks_service.js';
 
@@ -47,6 +51,7 @@ export interface PowerBookmarksListElement {
     deletionToast: CrLazyRenderElement<CrToastElement>,
     powerBookmarksContainer: HTMLElement,
     sortMenu: CrActionMenuElement,
+    editDialog: PowerBookmarksEditDialogElement,
   };
 }
 
@@ -159,6 +164,11 @@ export class PowerBookmarksListElement extends PolymerElement {
   private renamingParentId_: string;
   private renamingId_: string;
   private deletionDescription_: string;
+
+  constructor() {
+    super();
+    startColorChangeUpdater();
+  }
 
   override connectedCallback() {
     super.connectedCallback();
@@ -293,14 +303,28 @@ export class PowerBookmarksListElement extends PolymerElement {
     if (this.compact_) {
       return this.get(`compactDescriptions_.${bookmark.id}`);
     } else {
-      return this.get(`expandedDescriptions_.${bookmark.id}`);
+      const url = this.get(`expandedDescriptions_.${bookmark.id}`);
+      if (this.searchQuery_ && url && bookmark.parentId) {
+        const parentFolder =
+            this.bookmarksService_.findBookmarkWithId(bookmark.parentId);
+        const folderLabel = this.getFolderLabel_(parentFolder);
+        return loadTimeData.getStringF(
+            'urlFolderDescription', url, folderLabel);
+      } else {
+        return url;
+      }
     }
   }
 
-  private getFolderLabel_(): string {
-    const activeFolder = this.getActiveFolder_();
-    if (activeFolder) {
-      return activeFolder!.title;
+  private getActiveFolderLabel_(): string {
+    return this.getFolderLabel_(this.getActiveFolder_());
+  }
+
+  private getFolderLabel_(folder: chrome.bookmarks.BookmarkTreeNode|
+                          undefined): string {
+    if (folder && folder.id !== loadTimeData.getString('otherBookmarksId') &&
+        folder.id !== loadTimeData.getString('mobileBookmarksId')) {
+      return folder!.title;
     } else {
       return loadTimeData.getString('allBookmarks');
     }
@@ -512,6 +536,14 @@ export class PowerBookmarksListElement extends PolymerElement {
   private onUndoClicked_() {
     this.bookmarksApi_.undo();
     this.$.deletionToast.get().hide();
+  }
+
+  private onMoveClicked_(event: MouseEvent) {
+    event.preventDefault();
+    event.stopPropagation();
+    this.$.editDialog.showDialog(
+        this.getActiveFolder_(), this.bookmarksService_.getTopLevelBookmarks(),
+        this.selectedBookmarks_);
   }
 
   private onEditMenuClicked_(event: MouseEvent) {

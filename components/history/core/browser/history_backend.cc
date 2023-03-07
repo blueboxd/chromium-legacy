@@ -495,7 +495,7 @@ SegmentID HistoryBackend::UpdateSegments(const GURL& url,
     if (!segment_id) {
       segment_id = db_->CreateSegment(url_id, segment_name);
       if (!segment_id) {
-        NOTREACHED();
+        DLOG(ERROR) << "UpdateSegments: CreateSegment failed: " << segment_name;
         return 0;
       }
     } else {
@@ -516,13 +516,14 @@ SegmentID HistoryBackend::UpdateSegments(const GURL& url,
 
   // Set the segment in the visit.
   if (!db_->SetSegmentID(visit_id, segment_id)) {
-    NOTREACHED();
+    DLOG(ERROR) << "UpdateSegments: SetSegmentID failed: " << segment_id;
     return 0;
   }
 
   // Finally, increase the counter for that segment / day.
   if (!db_->IncreaseSegmentVisitCount(segment_id, ts, 1)) {
-    NOTREACHED();
+    DLOG(ERROR) << "UpdateSegments: IncreaseSegmentVisitCount failed: "
+                << segment_id;
     return 0;
   }
   return segment_id;
@@ -1071,7 +1072,6 @@ void HistoryBackend::InitImpl(
 
   // Compute the file names.
   history_dir_ = history_database_params.history_dir;
-  channel_ = history_database_params.channel;
 
 #if DCHECK_IS_ON()
   DCHECK(!HistoryPathsTracker::GetInstance()->HasPath(history_dir_))
@@ -1239,7 +1239,7 @@ std::pair<URLID, VisitID> HistoryBackend::AddPageVisit(
 
     url_id = db_->AddURL(url_info);
     if (!url_id) {
-      NOTREACHED() << "Adding URL failed.";
+      DLOG(ERROR) << "AddPageVisit: Adding URL failed: " << url_info.url();
       return std::make_pair(0, 0);
     }
     url_info.set_id(url_id);
@@ -1270,8 +1270,8 @@ std::pair<URLID, VisitID> HistoryBackend::AddPageVisit(
   if (visit_info.visit_id) {
     NotifyURLVisited(url_info, visit_info);
   } else {
-    DVLOG(0) << "Failed to build visit insert statement:  "
-             << "url_id = " << url_id;
+    DLOG(ERROR) << "Failed to build visit insert statement:  "
+                << "url_id = " << url_id;
   }
 
   return std::make_pair(url_id, visit_info.visit_id);
@@ -1298,7 +1298,7 @@ void HistoryBackend::AddPagesWithDetails(const URLRows& urls,
       // Add the page if it doesn't exist.
       url_id = db_->AddURL(*i);
       if (!url_id) {
-        NOTREACHED() << "Could not add row to DB";
+        DLOG(ERROR) << "AddPagesWithDetails: Adding URL failed: " << i->url();
         return;
       }
 
@@ -1317,7 +1317,7 @@ void HistoryBackend::AddPagesWithDetails(const URLRows& urls,
           /*arg_segment_id=*/0, /*arg_incremented_omnibox_typed_score=*/false,
           /*arg_opener_visit=*/0);
       if (!db_->AddVisit(&visit_info, visit_source)) {
-        NOTREACHED() << "Adding visit failed.";
+        DLOG(ERROR) << "AddPagesWithDetails: Adding visit failed: " << i->url();
         return;
       }
 
@@ -2033,8 +2033,8 @@ std::vector<AnnotatedVisit> HistoryBackend::ToAnnotatedVisits(
     // Add a result row for this visit, get the URL info from the DB.
     URLRow url_row;
     if (!db_->GetURLRow(visit_row.url_id, &url_row)) {
-      DVLOG(0) << "Failed to get id " << visit_row.url_id
-               << " from history.urls.";
+      DLOG(ERROR) << "Failed to get id " << visit_row.url_id
+                  << " from history.urls.";
       continue;  // DB out of sync and URL doesn't exist, try to recover.
     }
 
@@ -2086,6 +2086,7 @@ std::vector<ClusterVisit> HistoryBackend::ToClusterVisits(
     bool include_duplicates) {
   auto annotated_visits = ToAnnotatedVisits(visit_ids);
   std::vector<ClusterVisit> cluster_visits;
+  std::set<VisitID> seen_duplicate_ids;
   base::ranges::for_each(annotated_visits, [&](const auto& annotated_visit) {
     ClusterVisit cluster_visit =
         db_->GetClusterVisit(annotated_visit.visit_row.visit_id);
@@ -2098,9 +2099,22 @@ std::vector<ClusterVisit> HistoryBackend::ToClusterVisits(
       cluster_visit.duplicate_visits = ToDuplicateClusterVisits(
           db_->GetDuplicateClusterVisitIdsForClusterVisit(
               annotated_visit.visit_row.visit_id));
+      base::ranges::for_each(
+          cluster_visit.duplicate_visits, [&](const auto& duplicate_visit) {
+            seen_duplicate_ids.insert(duplicate_visit.visit_id);
+          });
     }
     cluster_visits.push_back(cluster_visit);
   });
+
+  if (include_duplicates && !seen_duplicate_ids.empty()) {
+    // Prune out top-level visits that are duplicates elsewhere.
+    base::EraseIf(cluster_visits, [&](const auto& cluster_visit) {
+      return seen_duplicate_ids.find(
+                 cluster_visit.annotated_visit.visit_row.visit_id) !=
+             seen_duplicate_ids.end();
+    });
+  }
   return cluster_visits;
 }
 
@@ -2197,6 +2211,30 @@ void HistoryBackend::UpdateClusterTriggerability(
   }
 
   db_->UpdateClusterTriggerability(clusters);
+}
+
+void HistoryBackend::HideVisits(const std::vector<VisitID>& visit_ids) {
+  TRACE_EVENT0("browser", "HistoryBackend::HideVisits");
+  if (!db_)
+    return;
+  db_->HideVisits(visit_ids);
+}
+
+void HistoryBackend::UpdateClusterVisit(
+    const history::ClusterVisit& cluster_visit) {
+  TRACE_EVENT0("browser", "HistoryBackend::UpdateClusterVisit");
+  if (!db_) {
+    return;
+  }
+
+  int64_t cluster_id = db_->GetClusterIdContainingVisit(
+      cluster_visit.annotated_visit.visit_row.visit_id);
+  if (cluster_id == 0) {
+    // No cluster visit persisted, just return.
+    return;
+  }
+
+  db_->UpdateClusterVisit(cluster_id, cluster_visit);
 }
 
 std::vector<Cluster> HistoryBackend::GetMostRecentClusters(
@@ -2390,7 +2428,8 @@ void HistoryBackend::QueryHistoryBasic(const QueryOptions& options,
   for (const auto& visit : visits) {
     // Add a result row for this visit, get the URL info from the DB.
     if (!db_->GetURLRow(visit.url_id, &url_result)) {
-      DVLOG(0) << "Failed to get id " << visit.url_id << " from history.urls.";
+      DLOG(ERROR) << "Failed to get id " << visit.url_id
+                  << " from history.urls.";
       continue;  // DB out of sync and URL doesn't exist, try to recover.
     }
 
@@ -3345,7 +3384,7 @@ void HistoryBackend::DeleteAllHistory() {
 
   // Delete all cached favicons which are not used by the UI.
   if (!ClearAllFaviconHistory(starred_urls)) {
-    LOG(ERROR) << "Favicon history could not be cleared";
+    DLOG(ERROR) << "Favicon history could not be cleared";
     // We continue in this error case. If the user wants to delete their
     // history, we should delete as much as we can.
   }
@@ -3354,7 +3393,7 @@ void HistoryBackend::DeleteAllHistory() {
   // Therefore, we clear the list afterwards to make sure nobody uses this
   // invalid data.
   if (!ClearAllMainHistory(kept_url_rows))
-    LOG(ERROR) << "Main history could not be cleared";
+    DLOG(ERROR) << "Main history could not be cleared";
   kept_url_rows.clear();
 
   db_->GetStartDate(&first_recorded_time_);

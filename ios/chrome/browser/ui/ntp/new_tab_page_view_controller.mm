@@ -42,7 +42,7 @@
 namespace {
 // Animation time for the shift up/down animations to focus/defocus omnibox.
 const CGFloat kShiftTilesDownAnimationDuration = 0.2;
-const CGFloat kShiftTilesUpAnimationDuration = 0.25;
+const CGFloat kShiftTilesUpAnimationDuration = 0.1;
 }  // namespace
 
 @interface NewTabPageViewController () <NewTabPageOmniboxPositioning,
@@ -203,8 +203,6 @@ const CGFloat kShiftTilesUpAnimationDuration = 0.25;
   [super viewWillLayoutSubviews];
 
   [self updateNTPLayout];
-  [self updateAdditionalOffset];
-  [self updateScrolledToMinimumHeight];
   [self.headerController updateConstraints];
 }
 
@@ -229,7 +227,7 @@ const CGFloat kShiftTilesUpAnimationDuration = 0.25;
   [self updateFakeOmniboxForScrollPosition];
 
   if (self.shouldFocusFakebox) {
-    [self focusFakebox];
+    [self shiftTilesUpToFocusOmnibox];
     self.shouldFocusFakebox = NO;
   }
 
@@ -575,7 +573,7 @@ const CGFloat kShiftTilesUpAnimationDuration = 0.25;
   // action) needs to wait until it is ready. viewDidAppear: currently serves as
   // this proxy as there is no specific signal given from the feed that its
   // contents have loaded.
-  if (self.isFeedVisible && ![self collectionViewHasLoaded]) {
+  if (self.isFeedVisible && !self.viewDidAppear) {
     self.shouldFocusFakebox = YES;
   } else {
     [self shiftTilesUpToFocusOmnibox];
@@ -623,6 +621,12 @@ const CGFloat kShiftTilesUpAnimationDuration = 0.25;
 #pragma mark - UIScrollViewDelegate
 
 - (void)scrollViewDidScroll:(UIScrollView*)scrollView {
+  // If `feedWrapperViewController` is nil, then the NTP is either being created
+  // or updated and is not ready to handle scroll events. Doing so could cause
+  // unexpected behavior, such as breaking the layout or causing crashes.
+  if (!self.feedWrapperViewController) {
+    return;
+  }
   [self.overscrollActionsController scrollViewDidScroll:scrollView];
   [self.panGestureHandler scrollViewDidScroll:scrollView];
   [self updateFakeOmniboxForScrollPosition];
@@ -786,6 +790,7 @@ const CGFloat kShiftTilesUpAnimationDuration = 0.25;
   if (self.scrolledToMinimumHeight) {
     self.shouldAnimateHeader = NO;
     self.disableScrollAnimation = NO;
+    [self.ntpContentDelegate focusOmnibox];
     [self.headerController
         completeHeaderFakeOmniboxFocusAnimationWithFinalPosition:
             UIViewAnimatingPositionEnd];
@@ -829,6 +834,7 @@ const CGFloat kShiftTilesUpAnimationDuration = 0.25;
                 self.disableScrollAnimation = YES;
                 [strongSelf.headerController expandHeaderForFocus];
                 shiftOmniboxToTop();
+                [strongSelf.ntpContentDelegate focusOmnibox];
               }
             }];
 
@@ -1070,6 +1076,7 @@ const CGFloat kShiftTilesUpAnimationDuration = 0.25;
   self.collectionView.contentInset = UIEdgeInsetsMake(
       [self heightAboveFeed], 0, self.collectionView.contentInset.bottom, 0);
   [self updateAdditionalOffset];
+  [self updateScrolledToMinimumHeight];
 }
 
 // Updates additionalOffset using the content above the feed.
@@ -1461,7 +1468,10 @@ const CGFloat kShiftTilesUpAnimationDuration = 0.25;
 // Checks if the collection view is scrolled at least to the minimum height and
 // updates property.
 - (void)updateScrolledToMinimumHeight {
-  self.scrolledToMinimumHeight = [self scrollPosition] >= [self pinnedOffsetY];
+  CGFloat scrollPosition = [self scrollPosition];
+  CGFloat offset = [self pinnedOffsetY];
+
+  self.scrolledToMinimumHeight = scrollPosition >= offset;
 }
 
 // Adds `viewController` as a child of `parentViewController` and adds

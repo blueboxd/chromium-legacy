@@ -46,6 +46,7 @@
 #include "net/base/upload_file_element_reader.h"
 #include "net/cookies/canonical_cookie.h"
 #include "net/cookies/cookie_inclusion_status.h"
+#include "net/cookies/cookie_setting_override.h"
 #include "net/cookies/cookie_store.h"
 #include "net/cookies/cookie_util.h"
 #include "net/cookies/site_for_cookies.h"
@@ -669,7 +670,7 @@ URLLoader::URLLoader(
       pervasive_payload_requested_ = true;
       url_request_->set_pervasive_payloads_index_for_logging(index.value());
       base::UmaHistogramExactLinear("Network.CacheTransparency.URLMatched",
-                                    index.value(), 101);
+                                    index.value(), 323);
       DVLOG(2) << "Found pervasive payload: " << request.url.spec();
     }
   }
@@ -726,6 +727,11 @@ URLLoader::URLLoader(
     url_request_->net_log().AddEventReferencingSource(
         net::NetLogEventType::CREATED_BY,
         request.net_log_reference_info.value());
+  }
+
+  if (network::cors::IsCorsEnabledRequestMode(request_mode_)) {
+    url_request_->set_cookie_setting_overrides(net::CookieSettingOverrides(
+        net::CookieSettingOverride::kTopLevelStorageAccessGrantEligible));
   }
 
 #if BUILDFLAG(IS_ANDROID)
@@ -2251,7 +2257,7 @@ bool URLLoader::DispatchOnRawResponse() {
       std::move(header_array), raw_response_headers,
       private_network_access_checker_.ResponseAddressSpace().value_or(
           mojom::IPAddressSpace::kUnknown),
-      response_headers->response_code());
+      response_headers->response_code(), url_request_->cookie_partition_key());
 
   return true;
 }

@@ -99,6 +99,11 @@ class VisitAnnotationsDatabase {
   void UpdateClusterTriggerability(
       const std::vector<history::Cluster>& clusters);
 
+  // Updates the cluster visit with the same visit ID as `cluster_visit` that
+  // belongs to `cluster_id`.
+  void UpdateClusterVisit(int64_t cluster_id,
+                          const history::ClusterVisit& cluster_visit);
+
   // Get a `Cluster`. Does not include the cluster's `visits` or
   // `keyword_to_data_map`.
   Cluster GetCluster(int64_t cluster_id);
@@ -132,6 +137,9 @@ class VisitAnnotationsDatabase {
   // Return the keyword data associated with `cluster_id`.
   base::flat_map<std::u16string, ClusterKeywordData> GetClusterKeywords(
       int64_t cluster_id);
+
+  // Sets scores of cluster visits to 0 to hide them from the webUI.
+  void HideVisits(const std::vector<VisitID>& visit_ids);
 
   // Delete `Cluster`s from the table.
   void DeleteClusters(const std::vector<int64_t>& cluster_ids);

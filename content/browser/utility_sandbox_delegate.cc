@@ -47,6 +47,7 @@ UtilitySandboxedProcessLauncherDelegate::
       sandbox_type_ == sandbox::mojom::Sandbox::kIconReader ||
       sandbox_type_ == sandbox::mojom::Sandbox::kMediaFoundationCdm ||
       sandbox_type_ == sandbox::mojom::Sandbox::kWindowsSystemProxyResolver ||
+      sandbox_type_ == sandbox::mojom::Sandbox::kFileUtil ||
 #endif
 #if BUILDFLAG(IS_MAC)
       sandbox_type_ == sandbox::mojom::Sandbox::kMirroring ||
@@ -89,7 +90,7 @@ UtilitySandboxedProcessLauncherDelegate::
 }
 
 UtilitySandboxedProcessLauncherDelegate::
-    ~UtilitySandboxedProcessLauncherDelegate() {}
+    ~UtilitySandboxedProcessLauncherDelegate() = default;
 
 sandbox::mojom::Sandbox
 UtilitySandboxedProcessLauncherDelegate::GetSandboxType() {
@@ -104,6 +105,10 @@ base::EnvironmentMap UtilitySandboxedProcessLauncherDelegate::GetEnvironment() {
 
 #if BUILDFLAG(USE_ZYGOTE)
 ZygoteCommunication* UtilitySandboxedProcessLauncherDelegate::GetZygote() {
+  if (zygote_.has_value()) {
+    return zygote_.value();
+  }
+
   // If the sandbox has been disabled for a given type, don't use a zygote.
   if (sandbox::policy::IsUnsandboxedSandboxType(sandbox_type_))
     return nullptr;
@@ -138,6 +143,11 @@ ZygoteCommunication* UtilitySandboxedProcessLauncherDelegate::GetZygote() {
 
   // All other types use the pre-sandboxed zygote.
   return GetGenericZygote();
+}
+
+void UtilitySandboxedProcessLauncherDelegate::SetZygote(
+    ZygoteCommunication* handle) {
+  zygote_ = handle;
 }
 #endif  // BUILDFLAG(USE_ZYGOTE)
 

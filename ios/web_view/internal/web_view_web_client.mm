@@ -14,11 +14,13 @@
 #include "components/autofill/ios/browser/autofill_java_script_feature.h"
 #import "components/autofill/ios/browser/suggestion_controller_java_script_feature.h"
 #import "components/autofill/ios/form_util/form_handlers_java_script_feature.h"
+#import "components/language/ios/browser/language_detection_java_script_feature.h"
 #import "components/password_manager/ios/password_manager_java_script_feature.h"
 #import "components/security_interstitials/core/unsafe_resource.h"
 #include "components/ssl_errors/error_info.h"
 #include "components/strings/grit/components_strings.h"
 #import "components/translate/ios/browser/translate_java_script_feature.h"
+#import "ios/components/security_interstitials/https_only_mode/feature.h"
 #import "ios/components/security_interstitials/ios_security_interstitial_java_script_feature.h"
 #import "ios/components/security_interstitials/lookalikes/lookalike_url_container.h"
 #import "ios/components/security_interstitials/lookalikes/lookalike_url_error.h"
@@ -97,6 +99,7 @@ std::vector<web::JavaScriptFeature*> WebViewWebClient::GetJavaScriptFeatures(
   return {autofill::AutofillJavaScriptFeature::GetInstance(),
           autofill::FormHandlersJavaScriptFeature::GetInstance(),
           autofill::SuggestionControllerJavaScriptFeature::GetInstance(),
+          language::LanguageDetectionJavaScriptFeature::GetInstance(),
           password_manager::PasswordManagerJavaScriptFeature::GetInstance(),
           security_interstitials::IOSSecurityInterstitialJavaScriptFeature::
               GetInstance(),
@@ -184,6 +187,12 @@ void WebViewWebClient::PrepareErrorPage(
 
 bool WebViewWebClient::EnableLongPressUIContextMenu() const {
   return CWVWebView.chromeContextMenuEnabled;
+}
+
+bool WebViewWebClient::IsMixedContentAutoupgradeEnabled(
+    web::BrowserState* browser_state) const {
+  return base::FeatureList::IsEnabled(
+      security_interstitials::features::kMixedContentAutoupgrade);
 }
 
 }  // namespace ios_web_view

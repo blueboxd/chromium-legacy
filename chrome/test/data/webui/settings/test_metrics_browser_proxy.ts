@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {MetricsBrowserProxy, PrivacyElementInteractions, PrivacyGuideInteractions, PrivacyGuideSettingsStates, SafeBrowsingInteractions, SafetyCheckInteractions, SafetyCheckNotificationsModuleInteractions} from 'chrome://settings/settings.js';
+import {MetricsBrowserProxy, PrivacyElementInteractions, PrivacyGuideInteractions, PrivacyGuideSettingsStates, SafeBrowsingInteractions, SafetyCheckInteractions, SafetyCheckNotificationsModuleInteractions, SafetyCheckUnusedSitePermissionsModuleInteractions} from 'chrome://settings/settings.js';
 import {TestBrowserProxy} from 'chrome://webui-test/test_browser_proxy.js';
 
 export class TestMetricsBrowserProxy extends TestBrowserProxy implements
@@ -13,7 +13,12 @@ export class TestMetricsBrowserProxy extends TestBrowserProxy implements
       'recordSafetyCheckInteractionHistogram',
       'recordSafetyCheckNotificationsListCountHistogram',
       'recordSafetyCheckNotificationsModuleInteractionsHistogram',
+      'recordSafetyCheckNotificationsModuleEntryPointShown',
+      'recordSafetyCheckUnusedSitePermissionsListCountHistogram',
+      'recordSafetyCheckUnusedSitePermissionsModuleInteractionsHistogram',
+      'recordSafetyCheckUnusedSitePermissionsModuleEntryPointShown',
       'recordSettingsPageHistogram',
+      'recordPrivacyGuideFlowLengthHistogram',
       'recordSafeBrowsingInteractionHistogram',
       'recordPrivacyGuideNextNavigationHistogram',
       'recordPrivacyGuideEntryExitHistogram',
@@ -41,6 +46,31 @@ export class TestMetricsBrowserProxy extends TestBrowserProxy implements
         interaction);
   }
 
+  recordSafetyCheckNotificationsModuleEntryPointShown(visible: boolean) {
+    this.methodCalled(
+        'recordSafetyCheckNotificationsModuleEntryPointShown', visible);
+  }
+
+  recordSafetyCheckUnusedSitePermissionsListCountHistogram(suggestions:
+                                                               number) {
+    this.methodCalled(
+        'recordSafetyCheckUnusedSitePermissionsListCountHistogram',
+        suggestions);
+  }
+
+  recordSafetyCheckUnusedSitePermissionsModuleInteractionsHistogram(
+      interaction: SafetyCheckUnusedSitePermissionsModuleInteractions) {
+    this.methodCalled(
+        'recordSafetyCheckUnusedSitePermissionsModuleInteractionsHistogram',
+        interaction);
+  }
+
+  recordSafetyCheckUnusedSitePermissionsModuleEntryPointShown(visible:
+                                                                  boolean) {
+    this.methodCalled(
+        'recordSafetyCheckUnusedSitePermissionsModuleEntryPointShown', visible);
+  }
+
   recordSettingsPageHistogram(interaction: PrivacyElementInteractions) {
     this.methodCalled('recordSettingsPageHistogram', interaction);
   }
@@ -61,5 +91,9 @@ export class TestMetricsBrowserProxy extends TestBrowserProxy implements
 
   recordPrivacyGuideSettingsStatesHistogram(state: PrivacyGuideSettingsStates) {
     this.methodCalled('recordPrivacyGuideSettingsStatesHistogram', state);
+  }
+
+  recordPrivacyGuideFlowLengthHistogram(steps: number) {
+    this.methodCalled('recordPrivacyGuideFlowLengthHistogram', steps);
   }
 }

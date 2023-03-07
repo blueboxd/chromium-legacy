@@ -7,6 +7,7 @@ import 'chrome://resources/cr_elements/cr_grid/cr_grid.js';
 import 'chrome://resources/cr_elements/cr_icons.css.js';
 import 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.js';
 import 'chrome://resources/cr_elements/cr_toggle/cr_toggle.js';
+import './check_mark_wrapper.js';
 
 import {CrToggleElement} from 'chrome://resources/cr_elements/cr_toggle/cr_toggle.js';
 import {assert} from 'chrome://resources/js/assert_ts.js';
@@ -87,7 +88,13 @@ export class ThemesElement extends PolymerElement {
     this.callbackRouter_.removeListener(this.setThemeListenerId_);
   }
 
+  focusOnBackButton() {
+    this.$.backButton.focus();
+  }
+
   private onCollectionChange_() {
+    this.header_ = '';
+    this.themes_ = [];
     if (this.selectedCollection) {
       this.pageHandler_.getBackgroundImages(this.selectedCollection!.id)
           .then(({images}) => {
@@ -108,17 +115,21 @@ export class ThemesElement extends PolymerElement {
       attributionUrl,
       imageUrl,
       previewImageUrl,
+      collectionId,
     } = e.model.item;
     this.pageHandler_.setBackgroundImage(
-        attribution1, attribution2, attributionUrl, imageUrl, previewImageUrl);
+        attribution1, attribution2, attributionUrl, imageUrl, previewImageUrl,
+        collectionId);
   }
 
   private computeIsRefreshToggleChecked_(): boolean {
     if (!this.selectedCollection) {
       return false;
     }
-    return !!this.theme_ &&
-        this.selectedCollection!.id === this.theme_.dailyRefreshCollectionId;
+    return !!this.theme_ && !!this.theme_.backgroundImage &&
+        this.theme_.backgroundImage.dailyRefreshEnabled &&
+        this.selectedCollection!.id ===
+        this.theme_.backgroundImage.collectionId;
   }
 
   private onRefreshDailyToggleChange_(e: CustomEvent<boolean>) {
@@ -128,6 +139,17 @@ export class ThemesElement extends PolymerElement {
     } else {
       this.pageHandler_.setDailyRefreshCollectionId('');
     }
+  }
+
+  private isThemeSelected_(url: string) {
+    return this.theme_ && !this.theme_.thirdPartyThemeInfo &&
+        this.theme_.backgroundImage &&
+        this.theme_.backgroundImage.url.url === url &&
+        !this.isRefreshToggleChecked_;
+  }
+
+  private getThemeCheckedStatus_(url: string): string {
+    return this.isThemeSelected_(url) ? 'true' : 'false';
   }
 }
 

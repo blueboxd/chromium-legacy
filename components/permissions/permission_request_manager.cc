@@ -347,18 +347,24 @@ bool PermissionRequestManager::ReprioritizeCurrentRequestIfNeeded() {
   return true;
 }
 
-bool PermissionRequestManager::ValidateRequest(PermissionRequest* request) {
+bool PermissionRequestManager::ValidateRequest(PermissionRequest* request,
+                                               bool should_finalize) {
   const auto iter = request_sources_map_.find(request);
-  if (iter == request_sources_map_.end())
+  if (iter == request_sources_map_.end()) {
     return false;
+  }
 
-  if (!iter->second.IsSourceFrameInactiveAndDisallowActivation())
+  if (!iter->second.IsSourceFrameInactiveAndDisallowActivation()) {
     return true;
+  }
 
-  request->Cancelled();
-  request->RequestFinished();
-  validated_requests_set_.erase(request);
-  request_sources_map_.erase(request);
+  if (should_finalize) {
+    request->Cancelled();
+    request->RequestFinished();
+    validated_requests_set_.erase(request);
+    request_sources_map_.erase(request);
+  }
+
   return false;
 }
 
@@ -750,8 +756,9 @@ void PermissionRequestManager::DequeueRequestIfNeeded() {
   // not been validated" requests added to the queue could have effect to
   // priority order
   for (auto* request : pending_permission_requests_) {
-    if (ValidateRequest(request))
+    if (ValidateRequest(request, /* should_finalize */ false)) {
       validated_requests_set_.insert(request);
+    }
   }
 
   if (permission_ui_selectors_.empty()) {
@@ -842,13 +849,34 @@ void PermissionRequestManager::ShowPrompt() {
       base::RecordAction(base::UserMetricsAction(
           "Notifications.Quiet.PermissionRequestShown"));
     }
+
+#if !BUILDFLAG(IS_ANDROID)
+    PermissionsClient::Get()->TriggerPromptHatsSurveyIfEnabled(
+        web_contents()->GetBrowserContext(), requests_[0]->request_type(),
+        absl::nullopt, DetermineCurrentRequestUIDisposition(),
+        DetermineCurrentRequestUIDispositionReasonForUMA(),
+        requests_[0]->GetGestureType(), absl::nullopt, false,
+        hats_shown_callback_.has_value()
+            ? std::move(hats_shown_callback_.value())
+            : base::DoNothing());
+
+    hats_shown_callback_.reset();
+#endif
   }
   current_request_already_displayed_ = true;
   current_request_first_display_time_ = base::Time::Now();
+
   NotifyPromptAdded();
+
   // If in testing mode, automatically respond to the bubble that was shown.
-  if (auto_response_for_test_ != NONE)
+  if (auto_response_for_test_ != NONE) {
     DoAutoResponseForTesting();
+  }
+}
+
+void PermissionRequestManager::SetHatsShownCallback(
+    base::OnceCallback<void()> callback) {
+  hats_shown_callback_ = std::move(callback);
 }
 
 void PermissionRequestManager::DeletePrompt() {
@@ -876,7 +904,7 @@ void PermissionRequestManager::ResetViewStateForCurrentRequest() {
   did_show_prompt_ = false;
   did_click_manage_ = false;
   did_click_learn_more_ = false;
-
+  hats_shown_callback_.reset();
   if (view_)
     DeletePrompt();
 }

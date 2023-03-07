@@ -9,6 +9,7 @@
 #include <map>
 #include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/containers/flat_map.h"
@@ -24,6 +25,7 @@
 #include "content/browser/interest_group/auction_worklet_manager.h"
 #include "content/browser/interest_group/interest_group_auction.h"
 #include "content/browser/interest_group/interest_group_k_anonymity_manager.h"
+#include "content/browser/interest_group/interest_group_pa_report_util.h"
 #include "content/browser/interest_group/interest_group_storage.h"
 #include "content/services/auction_worklet/public/mojom/bidder_worklet.mojom.h"
 #include "content/services/auction_worklet/public/mojom/private_aggregation_request.mojom-forward.h"
@@ -91,6 +93,13 @@ void InterestGroupAuctionReporter::Start(base::OnceClosure callback) {
                        /*top_seller_signals=*/absl::nullopt);
 }
 
+base::RepeatingClosure
+InterestGroupAuctionReporter::OnNavigateToWinningAdCallback() {
+  return base::BindRepeating(
+      &InterestGroupAuctionReporter::OnNavigateToWinningAd,
+      weak_ptr_factory_.GetWeakPtr());
+}
+
 void InterestGroupAuctionReporter::RequestSellerWorklet(
     const SellerWinningBidInfo* seller_info,
     const absl::optional<std::string>& top_seller_signals) {
@@ -101,7 +110,6 @@ void InterestGroupAuctionReporter::RequestSellerWorklet(
   if (auction_worklet_manager_->RequestSellerWorklet(
           seller_info->auction_config->decision_logic_url,
           seller_info->auction_config->trusted_scoring_signals_url,
-          *seller_info->subresource_url_builder,
           seller_info->auction_config->seller_experiment_group_id,
           base::BindOnce(&InterestGroupAuctionReporter::OnSellerWorkletReceived,
                          base::Unretained(this), base::Unretained(seller_info),
@@ -159,6 +167,8 @@ void InterestGroupAuctionReporter::OnSellerWorkletReceived(
             seller_info->component_auction_modified_bid_params->has_bid);
   }
 
+  seller_worklet_handle_->AuthorizeSubresourceUrls(
+      *seller_info->subresource_url_builder);
   seller_worklet_handle_->GetSellerWorklet()->ReportResult(
       seller_info->auction_config->non_shared_params,
       InterestGroupAuction::GetDirectFromSellerSellerSignals(
@@ -194,12 +204,24 @@ void InterestGroupAuctionReporter::OnSellerReportResultComplete(
       pa_requests,
       [](const auction_worklet::mojom::PrivateAggregationRequestPtr&
              request_ptr) { return request_ptr.is_null(); }));
-  if (!pa_requests.empty()) {
-    PrivateAggregationRequests& pa_requests_for_seller =
-        private_aggregation_requests_[seller_info->auction_config->seller];
-    pa_requests_for_seller.insert(pa_requests_for_seller.end(),
-                                  std::move_iterator(pa_requests.begin()),
-                                  std::move_iterator(pa_requests.end()));
+
+  const url::Origin& seller = seller_info->auction_config->seller;
+  for (auction_worklet::mojom::PrivateAggregationRequestPtr& request :
+       pa_requests) {
+    // reportResult() only gets executed for seller when there was an auction
+    // winner so we consider is_winner to be true, which results in
+    // "reserved.loss" reports not being reported. Bid reject reason is not
+    // meaningful thus not supported in reportResult(), so it is set to
+    // absl::nullopt.
+    auction_worklet::mojom::PrivateAggregationRequestPtr converted_request =
+        FillInPrivateAggregationRequest(std::move(request), seller_info->bid,
+                                        seller_info->highest_scoring_other_bid,
+                                        /*reject_reason=*/absl::nullopt,
+                                        /*is_winner=*/true);
+    if (converted_request) {
+      private_aggregation_requests_[seller].emplace_back(
+          std::move(converted_request));
+    }
   }
 
   if (!seller_ad_beacon_map.empty()) {
@@ -281,8 +303,7 @@ void InterestGroupAuctionReporter::RequestBidderWorklet(
   if (auction_worklet_manager_->RequestBidderWorklet(
           interest_group.bidding_url.value_or(GURL()),
           interest_group.bidding_wasm_helper_url,
-          interest_group.trusted_bidding_signals_url,
-          *bidder_auction.subresource_url_builder, experiment_group_id,
+          interest_group.trusted_bidding_signals_url, experiment_group_id,
           base::BindOnce(&InterestGroupAuctionReporter::OnBidderWorkletReceived,
                          base::Unretained(this), signals_for_winner),
           base::BindOnce(
@@ -335,6 +356,8 @@ void InterestGroupAuctionReporter::OnBidderWorkletReceived(
     }
   }
 
+  bidder_worklet_handle_->AuthorizeSubresourceUrls(
+      *seller_info.subresource_url_builder);
   bidder_worklet_handle_->GetBidderWorklet()->ReportWin(
       group_name,
       auction_config->non_shared_params.auction_signals.maybe_json(),
@@ -390,13 +413,25 @@ void InterestGroupAuctionReporter::OnBidderReportWinComplete(
       pa_requests,
       [](const auction_worklet::mojom::PrivateAggregationRequestPtr&
              request_ptr) { return request_ptr.is_null(); }));
-  if (!pa_requests.empty()) {
-    PrivateAggregationRequests& pa_requests_for_bidder =
-        private_aggregation_requests_[winning_bid_info_.storage_interest_group
-                                          ->interest_group.owner];
-    pa_requests_for_bidder.insert(pa_requests_for_bidder.end(),
-                                  std::move_iterator(pa_requests.begin()),
-                                  std::move_iterator(pa_requests.end()));
+
+  const url::Origin& bidder =
+      winning_bid_info_.storage_interest_group->interest_group.owner;
+  const SellerWinningBidInfo& seller_info = GetBidderAuction();
+  for (auction_worklet::mojom::PrivateAggregationRequestPtr& request :
+       pa_requests) {
+    // Only winner's reportWin() gets executed, so is_winner is true, which
+    // results in "reserved.loss" reports not being reported. Bid reject reason
+    // is not meaningful thus not supported in reportWin(), so it is set to
+    // absl::nullopt.
+    auction_worklet::mojom::PrivateAggregationRequestPtr converted_request =
+        FillInPrivateAggregationRequest(
+            std::move(request), winning_bid_info_.bid,
+            /*highest_scoring_other_bid=*/seller_info.highest_scoring_other_bid,
+            /*reject_reason=*/absl::nullopt, /*is_winner=*/true);
+    if (converted_request) {
+      private_aggregation_requests_[bidder].emplace_back(
+          std::move(converted_request));
+    }
   }
 
   if (!bidder_ad_beacon_map.empty()) {
@@ -440,7 +475,23 @@ void InterestGroupAuctionReporter::OnReportingComplete(
   TRACE_EVENT_NESTABLE_ASYNC_END0("fledge", "auction",
                                   top_level_seller_winning_bid_info_.trace_id);
   errors_.insert(errors_.end(), errors.begin(), errors.end());
-  std::move(callback_).Run();
+  reporting_complete_ = true;
+  MaybeInvokeCallback();
+}
+
+void InterestGroupAuctionReporter::OnNavigateToWinningAd() {
+  if (navigated_to_winning_ad_) {
+    return;
+  }
+  navigated_to_winning_ad_ = true;
+  MaybeInvokeCallback();
+}
+
+void InterestGroupAuctionReporter::MaybeInvokeCallback() {
+  DCHECK(callback_);
+  if (reporting_complete_ && navigated_to_winning_ad_) {
+    std::move(callback_).Run();
+  }
 }
 
 const InterestGroupAuctionReporter::SellerWinningBidInfo&

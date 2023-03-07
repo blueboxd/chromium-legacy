@@ -68,7 +68,14 @@ class Generator(generator.Generator):
 
   @staticmethod
   def GetTemplatePrefix():
-    return "js_interface_binder_templates"
+    return 'js_interface_binder_templates'
+
+  def _GetKindName(self, kind):
+    """Return `kind`'s name, prefixing it with its namespace if necessary."""
+    should_include_namespace = self.module.path != kind.module.path
+    if should_include_namespace:
+      return f'{kind.module.namespace}::{kind.name}'
+    return kind.name
 
   def _GetCppType(self, kind):
     """Return a string representing the C++ type of `kind`
@@ -76,18 +83,18 @@ class Generator(generator.Generator):
      Returns None if the type is not supposed to be used in a JsInterfaceBinder.
      """
     if mojom.IsPendingRemoteKind(kind):
-      return "::mojo::PendingRemote<%s>" % kind.kind.name
+      return f'::mojo::PendingRemote<{self._GetKindName(kind.kind)}>'
     if mojom.IsPendingReceiverKind(kind):
-      return "::mojo::PendingReceiver<%s>" % kind.kind.name
+      return f'::mojo::PendingReceiver<{self._GetKindName(kind.kind)}>'
 
   def _GetBinderMemberVariableName(self, bind_method):
     """Return the variable name of the binder corresponding to `bind_method`."""
-    return "binder_for_%s" % generator.ToLowerSnakeCase(bind_method.name)
+    return f'binder_for_{generator.ToLowerSnakeCase(bind_method.name)}'
 
   def GetFilters(self):
     return {
-        "cpp_type": self._GetCppType,
-        "binder_variable_name": self._GetBinderMemberVariableName,
+        'cpp_type': self._GetCppType,
+        'binder_variable_name': self._GetBinderMemberVariableName,
     }
 
   def _GetInterfaceBinders(self):
@@ -104,7 +111,6 @@ class Generator(generator.Generator):
     # Enforce JsInterfaceBinders constraints.
     for interface_binder in interface_binders:
       for method in interface_binder.methods:
-        print(method.response_parameters)
         if method.response_parameters != None:
           raise Exception(f'{interface_binder.name}.{method.name} has a '
                           'response. JsInterfaceBinder\'s methods should not '
@@ -123,21 +129,21 @@ class Generator(generator.Generator):
 
   def _GetParameters(self):
     return {
-        "module": self.module,
-        "interface_binders": self._GetInterfaceBinders()
+        'module': self.module,
+        'interface_binders': self._GetInterfaceBinders()
     }
 
-  @UseJinja("js_interface_binder_impl.h.tmpl")
+  @UseJinja('js_interface_binder_impl.h.tmpl')
   def _GenerateJsInterfaceBinderImplDeclaration(self):
     return self._GetParameters()
 
-  @UseJinja("js_interface_binder_impl.cc.tmpl")
+  @UseJinja('js_interface_binder_impl.cc.tmpl')
   def _GenerateJsInterfaceBinderImplDefinition(self):
     return self._GetParameters()
 
   def GenerateFiles(self, args):
     self.module.Stylize(JsInterfaceBinderImplStylizer())
     self.WriteWithComment(self._GenerateJsInterfaceBinderImplDeclaration(),
-                          "%s-js-interface-binder-impl.h" % self.module.path)
+                          f'{self.module.path}-js-interface-binder-impl.h')
     self.WriteWithComment(self._GenerateJsInterfaceBinderImplDefinition(),
-                          "%s-js-interface-binder-impl.cc" % self.module.path)
+                          f'{self.module.path}-js-interface-binder-impl.cc')

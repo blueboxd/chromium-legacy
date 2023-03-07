@@ -533,6 +533,12 @@ BASE_FEATURE(kOpenscreenCastStreamingSession,
              "OpenscreenCastStreamingSession",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+// Controls whether the Mirroring Service will fetch, analyze, and store
+// information on the quality of the session using RTCP logs.
+BASE_FEATURE(kEnableRtcpReporting,
+             "EnableRtcpReporting",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // Approach original pre-REC MSE object URL autorevoking behavior, though await
 // actual attempt to use the object URL for attachment to perform revocation.
 // This will hopefully reduce runtime memory bloat for pages that do not
@@ -878,7 +884,7 @@ BASE_FEATURE(kWakeLockOptimisationHiddenMuted,
 // while capturing a low-resolution tab.
 BASE_FEATURE(kWebContentsCaptureHiDpi,
              "WebContentsCaptureHiDPI",
-             base::FEATURE_ENABLED_BY_DEFAULT);
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Enables handling of hardware media keys for controlling media.
 BASE_FEATURE(kHardwareMediaKeyHandling,
@@ -1220,6 +1226,12 @@ BASE_FEATURE(kRecordMediaEngagementScores,
 BASE_FEATURE(kRecordWebAudioEngagement,
              "RecordWebAudioEngagement",
              base::FEATURE_ENABLED_BY_DEFAULT);
+
+// Enables reporting "smpteSt2086" HDR Metadata as supported in the
+// MediaCapabilities API.
+BASE_FEATURE(kSupportSmpteSt2086HdrMetadata,
+             "SupportSmpteSt2086HdrMetadata",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 // The following Media Engagement flags are not enabled on mobile platforms:
 // - MediaEngagementBypassAutoplayPolicies: enables the Media Engagement Index

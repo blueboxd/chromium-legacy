@@ -35,11 +35,19 @@ let BridgeEntry;
 export const BridgeConstants = {};
 
 /** @public {!BridgeEntry} */
+BridgeConstants.Braille = {
+  TARGET: 'Braille',
+  Action: {
+    BACK_TRANSLATE: 'backTranslate',
+  },
+};
+
+/** @public {!BridgeEntry} */
 BridgeConstants.BrailleBackground = {
   TARGET: 'BrailleBackground',
   Action: {
-    BACK_TRANSLATE: 'backTranslate',
     REFRESH_BRAILLE_TABLE: 'refreshBrailleTable',
+    WRITE: 'write',
   },
 };
 

@@ -39,6 +39,14 @@ BASE_FEATURE(kAutofillAccountProfilesUnionView,
 const base::FeatureParam<bool> kAutofillEnableSilentUpdatesForAccountProfiles{
     &kAutofillAccountProfilesUnionView, "enable_silent_updates", true};
 
+// If enabled, the Sync CONTACT_INFO type runs in transport mode. This has the
+// effect that Account profiles are bound to the signed-in state rather than the
+// Sync state.
+// TODO(crbug.com/1348294): Remove once launched.
+BASE_FEATURE(kAutofillAccountProfilesOnSignIn,
+             "AutofillAccountProfilesOnSignIn",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // TODO(crbug.com/1135188): Remove this feature flag after the explicit save
 // prompts for address profiles is complete.
 // When enabled, address profile save problem will contain a dropdown for
@@ -133,14 +141,25 @@ BASE_FEATURE(kAutofillDeferSubmissionClassificationAfterAjax,
              "AutofillDeferSubmissionClassificationAfterAjax",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-// If enabled, we try to fill and import from fields based on available
-// heuristic or server suggestions even if the autocomplete attribute is not
-// specified by the web standard. This does not affect the moments when the UI
-// is shown.
+// If enabled, server/heuristic predictions take precedence over an unrecognized
+// autocomplete attribute. Depending on the parameters, these fields are then
+// filled or imported from. Independently of any parameters, suggestions are
+// suppressed for such fields.
+// Predicting a type for a field can influence other fields due to
+// rationalization and sectioning. This also affects metrics like
+// Autofill.FieldFillingStats, which rely on the types.
+// When only the importing part of this feature is enabled, only the importing
+// metrics are reliable.
 // TODO(crbug.com/1295728): Remove the feature when the experiment is completed.
 BASE_FEATURE(kAutofillFillAndImportFromMoreFields,
              "AutofillFillAndImportFromMoreFields",
              base::FEATURE_DISABLED_BY_DEFAULT);
+const base::FeatureParam<bool> kAutofillFillAutocompleteUnrecognized{
+    &kAutofillFillAndImportFromMoreFields, "fill_unrecognized_autocomplete",
+    false};
+const base::FeatureParam<bool> kAutofillImportFromAutoccompleteUnrecognized{
+    &kAutofillFillAndImportFromMoreFields,
+    "import_from_unrecognized_autocomplete", false};
 
 // Kill switch for Autofill filling.
 BASE_FEATURE(kAutofillDisableFilling,
@@ -158,24 +177,6 @@ BASE_FEATURE(kAutofillDisableShadowHeuristics,
              "AutofillDisableShadowHeuristics",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-// When enabled, autofill will use the new ranking algorithm for card and
-// profile autofill suggestions.
-BASE_FEATURE(kAutofillEnableRankingFormula,
-             "AutofillEnableRankingFormula",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-// The half life applied to the use count.
-const base::FeatureParam<int> kAutofillRankingFormulaUsageHalfLife{
-    &kAutofillEnableRankingFormula, "autofill_ranking_formula_usage_half_life",
-    20};
-// The boost factor applied to ranking virtual cards.
-const base::FeatureParam<int> kAutofillRankingFormulaVirtualCardBoost{
-    &kAutofillEnableRankingFormula,
-    "autofill_ranking_formula_virtual_card_boost", 5};
-// The half life applied to the virtual card boost.
-const base::FeatureParam<int> kAutofillRankingFormulaVirtualCardBoostHalfLife{
-    &kAutofillEnableRankingFormula,
-    "autofill_ranking_formula_virtual_card_boost_half_life", 15};
-
 // When enabled, autofill will use the new ranking algorithm for address profile
 // autofill suggestions.
 BASE_FEATURE(kAutofillEnableRankingFormulaAddressProfiles,
@@ -186,6 +187,25 @@ const base::FeatureParam<int>
     kAutofillRankingFormulaAddressProfilesUsageHalfLife{
         &kAutofillEnableRankingFormulaAddressProfiles,
         "autofill_ranking_formula_address_profiles_usage_half_life", 20};
+
+// When enabled, autofill will use the new ranking algorithm for credit card
+// autofill suggestions.
+BASE_FEATURE(kAutofillEnableRankingFormulaCreditCards,
+             "AutofillEnableRankingFormulaCreditCards",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+// The half life applied to the use count.
+const base::FeatureParam<int> kAutofillRankingFormulaCreditCardsUsageHalfLife{
+    &kAutofillEnableRankingFormulaCreditCards,
+    "autofill_ranking_formula_credit_cards_usage_half_life", 20};
+
+// The boost factor applied to ranking virtual cards.
+const base::FeatureParam<int> kAutofillRankingFormulaVirtualCardBoost{
+    &kAutofillEnableRankingFormulaCreditCards,
+    "autofill_ranking_formula_virtual_card_boost", 5};
+// The half life applied to the virtual card boost.
+const base::FeatureParam<int> kAutofillRankingFormulaVirtualCardBoostHalfLife{
+    &kAutofillEnableRankingFormulaCreditCards,
+    "autofill_ranking_formula_virtual_card_boost_half_life", 15};
 
 // Controls if the heuristic field parsing utilizes shared labels.
 // TODO(crbug.com/1165780): Remove once shared labels are launched.

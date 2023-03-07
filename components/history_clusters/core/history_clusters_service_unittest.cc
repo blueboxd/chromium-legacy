@@ -31,10 +31,12 @@
 #include "components/history_clusters/core/config.h"
 #include "components/history_clusters/core/features.h"
 #include "components/history_clusters/core/history_clusters_db_tasks.h"
+#include "components/history_clusters/core/history_clusters_prefs.h"
 #include "components/history_clusters/core/history_clusters_service_task_get_most_recent_clusters.h"
 #include "components/history_clusters/core/history_clusters_service_test_api.h"
 #include "components/history_clusters/core/history_clusters_types.h"
 #include "components/history_clusters/core/history_clusters_util.h"
+#include "components/prefs/testing_pref_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
@@ -126,13 +128,25 @@ class HistoryClustersServiceTestBase : public testing::Test {
     CHECK(history_dir_.CreateUniqueTempDir());
     history_service_ =
         history::CreateHistoryService(history_dir_.GetPath(), true);
+    pref_service_ = std::make_unique<TestingPrefServiceSimple>();
+    prefs::RegisterProfilePrefs(pref_service_->registry());
+
+    ResetHistoryClustersServiceWithLocale("en-US");
+  }
+
+  HistoryClustersServiceTestBase(const HistoryClustersServiceTestBase&) =
+      delete;
+  HistoryClustersServiceTestBase& operator=(
+      const HistoryClustersServiceTestBase&) = delete;
+
+  void ResetHistoryClustersServiceWithLocale(const std::string& locale) {
     history_clusters_service_ = std::make_unique<HistoryClustersService>(
-        "en-US", history_service_.get(),
+        locale, history_service_.get(),
         /*entity_metadata_provider=*/nullptr,
         /*url_loader_factory=*/nullptr,
         /*engagement_score_provider=*/nullptr,
         /*template_url_service=*/nullptr,
-        /*optimization_guide_decider=*/nullptr);
+        /*optimization_guide_decider=*/nullptr, pref_service_.get());
 
     history_clusters_service_test_api_ =
         std::make_unique<HistoryClustersServiceTestApi>(
@@ -142,11 +156,6 @@ class HistoryClustersServiceTestBase : public testing::Test {
     history_clusters_service_test_api_->SetClusteringBackendForTest(
         std::move(test_backend));
   }
-
-  HistoryClustersServiceTestBase(const HistoryClustersServiceTestBase&) =
-      delete;
-  HistoryClustersServiceTestBase& operator=(
-      const HistoryClustersServiceTestBase&) = delete;
 
   // Add hardcoded completed visits with context annotations to the history
   // database.
@@ -364,6 +373,10 @@ class HistoryClustersServiceTestBase : public testing::Test {
     history::BlockUntilHistoryProcessesPendingRequests(history_service_.get());
   }
 
+  void SetJourneysVisible(bool visible) {
+    pref_service_->SetBoolean(prefs::kVisible, visible);
+  }
+
  protected:
   // ScopedFeatureList needs to be declared before TaskEnvironment, so that it
   // is destroyed after the TaskEnvironment is destroyed, preventing other
@@ -374,6 +387,7 @@ class HistoryClustersServiceTestBase : public testing::Test {
   // Used to construct a `HistoryClustersService`.
   base::ScopedTempDir history_dir_;
   std::unique_ptr<history::HistoryService> history_service_;
+  std::unique_ptr<TestingPrefServiceSimple> pref_service_;
 
   std::unique_ptr<HistoryClustersService> history_clusters_service_;
   std::unique_ptr<HistoryClustersServiceTestApi>
@@ -408,6 +422,32 @@ class HistoryClustersServiceTest : public HistoryClustersServiceTestBase,
 INSTANTIATE_TEST_SUITE_P(IncludeSyncedVisits,
                          HistoryClustersServiceTest,
                          ::testing::Bool());
+
+TEST_P(HistoryClustersServiceTest, EligibleAndEnabledHistogramRecorded) {
+  {
+    base::HistogramTester histogram_tester;
+    SetJourneysVisible(true);
+    ResetHistoryClustersServiceWithLocale("en-US");
+    histogram_tester.ExpectUniqueSample(
+        "History.Clusters.JourneysEligibleAndEnabledAtSessionStart", true, 1);
+  }
+
+  {
+    base::HistogramTester histogram_tester;
+    SetJourneysVisible(false);
+    ResetHistoryClustersServiceWithLocale("en-US");
+    histogram_tester.ExpectUniqueSample(
+        "History.Clusters.JourneysEligibleAndEnabledAtSessionStart", false, 1);
+  }
+
+  {
+    base::HistogramTester histogram_tester;
+    SetJourneysVisible(true);
+    ResetHistoryClustersServiceWithLocale("garbagelocale");
+    histogram_tester.ExpectTotalCount(
+        "History.Clusters.JourneysEligibleAndEnabledAtSessionStart", 0);
+  }
+}
 
 TEST_P(HistoryClustersServiceTest, HardCapOnVisitsFetchedFromHistory) {
   Config config;
@@ -1334,9 +1374,11 @@ TEST_P(HistoryClustersServiceTest, DoesURLMatchAnyClusterWithNoisyURLs) {
       ComputeURLKeywordForLookup(GURL("https://second-1-day-old-visit.com/"))));
 
   std::vector<history::Cluster> clusters;
+  // This cluster should contribute to keywords.
   clusters.push_back(history::Cluster(
       0,
       {
+          GetHardcodedClusterVisit(5),
           GetHardcodedClusterVisit(5),
           GetHardcodedClusterVisit(
               /*visit_id=*/2, /*score=*/0.0, /*engagement_score=*/20.0),
@@ -1346,6 +1388,8 @@ TEST_P(HistoryClustersServiceTest, DoesURLMatchAnyClusterWithNoisyURLs) {
        {u"z", history::ClusterKeywordData()},
        {u"apples bananas", history::ClusterKeywordData()}},
       /*should_show_on_prominent_ui_surfaces=*/true));
+  // This cluster should NOT contribute to keywords because
+  // `should_show_on_prominent_ui_surfaces` is false.
   clusters.push_back(
       history::Cluster(0,
                        {
@@ -1354,10 +1398,13 @@ TEST_P(HistoryClustersServiceTest, DoesURLMatchAnyClusterWithNoisyURLs) {
                        },
                        {{u"sensitive", history::ClusterKeywordData()}},
                        /*should_show_on_prominent_ui_surfaces=*/false));
+  // This cluster should NOT contribute to keywords because it only has 1
+  // visible visit.
   clusters.push_back(
       history::Cluster(0,
                        {
                            GetHardcodedClusterVisit(2),
+                           GetHardcodedClusterVisit(2, /*score=*/0),
                        },
                        {{u"singlevisit", history::ClusterKeywordData()}},
                        /*should_show_on_prominent_ui_surfaces=*/true));
@@ -1403,9 +1450,11 @@ TEST_P(HistoryClustersServiceTest, DoesURLMatchAnyClusterNoNoisyURLs) {
       ComputeURLKeywordForLookup(GURL("https://second-1-day-old-visit.com/"))));
 
   std::vector<history::Cluster> clusters;
+  // This cluster should contribute to keywords.
   clusters.push_back(history::Cluster(
       0,
       {
+          GetHardcodedClusterVisit(5),
           GetHardcodedClusterVisit(5),
           GetHardcodedClusterVisit(
               /*visit_id=*/2, /*score=*/0.0, /*engagement_score=*/20.0),
@@ -1415,6 +1464,8 @@ TEST_P(HistoryClustersServiceTest, DoesURLMatchAnyClusterNoNoisyURLs) {
        {u"z", history::ClusterKeywordData()},
        {u"apples bananas", history::ClusterKeywordData()}},
       /*should_show_on_prominent_ui_surfaces=*/true));
+  // This cluster should NOT contribute to keywords because
+  // `should_show_on_prominent_ui_surfaces` is false.
   clusters.push_back(
       history::Cluster(0,
                        {
@@ -1423,10 +1474,13 @@ TEST_P(HistoryClustersServiceTest, DoesURLMatchAnyClusterNoNoisyURLs) {
                        },
                        {{u"sensitive", history::ClusterKeywordData()}},
                        /*should_show_on_prominent_ui_surfaces=*/false));
+  // This cluster should NOT contribute to keywords because it only has 1
+  // visible visit.
   clusters.push_back(
       history::Cluster(0,
                        {
                            GetHardcodedClusterVisit(2),
+                           GetHardcodedClusterVisit(2, /*score=*/0),
                        },
                        {{u"singlevisit", history::ClusterKeywordData()}},
                        /*should_show_on_prominent_ui_surfaces=*/true));
@@ -1515,13 +1569,13 @@ TEST_F(HistoryClustersServiceMaxKeywordsTest,
   AddIncompleteVisit(7, 7, yesterday);
 
   // Create 4 clusters:
-  std::vector<history::AnnotatedVisit> visits =
-      test_clustering_backend_->LastClusteredVisits();
+  history::ClusterVisit cluster_visit;
+  cluster_visit.score = .5;
   std::vector<history::Cluster> clusters;
   // 1) A cluster with 4 phrases and 6 words. The next cluster's keywords should
   // also be cached since we have less than 5 phrases.
   clusters.push_back(
-      history::Cluster(0, {{}, {}},
+      history::Cluster(0, {cluster_visit, cluster_visit},
                        {{u"one", history::ClusterKeywordData()},
                         {u"two", history::ClusterKeywordData()},
                         {u"three", history::ClusterKeywordData()},
@@ -1530,19 +1584,21 @@ TEST_F(HistoryClustersServiceMaxKeywordsTest,
   // 2) The 2nd cluster has only 1 visit. Since it's keywords won't be cached,
   // they should not affect the max.
   clusters.push_back(history::Cluster(
-      0, {{}},
+      0, {cluster_visit},
       {{u"ignored not cached", history::ClusterKeywordData()},
        {u"elephant penguin kangaroo", history::ClusterKeywordData()}},
       /*should_show_on_prominent_ui_surfaces=*/true));
   // 3) With this 3rd cluster, we'll have 5 phrases and 7 words. Now that we've
   // reached 5 phrases, the next cluster's keywords should not be cached.
   clusters.push_back(
-      history::Cluster(0, {{}, {}}, {{u"seven", history::ClusterKeywordData()}},
+      history::Cluster(0, {cluster_visit, cluster_visit},
+                       {{u"seven", history::ClusterKeywordData()}},
                        /*should_show_on_prominent_ui_surfaces=*/true));
   // 4) The 4th cluster's keywords should not be cached since we've reached 5
   // phrases.
   clusters.push_back(
-      history::Cluster(0, {{}, {}}, {{u"eight", history::ClusterKeywordData()}},
+      history::Cluster(0, {cluster_visit, cluster_visit},
+                       {{u"eight", history::ClusterKeywordData()}},
                        /*should_show_on_prominent_ui_surfaces=*/true));
 
   // Kick off cluster request.

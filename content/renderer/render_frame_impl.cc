@@ -525,10 +525,17 @@ void FillNavigationParamsRequest(
   }
 
   if (common_params.url.IsAboutSrcdoc()) {
-    // Pass on the `fallback_srcdoc_baseurl` sent from the frame host. This will
+    // Pass on the `initiator_base_url`sent via the common_params. This will be
     // picked up in DocumentLoader.
-    navigation_params->fallback_srcdoc_base_url =
-        commit_params.fallback_srcdoc_baseurl;
+    if (blink::features::IsNewBaseUrlInheritanceBehaviorEnabled()) {
+      // It's possible for initiator_base_url to be empty if this is an error
+      // srcdoc page. See
+      // NavigationRequestBrowserTest.OriginForSrcdocErrorPageInSubframe.
+      navigation_params->fallback_srcdoc_base_url =
+          common_params.initiator_base_url
+              ? WebURL(common_params.initiator_base_url.value())
+              : WebURL();
+    }
   }
 }
 
@@ -1062,7 +1069,7 @@ void FillMiscNavigationParams(
       }
     }
     navigation_params->has_fenced_frame_reporting =
-        commit_params.fenced_frame_properties->reporting_metadata().has_value();
+        commit_params.fenced_frame_properties->has_fenced_frame_reporting();
   }
 
   navigation_params->ancestor_or_self_has_cspee =
@@ -2874,6 +2881,10 @@ void RenderFrameImpl::CommitFailedNavigation(
   // `origin_to_commit` must be set on failed navigations.
   CHECK(commit_params->origin_to_commit);
 
+  // The browser process should not send us an initiator_base_url in a failed
+  // navigation.
+  DCHECK(!common_params->initiator_base_url);
+
   AssertNavigationCommits assert_navigation_commits(
       this, kMayReplaceInitialEmptyDocument);
 
@@ -4341,11 +4352,16 @@ void RenderFrameImpl::DidObserveLoadingBehavior(
 
 void RenderFrameImpl::DidObserveSubresourceLoad(
     uint32_t number_of_subresources_loaded,
-    uint32_t number_of_subresource_loads_handled_by_service_worker) {
+    uint32_t number_of_subresource_loads_handled_by_service_worker,
+    bool pervasive_payload_requested,
+    int64_t pervasive_bytes_fetched,
+    int64_t total_bytes_fetched) {
   for (auto& observer : observers_)
     observer.DidObserveSubresourceLoad(
         number_of_subresources_loaded,
-        number_of_subresource_loads_handled_by_service_worker);
+        number_of_subresource_loads_handled_by_service_worker,
+        pervasive_payload_requested, pervasive_bytes_fetched,
+        total_bytes_fetched);
 }
 
 void RenderFrameImpl::DidObserveNewFeatureUsage(
@@ -6263,8 +6279,11 @@ WebView* RenderFrameImpl::CreateNewWindow(
   if (pip_options) {
     CHECK_EQ(policy, blink::kWebNavigationPolicyPictureInPicture);
     auto pip_mojom_opts = blink::mojom::PictureInPictureWindowOptions::New();
+    pip_mojom_opts->width = pip_options->width;
+    pip_mojom_opts->height = pip_options->height;
     pip_mojom_opts->initial_aspect_ratio = pip_options->initial_aspect_ratio;
-    pip_mojom_opts->lock_aspect_ratio = pip_options->lock_aspect_ratio;
+    // TODO(crbug.com/1410379): Remove this from mojom and the browser side.
+    pip_mojom_opts->lock_aspect_ratio = false;
     params->pip_options = std::move(pip_mojom_opts);
   }
 

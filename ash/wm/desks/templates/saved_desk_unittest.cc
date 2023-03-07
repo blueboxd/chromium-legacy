@@ -434,9 +434,7 @@ class SavedDeskTest : public OverviewTestBase {
   // OverviewTestBase:
   void SetUp() override {
     scoped_feature_list_.InitWithFeatures(
-        {features::kDesksTemplates, features::kEnableSavedDesks,
-         features::kDesksCloseAll},
-        {});
+        {features::kDesksTemplates, features::kEnableSavedDesks}, {});
     OverviewTestBase::SetUp();
 
     // The `FullRestoreSaveHandler` isn't setup during tests so every window we
@@ -972,16 +970,14 @@ TEST_F(SavedDeskTest, SaveDeskButtonFocusRingColor) {
   // Verify the focus ring of the given button is as expected.
   auto verify_button_focus_ring_color = [this](SavedDeskSaveDeskButton* button,
                                                bool highlighted) {
-    EXPECT_EQ(
-        cc::ExactPixelComparator(/*discard_alpha=*/false)
-            .Compare(
-                GetFocusRingBitmap(views::FocusRing::Get(button)),
-                GetBitmapWithInnerRoundedRect(
-                    views::FocusRing::Get(button)->size(),
-                    /*stroke_width=*/2,
-                    ColorProvider::Get()->GetControlsLayerColor(
-                        ColorProvider::ControlsLayerType::kFocusRingColor))),
-        highlighted);
+    EXPECT_EQ(cc::ExactPixelComparator().Compare(
+                  GetFocusRingBitmap(views::FocusRing::Get(button)),
+                  GetBitmapWithInnerRoundedRect(
+                      views::FocusRing::Get(button)->size(),
+                      /*stroke_width=*/2,
+                      ColorProvider::Get()->GetControlsLayerColor(
+                          ColorProvider::ControlsLayerType::kFocusRingColor))),
+              highlighted);
   };
 
   // Both buttons are not highlighted.

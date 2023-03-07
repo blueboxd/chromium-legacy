@@ -34,7 +34,9 @@
 #include "components/autofill/core/browser/autofill_download_manager.h"
 #include "components/autofill/core/browser/autofill_experiments.h"
 #include "components/autofill/core/browser/autofill_field.h"
+#include "components/autofill/core/browser/autofill_profile_migration_strike_database.h"
 #include "components/autofill/core/browser/autofill_profile_save_strike_database.h"
+#include "components/autofill/core/browser/data_model/autofill_profile.h"
 #include "components/autofill/core/browser/data_model/autofill_profile_comparator.h"
 #include "components/autofill/core/browser/data_model/credit_card_art_image.h"
 #include "components/autofill/core/browser/data_model/phone_number.h"
@@ -318,6 +320,9 @@ void PersonalDataManager::Init(
   }
 
   if (strike_database) {
+    profile_migration_strike_database_ =
+        std::make_unique<AutofillProfileMigrationStrikeDatabase>(
+            strike_database);
     profile_save_strike_database_ =
         std::make_unique<AutofillProfileSaveStrikeDatabase>(strike_database);
     profile_update_strike_database_ =
@@ -781,7 +786,7 @@ void PersonalDataManager::UpdateProfile(const AutofillProfile& profile) {
 }
 
 AutofillProfile* PersonalDataManager::GetProfileByGUID(
-    const std::string& guid) {
+    const std::string& guid) const {
   // GUIDs are unique among profile sources.
   return GetProfileFromProfilesByGUID(guid, GetProfiles());
 }
@@ -1335,14 +1340,16 @@ std::vector<AutofillProfile*> PersonalDataManager::GetProfilesToSuggest()
   // Suggest `kAccount` and `kLocalOrSyncable` profiles.
   std::vector<AutofillProfile*> profiles = GetProfiles();
 
-  // Rank the suggestions by ranking score.
-  const base::Time comparison_time = AutofillClock::Now();
-  std::sort(
-      profiles.begin(), profiles.end(),
-      [comparison_time](const AutofillProfile* a, const AutofillProfile* b) {
-        return a->HasGreaterRankingThan(b, comparison_time);
-      });
-
+  // TODO(crbug.com/1411114): Remove code duplication for sorting profiles.
+  if (profiles.size() > 1) {
+    // Rank the suggestions by ranking score.
+    const base::Time comparison_time = AutofillClock::Now();
+    std::sort(
+        profiles.begin(), profiles.end(),
+        [comparison_time](const AutofillProfile* a, const AutofillProfile* b) {
+          return a->HasGreaterRankingThan(b, comparison_time);
+        });
+  }
   return profiles;
 }
 
@@ -1468,14 +1475,18 @@ const std::vector<CreditCard*> PersonalDataManager::GetCreditCardsToSuggest()
   // Rank the cards by ranking score (see AutofillDataModel for details). All
   // expired cards should be suggested last, also by ranking score.
   base::Time comparison_time = AutofillClock::Now();
-  std::stable_sort(cards_to_suggest.begin(), cards_to_suggest.end(),
-                   [comparison_time](const CreditCard* a, const CreditCard* b) {
-                     bool a_is_expired = a->IsExpired(comparison_time);
-                     if (a_is_expired != b->IsExpired(comparison_time))
-                       return !a_is_expired;
+  if (cards_to_suggest.size() > 1) {
+    std::stable_sort(
+        cards_to_suggest.begin(), cards_to_suggest.end(),
+        [comparison_time](const CreditCard* a, const CreditCard* b) {
+          const bool a_is_expired = a->IsExpired(comparison_time);
+          if (a_is_expired != b->IsExpired(comparison_time)) {
+            return !a_is_expired;
+          }
 
-                     return a->HasGreaterRankingThan(b, comparison_time);
-                   });
+          return a->HasGreaterRankingThan(b, comparison_time);
+        });
+  }
 
   return cards_to_suggest;
 }
@@ -1713,6 +1724,33 @@ bool PersonalDataManager::SetProfilesForSource(
   return change_happened;
 }
 
+bool PersonalDataManager::IsProfileMigrationBlocked(
+    const std::string& guid) const {
+  AutofillProfile* profile = GetProfileByGUID(guid);
+  DCHECK(profile == nullptr ||
+         profile->source() == AutofillProfile::Source::kLocalOrSyncable);
+  if (!GetProfileMigrationStrikeDatabase()) {
+    return false;
+  }
+  return GetProfileMigrationStrikeDatabase()->ShouldBlockFeature(guid);
+}
+
+void PersonalDataManager::AddStrikeToBlockProfileMigration(
+    const std::string& guid) {
+  if (!GetProfileMigrationStrikeDatabase()) {
+    return;
+  }
+  GetProfileMigrationStrikeDatabase()->AddStrike(guid);
+}
+
+void PersonalDataManager::RemoveStrikesToBlockProfileMigration(
+    const std::string& guid) {
+  if (!GetProfileMigrationStrikeDatabase()) {
+    return;
+  }
+  GetProfileMigrationStrikeDatabase()->ClearStrikes(guid);
+}
+
 bool PersonalDataManager::IsNewProfileImportBlockedForDomain(
     const GURL& url) const {
   if (!GetProfileSaveStrikeDatabase() || !url.is_valid() || !url.has_host()) {
@@ -1743,7 +1781,6 @@ bool PersonalDataManager::IsProfileUpdateBlocked(
   if (!GetProfileUpdateStrikeDatabase()) {
     return false;
   }
-
   return GetProfileUpdateStrikeDatabase()->ShouldBlockFeature(guid);
 }
 
@@ -1751,7 +1788,6 @@ void PersonalDataManager::AddStrikeToBlockProfileUpdate(
     const std::string& guid) {
   if (!GetProfileUpdateStrikeDatabase())
     return;
-
   GetProfileUpdateStrikeDatabase()->AddStrike(guid);
 }
 
@@ -1761,6 +1797,17 @@ void PersonalDataManager::RemoveStrikesToBlockProfileUpdate(
     return;
   }
   GetProfileUpdateStrikeDatabase()->ClearStrikes(guid);
+}
+
+AutofillProfileMigrationStrikeDatabase*
+PersonalDataManager::GetProfileMigrationStrikeDatabase() {
+  return const_cast<AutofillProfileMigrationStrikeDatabase*>(
+      std::as_const(*this).GetProfileMigrationStrikeDatabase());
+}
+
+const AutofillProfileMigrationStrikeDatabase*
+PersonalDataManager::GetProfileMigrationStrikeDatabase() const {
+  return profile_migration_strike_database_.get();
 }
 
 AutofillProfileSaveStrikeDatabase*

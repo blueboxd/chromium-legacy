@@ -232,9 +232,6 @@ class BrowserWindow : public ui::BaseWindow {
   // frames may need to refresh their title bar.
   virtual void UpdateTitleBar() = 0;
 
-  // Inform the frame that its color has changed.
-  virtual void UpdateFrameColor() = 0;
-
   // Invoked when the state of the bookmark bar changes. This is only invoked if
   // the state changes for the current tab, it is not sent when switching tabs.
   virtual void BookmarkBarStateChanged(
@@ -442,6 +439,9 @@ class BrowserWindow : public ui::BaseWindow {
 #if BUILDFLAG(IS_CHROMEOS)
   // Returns the PageActionIconView for the Sharing Hub.
   virtual views::Button* GetSharingHubIconButton() = 0;
+
+  // Toggles the multitask menu on the browser frame size button.
+  virtual void ToggleMultitaskMenu() const = 0;
 #else
   // Shows the Sharing Hub bubble. This must only be called as a direct result
   // of user action.

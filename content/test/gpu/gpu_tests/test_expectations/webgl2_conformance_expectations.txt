@@ -290,6 +290,7 @@ crbug.com/483282 [ angle-d3d11 win amd ] conformance2/rendering/blitframebuffer-
 crbug.com/1152597 [ win amd-0x7340 angle-d3d11 ] conformance/renderbuffers/framebuffer-state-restoration.html [ Failure ]
 crbug.com/1152599 [ win amd-0x7340 angle-d3d11 ] conformance/rendering/polygon-offset.html [ Failure ]
 crbug.com/1152602 [ win amd-0x7340 angle-d3d11 ] conformance/canvas/drawingbuffer-static-canvas-test.html [ RetryOnFailure ]
+crbug.com/1409858 [ win amd-0x7340 angle-d3d11 ] conformance/context/context-attributes-alpha-depth-stencil-antialias.html [ Failure ]
 crbug.com/1152603 [ win amd-0x7340 angle-d3d11 ] conformance2/renderbuffers/multisampled-depth-renderbuffer-initialization.html [ Failure ]
 crbug.com/1152606 [ win amd-0x7340 angle-d3d11 ] deqp/functional/gles3/fboinvalidate/* [ Failure ]
 crbug.com/1152606 [ win amd-0x7340 angle-d3d11 ] deqp/functional/gles3/fbomultisample.2_samples.html [ Failure ]
@@ -607,6 +608,8 @@ crbug.com/1000354 [ android android-pixel-2 passthrough ] conformance2/reading/r
 crbug.com/1143323 [ android android-pixel-2 passthrough ] conformance/rendering/draw-arrays-out-of-bounds.html [ Failure ]
 crbug.com/1276186 [ android android-pixel-2 ] conformance2/glsl3/array-equality.html [ Failure ]
 crbug.com/angleproject/7421 [ android android-pixel-2 angle-disabled no-passthrough ] conformance2/renderbuffers/invalidate-framebuffer.html [ Failure ]
+
+crbug.com/1403824 [ android android-pixel-2 no-passthrough ] deqp/functional/gles3/vertexarrays/multiple_attributes.stride.html [ RetryOnFailure ]
 
 ## Pixel 4 ##
 

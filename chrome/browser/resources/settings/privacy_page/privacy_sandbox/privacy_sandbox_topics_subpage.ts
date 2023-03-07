@@ -25,6 +25,7 @@ import {getTemplate} from './privacy_sandbox_topics_subpage.html.js';
 export interface SettingsPrivacySandboxTopicsSubpageElement {
   $: {
     topicsToggle: SettingsToggleButtonElement,
+    footer: HTMLElement,
   };
 }
 
@@ -105,6 +106,9 @@ export class SettingsPrivacySandboxTopicsSubpageElement extends
 
     this.privacySandboxBrowserProxy_.getTopicsState().then(
         state => this.onTopicsStateChanged_(state));
+
+    this.$.footer.querySelectorAll('a').forEach(
+        link => link.title = this.i18n('opensInNewTab'));
   }
 
   private isTopicsPrefManaged_(): boolean {
@@ -206,6 +210,15 @@ export class SettingsPrivacySandboxTopicsSubpageElement extends
     this.metricsBrowserProxy_.recordAction(
         interest.removed ? 'Settings.PrivacySandbox.Topics.TopicAdded' :
                            'Settings.PrivacySandbox.Topics.TopicRemoved');
+
+    // After allowing or blocking the last item, the focus is lost after the
+    // item is removed. Set the focus to the #blockedTopicsRow element.
+    afterNextRender(this, async () => {
+      if (!this.shadowRoot!.activeElement) {
+        this.shadowRoot!.querySelector<HTMLElement>('#blockedTopicsRow')
+            ?.focus();
+      }
+    });
   }
 
   private onBlockedTopicsExpanded_() {

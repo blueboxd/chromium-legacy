@@ -3789,6 +3789,11 @@ enum WebFeature {
   kWindowPlacementPermissionDescriptorUsed = 4448,
   kWindowManagementPermissionPolicyParsed = 4449,
   kWindowPlacementPermissionPolicyParsed = 4450,
+  kContentDispositionInSvgUse = 4451,
+  kSameDocumentCrossOriginInitiator = 4452,
+  kServiceWorkerFetchHandlerModifiedAfterInitialization = 4453,
+  kServiceWorkerAddHandlerAfterInitialization = 4468,
+  kServiceWorkerSetAttributeHandlerAfterInitialization = 4469,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

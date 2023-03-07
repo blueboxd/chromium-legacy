@@ -88,7 +88,8 @@ namespace {
 const base::Feature* const kFeaturesExposedToJava[] = {
     &autofill::features::kAutofillAddressProfileSavePromptNicknameSupport,
     &autofill::features::kAutofillCreditCardAuthentication,
-    &autofill::features::kAutofillEnableRankingFormula,
+    &autofill::features::kAutofillEnableRankingFormulaAddressProfiles,
+    &autofill::features::kAutofillEnableRankingFormulaCreditCards,
     &autofill::features::kAutofillEnableManualFallbackForVirtualCards,
     &autofill::features::kAutofillKeyboardAccessory,
     &autofill::features::kAutofillManualFallbackAndroid,
@@ -96,6 +97,7 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &autofill::features::kAutofillEnableSupportForHonorificPrefixes,
     &autofill::features::kAutofillEnableUpdateVirtualCardEnrollment,
     &autofill::features::kAutofillEnableVirtualCardMetadata,
+    &autofill::features::kAutofillEnableCardArtImage,
     &autofill::features::kAutofillEnableCardProductName,
     &autofill::features::kAutofillTouchToFillForCreditCardsAndroid,
     &blink::features::kForceWebContentsDarkMode,
@@ -134,6 +136,7 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &feature_engagement::kUseClientConfigIPH,
     &feature_guide::features::kFeatureNotificationGuide,
     &feature_guide::features::kSkipCheckForLowEngagedUsers,
+    &feed::kCormorant,
     &feed::kFeedBackToTop,
     &feed::kFeedHeaderStickToTop,
     &feed::kFeedImageMemoryCacheSizePercentage,
@@ -194,6 +197,7 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &kCCTResizable90MaximumHeight,
     &kCCTResizableForThirdParties,
     &kCCTResizableSideSheet,
+    &kCCTResizableSideSheetForThirdParties,
     &kCCTRetainingStateInMemory,
     &kCCTResourcePrefetch,
     &kCCTToolbarCustomizations,
@@ -208,6 +212,7 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &kCommandLineOnNonRooted,
     &kContextMenuEnableLensShoppingAllowlist,
     &kContextMenuGoogleLensChip,
+    &kContextMenuGoogleLensSearchOptimizations,
     &kContextMenuSearchWithGoogleLens,
     &kContextMenuShopWithGoogleLens,
     &kContextMenuSearchAndShopWithGoogleLens,
@@ -248,6 +253,7 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &kProbabilisticCryptidRenderer,
     &kReachedCodeProfiler,
     &kReaderModeInCCT,
+    &kRecordSuppressionMetrics,
     &kReengagementNotification,
     &kRelatedSearches,
     &kRelatedSearchesInBar,
@@ -255,7 +261,15 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &kReportParentalControlSitesChild,
     &kRequestDesktopSiteDefaults,
     &kRequestDesktopSiteDefaultsControl,
+    &kRequestDesktopSiteDefaultsControlCohort1,
+    &kRequestDesktopSiteDefaultsControlCohort2,
+    &kRequestDesktopSiteDefaultsControlCohort3,
+    &kRequestDesktopSiteDefaultsControlCohort4,
     &kRequestDesktopSiteDefaultsControlSynthetic,
+    &kRequestDesktopSiteDefaultsEnabledCohort1,
+    &kRequestDesktopSiteDefaultsEnabledCohort2,
+    &kRequestDesktopSiteDefaultsEnabledCohort3,
+    &kRequestDesktopSiteDefaultsEnabledCohort4,
     &kRequestDesktopSiteDefaultsSynthetic,
     &kRequestDesktopSiteOptInControlSynthetic,
     &kRequestDesktopSiteOptInSynthetic,
@@ -360,7 +374,6 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &segmentation_platform::features::kContextualPageActionShareModel,
     &send_tab_to_self::kSendTabToSelfSigninPromo,
     &send_tab_to_self::kSendTabToSelfV2,
-    &share::kCormorant,
     &share::kCrowLaunchTab,
     &share::kPersistShareHubOnAppSwitch,
     &share::kScreenshotsForAndroidV2,
@@ -376,6 +389,7 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &video_tutorials::features::kVideoTutorials,
     &webapps::features::kInstallableAmbientBadgeInfoBar,
     &webapps::features::kInstallableAmbientBadgeMessage,
+    &webapps::features::kWebApkInstallFailureNotification,
     &webapps::features::kWebApkUniqueId,
 };
 
@@ -569,6 +583,10 @@ BASE_FEATURE(kCCTResizableSideSheet,
              "CCTResizableSideSheet",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+BASE_FEATURE(kCCTResizableSideSheetForThirdParties,
+             "CCTResizableSideSheetForThirdParties",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 BASE_FEATURE(kCCTResourcePrefetch,
              "CCTResourcePrefetch",
              base::FEATURE_ENABLED_BY_DEFAULT);
@@ -627,6 +645,10 @@ BASE_FEATURE(kContextMenuGoogleLensChip,
 
 BASE_FEATURE(kContextMenuPopupForAllScreenSizes,
              "ContextMenuPopupForAllScreenSizes",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+BASE_FEATURE(kContextMenuGoogleLensSearchOptimizations,
+             "ContextMenuGoogleLensSearchOptimizations",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 BASE_FEATURE(kContextMenuSearchWithGoogleLens,
@@ -785,6 +807,10 @@ BASE_FEATURE(kReaderModeInCCT,
              "ReaderModeInCCT",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
+BASE_FEATURE(kRecordSuppressionMetrics,
+             "RecordSuppressionMetrics",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
 BASE_FEATURE(kReengagementNotification,
              "ReengagementNotification",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -813,8 +839,40 @@ BASE_FEATURE(kRequestDesktopSiteDefaultsControl,
              "RequestDesktopSiteDefaultsControl",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+BASE_FEATURE(kRequestDesktopSiteDefaultsControlCohort1,
+             "RequestDesktopSiteDefaultsControlCohort1",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+BASE_FEATURE(kRequestDesktopSiteDefaultsControlCohort2,
+             "RequestDesktopSiteDefaultsControlCohort2",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+BASE_FEATURE(kRequestDesktopSiteDefaultsControlCohort3,
+             "RequestDesktopSiteDefaultsControlCohort3",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+BASE_FEATURE(kRequestDesktopSiteDefaultsControlCohort4,
+             "RequestDesktopSiteDefaultsControlCohort4",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 BASE_FEATURE(kRequestDesktopSiteDefaultsControlSynthetic,
              "RequestDesktopSiteDefaultsControlSynthetic",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+BASE_FEATURE(kRequestDesktopSiteDefaultsEnabledCohort1,
+             "RequestDesktopSiteDefaultsEnabledCohort1",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+BASE_FEATURE(kRequestDesktopSiteDefaultsEnabledCohort2,
+             "RequestDesktopSiteDefaultsEnabledCohort2",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+BASE_FEATURE(kRequestDesktopSiteDefaultsEnabledCohort3,
+             "RequestDesktopSiteDefaultsEnabledCohort3",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+BASE_FEATURE(kRequestDesktopSiteDefaultsEnabledCohort4,
+             "RequestDesktopSiteDefaultsEnabledCohort4",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 BASE_FEATURE(kRequestDesktopSiteDefaultsSynthetic,

@@ -275,15 +275,12 @@ void ServiceWorkerRegistry::FindRegistrationForClientUrl(
     CreateInvokerAndStartRemoteCall(
         &storage::mojom::ServiceWorkerStorageControl::
             FindRegistrationForClientUrl,
-        base::BindOnce(
-            &ServiceWorkerRegistry::DidFindRegistrationForClientUrl,
-            weak_factory_.GetWeakPtr(), client_url, key, trace_event_id,
-            base::BindOnce(
-                [](blink::ServiceWorkerStatusCode status,
-                   scoped_refptr<ServiceWorkerRegistration> registration) {
-                  NOTREACHED()
-                      << "This is a dummy function that should not be called.";
-                })),
+        base::BindOnce(&ServiceWorkerRegistry::DidFindRegistrationForClientUrl,
+                       weak_factory_.GetWeakPtr(), client_url, key,
+                       trace_event_id,
+                       // Pass a fake callback here as the proper callback will
+                       // be invoked via find_registration_callbacks_
+                       /*FindRegistrationCallback=*/base::DoNothing()),
         client_url, key);
   } else {
     TRACE_EVENT_NESTABLE_ASYNC_BEGIN1(
@@ -459,9 +456,7 @@ void ServiceWorkerRegistry::StoreRegistration(
                 .ToMojoPolicyContainerPolicies()
           : blink::mojom::PolicyContainerPolicies::New();
 
-  ResourceList resources;
-  version->script_cache_map()->GetResources(&resources);
-
+  ResourceList resources = version->script_cache_map()->GetResources();
   if (resources.empty()) {
     RunSoon(FROM_HERE,
             base::BindOnce(std::move(callback),
@@ -526,9 +521,7 @@ void ServiceWorkerRegistry::NotifyDoneInstallingRegistration(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   installing_registrations_.erase(registration->id());
   if (status != blink::ServiceWorkerStatusCode::kOk && version) {
-    ResourceList resources;
-    version->script_cache_map()->GetResources(&resources);
-
+    ResourceList resources = version->script_cache_map()->GetResources();
     std::vector<int64_t> resource_ids;
     for (const auto& resource : resources)
       resource_ids.push_back(resource->resource_id);

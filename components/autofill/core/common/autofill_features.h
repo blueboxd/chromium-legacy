@@ -26,6 +26,8 @@ COMPONENT_EXPORT(AUTOFILL)
 extern const base::FeatureParam<bool>
     kAutofillEnableSilentUpdatesForAccountProfiles;
 COMPONENT_EXPORT(AUTOFILL)
+BASE_DECLARE_FEATURE(kAutofillAccountProfilesOnSignIn);
+COMPONENT_EXPORT(AUTOFILL)
 BASE_DECLARE_FEATURE(kAutofillAddressProfileSavePromptNicknameSupport);
 COMPONENT_EXPORT(AUTOFILL)
 BASE_DECLARE_FEATURE(kAutofillAllowDuplicateFormSubmissions);
@@ -53,6 +55,11 @@ BASE_DECLARE_FEATURE(kAutofillEnableWithinFencedFrame);
 COMPONENT_EXPORT(AUTOFILL) BASE_DECLARE_FEATURE(kAutofillCreateDataForTest);
 COMPONENT_EXPORT(AUTOFILL)
 BASE_DECLARE_FEATURE(kAutofillFillAndImportFromMoreFields);
+COMPONENT_EXPORT(AUTOFILL)
+extern const base::FeatureParam<bool> kAutofillFillAutocompleteUnrecognized;
+COMPONENT_EXPORT(AUTOFILL)
+extern const base::FeatureParam<bool>
+    kAutofillImportFromAutoccompleteUnrecognized;
 COMPONENT_EXPORT(AUTOFILL) BASE_DECLARE_FEATURE(kAutofillDisableFilling);
 COMPONENT_EXPORT(AUTOFILL) BASE_DECLARE_FEATURE(kAutofillDisableAddressImport);
 COMPONENT_EXPORT(AUTOFILL)
@@ -76,19 +83,21 @@ extern const base::FeatureParam<base::TimeDelta>
     kAutofillMultiStepImportCandidateTTL;
 COMPONENT_EXPORT(AUTOFILL)
 BASE_DECLARE_FEATURE(kAutofillEnableParsingEmptyPhoneNumberLabels);
-COMPONENT_EXPORT(AUTOFILL) BASE_DECLARE_FEATURE(kAutofillEnableRankingFormula);
-COMPONENT_EXPORT(AUTOFILL)
-extern const base::FeatureParam<int> kAutofillRankingFormulaUsageHalfLife;
-COMPONENT_EXPORT(AUTOFILL)
-extern const base::FeatureParam<int> kAutofillRankingFormulaVirtualCardBoost;
-COMPONENT_EXPORT(AUTOFILL)
-extern const base::FeatureParam<int>
-    kAutofillRankingFormulaVirtualCardBoostHalfLife;
 COMPONENT_EXPORT(AUTOFILL)
 BASE_DECLARE_FEATURE(kAutofillEnableRankingFormulaAddressProfiles);
 COMPONENT_EXPORT(AUTOFILL)
 extern const base::FeatureParam<int>
     kAutofillRankingFormulaAddressProfilesUsageHalfLife;
+COMPONENT_EXPORT(AUTOFILL)
+BASE_DECLARE_FEATURE(kAutofillEnableRankingFormulaCreditCards);
+COMPONENT_EXPORT(AUTOFILL)
+extern const base::FeatureParam<int>
+    kAutofillRankingFormulaCreditCardsUsageHalfLife;
+COMPONENT_EXPORT(AUTOFILL)
+extern const base::FeatureParam<int> kAutofillRankingFormulaVirtualCardBoost;
+COMPONENT_EXPORT(AUTOFILL)
+extern const base::FeatureParam<int>
+    kAutofillRankingFormulaVirtualCardBoostHalfLife;
 COMPONENT_EXPORT(AUTOFILL)
 BASE_DECLARE_FEATURE(kAutofillEnableSupportForApartmentNumbers);
 COMPONENT_EXPORT(AUTOFILL)

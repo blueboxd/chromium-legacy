@@ -55,6 +55,7 @@ import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.back_press.BackPressManager;
 import org.chromium.chrome.browser.browser_controls.BrowserControlsStateProvider;
+import org.chromium.chrome.browser.feed.FeedActionDelegate;
 import org.chromium.chrome.browser.feed.FeedReliabilityLogger;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.lens.LensEntryPoint;
@@ -525,7 +526,7 @@ class StartSurfaceMediator implements TabSwitcher.TabSwitcherViewObserver, View.
             createAndSetExploreSurfaceCoordinator();
         }
 
-        // TODO(crbug.com/1347089): Remove this property key since overview should always be visible
+        // TODO(crbug.com/1315676): Remove this property key since overview should always be visible
         // when show() is called.
         mPropertyModel.set(IS_SHOWING_OVERVIEW, true);
 
@@ -548,7 +549,7 @@ class StartSurfaceMediator implements TabSwitcher.TabSwitcherViewObserver, View.
         // This should only be called for single or carousel tab switcher.
         mController.showTabSwitcherView(animate);
 
-        // TODO(crbug.com/1347089): Record
+        // TODO(crbug.com/1315676): Record
         // mJankTracker.finishTrackingScenario(START_SURFACE_HOMEPAGE) when layout changes, maybe in
         // LayoutManager.
         RecordUserAction.record("StartSurface.Shown");
@@ -1137,7 +1138,9 @@ class StartSurfaceMediator implements TabSwitcher.TabSwitcherViewObserver, View.
 
     private void notifyStateChange() {
         notifyShowStateChange();
-        notifyStartSurfaceStateChange();
+        if (!mIsStartSurfaceRefactorEnabled) {
+            notifyStartSurfaceStateChange();
+        }
     }
 
     private void notifyShowStateChange() {
@@ -1148,7 +1151,7 @@ class StartSurfaceMediator implements TabSwitcher.TabSwitcherViewObserver, View.
         notifyBackPressStateChanged();
     }
 
-    // TODO(1347089): Remove this when the Start surface refactoring is enabled by default.
+    // TODO(1315676): Remove this when the Start surface refactoring is enabled by default.
     private void notifyStartSurfaceStateChange() {
         if (mSecondaryTasksSurfaceController != null) {
             mSecondaryTasksSurfaceController.onHomepageChanged();
@@ -1371,10 +1374,6 @@ class StartSurfaceMediator implements TabSwitcher.TabSwitcherViewObserver, View.
         return mLogoCoordinator != null && mLogoCoordinator.isLogoVisible();
     }
 
-    TabSwitcher.Controller getSecondaryTasksSurfaceController() {
-        return mSecondaryTasksSurfaceController;
-    }
-
     void setOnTabSelectingListener(StartSurface.OnTabSelectingListener onTabSelectingListener) {
         mOnTabSelectingListener = onTabSelectingListener;
     }
@@ -1498,5 +1497,12 @@ class StartSurfaceMediator implements TabSwitcher.TabSwitcherViewObserver, View.
         return mIsStartSurfaceRefactorEnabled
                 ? mIsHomepageShown
                 : mStartSurfaceState == StartSurfaceState.SHOWN_HOMEPAGE;
+    }
+
+    @VisibleForTesting
+    public FeedActionDelegate getFeedActionDelegateForTesting() {
+        assert mPropertyModel.get(EXPLORE_SURFACE_COORDINATOR) != null;
+        return mPropertyModel.get(EXPLORE_SURFACE_COORDINATOR)
+                .getFeedActionDelegateForTesting(); // IN-TEST
     }
 }

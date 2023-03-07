@@ -1108,7 +1108,14 @@ void DocumentLoader::BodyLoadingFinished(
 
       // We only automatically report resource timing when Timing-Allow-Origin
       // passes, to avoid exposing cross-origin navigation behavior.
-      if (frame_->Owner() && (response_.TimingAllowPassed())) {
+      // Also, as per spec, we avoid adding resource-timing information for
+      // link/back-forward navigations.
+      // TODO (crbug.com/1410705): Using navigation_type_ for this covers
+      // most cases but might still have very rare racy edge cases, such as
+      // extension or window.open with target cancelling an ongoing navigation
+      // and start a new navigation to the same URL.
+      if (frame_->Owner() && (response_.TimingAllowPassed()) &&
+          navigation_type_ == WebNavigationType::kWebNavigationTypeOther) {
         // The response is being copied here to pass the Encoded and Decoded
         // sizes.
         // TODO(yoav): copy the sizes info directly.
@@ -2353,18 +2360,28 @@ void DocumentLoader::InitializeWindow(Document* owner_document) {
   // origin and the ancestor chain bit is kSameSite. The ancestor chain bit
   // should be fine as it's from the same StorageKey that already had a nonce,
   // but it's possible `security_origin` doesn't match the StorageKey's site.
-  // TODO(https://crbug.com/888079): Just use the origin in the storage key.
+  // TODO(https://crbug.com/1410254): Cleanup this logic.
   BlinkSchemefulSite top_level_site(security_origin);
   if (!storage_key_.GetNonce()) {
     top_level_site = storage_key_with_3psp.GetTopLevelSite();
   }
 
+  // If `security_origin` does not match `top_level_site` we must ensure
+  // `ancestor_chain_bit` is kCrossSite as long as the top level site isn't
+  // opaque.
+  // TODO(https://crbug.com/1410254): Cleanup this logic.
+  mojom::blink::AncestorChainBit ancestor_chain_bit =
+      storage_key_with_3psp.GetAncestorChainBit();
+  if (!top_level_site.IsOpaque() &&
+      BlinkSchemefulSite(security_origin) != top_level_site) {
+    ancestor_chain_bit = mojom::blink::AncestorChainBit::kCrossSite;
+  }
+
   // TODO(https://crbug.com/888079): Just use the storage key sent by the
   // browser once the browser will be able to compute the origin in all cases.
-  frame_->DomWindow()->SetStorageKey(
-      BlinkStorageKey(security_origin, top_level_site,
-                      base::OptionalToPtr(storage_key_.GetNonce()),
-                      storage_key_with_3psp.GetAncestorChainBit()));
+  frame_->DomWindow()->SetStorageKey(BlinkStorageKey(
+      security_origin, top_level_site,
+      base::OptionalToPtr(storage_key_.GetNonce()), ancestor_chain_bit));
   if (storage_key_ == session_storage_key_ ||
       storage_key_.GetSecurityOrigin()->IsOpaque() ||
       session_storage_key_.GetSecurityOrigin()->IsOpaque()) {
@@ -3238,10 +3255,15 @@ void DocumentLoader::DisableCodeCacheForTesting() {
 
 void DocumentLoader::UpdateSubresourceLoadMetrics(
     uint32_t number_of_subresources_loaded,
-    uint32_t number_of_subresource_loads_handled_by_service_worker) {
+    uint32_t number_of_subresource_loads_handled_by_service_worker,
+    bool pervasive_payload_requested,
+    int64_t pervasive_bytes_fetched,
+    int64_t total_bytes_fetched) {
   GetLocalFrameClient().DidObserveSubresourceLoad(
       number_of_subresources_loaded,
-      number_of_subresource_loads_handled_by_service_worker);
+      number_of_subresource_loads_handled_by_service_worker,
+      pervasive_payload_requested, pervasive_bytes_fetched,
+      total_bytes_fetched);
 }
 
 DEFINE_WEAK_IDENTIFIER_MAP(DocumentLoader)

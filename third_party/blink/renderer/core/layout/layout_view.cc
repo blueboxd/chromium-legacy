@@ -602,14 +602,14 @@ PhysicalRect LayoutView::ViewRect() const {
 
       // This adjustment should always be an expansion of the current
       // viewport.
-      DCHECK_GE(transition->GetSnapshotViewportRect().width(),
+      DCHECK_GE(transition->GetSnapshotRootSize().width(),
                 frame_view_->Size().width());
-      DCHECK_GE(transition->GetSnapshotViewportRect().height(),
+      DCHECK_GE(transition->GetSnapshotRootSize().height(),
                 frame_view_->Size().height());
 
       return PhysicalRect(
-          PhysicalOffset(),
-          PhysicalSize(transition->GetSnapshotViewportRect().size()));
+          PhysicalOffset(transition->GetFrameToSnapshotRootOffset()),
+          PhysicalSize(transition->GetSnapshotRootSize()));
     }
   }
 

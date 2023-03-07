@@ -155,6 +155,12 @@ chromium-metrics-reviews@google.com.
   <variant name="IPH_IncognitoWindow" summary="incognito window"/>
   <variant name="IPH_InstanceSwitcher" summary="instance switcher"/>
   <variant name="IPH_IntentChip" summary="opening a webpage in an app"/>
+  <variant name="IPH_iOSDefaultBrowserBadgeEligibility"
+      summary="default browser badge promo eligibility tracking"/>
+  <variant name="IPH_iOSDefaultBrowserOverflowMenuBadge"
+      summary="default browser badge promo on the overflow menu"/>
+  <variant name="IPH_iOSDefaultBrowserSettingsBadge"
+      summary="default browser badge promo on the settings menu row"/>
   <variant name="IPH_KeyboardAccessoryAddressFilling"
       summary="address autofill suggestions"/>
   <variant name="IPH_KeyboardAccessoryPasswordFilling"
@@ -174,6 +180,8 @@ chromium-metrics-reviews@google.com.
       summary="the Overflow Menu help tip on iOS"/>
   <variant name="IPH_PageInfo" summary="opening PageInfo"/>
   <variant name="IPH_PageInfoStoreInfo" summary="PageInfoStoreInfo feature"/>
+  <variant name="IPH_PageZoom"
+      summary="educating users about the zoom option in the main menu"/>
   <variant name="IPH_PasswordsAccountStorage"
       summary="passwords account storage"/>
   <variant name="IPH_PasswordSuggestions"
@@ -213,13 +221,19 @@ chromium-metrics-reviews@google.com.
   <variant name="IPH_ReopenTab" summary="reopening closed tabs"/>
   <variant name="IPH_RequestDesktopSiteAppMenu"
       summary="educating users about using the desktop site app menu item to
-               add a site-level exception."/>
+               add a site-level exception"/>
   <variant name="IPH_RequestDesktopSiteDefaultOn"
       summary="the in product help message to let users opt out of desktop
-               site global settings default-on."/>
+               site global settings default-on"/>
+  <variant name="IPH_RequestDesktopSiteExceptionsGeneric"
+      summary="educating tablet users about using the desktop site per-site
+               settings in general"/>
+  <variant name="IPH_RequestDesktopSiteExceptionsSpecific"
+      summary="educating users about using the desktop site per-site settings
+               for websites that are more functional in desktop mode"/>
   <variant name="IPH_RequestDesktopSiteOptIn"
       summary="the in product help message to let users turn on the desktop
-               site global settings."/>
+               site global settings"/>
   <variant name="IPH_SharedHighlightingBuilder"
       summary="the in product help message to notify the user that the share
                action can preemptively share a link-to-text"/>

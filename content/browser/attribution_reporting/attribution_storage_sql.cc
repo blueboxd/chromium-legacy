@@ -6,6 +6,7 @@
 
 #include <stdint.h>
 
+#include <functional>
 #include <iterator>
 #include <limits>
 #include <string>
@@ -50,6 +51,7 @@
 #include "content/browser/attribution_reporting/sql_utils.h"
 #include "content/browser/attribution_reporting/storable_source.h"
 #include "content/browser/attribution_reporting/stored_source.h"
+#include "content/public/browser/attribution_data_model.h"
 #include "net/base/schemeful_site.h"
 #include "sql/database.h"
 #include "sql/meta_table.h"
@@ -68,11 +70,11 @@ namespace content {
 // Version number of the database.
 // TODO: remove the active_unattributed_sources_by_site_reporting_origin index
 // during the next DB migration.
-const int AttributionStorageSql::kCurrentVersionNumber = 41;
+const int AttributionStorageSql::kCurrentVersionNumber = 43;
 
 // Earliest version which can use a |kCurrentVersionNumber| database
 // without failing.
-const int AttributionStorageSql::kCompatibleVersionNumber = 41;
+const int AttributionStorageSql::kCompatibleVersionNumber = 43;
 
 // Latest version of the database that cannot be upgraded to
 // |kCurrentVersionNumber| without razing the database.
@@ -822,9 +824,18 @@ CreateReportResult AttributionStorageSql::MaybeCreateAndStoreReport(
   const attribution_reporting::TriggerRegistration& trigger_registration =
       trigger.registration();
 
+  if (trigger_registration.event_triggers.vec().empty()) {
+    event_level_status = EventLevelResult::kNotRegistered;
+  }
+
   if (trigger_registration.aggregatable_trigger_data.vec().empty() &&
       trigger_registration.aggregatable_values.values().empty()) {
     aggregatable_status = AggregatableResult::kNotRegistered;
+  }
+
+  if (event_level_status.has_value() && aggregatable_status.has_value()) {
+    return assemble_report_result(/*new_event_level_status=*/absl::nullopt,
+                                  /*new_aggregaable_status=*/absl::nullopt);
   }
 
   // We don't bother creating the DB here if it doesn't exist, because it's not
@@ -871,11 +882,14 @@ CreateReportResult AttributionStorageSql::MaybeCreateAndStoreReport(
   }
 
   absl::optional<uint64_t> dedup_key;
-  if (EventLevelResult create_event_level_status = MaybeCreateEventLevelReport(
-          *attribution_info, trigger, new_event_level_report, dedup_key,
-          limits.max_event_level_reports_per_destination);
-      create_event_level_status != EventLevelResult::kSuccess) {
-    event_level_status = create_event_level_status;
+  if (!event_level_status.has_value()) {
+    if (EventLevelResult create_event_level_status =
+            MaybeCreateEventLevelReport(
+                *attribution_info, trigger, new_event_level_report, dedup_key,
+                limits.max_event_level_reports_per_destination);
+        create_event_level_status != EventLevelResult::kSuccess) {
+      event_level_status = create_event_level_status;
+    }
   }
 
   if (!aggregatable_status.has_value()) {
@@ -1676,17 +1690,12 @@ void AttributionStorageSql::ClearData(
   std::vector<StoredSource::Id> source_ids_to_delete;
   int num_event_reports_deleted = 0;
   while (statement.Step()) {
-    if (filter.is_null() ||
-        filter.Run(
-            blink::StorageKey(DeserializeOrigin(statement.ColumnString(0)))) ||
-        filter.Run(
-            blink::StorageKey(DeserializeOrigin(statement.ColumnString(1)))) ||
-        filter.Run(
-            blink::StorageKey(DeserializeOrigin(statement.ColumnString(2))))) {
-      source_ids_to_delete.emplace_back(statement.ColumnInt64(3));
-      if (statement.GetColumnType(4) != sql::ColumnType::kNull) {
+    if (filter.is_null() || filter.Run(blink::StorageKey(DeserializeOrigin(
+                                statement.ColumnString(0))))) {
+      source_ids_to_delete.emplace_back(statement.ColumnInt64(1));
+      if (statement.GetColumnType(2) != sql::ColumnType::kNull) {
         if (!DeleteReportInternal(AttributionReport::EventLevelData::Id(
-                statement.ColumnInt64(4)))) {
+                statement.ColumnInt64(2)))) {
           return;
         }
 
@@ -2451,18 +2460,13 @@ int AttributionStorageSql::ClearAggregatableAttributionsForOriginsInRange(
 
   int num_aggregate_reports_deleted = 0;
   while (statement.Step()) {
-    if (filter.is_null() ||
-        filter.Run(
-            blink::StorageKey(DeserializeOrigin(statement.ColumnString(0)))) ||
-        filter.Run(
-            blink::StorageKey(DeserializeOrigin(statement.ColumnString(1)))) ||
-        filter.Run(
-            blink::StorageKey(DeserializeOrigin(statement.ColumnString(2))))) {
-      source_ids_to_delete.emplace_back(statement.ColumnInt64(3));
-      if (statement.GetColumnType(4) != sql::ColumnType::kNull) {
+    if (filter.is_null() || filter.Run(blink::StorageKey(DeserializeOrigin(
+                                statement.ColumnString(0))))) {
+      source_ids_to_delete.emplace_back(statement.ColumnInt64(1));
+      if (statement.GetColumnType(2) != sql::ColumnType::kNull) {
         if (!DeleteReportInternal(
                 AttributionReport::AggregatableAttributionData::Id(
-                    statement.ColumnInt64(4)))) {
+                    statement.ColumnInt64(2)))) {
           return -1;
         }
         ++num_aggregate_reports_deleted;
@@ -2924,6 +2928,40 @@ absl::optional<AttributionReport> AttributionStorageSql::GetReport(
   }
 
   return ReadAggregatableAttributionReportFromStatement(statement);
+}
+
+std::vector<AttributionDataModel::DataKey>
+AttributionStorageSql::GetAllDataKeys() {
+  // We don't bother creating the DB here if it doesn't exist, because it's not
+  // possible for there to be any data to return if there's no DB
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  if (!LazyInit(DbCreationPolicy::kIgnoreIfAbsent)) {
+    return {};
+  }
+
+  std::vector<AttributionDataModel::DataKey> keys;
+  sql::Statement statement(db_->GetCachedStatement(
+      SQL_FROM_HERE, attribution_queries::kGetSourcesDataKeysSql));
+
+  while (statement.Step()) {
+    url::Origin reporting_origin = DeserializeOrigin(statement.ColumnString(0));
+    if (reporting_origin.opaque()) {
+      continue;
+    }
+    keys.emplace_back(std::move(reporting_origin));
+  }
+
+  rate_limit_table_.AppendRateLimitDataKeys(db_.get(), keys);
+  return base::flat_set<AttributionDataModel::DataKey>(std::move(keys))
+      .extract();
+}
+
+void AttributionStorageSql::DeleteByDataKey(
+    const AttributionDataModel::DataKey& key) {
+  ClearData(base::Time::Min(), base::Time::Max(),
+            base::BindRepeating(std::equal_to<blink::StorageKey>(),
+                                blink::StorageKey(key.reporting_origin())),
+            /*delete_rate_limit_data=*/true);
 }
 
 }  // namespace content

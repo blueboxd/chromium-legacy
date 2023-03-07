@@ -1054,10 +1054,10 @@ void RenderViewContextMenu::InitMenu() {
 #if !BUILDFLAG(IS_CHROMEOS)
   if (base::FeatureList::IsEnabled(translate::kDesktopPartialTranslate) &&
       content_type_->SupportsGroup(
-          ContextMenuContentType::ITEM_GROUP_PARTIAL_TRANSLATE)) {
-    if (CanTranslate(/*menu_logging=*/false)) {
-      AppendPartialTranslateItem();
-    }
+          ContextMenuContentType::ITEM_GROUP_PARTIAL_TRANSLATE) &&
+      search::DefaultSearchProviderIsGoogle(GetProfile()) &&
+      CanTranslate(/*menu_logging=*/false)) {
+    AppendPartialTranslateItem();
   }
 #endif  // !BUILDFLAG(IS_CHROMEOS)
 
@@ -1703,8 +1703,12 @@ void RenderViewContextMenu::AppendImageItems() {
 }
 
 void RenderViewContextMenu::AppendSearchWebForImageItems() {
-  if (!params_.has_image_contents)
+  // TODO(b/266624865): Image Search items do not function correctly when
+  // |GetBrowser| returns nullptr, as is the case for a context menu in the
+  // side panel, so for now we do not append image items in that case.
+  if (!GetBrowser() || !params_.has_image_contents) {
     return;
+  }
 
   TemplateURLService* service =
       TemplateURLServiceFactory::GetForProfile(GetProfile());

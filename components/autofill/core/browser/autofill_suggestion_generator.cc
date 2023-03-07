@@ -67,16 +67,9 @@ std::map<std::string, AutofillOfferData*> GetCardLinkedOffers(
 }
 
 int GetObfuscationLength() {
-  // The kAutofillKeyboardAccessory feature is only available on Android. So for
-  // other platforms, we'd always use the obfuscation length of 4. This build
-  // flag also makes sure that tests involving kAutofillKeyboardAccessory
-  // feature is getting the correct obfuscation length.
-#if BUILDFLAG(IS_ANDROID)
-  return base::FeatureList::IsEnabled(features::kAutofillKeyboardAccessory) ? 2
-                                                                            : 4;
-#else
-  return 4;
-#endif
+  // The obfuscation length is 2 for the Android keyboard accessory. It is 4 for
+  // other platforms.
+  return IsKeyboardAccessoryEnabled() ? 2 : 4;
 }
 
 bool ShouldSplitCardNameAndLastFourDigits() {
@@ -161,7 +154,8 @@ AutofillSuggestionGenerator::GetSuggestionsForCreditCards(
 
   std::u16string field_contents_lower = base::i18n::ToLower(field_contents);
 
-  metadata_logging_context = GetMetadataLoggingContext(cards_to_suggest);
+  metadata_logging_context =
+      autofill_metrics::GetMetadataLoggingContext(cards_to_suggest);
 
   // Set `should_display_gpay_logo` to true if all cards are server cards, and
   // to false if any of the card is a local card.
@@ -492,22 +486,21 @@ Suggestion AutofillSuggestionGenerator::CreateCreditCardSuggestion(
     // We don't show card linked offers for virtual card options.
     AdjustVirtualCardSuggestionContent(suggestion, credit_card, type);
   } else if (card_linked_offer_available) {
-    // If Keyboard Accessory is not enabled (i.e. Desktop or Clank dropdown),
-    // populate an offer label.
-    if (!base::FeatureList::IsEnabled(features::kAutofillKeyboardAccessory)) {
-      suggestion.labels.push_back(
-          std::vector<Suggestion::Text>{Suggestion::Text(
-              l10n_util::GetStringUTF16(IDS_AUTOFILL_OFFERS_CASHBACK))});
-
-      // Otherwise for Keyboard Accessory, set Suggestion::feature_for_iph and
-      // change the suggestion icon only if card linked offers are also enabled.
-    } else if (base::FeatureList::IsEnabled(
-                   features::kAutofillEnableOffersInClankKeyboardAccessory)) {
+    // For Keyboard Accessory, set Suggestion::feature_for_iph and change the
+    // suggestion icon only if card linked offers are also enabled.
+    if (IsKeyboardAccessoryEnabled() &&
+        base::FeatureList::IsEnabled(
+            features::kAutofillEnableOffersInClankKeyboardAccessory)) {
 #if BUILDFLAG(IS_ANDROID)
       suggestion.feature_for_iph =
           feature_engagement::kIPHKeyboardAccessoryPaymentOfferFeature.name;
       suggestion.icon = "offerTag";
 #endif
+    } else {
+      // On Desktop/Android dropdown, populate an offer label.
+      suggestion.labels.push_back(
+          std::vector<Suggestion::Text>{Suggestion::Text(
+              l10n_util::GetStringUTF16(IDS_AUTOFILL_OFFERS_CASHBACK))});
     }
   }
 
@@ -585,17 +578,15 @@ AutofillSuggestionGenerator::GetSuggestionLabelsForCard(
 
   // If the focused field is not a card number field AND the card number is NOT
   // empty.
-#if BUILDFLAG(IS_ANDROID)
-  // On Android devices, the label is formatted as
-  // "Product Description/Nickname/Network  ••••1234" when the keyboard
-  // accessory experiment is disabled and as "••1234" when it's enabled.
-  if (base::FeatureList::IsEnabled(features::kAutofillKeyboardAccessory)) {
+  // On Android keyboard accessory, the label is formatted as "••1234".
+  if (IsKeyboardAccessoryEnabled()) {
     return {
         Suggestion::Text(credit_card.ObfuscatedNumberWithVisibleLastFourDigits(
             GetObfuscationLength()))};
   }
 
-  // E.g. "Product Description/Nickname/Network  ••••1234". If card name is too
+  // On Desktop/Android dropdown, the label is formatted as
+  // "Product Description/Nickname/Network  ••••1234". If the card name is too
   // long, it will be truncated from the tail.
   if (ShouldSplitCardNameAndLastFourDigits()) {
     return {
@@ -605,29 +596,20 @@ AutofillSuggestionGenerator::GetSuggestionLabelsForCard(
         Suggestion::Text(credit_card.ObfuscatedNumberWithVisibleLastFourDigits(
             GetObfuscationLength()))};
   }
-  // E.g. "Nickname/Network  ••••1234".
-  return {Suggestion::Text(
-      credit_card.CardIdentifierStringForAutofillDisplay(nickname))};
 
-#elif BUILDFLAG(IS_IOS)
-  // E.g. "••••1234"".
+#if BUILDFLAG(IS_IOS)
+  // On iOS, the label is formatted as "••••1234".
   return {
       Suggestion::Text(credit_card.ObfuscatedNumberWithVisibleLastFourDigits(
           GetObfuscationLength()))};
-
+#elif BUILDFLAG(IS_ANDROID)
+  // On Android dropdown, the label is formatted as
+  // "Nickname/Network  ••••1234".
+  return {Suggestion::Text(
+      credit_card.CardIdentifierStringForAutofillDisplay(nickname))};
 #else
-  // E.g. "Product Description/Nickname/Network  ••••1234". If card name is too
-  // long, it will be truncated from the tail.
-  if (ShouldSplitCardNameAndLastFourDigits()) {
-    return {
-        Suggestion::Text(credit_card.CardNameForAutofillDisplay(nickname),
-                         Suggestion::Text::IsPrimary(false),
-                         Suggestion::Text::ShouldTruncate(true)),
-        Suggestion::Text(credit_card.ObfuscatedNumberWithVisibleLastFourDigits(
-            GetObfuscationLength()))};
-  }
-
-  // E.g. "Product Description/Nickname/Network  ••••1234, expires on 01/25".
+  // On Desktop, the label is formatted as
+  // "Product Description/Nickname/Network  ••••1234, expires on 01/25".
   return {Suggestion::Text(
       credit_card.CardIdentifierStringAndDescriptiveExpiration(app_locale))};
 #endif
@@ -735,46 +717,6 @@ void AutofillSuggestionGenerator::SetCardArtURL(
   if (image)
     suggestion.custom_icon = *image;
 #endif
-}
-
-autofill_metrics::CardMetadataLoggingContext
-AutofillSuggestionGenerator::GetMetadataLoggingContext(
-    const std::vector<CreditCard*>& cards_to_suggest) const {
-  bool card_product_description_available = false;
-  bool card_art_image_available = false;
-  bool virtual_card_with_card_art_image = false;
-
-  for (const auto* card : cards_to_suggest) {
-    if (!card->product_description().empty())
-      card_product_description_available = true;
-
-    if (card->card_art_url().is_valid()) {
-      card_art_image_available = true;
-      if (card->virtual_card_enrollment_state() ==
-          CreditCard::VirtualCardEnrollmentState::ENROLLED) {
-        virtual_card_with_card_art_image = true;
-      }
-    }
-  }
-
-  autofill_metrics::CardMetadataLoggingContext metadata_logging_context;
-  metadata_logging_context.card_metadata_available =
-      card_product_description_available || card_art_image_available;
-
-  metadata_logging_context.card_product_description_shown =
-      card_product_description_available &&
-      base::FeatureList::IsEnabled(features::kAutofillEnableCardProductName);
-
-  // `card_art_image_shown` is set to true if art image is available and
-  // 1. the experiment is enabled or
-  // 2. the card with art image has a linked virtual card (for virtual cards,
-  // the card art image is always shown if available).
-  metadata_logging_context.card_art_image_shown =
-      card_art_image_available &&
-      (base::FeatureList::IsEnabled(features::kAutofillEnableCardArtImage) ||
-       virtual_card_with_card_art_image);
-
-  return metadata_logging_context;
 }
 
 InternalId AutofillSuggestionGenerator::BackendIdToInternalId(

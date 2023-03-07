@@ -10,19 +10,19 @@ load("//lib/try.star", "try_")
 load("//lib/consoles.star", "consoles")
 
 try_.defaults.set(
-    builder_group = "tryserver.chromium.mac",
     executable = try_.DEFAULT_EXECUTABLE,
+    builder_group = "tryserver.chromium.mac",
+    pool = try_.DEFAULT_POOL,
     builderless = True,
     os = os.MAC_ANY,
     ssd = True,
-    pool = try_.DEFAULT_POOL,
-    service_account = try_.DEFAULT_SERVICE_ACCOUNT,
     compilator_goma_jobs = goma.jobs.J150,
     compilator_reclient_jobs = reclient.jobs.HIGH_JOBS_FOR_CQ,
     execution_timeout = try_.DEFAULT_EXECUTION_TIMEOUT,
     goma_backend = goma.backend.RBE_PROD,
     orchestrator_cores = 2,
     reclient_instance = reclient.instance.DEFAULT_UNTRUSTED,
+    service_account = try_.DEFAULT_SERVICE_ACCOUNT,
 )
 
 def ios_builder(*, name, **kwargs):
@@ -34,7 +34,10 @@ def ios_builder(*, name, **kwargs):
 
 consoles.list_view(
     name = "tryserver.chromium.mac",
-    branch_selector = branches.DESKTOP_EXTENDED_STABLE_MILESTONE,
+    branch_selector = [
+        branches.selector.MAC_BRANCHES,
+        branches.selector.IOS_BRANCHES,
+    ],
 )
 
 try_.builder(
@@ -45,6 +48,8 @@ try_.builder(
     builderless = False,
     os = os.MAC_DEFAULT,
     cpu = cpu.ARM64,
+    goma_backend = None,
+    reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
 )
 
 try_.builder(
@@ -55,6 +60,8 @@ try_.builder(
     ],
     builderless = False,
     os = os.MAC_13,
+    goma_backend = None,
+    reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
 )
 
 # This trybot mirrors the trybot mac-rel
@@ -84,6 +91,8 @@ try_.builder(
     mirrors = ["ci/Mac Builder Next"],
     builderless = False,
     os = os.MAC_13,
+    goma_backend = None,
+    reclient_jobs = reclient.jobs.HIGH_JOBS_FOR_CQ,
 )
 
 try_.builder(
@@ -95,8 +104,7 @@ try_.builder(
 
 try_.orchestrator_builder(
     name = "mac-rel",
-    branch_selector = branches.DESKTOP_EXTENDED_STABLE_MILESTONE,
-    compilator = "mac-rel-compilator",
+    branch_selector = branches.selector.MAC_BRANCHES,
     mirrors = [
         "ci/Mac Builder",
         "ci/Mac12 Tests",
@@ -111,13 +119,14 @@ try_.orchestrator_builder(
             condition = builder_config.rts_condition.QUICK_RUN_ONLY,
         ),
     ),
-    main_list_view = "try",
     check_for_flakiness = True,
+    compilator = "mac-rel-compilator",
     coverage_test_types = ["overall", "unit"],
-    tryjob = try_.job(),
     experiments = {
         "chromium_rts.inverted_rts": 100,
     },
+    main_list_view = "try",
+    tryjob = try_.job(),
     use_clang_coverage = True,
     # TODO (crbug.com/1372179): Use orchestrator pool once overloaded test pools
     # are addressed
@@ -126,31 +135,30 @@ try_.orchestrator_builder(
 
 try_.orchestrator_builder(
     name = "mac-rel-inverse-fyi",
-    compilator = "mac-rel-compilator",
     mirrors = builder_config.copy_from("try/mac-rel"),
     try_settings = builder_config.try_settings(
         rts_config = builder_config.rts_config(
             condition = builder_config.rts_condition.QUICK_RUN_ONLY,
         ),
     ),
-    main_list_view = "try",
     check_for_flakiness = True,
+    compilator = "mac-rel-compilator",
     coverage_test_types = ["overall", "unit"],
     experiments = {
         "chromium_rts.inverted_rts": 100,
         "chromium_rts.inverted_rts_bail_early": 100,
     },
+    main_list_view = "try",
     use_clang_coverage = True,
     use_orchestrator_pool = True,
 )
 
 try_.compilator_builder(
     name = "mac-rel-compilator",
-    branch_selector = branches.DESKTOP_EXTENDED_STABLE_MILESTONE,
+    branch_selector = branches.selector.MAC_BRANCHES,
     os = os.MAC_DEFAULT,
-    main_list_view = "try",
     check_for_flakiness = True,
-    goma_backend = None,
+    main_list_view = "try",
 )
 
 try_.builder(
@@ -171,15 +179,22 @@ try_.builder(
     goma_backend = None,
 )
 
+try_.builder(
+    name = "mac11-wpt-content-shell-fyi-rel",
+    mirrors = [
+        "ci/mac11-wpt-content-shell-fyi-rel",
+    ],
+)
+
 try_.orchestrator_builder(
     name = "mac12-arm64-rel",
-    compilator = "mac12-arm64-rel-compilator",
     mirrors = [
         "ci/mac-arm64-rel",
         "ci/mac12-arm64-rel-tests",
     ],
-    main_list_view = "try",
     check_for_flakiness = True,
+    compilator = "mac12-arm64-rel-compilator",
+    main_list_view = "try",
     tryjob = try_.job(
         experiment_percentage = 100,
     ),
@@ -188,10 +203,17 @@ try_.orchestrator_builder(
 try_.compilator_builder(
     name = "mac12-arm64-rel-compilator",
     os = os.MAC_12,
-    main_list_view = "try",
     check_for_flakiness = True,
     # TODO (crbug.com/1245171): Revert when root issue is fixed
     grace_period = 4 * time.minute,
+    main_list_view = "try",
+)
+
+try_.builder(
+    name = "mac12-arm64-wpt-content-shell-fyi-rel",
+    mirrors = [
+        "ci/mac12-arm64-wpt-content-shell-fyi-rel",
+    ],
 )
 
 try_.builder(
@@ -210,6 +232,7 @@ try_.builder(
         "ci/Mac Builder",
         "ci/Mac10.13 Tests",
     ],
+    reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
 )
 
 try_.builder(
@@ -218,6 +241,8 @@ try_.builder(
         "ci/Mac Builder",
         "ci/Mac10.14 Tests",
     ],
+    goma_backend = None,
+    reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
 )
 
 try_.builder(
@@ -226,6 +251,8 @@ try_.builder(
         "ci/Mac Builder",
         "ci/Mac10.15 Tests",
     ],
+    goma_backend = None,
+    reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
 )
 
 try_.builder(
@@ -251,6 +278,8 @@ try_.builder(
     mirrors = [
         "ci/mac-archive-rel",
     ],
+    goma_backend = None,
+    reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
 )
 
 try_.builder(
@@ -265,7 +294,7 @@ try_.builder(
 
 try_.builder(
     name = "mac_chromium_compile_dbg_ng",
-    branch_selector = branches.DESKTOP_EXTENDED_STABLE_MILESTONE,
+    branch_selector = branches.selector.MAC_BRANCHES,
     mirrors = [
         "ci/Mac Builder (dbg)",
     ],
@@ -275,7 +304,6 @@ try_.builder(
     ),
     os = os.MAC_DEFAULT,
     main_list_view = "try",
-    goma_backend = None,
     tryjob = try_.job(),
 )
 
@@ -288,6 +316,8 @@ try_.builder(
         include_all_triggered_testers = True,
         is_compile_only = True,
     ),
+    goma_backend = None,
+    reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
 )
 
 try_.builder(
@@ -296,6 +326,8 @@ try_.builder(
         "ci/Mac Builder (dbg)",
         "ci/Mac12 Tests (dbg)",
     ],
+    goma_backend = None,
+    reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
 )
 
 try_.builder(
@@ -370,8 +402,7 @@ ios_builder(
 
 try_.orchestrator_builder(
     name = "ios-simulator",
-    branch_selector = branches.STANDARD_MILESTONE,
-    compilator = "ios-simulator-compilator",
+    branch_selector = branches.selector.IOS_BRANCHES,
     mirrors = [
         "ci/ios-simulator",
     ],
@@ -380,35 +411,38 @@ try_.orchestrator_builder(
     # use_orchestrator_pool = True,
     cores = 2,
     os = os.LINUX_DEFAULT,
-    main_list_view = "try",
     check_for_flakiness = True,
+    compilator = "ios-simulator-compilator",
     coverage_exclude_sources = "ios_test_files_and_test_utils",
     coverage_test_types = ["overall", "unit"],
+    main_list_view = "try",
     tryjob = try_.job(),
     use_clang_coverage = True,
 )
 
 try_.compilator_builder(
     name = "ios-simulator-compilator",
-    branch_selector = branches.STANDARD_MILESTONE,
+    branch_selector = branches.selector.IOS_BRANCHES,
     # Set builderless to False so that branch builders use builderful bots
     builderless = False,
     os = os.MAC_DEFAULT,
     ssd = None,
-    xcode = xcode.x14main,
-    main_list_view = "try",
     check_for_flakiness = True,
     goma_backend = None,
+    main_list_view = "try",
+    xcode = xcode.x14main,
 )
 
 ios_builder(
     name = "ios-simulator-cronet",
-    branch_selector = branches.STANDARD_MILESTONE,
+    branch_selector = branches.selector.IOS_BRANCHES,
     mirrors = [
         "ci/ios-simulator-cronet",
     ],
-    main_list_view = "try",
     check_for_flakiness = True,
+    goma_backend = None,
+    main_list_view = "try",
+    reclient_jobs = reclient.jobs.HIGH_JOBS_FOR_CQ,
     tryjob = try_.job(
         location_filters = [
             "components/cronet/.+",
@@ -417,27 +451,24 @@ ios_builder(
             cq.location_filter(exclude = True, path_regexp = "components/cronet/android/.+"),
         ],
     ),
-    goma_backend = None,
-    reclient_jobs = reclient.jobs.HIGH_JOBS_FOR_CQ,
 )
 
 ios_builder(
     name = "ios-simulator-full-configs",
-    branch_selector = branches.STANDARD_MILESTONE,
+    branch_selector = branches.selector.IOS_BRANCHES,
     mirrors = [
         "ci/ios-simulator-full-configs",
     ],
-    main_list_view = "try",
     check_for_flakiness = True,
     coverage_exclude_sources = "ios_test_files_and_test_utils",
     coverage_test_types = ["overall", "unit"],
+    main_list_view = "try",
     tryjob = try_.job(
         location_filters = [
             "ios/.+",
         ],
     ),
     use_clang_coverage = True,
-    goma_backend = None,
 )
 
 ios_builder(
@@ -455,13 +486,13 @@ ios_builder(
     mirrors = [
         "ci/ios-simulator-noncq",
     ],
+    goma_backend = None,
+    reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
     tryjob = try_.job(
         location_filters = [
             "third_party/crashpad/crashpad/.+",
         ],
     ),
-    goma_backend = None,
-    reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
 )
 
 ios_builder(
@@ -492,8 +523,8 @@ ios_builder(
     mirrors = [
         "ci/ios16-sdk-simulator",
     ],
-    goma_backend = None,
     os = os.MAC_DEFAULT,
+    goma_backend = None,
     xcode = xcode.x14betabots,
 )
 
@@ -505,7 +536,7 @@ ios_builder(
 
 try_.gpu.optional_tests_builder(
     name = "mac_optional_gpu_tests_rel",
-    branch_selector = branches.DESKTOP_EXTENDED_STABLE_MILESTONE,
+    branch_selector = branches.selector.IOS_BRANCHES,
     builder_spec = builder_config.builder_spec(
         gclient_config = builder_config.gclient_config(
             config = "chromium",
@@ -524,6 +555,7 @@ try_.gpu.optional_tests_builder(
         build_gs_bucket = "chromium-gpu-fyi-archive",
     ),
     ssd = None,
+    goma_backend = None,
     main_list_view = "try",
     tryjob = try_.job(
         location_filters = [
@@ -551,7 +583,6 @@ try_.gpu.optional_tests_builder(
             cq.location_filter(path_regexp = "ui/gl/.+"),
         ],
     ),
-    goma_backend = None,
 )
 
 # RTS builders (https://crbug.com/1203048)

@@ -46,12 +46,13 @@ import org.chromium.chrome.browser.tab.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabPersistentStore.ActiveTabState;
 import org.chromium.chrome.browser.tasks.tab_management.TabUiFeatureUtilities;
+import org.chromium.chrome.browser.util.BrowserUiUtils;
+import org.chromium.chrome.browser.util.BrowserUiUtils.HostSurface;
 import org.chromium.chrome.browser.util.ChromeAccessibilityUtil;
 import org.chromium.chrome.features.start_surface.StartSurfaceConfiguration;
 import org.chromium.chrome.features.start_surface.StartSurfaceState;
 import org.chromium.chrome.features.start_surface.StartSurfaceUserData;
 import org.chromium.components.browser_ui.widget.gesture.BackPressHandler;
-import org.chromium.components.embedder_support.util.UrlConstants;
 import org.chromium.components.embedder_support.util.UrlUtilities;
 import org.chromium.components.segmentation_platform.SegmentSelectionResult;
 import org.chromium.components.segmentation_platform.SegmentationPlatformService;
@@ -287,17 +288,14 @@ public final class ReturnToChromeUtil {
             StartSurfaceUserData.setOpenedFromStart(newTab);
         }
 
-        if (params.getTransitionType() == PageTransition.AUTO_BOOKMARK) {
-            if (!TextUtils.equals(UrlConstants.RECENT_TABS_URL, params.getUrl())
-                    && params.getReferrer() == null) {
-                RecordUserAction.record("Suggestions.Tile.Tapped.StartSurface");
-            }
-        } else if (url == null) {
-            RecordUserAction.record("MobileMenuNewTab.StartSurfaceFinale");
-        } else {
+        int transitionAfterMask = params.getTransitionType() & PageTransition.CORE_MASK;
+        if (transitionAfterMask == PageTransition.TYPED
+                || transitionAfterMask == PageTransition.GENERATED) {
             RecordUserAction.record("MobileOmniboxUse.StartSurface");
+            BrowserUiUtils.recordModuleClickHistogram(BrowserUiUtils.HostSurface.START_SURFACE,
+                    BrowserUiUtils.ModuleTypeOnStartAndNTP.OMNIBOX);
 
-            // These are duplicated here but would have been recorded by LocationBarLayout#loadUrl.
+            // These are not duplicated here with the recording in LocationBarLayout#loadUrl.
             RecordUserAction.record("MobileOmniboxUse");
             LocaleManager.getInstance().recordLocaleBasedSearchMetrics(
                     false, url, params.getTransitionType());
@@ -936,5 +934,21 @@ public final class ReturnToChromeUtil {
 
     public static void setSkipInitializationCheckForTesting(boolean skipInitializationCheck) {
         sSkipInitializationCheckForTesting = skipInitializationCheck;
+    }
+
+    /**
+     * Records user clicks on the tab switcher button in New tab page or Start surface.
+     * @param isInOverview Whether the current tab is in overview mode.
+     * @param currentTab Current tab or null if none exists.
+     */
+    public static void recordClickTabSwitcher(boolean isInOverview, @Nullable Tab currentTab) {
+        if (isInOverview) {
+            BrowserUiUtils.recordModuleClickHistogram(HostSurface.START_SURFACE,
+                    BrowserUiUtils.ModuleTypeOnStartAndNTP.TAB_SWITCHER_BUTTON);
+        } else if (currentTab != null && !currentTab.isIncognito()
+                && UrlUtilities.isNTPUrl(currentTab.getUrl())) {
+            BrowserUiUtils.recordModuleClickHistogram(HostSurface.NEW_TAB_PAGE,
+                    BrowserUiUtils.ModuleTypeOnStartAndNTP.TAB_SWITCHER_BUTTON);
+        }
     }
 }

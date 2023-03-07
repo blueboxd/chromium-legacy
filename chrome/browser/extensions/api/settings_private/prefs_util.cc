@@ -48,6 +48,7 @@
 #include "components/search_engines/default_search_manager.h"
 #include "components/services/screen_ai/buildflags/buildflags.h"
 #include "components/spellcheck/browser/pref_names.h"
+#include "components/supervised_user/core/common/pref_names.h"
 #include "components/translate/core/browser/translate_pref_names.h"
 #include "components/translate/core/browser/translate_prefs.h"
 #include "components/unified_consent/pref_names.h"
@@ -551,6 +552,8 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetAllowlistedKeys() {
       settings_api::PrefType::PREF_TYPE_NUMBER;
   (*s_allowlist)[ash::prefs::kAccessibilityScreenMagnifierScale] =
       settings_api::PrefType::PREF_TYPE_NUMBER;
+  (*s_allowlist)[ash::prefs::kAccessibilityChromeVoxAutoRead] =
+      settings_api::PrefType::PREF_TYPE_BOOLEAN;
   (*s_allowlist)[ash::prefs::kAccessibilitySwitchAccessSelectDeviceKeyCodes] =
       settings_api::PrefType::PREF_TYPE_DICTIONARY;
   (*s_allowlist)[ash::prefs::kAccessibilitySwitchAccessNextDeviceKeyCodes] =

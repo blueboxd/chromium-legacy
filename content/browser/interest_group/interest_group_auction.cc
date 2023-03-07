@@ -9,6 +9,7 @@
 #include <algorithm>
 #include <cmath>
 #include <iterator>
+#include <map>
 #include <memory>
 #include <string>
 #include <utility>
@@ -37,6 +38,7 @@
 #include "content/browser/interest_group/interest_group_auction_reporter.h"
 #include "content/browser/interest_group/interest_group_k_anonymity_manager.h"
 #include "content/browser/interest_group/interest_group_manager_impl.h"
+#include "content/browser/interest_group/interest_group_pa_report_util.h"
 #include "content/browser/interest_group/interest_group_priority_util.h"
 #include "content/browser/interest_group/storage_interest_group.h"
 #include "content/public/browser/content_browser_client.h"
@@ -448,8 +450,8 @@ class InterestGroupAuction::BuyerHelper
   // `debug_loss_report_urls`, if there are any, filling in report URL template
   // parameters as needed.
   //
-  // `winner` is the BidState associated with the winning bid, if there is one.
-  // If it's not a BidState managed by `this`, it has no effect.
+  // `winner` points to the BidState associated with the winning bid, if there
+  // is one. If it's not a BidState managed by `this`, it has no effect.
   //
   // `signals` are the PostAuctionSignals from the auction `this` was a part of.
   //
@@ -461,7 +463,7 @@ class InterestGroupAuction::BuyerHelper
       const absl::optional<PostAuctionSignals>& top_level_signals,
       std::vector<GURL>& debug_win_report_urls,
       std::vector<GURL>& debug_loss_report_urls) {
-    for (auto& bid_state : bid_states_) {
+    for (std::unique_ptr<BidState>& bid_state : bid_states_) {
       if (bid_state.get() == winner) {
         if (winner->bidder_debug_win_report_url.has_value()) {
           debug_win_report_urls.emplace_back(FillPostAuctionSignals(
@@ -505,6 +507,38 @@ class InterestGroupAuction::BuyerHelper
             top_level_signals.value()));
       }
     }
+  }
+
+  // Returns private aggregation requests, if there are any. Calculate
+  // bucket/value using `signals` as needed.
+  //
+  // `winner` points to the BidState associated with the winning bid, if there
+  // is one. If it's not a BidState managed by `this`, it has no effect.
+  //
+  // `signals` are the PostAuctionSignals from the auction `this` was a part of.
+  std::map<url::Origin, PrivateAggregationRequests>
+  TakePrivateAggregationRequests(const BidState* winner,
+                                 const PostAuctionSignals& signals) {
+    std::map<url::Origin, PrivateAggregationRequests>
+        private_aggregation_requests;
+    for (std::unique_ptr<BidState>& state : bid_states_) {
+      bool is_winner = state.get() == winner;
+      for (auto& [origin, requests] : state->private_aggregation_requests) {
+        for (auction_worklet::mojom::PrivateAggregationRequestPtr& request :
+             requests) {
+          auction_worklet::mojom::PrivateAggregationRequestPtr
+              converted_request = FillInPrivateAggregationRequest(
+                  std::move(request), signals.winning_bid,
+                  signals.highest_scoring_other_bid, state->reject_reason,
+                  is_winner);
+          if (converted_request) {
+            private_aggregation_requests[origin].emplace_back(
+                std::move(converted_request));
+          }
+        }
+      }
+    }
+    return private_aggregation_requests;
   }
 
   void NotifyConfigPromisesResolved() {
@@ -644,6 +678,8 @@ class InterestGroupAuction::BuyerHelper
     auction_worklet::mojom::KAnonymityBidMode kanon_mode =
         auction_->kanon_mode();
     bid_state->kanon_render_urls = ComputeKAnon(*bid_state->bidder, kanon_mode);
+    bid_state->worklet_handle->AuthorizeSubresourceUrls(
+        *auction_->subresource_url_builder_);
     bid_state->worklet_handle->GetBidderWorklet()->BeginGenerateBid(
         auction_worklet::mojom::BidderWorkletNonSharedParams::New(
             interest_group.name,
@@ -903,8 +939,8 @@ class InterestGroupAuction::BuyerHelper
                request_ptr) { return request_ptr.is_null(); }));
     if (!pa_requests.empty()) {
       PrivateAggregationRequests& pa_requests_for_bidder =
-          auction_->private_aggregation_requests_[state->bidder->interest_group
-                                                      .owner];
+          state->private_aggregation_requests[state->bidder->interest_group
+                                                  .owner];
       pa_requests_for_bidder.insert(pa_requests_for_bidder.end(),
                                     std::move_iterator(pa_requests.begin()),
                                     std::move_iterator(pa_requests.end()));
@@ -1584,9 +1620,10 @@ bool InterestGroupAuction::NonKAnonWinnerIsKAnon() const {
                  ->bid->bid_role == Bid::BidRole::kBothKAnonModes;
 }
 
-void InterestGroupAuction::TakeDebugReportUrls(
-    std::vector<GURL>& debug_win_report_urls,
-    std::vector<GURL>& debug_loss_report_urls) {
+void InterestGroupAuction::
+    TakeDebugReportUrlsAndFillInPrivateAggregationRequests(
+        std::vector<GURL>& debug_win_report_urls,
+        std::vector<GURL>& debug_loss_report_urls) {
   if (!all_bids_scored_)
     return;
 
@@ -1650,12 +1687,25 @@ void InterestGroupAuction::TakeDebugReportUrls(
     buyer_helper->TakeDebugReportUrls(winner, signals, top_level_signals,
                                       debug_win_report_urls,
                                       debug_loss_report_urls);
+
+    std::map<url::Origin, PrivateAggregationRequests>
+        private_aggregation_requests =
+            buyer_helper->TakePrivateAggregationRequests(winner, signals);
+
+    for (auto& [origin, requests] : private_aggregation_requests) {
+      PrivateAggregationRequests& destination_vector =
+          private_aggregation_requests_[origin];
+      destination_vector.insert(destination_vector.end(),
+                                std::move_iterator(requests.begin()),
+                                std::move_iterator(requests.end()));
+    }
   }
 
   // Retrieve data from component auctions as well.
   for (auto& component_auction_info : component_auctions_) {
-    component_auction_info.second->TakeDebugReportUrls(debug_win_report_urls,
-                                                       debug_loss_report_urls);
+    component_auction_info.second
+        ->TakeDebugReportUrlsAndFillInPrivateAggregationRequests(
+            debug_win_report_urls, debug_loss_report_urls);
   }
 }
 
@@ -1973,7 +2023,7 @@ void InterestGroupAuction::RequestSellerWorklet() {
                                     *trace_id_);
   if (auction_worklet_manager_->RequestSellerWorklet(
           config_->decision_logic_url, config_->trusted_scoring_signals_url,
-          *subresource_url_builder_, config_->seller_experiment_group_id,
+          config_->seller_experiment_group_id,
           base::BindOnce(&InterestGroupAuction::OnSellerWorkletReceived,
                          base::Unretained(this)),
           base::BindOnce(&InterestGroupAuction::OnSellerWorkletFatalError,
@@ -2148,6 +2198,7 @@ void InterestGroupAuction::ScoreBidIfReady(std::unique_ptr<Bid> bid) {
   score_ad_receivers_.Add(
       this, score_ad_remote.InitWithNewPipeAndPassReceiver(), std::move(bid));
   DCHECK_EQ(0, config_->non_shared_params.NumPromises());
+  seller_worklet_handle_->AuthorizeSubresourceUrls(*subresource_url_builder_);
   seller_worklet_handle_->GetSellerWorklet()->ScoreAd(
       bid_raw->ad_metadata, bid_raw->bid, config_->non_shared_params,
       GetDirectFromSellerSellerSignals(*subresource_url_builder_),
@@ -2246,7 +2297,7 @@ void InterestGroupAuction::OnScoreAdComplete(
     if (!pa_requests.empty()) {
       DCHECK(config_);
       PrivateAggregationRequests& pa_requests_for_seller =
-          private_aggregation_requests_[config_->seller];
+          bid->bid_state->private_aggregation_requests[config_->seller];
       pa_requests_for_seller.insert(pa_requests_for_seller.end(),
                                     std::move_iterator(pa_requests.begin()),
                                     std::move_iterator(pa_requests.end()));
@@ -2260,6 +2311,8 @@ void InterestGroupAuction::OnScoreAdComplete(
       bid->bid_state->seller_debug_win_report_url =
           std::move(debug_win_report_url);
       // Ignores reject reason if score > 0.
+      // TODO(qingxinwu): Set bid_state->reject_reason to nullopt instead of
+      // kNotAvailable when score > 0.
       if (score <= 0)
         bid->bid_state->reject_reason = reject_reason;
     } else {
@@ -2552,9 +2605,9 @@ bool InterestGroupAuction::RequestBidderWorklet(
   return auction_worklet_manager_->RequestBidderWorklet(
       interest_group.bidding_url.value_or(GURL()),
       interest_group.bidding_wasm_helper_url,
-      interest_group.trusted_bidding_signals_url, *subresource_url_builder_,
-      experiment_group_id, std::move(worklet_available_callback),
-      std::move(fatal_error_callback), bid_state.worklet_handle);
+      interest_group.trusted_bidding_signals_url, experiment_group_id,
+      std::move(worklet_available_callback), std::move(fatal_error_callback),
+      bid_state.worklet_handle);
 }
 
 }  // namespace content

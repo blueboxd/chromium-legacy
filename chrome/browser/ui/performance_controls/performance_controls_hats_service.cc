@@ -17,27 +17,85 @@
 #include "components/prefs/pref_service.h"
 
 PerformanceControlsHatsService::PerformanceControlsHatsService(Profile* profile)
-    : profile_(profile) {}
+    : profile_(profile) {
+  PrefService* local_state = g_browser_process->local_state();
+  if (local_state) {
+    local_pref_registrar_.Init(local_state);
+    if (base::FeatureList::IsEnabled(
+            performance_manager::features::kHighEfficiencyModeAvailable) &&
+        base::FeatureList::IsEnabled(
+            performance_manager::features::
+                kPerformanceControlsHighEfficiencyOptOutSurvey)) {
+      local_pref_registrar_.Add(
+          performance_manager::user_tuning::prefs::kHighEfficiencyModeEnabled,
+          base::BindRepeating(
+              &PerformanceControlsHatsService::OnHighEfficiencyModeChange,
+              base::Unretained(this)));
+    }
 
-void PerformanceControlsHatsService::OpenedNewTabPage() {
+    if (base::FeatureList::IsEnabled(
+            performance_manager::features::kBatterySaverModeAvailable) &&
+        base::FeatureList::IsEnabled(
+            performance_manager::features::
+                kPerformanceControlsBatterySaverOptOutSurvey)) {
+      local_pref_registrar_.Add(
+          performance_manager::user_tuning::prefs::kBatterySaverModeState,
+          base::BindRepeating(
+              &PerformanceControlsHatsService::OnBatterySaverModeChange,
+              base::Unretained(this)));
+    }
+  }
+}
+
+PerformanceControlsHatsService::~PerformanceControlsHatsService() {
+  local_pref_registrar_.RemoveAll();
+}
+
+void PerformanceControlsHatsService::OnHighEfficiencyModeChange() {
   HatsService* hats_service = HatsServiceFactory::GetForProfile(profile_, true);
-
-  // If none of the features are enabled, return early.
   if (!hats_service) {
     return;
   }
 
-  const bool show_performance_survey = base::FeatureList::IsEnabled(
-      performance_manager::features::kPerformanceControlsPerformanceSurvey);
-  const bool show_battery_survey = base::FeatureList::IsEnabled(
-      performance_manager::features::
-          kPerformanceControlsBatteryPerformanceSurvey);
-  const bool show_high_efficiency_opt_out_survey = base::FeatureList::IsEnabled(
-      performance_manager::features::
-          kPerformanceControlsHighEfficiencyOptOutSurvey);
-  const bool show_battery_saver_opt_out_survey = base::FeatureList::IsEnabled(
-      performance_manager::features::
-          kPerformanceControlsBatterySaverOptOutSurvey);
+  PrefService* prefs = g_browser_process->local_state();
+  // A survey for users who have turned off high efficiency mode.
+  if (!prefs->GetBoolean(performance_manager::user_tuning::prefs::
+                             kHighEfficiencyModeEnabled)) {
+    auto* pref = prefs->FindPreference(
+        performance_manager::user_tuning::prefs::kHighEfficiencyModeEnabled);
+    if (!pref->IsManaged() && !pref->IsDefaultValue()) {
+      hats_service->LaunchDelayedSurvey(
+          kHatsSurveyTriggerPerformanceControlsHighEfficiencyOptOut, 10000);
+    }
+  }
+}
+
+void PerformanceControlsHatsService::OnBatterySaverModeChange() {
+  HatsService* hats_service = HatsServiceFactory::GetForProfile(profile_, true);
+  if (!hats_service) {
+    return;
+  }
+
+  // A survey for users who have turned off battery saver.
+  PrefService* prefs = g_browser_process->local_state();
+  if (prefs->GetInteger(
+          performance_manager::user_tuning::prefs::kBatterySaverModeState) ==
+      static_cast<int>(performance_manager::user_tuning::prefs::
+                           BatterySaverModeState::kDisabled)) {
+    auto* pref = prefs->FindPreference(
+        performance_manager::user_tuning::prefs::kBatterySaverModeState);
+    if (!pref->IsManaged()) {
+      hats_service->LaunchDelayedSurvey(
+          kHatsSurveyTriggerPerformanceControlsBatterySaverOptOut, 10000);
+    }
+  }
+}
+
+void PerformanceControlsHatsService::OpenedNewTabPage() {
+  HatsService* hats_service = HatsServiceFactory::GetForProfile(profile_, true);
+  if (!hats_service) {
+    return;
+  }
 
   PrefService* prefs = g_browser_process->local_state();
   const int battery_saver_mode = prefs->GetInteger(
@@ -46,48 +104,30 @@ void PerformanceControlsHatsService::OpenedNewTabPage() {
       performance_manager::user_tuning::prefs::kHighEfficiencyModeEnabled);
 
   // A general performance survey for all users.
-  if (show_performance_survey) {
+  if (base::FeatureList::IsEnabled(performance_manager::features::
+                                       kPerformanceControlsPerformanceSurvey)) {
     hats_service->LaunchSurvey(
         kHatsSurveyTriggerPerformanceControlsPerformance, base::DoNothing(),
         base::DoNothing(), {{"high_efficiency_mode", high_efficiency_mode}},
         {{"battery_saver_mode", base::NumberToString(battery_saver_mode)}});
   }
 
+  base::Time last_battery_timestamp =
+      performance_manager::user_tuning::UserPerformanceTuningManager::
+          GetInstance()
+              ->GetLastBatteryUsageTimestamp();
+
   // A battery performance survey for users with a battery-powered device.
-  if (show_battery_survey && performance_manager::user_tuning::
-                                 UserPerformanceTuningManager::GetInstance()
-                                     ->DeviceHasBattery()) {
+  if (base::FeatureList::IsEnabled(
+          performance_manager::features::
+              kPerformanceControlsBatteryPerformanceSurvey) &&
+      (base::Time::Now() - last_battery_timestamp) <=
+          performance_manager::features::
+              kPerformanceControlsBatterySurveyLookback.Get()) {
     hats_service->LaunchSurvey(
         kHatsSurveyTriggerPerformanceControlsBatteryPerformance,
         base::DoNothing(), base::DoNothing(),
         {{"high_efficiency_mode", high_efficiency_mode}},
         {{"battery_saver_mode", base::NumberToString(battery_saver_mode)}});
-  }
-
-  // A survey for users who have turned off high efficiency mode.
-  if (show_high_efficiency_opt_out_survey && !high_efficiency_mode &&
-      base::FeatureList::IsEnabled(
-          performance_manager::features::kHighEfficiencyModeAvailable)) {
-    auto* pref = prefs->FindPreference(
-        performance_manager::user_tuning::prefs::kHighEfficiencyModeEnabled);
-    if (!pref->IsManaged() && !pref->IsDefaultValue()) {
-      hats_service->LaunchSurvey(
-          kHatsSurveyTriggerPerformanceControlsHighEfficiencyOptOut);
-    }
-  }
-
-  // A survey for users who have turned off battery saver.
-  if (show_battery_saver_opt_out_survey &&
-      base::FeatureList::IsEnabled(
-          performance_manager::features::kBatterySaverModeAvailable) &&
-      battery_saver_mode ==
-          static_cast<int>(performance_manager::user_tuning::prefs::
-                               BatterySaverModeState::kDisabled)) {
-    auto* pref = prefs->FindPreference(
-        performance_manager::user_tuning::prefs::kBatterySaverModeState);
-    if (!pref->IsManaged()) {
-      hats_service->LaunchSurvey(
-          kHatsSurveyTriggerPerformanceControlsBatterySaverOptOut);
-    }
   }
 }

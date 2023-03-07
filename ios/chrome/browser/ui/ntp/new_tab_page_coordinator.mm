@@ -962,11 +962,6 @@
   [self updateFeedLayout];
 }
 
-- (void)returnToRecentTabWasAdded {
-  [self updateFeedLayout];
-  [self setContentOffsetToTop];
-}
-
 #pragma mark - FeedManagementNavigationDelegate
 
 - (void)handleNavigateToActivity {
@@ -1044,6 +1039,12 @@
   [fakeboxFocuserHandler onFakeboxBlur];
 }
 
+- (void)focusOmnibox {
+  id<FakeboxFocuser> fakeboxFocuserHandler =
+      HandlerForProtocol(self.browser->GetCommandDispatcher(), FakeboxFocuser);
+  [fakeboxFocuserHandler fakeboxFocused];
+}
+
 #pragma mark - NewTabPageDelegate
 
 - (void)updateFeedLayout {
@@ -1052,6 +1053,9 @@
   if (!self.started) {
     return;
   }
+  // TODO(crbug.com/1406940): Investigate why this order is correct. Intuition
+  // would be that the layout update should happen before telling UIKit to
+  // relayout.
   [self.containedViewController.view setNeedsLayout];
   [self.containedViewController.view layoutIfNeeded];
   [self.NTPViewController updateNTPLayout];
@@ -1344,6 +1348,8 @@
   if (self.feedViewController) {
     self.discoverFeedService->RemoveFeedViewController(self.feedViewController);
   }
+
+  [self.feedTopSectionCoordinator stop];
 
   self.NTPViewController.feedWrapperViewController = nil;
   self.NTPViewController.feedTopSectionViewController = nil;

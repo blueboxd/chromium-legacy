@@ -196,6 +196,7 @@
 <translation id="2713444072780614174">Putih</translation>
 <translation id="2717139507051041123">Dayakan mod warna gelap</translation>
 <translation id="2740531572673183784">Ok</translation>
+<translation id="2744221223678373668">Dikongsi</translation>
 <translation id="2751739896257479635">Pengesahan Fasa 2 EAP</translation>
 <translation id="2783010256799387990">LULUS</translation>
 <translation id="2789486458103222910">Okey</translation>
@@ -270,6 +271,7 @@
 <translation id="3583278742022654445">Kekuatan isyarat lemah. Cuba bergerak lebih rapat ke sumber isyarat Wi-Fi.</translation>
 <translation id="3595596368722241419">Bateri penuh</translation>
 <translation id="3600339377155080675">Cermin skrin</translation>
+<translation id="3602290021589620013">Pratonton</translation>
 <translation id="3603829704940252505">Avatar</translation>
 <translation id="3604713164406837697">Tukar kertas dinding</translation>
 <translation id="360565022852130722">Rangkaian Wi-Fi selamat dengan protokol lemah WEP 802.1x</translation>
@@ -293,6 +295,7 @@
 <translation id="385051799172605136">Kembali</translation>
 <translation id="3858860766373142691">Nama</translation>
 <translation id="3862598938296403232">Perihalan diperlukan</translation>
+<translation id="3865289341173661845">Kandungan bantuan tidak tersedia.</translation>
 <translation id="3865414814144988605">Peleraian</translation>
 <translation id="3866249974567520381">Huraian</translation>
 <translation id="387301095347517405">Bilangan kali bateri anda telah melalui kitaran pengecasan penuh</translation>
@@ -315,6 +318,7 @@
 <translation id="4044093238444069296">Tidak dapat menghubungi get laluan</translation>
 <translation id="4046123991198612571">Lagu seterusnya</translation>
 <translation id="404928562651467259">AMARAN</translation>
+<translation id="4054683689023980771">Memuat turun imej</translation>
 <translation id="4060260348856573701">APN Baharu</translation>
 <translation id="4093865285251893588">Imej profil</translation>
 <translation id="409427325554347132">Simpan butiran ujian</translation>
@@ -449,8 +453,6 @@
 <translation id="5168185087976003268">Kesihatan bateri</translation>
 <translation id="5170568018924773124">Paparkan dalam folder</translation>
 <translation id="5190187232518914472">Kenang kembali memori kegemaran anda. Untuk menambah atau mengedit album, pergi ke <ph name="LINK_BEGIN" />Google Photos<ph name="LINK_END" />.</translation>
-<translation id="5212543919916444558">Saya tidak menemui apa-apa pada skrin anda yang boleh saya bantu.
-Cuba ketik mikrofon untuk bertanyakan sebarang perkara kepada saya.</translation>
 <translation id="5212593641110061691">Tabloid</translation>
 <translation id="5222676887888702881">Log keluar</translation>
 <translation id="522307662484862935">Jangan sertakan alamat e-mel</translation>
@@ -703,6 +705,7 @@ Cuba ketik mikrofon untuk bertanyakan sebarang perkara kepada saya.</translation
 <translation id="7497215489070763236">Sijil CA pelayan</translation>
 <translation id="7502658306369382406">Alamat IPv6</translation>
 <translation id="7515998400212163428">Android</translation>
+<translation id="7528507600602050979">Kandungan bantuan tidak tersedia</translation>
 <translation id="7535791657097741517">Hidupkan tema cerah</translation>
 <translation id="7550715992156305117">Rutin Diagnostik</translation>
 <translation id="7551123448725492271">Peranti ialah peranti audio.</translation>

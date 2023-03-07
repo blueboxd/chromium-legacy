@@ -25,6 +25,8 @@
 #include "third_party/blink/renderer/core/html/html_element.h"
 #include "third_party/blink/renderer/core/inspector/inspector_style_resolver.h"
 #include "third_party/blink/renderer/core/layout/layout_shift_tracker.h"
+#include "third_party/blink/renderer/core/layout/layout_view.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_physical_box_fragment.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/style/computed_style_constants.h"
 #include "third_party/blink/renderer/core/testing/mock_function_scope.h"
@@ -871,7 +873,7 @@ TEST_P(ViewTransitionTest, ObjectViewBoxDuringCapture) {
   UpdateAllLifecyclePhasesAndFinishDirectives();
 }
 
-TEST_P(ViewTransitionTest, VirtualKeyboardDoesntAffectSnapshotViewport) {
+TEST_P(ViewTransitionTest, VirtualKeyboardDoesntAffectSnapshotSize) {
   SetHtmlInnerHTML(R"HTML(
     <style>
       .target {
@@ -921,16 +923,18 @@ TEST_P(ViewTransitionTest, VirtualKeyboardDoesntAffectSnapshotViewport) {
 
   // The snapshot rect should not have been shrunk by the virtual keyboard, even
   // though it shrinks the WebView.
-  EXPECT_EQ(transition->GetSnapshotViewportRect().size(), original_size);
+  EXPECT_EQ(transition->GetSnapshotRootSize(), original_size);
 
-  // The height style of the ::view-transition should come from the snapshot
-  // viewport rect.
+  // The height of the ::view-transition should come from the snapshot root
+  // rect.
   {
-    const Length& height = GetDocument()
-                               .documentElement()
-                               ->EnsureComputedStyle(kPseudoIdViewTransition)
-                               ->Height();
-    EXPECT_EQ(height, Length::Fixed(original_size.height()));
+    auto* transition_pseudo = GetDocument().documentElement()->GetPseudoElement(
+        kPseudoIdViewTransition);
+    int height = To<LayoutBox>(transition_pseudo->GetLayoutObject())
+                     ->GetPhysicalFragment(0)
+                     ->Size()
+                     .height.ToInt();
+    EXPECT_EQ(height, original_size.height());
   }
 
   // Finish the prepare phase, mutate the DOM and start the animation.
@@ -945,7 +949,7 @@ TEST_P(ViewTransitionTest, VirtualKeyboardDoesntAffectSnapshotViewport) {
       ->SetVirtualKeyboardResizeHeightForTesting(0);
 
   // The snapshot rect should remain the same size.
-  EXPECT_EQ(transition->GetSnapshotViewportRect().size(), original_size);
+  EXPECT_EQ(transition->GetSnapshotRootSize(), original_size);
 
   // The start phase should generate pseudo elements for rendering new live
   // content.
@@ -955,6 +959,61 @@ TEST_P(ViewTransitionTest, VirtualKeyboardDoesntAffectSnapshotViewport) {
   FinishTransition();
 
   UpdateAllLifecyclePhasesAndFinishDirectives();
+}
+
+TEST_P(ViewTransitionTest, DocumentWithNoDocumentElementHasNullTransition) {
+  auto* document =
+      Document::CreateForTest(*GetDocument().GetExecutionContext());
+  ASSERT_FALSE(document->documentElement());
+
+  V8TestingScope v8_scope;
+  ScriptState* script_state = v8_scope.GetScriptState();
+  ExceptionState& exception_state = v8_scope.GetExceptionState();
+
+  auto start_setup_lambda =
+      [](const v8::FunctionCallbackInfo<v8::Value>& info) {};
+
+  // This callback sets the elements for the start phase of the transition.
+  auto start_setup_callback =
+      v8::Function::New(v8_scope.GetContext(), start_setup_lambda, {})
+          .ToLocalChecked();
+
+  ViewTransition* transition = ViewTransitionSupplement::startViewTransition(
+      script_state, *document,
+      V8ViewTransitionCallback::Create(start_setup_callback), exception_state);
+  ASSERT_FALSE(transition);
+}
+
+TEST_P(ViewTransitionTest, RootEffectLifetime) {
+  SetHtmlInnerHTML(R"HTML(
+    <style>
+      /* TODO(crbug.com/1336462): html.css is parsed before runtime flags are enabled */
+      html { view-transition-name: root; }
+    </style>
+  )HTML");
+
+  UpdateAllLifecyclePhasesForTest();
+
+  V8TestingScope v8_scope;
+  ScriptState* script_state = v8_scope.GetScriptState();
+  ExceptionState& exception_state = v8_scope.GetExceptionState();
+
+  auto start_setup_lambda =
+      [](const v8::FunctionCallbackInfo<v8::Value>& info) {};
+
+  // This callback sets the elements for the start phase of the transition.
+  auto start_setup_callback =
+      v8::Function::New(v8_scope.GetContext(), start_setup_lambda, {})
+          .ToLocalChecked();
+
+  auto* transition = ViewTransitionSupplement::startViewTransition(
+      script_state, GetDocument(),
+      V8ViewTransitionCallback::Create(start_setup_callback), exception_state);
+  ASSERT_FALSE(exception_state.HadException());
+
+  EXPECT_TRUE(GetDocument().GetLayoutView()->NeedsPaintPropertyUpdate());
+  EXPECT_TRUE(transition->NeedsViewTransitionEffectNode(
+      *GetDocument().GetLayoutView()));
 }
 
 }  // namespace blink

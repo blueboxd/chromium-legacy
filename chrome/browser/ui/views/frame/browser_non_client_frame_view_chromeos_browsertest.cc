@@ -25,6 +25,7 @@
 #include "chromeos/constants/chromeos_features.h"
 #include "chromeos/ui/base/window_properties.h"
 #include "chromeos/ui/frame/caption_buttons/frame_caption_button_container_view.h"
+#include "chromeos/ui/frame/caption_buttons/frame_size_button.h"
 #include "components/keep_alive_registry/keep_alive_types.h"
 #include "components/keep_alive_registry/scoped_keep_alive.h"
 #include "content/public/test/browser_test.h"
@@ -446,14 +447,8 @@ IN_PROC_BROWSER_TEST_F(
 // fullscreen.
 // This test does not make sense for the webUI tabstrip, since the frame is not
 // painted in that case.
-// Disable for lacros due to flakiness. crbug.com/1292412
-#if BUILDFLAG(IS_CHROMEOS_LACROS)
-#define MAYBE_NonImmersiveFullscreen DISABLED_NonImmersiveFullscreen
-#else
-#define MAYBE_NonImmersiveFullscreen NonImmersiveFullscreen
-#endif
 IN_PROC_BROWSER_TEST_P(BrowserNonClientFrameViewChromeOSTestNoWebUiTabStrip,
-                       MAYBE_NonImmersiveFullscreen) {
+                       NonImmersiveFullscreen) {
   BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser());
   content::WebContents* web_contents = browser_view->GetActiveWebContents();
   BrowserNonClientFrameViewChromeOS* frame_view =
@@ -477,7 +472,6 @@ IN_PROC_BROWSER_TEST_P(BrowserNonClientFrameViewChromeOSTestNoWebUiTabStrip,
   EXPECT_TRUE(frame_view->GetShouldPaint());
 }
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
 // Tests that caption buttons are hidden when entering tab fullscreen.
 IN_PROC_BROWSER_TEST_P(BrowserNonClientFrameViewChromeOSTestNoWebUiTabStrip,
                        CaptionButtonsHiddenNonImmersiveFullscreen) {
@@ -500,6 +494,7 @@ IN_PROC_BROWSER_TEST_P(BrowserNonClientFrameViewChromeOSTestNoWebUiTabStrip,
   EXPECT_TRUE(frame_view->caption_button_container_->GetVisible());
 }
 
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 // Tests that Avatar icon should show on the top left corner of the teleported
 // browser window on ChromeOS.
 // TODO(http://crbug.com/1059514): This test should be made to work with the
@@ -560,12 +555,10 @@ IN_PROC_BROWSER_TEST_P(BrowserNonClientFrameViewChromeOSTestWithWebUiTabStrip,
   auto* frame_view = GetFrameViewChromeOS(browser_view);
   if (ui::TouchUiController::Get()->touch_ui()) {
     EXPECT_TRUE(browser_view->webui_tab_strip());
-    EXPECT_FALSE(
-        frame_view->caption_button_container_for_testing()->GetVisible());
+    EXPECT_FALSE(frame_view->caption_button_container()->GetVisible());
   } else {
     EXPECT_FALSE(browser_view->webui_tab_strip());
-    EXPECT_TRUE(
-        frame_view->caption_button_container_for_testing()->GetVisible());
+    EXPECT_TRUE(frame_view->caption_button_container()->GetVisible());
   }
 }
 
@@ -1283,10 +1276,39 @@ class FloatBrowserNonClientFrameViewChromeOSTest
       chromeos::wm::features::kFloatWindow};
 };
 
+IN_PROC_BROWSER_TEST_P(FloatBrowserNonClientFrameViewChromeOSTest,
+                       BrowserHeaderVisibilityInTabletModeTest) {
+  BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser());
+  BrowserNonClientFrameViewChromeOS* frame_view =
+      GetFrameViewChromeOS(browser_view);
+
+  ASSERT_NO_FATAL_FAILURE(
+      ash::ShellTestApi().SetTabletModeEnabledForTest(true));
+  EXPECT_FALSE(frame_view->caption_button_container_->GetVisible());
+
+  Widget* widget = browser_view->GetWidget();
+  auto* immersive_controller = chromeos::ImmersiveFullscreenController::Get(
+      views::Widget::GetWidgetForNativeView(widget->GetNativeWindow()));
+
+  // Snap a window. No immersive mode from regular browsers.
+  ash::SplitViewTestApi().SnapWindow(
+      widget->GetNativeWindow(), ash::SplitViewTestApi::SnapPosition::RIGHT);
+  EXPECT_FALSE(frame_view->caption_button_container_->GetVisible());
+  EXPECT_FALSE(immersive_controller->IsEnabled());
+
+  // Float the window; the title bar is visible.
+  ui::test::EventGenerator event_generator(
+      widget->GetNativeWindow()->GetRootWindow());
+  event_generator.PressAndReleaseKey(ui::VKEY_F,
+                                     ui::EF_ALT_DOWN | ui::EF_COMMAND_DOWN);
+  EXPECT_TRUE(frame_view->caption_button_container_->GetVisible());
+  EXPECT_FALSE(immersive_controller->IsEnabled());
+}
+
 // Test that for a browser app window, its caption buttons may or may not hide
 // in tablet mode.
 IN_PROC_BROWSER_TEST_P(FloatBrowserNonClientFrameViewChromeOSTest,
-                       AppHeaderVisibilityInTabletModeTest) {
+                       BrowserAppHeaderVisibilityInTabletModeTest) {
   // Create a browser app window.
   Browser::CreateParams params = Browser::CreateParams::CreateForApp(
       "test_browser_app", /*trusted_source=*/true, gfx::Rect(),
@@ -1302,6 +1324,7 @@ IN_PROC_BROWSER_TEST_P(FloatBrowserNonClientFrameViewChromeOSTest,
       aura::client::kResizeBehaviorKey,
       aura::client::kResizeBehaviorCanMaximize |
           aura::client::kResizeBehaviorCanResize);
+
   StartOverview();
   EXPECT_FALSE(frame_view2->caption_button_container_->GetVisible());
   EndOverview();
@@ -1332,6 +1355,31 @@ IN_PROC_BROWSER_TEST_P(FloatBrowserNonClientFrameViewChromeOSTest,
   EXPECT_TRUE(frame_view2->caption_button_container_->GetVisible());
   EXPECT_FALSE(immersive_controller->IsEnabled());
 }
+
+#if BUILDFLAG(IS_CHROMEOS)
+// Tests that, with the float flag enabled, the accelerator toggles the
+// multitask menu on a browser window.
+IN_PROC_BROWSER_TEST_P(FloatBrowserNonClientFrameViewChromeOSTest,
+                       ToggleMultitaskMenu) {
+  EXPECT_TRUE(chrome::IsCommandEnabled(browser(), IDC_TOGGLE_MULTITASK_MENU));
+
+  BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser());
+  BrowserNonClientFrameViewChromeOS* frame_view =
+      GetFrameViewChromeOS(browser_view);
+  auto* size_button = static_cast<chromeos::FrameSizeButton*>(
+      frame_view->caption_button_container()->size_button());
+
+  // Pressing accelerator once should show the multitask menu.
+  ui::test::EventGenerator event_generator(
+      browser_view->GetWidget()->GetNativeWindow()->GetRootWindow());
+  event_generator.PressAndReleaseKey(ui::VKEY_Z, ui::EF_COMMAND_DOWN);
+  ASSERT_TRUE(size_button->IsMultitaskMenuShown());
+
+  // Pressing accelerator a second time should close the menu.
+  event_generator.PressAndReleaseKey(ui::VKEY_Z, ui::EF_COMMAND_DOWN);
+  ASSERT_FALSE(size_button->IsMultitaskMenuShown());
+}
+#endif
 
 namespace {
 

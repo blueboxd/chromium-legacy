@@ -18,6 +18,7 @@
 <translation id="1066060668811609597">Համաժամացման կառավարում</translation>
 <translation id="1076421457278169141">Կոդը ընթերցվեց</translation>
 <translation id="1076785341346483463">Համաժամացում կառավարվող հաշվի հետ</translation>
+<translation id="1080365971383768617">Գաղտնաբառերը ձեր բոլոր սարքերում</translation>
 <translation id="1084365883616172403">Ֆեյսբուքում փակցնումն ավարտվեց:</translation>
 <translation id="1085696779717592361">Օգտագործեք Chrome-ն ըստ կանխադրման</translation>
 <translation id="1103523840287552314">Միշտ թարգմանել <ph name="LANGUAGE" />-ից</translation>
@@ -39,7 +40,7 @@
 <translation id="1181037720776840403">Ջնջել</translation>
 <translation id="1207113853726624428">Նոր որոնում</translation>
 <translation id="1209206284964581585">Առայժմ թաքցնել</translation>
-<translation id="1219674500290482172">Հնարավոր չէ կապակցվել համացանցին:</translation>
+<translation id="1219674500290482172">Հնարավոր չէ միանալ համացանցին:</translation>
 <translation id="122699739164161391">Փակել բոլոր ներդիրները</translation>
 <translation id="1229222343402087523">Որոնեք ${searchPhrase} Chrome-ում</translation>
 <translation id="1242044645101871359">Նորից մուտք գործեք</translation>
@@ -74,12 +75,12 @@
 <translation id="1404330357948037222">Դուք դուրս եք եկել հաշվից</translation>
 <translation id="1407135791313364759">Բացել բոլորը</translation>
 <translation id="1430915738399379752">Տպում</translation>
-<translation id="1434356225517321998">Այս դիտարկիչը կառավարվում է ադմինիստրատորի կողմից։ <ph name="BEGIN_LINK" />Մանրամասներ<ph name="END_LINK" /></translation>
 <translation id="1449835205994625556">Թաքցնել գաղտնաբառը</translation>
 <translation id="1450170672351507823">Սովորական պաշտպանությունը միացված է։ Ավելի շատ ապահովության համար օգտագործեք լրացուցիչ պաշտպանությունը։</translation>
 <translation id="149095475893949513">Այս կայքը փորձում է կազմաձևման պրոֆիլ ներբեռնել։</translation>
 <translation id="1491277525950327607">Կրկնակի հպեք՝ կարգավորումը միացնելու/անջատելու համար</translation>
 <translation id="1492417797159476138">Օգտանունն արդեն պահված է այս կայքի համար</translation>
+<translation id="1498283581832036924">Ձեր <ph name="WEBSITE" /> հաշիվը չի ջնջվի։</translation>
 <translation id="1506063256525392513">Սա անհրաժեշտ է լուսանկարներ անելու և վերբեռնելու, ինչպես նաև QR կոդեր սկանավորելու համար</translation>
 <translation id="1509486075633541495">Մտեք հաշիվ</translation>
 <translation id="1509960214886564027">Շատ կայքերում գործառույթները կարող են չաշխատել։</translation>
@@ -145,6 +146,7 @@
 <translation id="2015722694326466240">Գաղտնաբառերը տեսնելու համար ձեր սարքում նախ պետք է անցակոդ սահմանեք:</translation>
 <translation id="2021670401941426298">Որոնումների պատմությունը ջնջելու համար կարդացեք ձեր որոնողական համակարգի համապատասխան ցուցումները։</translation>
 <translation id="202292859882676807">Խոսափողի օգտագործումը թույլատրված է</translation>
+<translation id="20485545164632846">նոր տարր</translation>
 <translation id="2050196510205866090">{count,plural, =1{Վճարման {count} պահված եղանակ ցուցադրվում է ստեղնաշարի վերևում։}one{Վճարման {count} պահված եղանակ ցուցադրվում է ստեղնաշարի վերևում։}other{Վճարման {count} պահված եղանակ ցուցադրվում է ստեղնաշարի վերևում։}}</translation>
 <translation id="2073572773299281212">Ակտիվ է եղել <ph name="DAYS" /> օր առաջ</translation>
 <translation id="2074131957428911366">Ցանկացած ժամանակ կարող եք անցնել <ph name="BEGIN_LINK" />կարգավորումներ<ph name="END_LINK" /> և ընտրել, թե ինչն եք ուզում համաժամացնել:</translation>
@@ -218,6 +220,7 @@
 <translation id="2664621323652615289">Կանգնեցնել</translation>
 <translation id="2671426118752779020">Դուք կարող եք Google Գաղտնաբառերի կառավարիչում պահված գաղտնաբառերն օգտագործել ձեր iPhone-ի այլ հավելվածներում։</translation>
 <translation id="2690858294534178585">Ֆոտոխցիկն օգտագործվում է</translation>
+<translation id="26915454213703967">Որոնել պատկերում Google-ի միջոցով</translation>
 <translation id="2691653761409724435">Հասանելի չէ անցանց ռեժիմում</translation>
 <translation id="2695507686909505111">Էջը թարգմանված է</translation>
 <translation id="2697526135132990015">Դուրս գալ և ջնջել տվյալները</translation>
@@ -382,6 +385,7 @@
 <translation id="3819183753496523827">Կապ չկա։ Ստուգեք կապը և նորից փորձեք։</translation>
 <translation id="3835964409414434850">Անցնել հաջորդ ներդիր</translation>
 <translation id="385051799172605136">Հետ</translation>
+<translation id="3851938967634752633">Կջնջվեն <ph name="WEBSITE" />, <ph name="SECOND_WEBSITE" /> ու ևս <ph name="NUMBER_OF_ACCOUNTS" /> հաշվի գաղտնաբառերը։ Ձեր հաշիվները չեն ջնջվի։</translation>
 <translation id="3858860766373142691">Անուն</translation>
 <translation id="3861486700625780712">Չհետևել</translation>
 <translation id="3863769054730344136">Ուղարկել սեփական սարքերին</translation>
@@ -397,7 +401,6 @@
 <translation id="3929457972718048006">Հասցեներ</translation>
 <translation id="3943492037546055397">Գաղտնաբառեր</translation>
 <translation id="3959736869653157332">Ընտրացանկ → Նոր ինկոգնիտո ներդիր</translation>
-<translation id="3964173450954943920">Դուք ցանկացած ժամանակ կարող եք անցնել <ph name="BEGIN_LINK" />կարգավորումներ<ph name="END_LINK" /> և ընտրել, թե ինչն եք ուզում համաժամացնել: Google-ը կարող է ձեր պատմությունն օգտագործել` Որոնումն ու Google-ի մյուս ծառայություններն անհատականացնելու համար։</translation>
 <translation id="3967822245660637423">Ներբեռնումն ավարտվեց</translation>
 <translation id="3968505803272650567">Կառավարել հետաքրքրությունները</translation>
 <translation id="3989635538409502728">Դուրս գալ</translation>
@@ -518,6 +521,7 @@
 <translation id="4833786495304741580">Ավտոմատ ուղարկում է Google-ին օգտագործման վիճակագրությունը և խափանումների մասին հաշվետվությունները:</translation>
 <translation id="4840495572919996524">Ձեր էջանիշները, պատմությունը, գաղտնաբառերն ու այլ կարգավորումներ կհամաժամացվեն ձեր Google հաշվի հետ:</translation>
 <translation id="4844899002472726590">Դիտեք և փոփոխեք ձեզ հետաքրքրող թեմաները</translation>
+<translation id="4848999860252535517">Ջնջե՞լ <ph name="WEBSITE" /> հաշվի գաղտնաբառը</translation>
 <translation id="4854345657858711387">Սահմանեք անցակոդ</translation>
 <translation id="4858786880085262208">Հնարավորության դեպքում օգտագործել HTTPS հաղորդակարգը։ Ապահով կայքերը կարող են պարունակել ոչ անվտանգ ներկառուցված բովանդակություն։</translation>
 <translation id="4860895144060829044">Զանգեք</translation>
@@ -546,6 +550,7 @@
 <translation id="5056446788882570708">Խնդիրները հայտնաբերվել են <ph name="TIME" />։</translation>
 <translation id="5059136629401106827">Եղավ</translation>
 <translation id="5062321486222145940">Տեղադրել Google Drive-ը</translation>
+<translation id="50641035439563602">Գաղտնաբառերն այժմ պահվում են ձեր Google հաշվում (<ph name="ACCOUNT" />)։ Դուք կարող եք օգտագործել դրանք ցանկացած սարքում, որում մուտք եք գործել հաշիվ։ Այս գործառույթն անջատելու համար անցեք <ph name="BEGIN_LINK" />կարգավորումներ<ph name="END_LINK" />։</translation>
 <translation id="5083464117946352670">Չհաջողվեց որոշել ֆայլի չափը:</translation>
 <translation id="5090832849094901128">Եթե հեռացնեք այս գաղտնաբառը, ձեր հաշիվը չի ջնջվի <ph name="WEBSITE" /> կայքից։</translation>
 <translation id="5094827893301452931">Twitter-ում տարածումն ավարտվեց:</translation>
@@ -652,7 +657,6 @@ Handoff-ը պետք է միացված լինի նաև Կարգավորումնե
 <translation id="5899314093904173337">Մոտակայքում գտնվող մարդկանց հետ կիսվելու համար խնդրեք նրանց սկանավորել այս QR կոդը տեսախցիկի կամ QR սկաների հավելվածի միջոցով</translation>
 <translation id="5911030830365207728">Google Translate</translation>
 <translation id="5913600720976431809">Էջը թարգմանելու տարբերակներ</translation>
-<translation id="5933515656458364246">Համաժամացրեք ձեր տվյալները բոլոր սարքերում։</translation>
 <translation id="5938160824633642847">Ձեր սարքի հիշողությունը գրեթե լիքն է։ Ազատեք տարածք և նորից փորձեք:</translation>
 <translation id="5948291296578561264">Սրա շնորհիվ կկարողանաք լուսանկարներ պահել ձեր ֆոտոդարանում:</translation>
 <translation id="5951816930277761335">Կիսվեք հղումով</translation>
@@ -740,6 +744,7 @@ Handoff-ը պետք է միացված լինի նաև Կարգավորումնե
 <translation id="6434591244308415567">Սխալ առաջացավ։ Փորձեք ավելի ուշ։</translation>
 <translation id="6435236283694032571">Ավելացնել ընթերցանության ցանկում</translation>
 <translation id="6439338047467462846">Թույլատրել բոլորը</translation>
+<translation id="6442697326824312960">Ապամրացնել ներդիրը</translation>
 <translation id="6445051938772793705">Երկիր</translation>
 <translation id="6445981559479772097">Հաղորդագրությունն ուղարկվեց:</translation>
 <translation id="6447842834002726250">Cookie ֆայլեր</translation>
@@ -770,6 +775,7 @@ Handoff-ը պետք է միացված լինի նաև Կարգավորումնե
 <translation id="6598875554591387303">Տեսակավորել ըստ հրատարակչի</translation>
 <translation id="6603393121510733479">Ձեր կազմակերպությունն անջատել է ինկոգնիտո ռեժիմը։
 <ph name="BEGIN_LINK" />Իմանալ ավելին<ph name="END_LINK" /></translation>
+<translation id="6609890790934458793">Կջնջվեն <ph name="WEBSITE" />, <ph name="SECOND_WEBSITE" /> և <ph name="THIRD_WEBSITE" /> հաշիվների գաղտնաբառերը։ Ձեր հաշիվները չեն ջնջվի։</translation>
 <translation id="6610002944194042868">Թարգմանության կարգավորումներ</translation>
 <translation id="661266467055912436">Համացանցը դարձնում է ավելի անվտանգ ձեր և մյուս օգտատերերի համար։</translation>
 <translation id="6620279676667515405">Չեղարկել</translation>
@@ -839,6 +845,7 @@ Handoff-ը պետք է միացված լինի նաև Կարգավորումնե
 <translation id="7053983685419859001">Արգելափակել</translation>
 <translation id="7062545763355031412">Ընդունել և փոխարկել հաշիվները</translation>
 <translation id="7080806333218412752">Ուղարկում է URL-ները Ապահով դիտարկմանը՝ դրանք ստուգելու համար։ Ուղարկվում են նաև էջերի, ներբեռնված ֆայլերի, ընդլայնումների գործողությունների և համակարգի մասին տեղեկություններից որոշ հատվածներ, որոնք օգնում են հայտնաբերել օգտատերերին սպառնացող նոր վտանգներ։ Երբ մտնում եք Google հաշիվ, այդ տվյալները ժամանակավորապես կապվում են տվյալ հաշվի հետ՝ պաշտպանելով ձեզ Google-ի հավելվածներում։</translation>
+<translation id="7095110968493193530">Google Գաղտնաբառերի կառավարիչում <ph name="EMAIL" /> հաշվի համար</translation>
 <translation id="7099761977003084116">Վերջին ներդիրները</translation>
 <translation id="7102005569666697658">Ներբեռնում… <ph name="FILE_SIZE" /></translation>
 <translation id="7108338896283013870">Թաքցնել</translation>
@@ -951,6 +958,7 @@ Handoff-ը պետք է միացված լինի նաև Կարգավորումնե
 <translation id="7987685713885608670">Անվտանգության մակարդակը բարձրացնելու համար գաղտնաբառերը գաղտնագրեք ձեր սարքում՝ նախքան Google Գաղտնաբառերի կառավարիչում պահելը։</translation>
 <translation id="7993619969781047893">Որոշ կայքերում գործառույթները կարող են չաշխատել։</translation>
 <translation id="800361585186029508">Մուտքագրված URL-ները բացվում են Google Chrome-ում։</translation>
+<translation id="8005666035647241369">Այս սարքի Google Գաղտնաբառերի կառավարիչում</translation>
 <translation id="8016714545083187120">Միշտ օգտագործել անվտանգ միացումներ</translation>
 <translation id="802154636333426148">Ներբեռնումը ձախողվեց</translation>
 <translation id="8023878949384262191">Ընդարձակում է բաժինը:</translation>
@@ -1032,6 +1040,7 @@ Handoff-ը պետք է միացված լինի նաև Կարգավորումնե
 <translation id="8680787084697685621">Հաշվի մուտքի տվյալները հնացած են:</translation>
 <translation id="8693663554456874301">{count,plural, =1{Փակել ներդիրը}one{Փակել ներդիրները}other{Փակել ներդիրները}}</translation>
 <translation id="8706588385081740091">Գաղտնաբառեր</translation>
+<translation id="8712637175834984815">Պատրաստ է</translation>
 <translation id="8717864919010420084">Պատճենել հղումը</translation>
 <translation id="8721297211384281569">Գործիքների ընտրացանկ</translation>
 <translation id="8725066075913043281">Փորձել կրկին</translation>
@@ -1044,6 +1053,7 @@ Handoff-ը պետք է միացված լինի նաև Կարգավորումնե
 <translation id="8756969031206844760">Թարմացնե՞լ գաղտնաբառը</translation>
 <translation id="8763613688786959833">Անցնել վերջին ներդիր</translation>
 <translation id="8764015330924122850">Չհետևել <ph name="DOMAIN_NAME" /> կայքին</translation>
+<translation id="8766790350274092814">Կջնջվեն <ph name="WEBSITE" /> և <ph name="SECOND_WEBSITE" /> հաշիվների գաղտնաբառերը։ Ձեր հաշիվները չեն ջնջվի։</translation>
 <translation id="8775144690796719618">URL-ն անվավեր է</translation>
 <translation id="8787968206789828143">Որոնում համացանցում</translation>
 <translation id="8792626944327216835">խոսափող</translation>
@@ -1093,6 +1103,7 @@ Handoff-ը պետք է միացված լինի նաև Կարգավորումնե
 <translation id="9093271241977565440">Էկրանի վերևում հպեք որոնման պատկերակին</translation>
 <translation id="9094033019050270033">Թարմացնել գաղտնաբառը</translation>
 <translation id="9097506547406246598">Սխալի պատճառով չհաջողվեց չեղարկել բաժանորդագրությունը։</translation>
+<translation id="9098541895599151034">Ջնջե՞լ <ph name="NUMBER_OF_ACCOUNTS" /> գաղտնաբառ</translation>
 <translation id="9100610230175265781">Անհրաժեշտ է անցաբառ</translation>
 <translation id="9107664647686727385">Ստուգեք կոտրված գաղտնաբառերի առկայությունը</translation>
 <translation id="9124387962554796433">Google-ը կարող է ձեր պատմությունն օգտագործել` Որոնումն ու Google-ի մյուս ծառայություններն անհատականացնելու համար։</translation>

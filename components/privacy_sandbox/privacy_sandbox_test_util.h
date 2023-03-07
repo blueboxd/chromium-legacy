@@ -29,7 +29,6 @@ namespace privacy_sandbox_test_util {
 class PrivacySandboxServiceTestInterface {
  public:
   virtual void TopicsToggleChanged(bool new_value) const = 0;
-  virtual void TopicsConfirmationDecisionMade(bool confirmed) const = 0;
   virtual void SetTopicAllowed(privacy_sandbox::CanonicalTopic topic,
                                bool allowed) = 0;
   virtual bool TopicsHasActiveConsent() const = 0;
@@ -69,8 +68,15 @@ class MockPrivacySandboxSettingsDelegate
     });
   }
 
+  void SetUpHasAppropriateTopicsConsentResponse(bool has_appropriate_consent) {
+    ON_CALL(*this, HasAppropriateTopicsConsent).WillByDefault([=]() {
+      return has_appropriate_consent;
+    });
+  }
+
   MOCK_METHOD(bool, IsPrivacySandboxRestricted, (), (const, override));
   MOCK_METHOD(bool, IsIncognitoProfile, (), (const, override));
+  MOCK_METHOD(bool, HasAppropriateTopicsConsent, (), (const, override));
 };
 
 // A declarative test case is a collection of key value pairs, which each define
@@ -101,6 +107,7 @@ enum class StateKey {
   kM1TopicsDisabledByPolicy = 21,
   kM1FledgeDisabledByPolicy = 22,
   kM1AdMesaurementDisabledByPolicy = 23,
+  kHasAppropriateTopicsConsent = 24,
 };
 
 // Defines the input to the functions under test.
@@ -113,9 +120,8 @@ enum class InputKey {
   kAdMeasurementDestinationOrigin = 6,
   kAccessingOrigin = 7,
   kTopicsToggleNewValue = 8,
-  kTopicsConfirmationDecisionConfirmed = 9,
-  kForceChromeBuild = 10,
-  kPromptAction = 11,
+  kForceChromeBuild = 9,
+  kPromptAction = 10,
 };
 
 // Defines the expected output of the functions under test, when the profile is
@@ -149,6 +155,8 @@ enum class OutputKey {
   kM1TopicsEnabled = 26,
   kM1FledgeEnabled = 27,
   kM1AdMeasurementEnabled = 28,
+  kIsAttributionReportingEverAllowed = 29,
+  kIsAttributionReportingEverAllowedMetric = 30,
 };
 
 // To allow multiple input keys to map to the same value, without having to

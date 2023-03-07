@@ -5,6 +5,33 @@
 // Use the <code>chrome.os.telemetry</code> API to get telemetry data.
 [implemented_in = "chrome/browser/chromeos/extensions/telemetry/api/telemetry_api.h"]
 namespace os.telemetry {
+  dictionary AudioInputNodeInfo {
+    double? id;
+    DOMString? name;
+    DOMString? deviceName;
+    boolean? active;
+    long? nodeGain;
+  };
+
+  dictionary AudioOutputNodeInfo {
+    double? id;
+    DOMString? name;
+    DOMString? deviceName;
+    boolean? active;
+    long? nodeVolume;
+  };
+
+  dictionary AudioInfo {
+    boolean? outputMute;
+    boolean? inputMute;
+    long? underruns;
+    long? severeUnderruns;
+    AudioOutputNodeInfo[] outputNodes;
+    AudioInputNodeInfo[] inputNodes;
+  };
+
+  callback AudioInfoCallback = void (AudioInfo audioInfo);
+
   dictionary BatteryInfo {
     double? cycleCount;
     double? voltageNow;
@@ -75,6 +102,12 @@ namespace os.telemetry {
   };
 
   callback CpuInfoCallback = void (CpuInfo cpuInfo);
+
+  dictionary MarketingInfo {
+    DOMString? marketingName;
+  };
+
+  callback MarketingInfoCallback = void (MarketingInfo marketingInfo);
 
   dictionary MemoryInfo {
     long? totalMemoryKiB;
@@ -225,6 +258,8 @@ namespace os.telemetry {
   callback TpmInfoCallback = void (TpmInfo tpmInfo);
 
   interface Functions {
+    [supportsPromises] static void getAudioInfo(AudioInfoCallback callback);
+
     [supportsPromises] static void getBatteryInfo(BatteryInfoCallback callback);
 
     [supportsPromises] static void getNonRemovableBlockDevicesInfo(NonRemovableBlockDevicesInfoCallback callback);
@@ -232,6 +267,8 @@ namespace os.telemetry {
     [supportsPromises] static void getCpuInfo(CpuInfoCallback callback);
 
     [supportsPromises] static void getInternetConnectivityInfo(InternetConnectivityInfoCallback callback);
+
+    [supportsPromises] static void getMarketingInfo(MarketingInfoCallback callback);
 
     [supportsPromises] static void getMemoryInfo(MemoryInfoCallback callback);
 

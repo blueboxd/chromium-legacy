@@ -3400,6 +3400,7 @@ void LayoutBox::AppendLayoutResult(const NGLayoutResult* result) {
   // |layout_results_| is particularly critical when side effects are disabled.
   DCHECK(!NGDisableSideEffectsScope::IsDisabled());
   layout_results_.push_back(std::move(result));
+  SetHasValidCachedGeometry(false);
   CheckDidAddFragment(*this, fragment);
 
   if (layout_results_.size() > 1)
@@ -3430,6 +3431,7 @@ void LayoutBox::ReplaceLayoutResult(const NGLayoutResult* result,
   // |layout_results_| is particularly critical when side effects are disabled.
   DCHECK(!NGDisableSideEffectsScope::IsDisabled());
   layout_results_[index] = std::move(result);
+  SetHasValidCachedGeometry(false);
   CheckDidAddFragment(*this, fragment, index);
 
   if (got_new_fragment && !fragment.BreakToken()) {
@@ -3507,6 +3509,7 @@ void LayoutBox::ShrinkLayoutResults(wtf_size_t results_to_keep) {
   if (layout_results_.size() > 1)
     FragmentCountOrSizeDidChange();
   layout_results_.Shrink(results_to_keep);
+  SetHasValidCachedGeometry(false);
 }
 
 void LayoutBox::InvalidateItems(const NGLayoutResult& result) {
@@ -7672,6 +7675,62 @@ LayoutUnit LayoutBox::OffsetLeft(const Element* parent) const {
 LayoutUnit LayoutBox::OffsetTop(const Element* parent) const {
   NOT_DESTROYED();
   return OffsetPoint(parent).top;
+}
+
+LayoutSize LayoutBox::Size() const {
+  NOT_DESTROYED();
+  if (RuntimeEnabledFeatures::LayoutNGNoCopyBackEnabled() &&
+      !HasValidCachedGeometry()) {
+    // const_cast in order to update the cached value.
+    const_cast<LayoutBox*>(this)->SetHasValidCachedGeometry(true);
+    const_cast<LayoutBox*>(this)->frame_size_ = ComputeSize();
+  }
+  return frame_size_;
+}
+
+LayoutSize LayoutBox::ComputeSize() const {
+  NOT_DESTROYED();
+  const auto& results = GetLayoutResults();
+  if (results.size() == 0) {
+    return LayoutSize();
+  }
+  const auto& first_fragment = results[0]->PhysicalFragment();
+  if (results.size() == 1u) {
+    return first_fragment.Size().ToLayoutSize();
+  }
+  WritingModeConverter converter(first_fragment.Style().GetWritingDirection());
+  const NGBlockBreakToken* previous_break_token = nullptr;
+  LogicalSize size;
+  for (const auto& result : results) {
+    const auto& physical_fragment =
+        To<NGPhysicalBoxFragment>(result->PhysicalFragment());
+    LogicalSize fragment_logical_size =
+        converter.ToLogical(physical_fragment.Size());
+    if (physical_fragment.IsFirstForNode()) {
+      // Inline-size will only be set at the first fragment. Subsequent
+      // fragments may have different inline-size (either because fragmentainer
+      // inline-size is variable, or e.g. because available inline-size is
+      // affected by floats). The legacy engine doesn't handle variable
+      // inline-size (since it doesn't really understand fragmentation).  This
+      // means that things like offsetWidth won't work correctly (since that's
+      // still being handled by the legacy engine), but at least layout,
+      // painting and hit-testing will be correct.
+      size = fragment_logical_size;
+    } else {
+      DCHECK(previous_break_token);
+      size.block_size = fragment_logical_size.block_size +
+                        previous_break_token->ConsumedBlockSizeForLegacy();
+    }
+    previous_break_token = physical_fragment.BreakToken();
+    // Continue in order to update logical height, unless this fragment is
+    // past the block-end of the generating node (happens with overflow) or
+    // is a repeated one.
+    if (!previous_break_token || previous_break_token->IsRepeated() ||
+        previous_break_token->IsAtBlockEnd()) {
+      break;
+    }
+  }
+  return converter.ToPhysical(size).ToLayoutSize();
 }
 
 LayoutBox* LayoutBox::LocationContainer() const {

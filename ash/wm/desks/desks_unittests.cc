@@ -1532,6 +1532,49 @@ TEST_P(DesksTest, RemoveActiveDeskFromOverview) {
   desk_1->RemoveObserver(&desk_1_observer);
 }
 
+// Test that there is no crash when closing active desk with a all desk window
+// right after creating a desk with empty name.
+// Regression test for b/266147233.
+TEST_P(DesksTest,
+       RemoveActiveDeskWithAllDeskWindowFromOverviewWithNewDeskOfEmptyName) {
+  auto* controller = DesksController::Get();
+
+  NewDesk();
+  auto win1 = CreateAppWindow();
+  views::Widget::GetWidgetForNativeWindow(win1.get())
+      ->SetVisibleOnAllWorkspaces(true);
+  ASSERT_TRUE(desks_util::IsWindowVisibleOnAllWorkspaces(win1.get()));
+
+  EnterOverview();
+  auto* event_generator = GetEventGenerator();
+  ClickOnView(GetExpandedStateNewDeskButton(GetPrimaryRootDesksBarView()),
+              event_generator);
+  ASSERT_EQ(3u, controller->desks().size());
+  Desk* desk_1 = controller->desks()[0].get();
+  Desk* desk_2 = controller->desks()[1].get();
+  Desk* desk_3 = controller->desks()[2].get();
+  ASSERT_TRUE(desk_1->is_active());
+
+  controller->RemoveDesk(desk_1, DesksCreationRemovalSource::kButton,
+                         DeskCloseType::kCloseAllWindowsAndWait);
+  ASSERT_EQ(desk_2, controller->GetTargetActiveDesk());
+  EXPECT_TRUE(Shell::Get()->overview_controller()->InOverviewSession());
+
+  controller->RemoveDesk(desk_2, DesksCreationRemovalSource::kButton,
+                         DeskCloseType::kCloseAllWindowsAndWait);
+  ASSERT_EQ(desk_3, controller->GetTargetActiveDesk());
+  EXPECT_TRUE(Shell::Get()->overview_controller()->InOverviewSession());
+  if (GetParam().enable_jellyroll) {
+    // When the feature Jellyroll is enabled, the desk bar doesn't switch to
+    // zero state.
+    EXPECT_EQ(1u, GetPrimaryRootDesksBarView()->mini_views().size());
+  } else {
+    // When the feature Jellyroll is not enabled, the desk bar will switch to
+    // zero state.
+    EXPECT_TRUE(GetPrimaryRootDesksBarView()->mini_views().empty());
+  }
+}
+
 TEST_P(DesksTest, ActivateActiveDeskFromOverview) {
   auto* controller = DesksController::Get();
 
@@ -6819,31 +6862,6 @@ TEST_P(DesksTest, PrimaryUserHasUsedDesksRecently) {
   desks_restore_util::OverrideClockForTesting(nullptr);
 }
 
-// Tests that a desk's close button is visible in tablet mode after long
-// pressing on the desk's preview.
-TEST_P(DesksTest, CloseButtonShowsAfterLongPressInTabletMode) {
-  base::test::ScopedFeatureList desks_close_all_disabler;
-  desks_close_all_disabler.InitAndDisableFeature(features::kDesksCloseAll);
-
-  TabletModeControllerTestApi().EnterTabletMode();
-
-  NewDesk();
-  ASSERT_EQ(2u, DesksController::Get()->desks().size());
-
-  EnterOverview();
-  ASSERT_TRUE(Shell::Get()->overview_controller()->InOverviewSession());
-
-  // Long-tapping the desk preview should show the close button for the desk.
-  const DeskMiniView* mini_view = GetPrimaryRootDesksBarView()->mini_views()[0];
-  const DeskPreviewView* desk_preview_view = mini_view->desk_preview();
-  const gfx::Point desk_preview_view_center =
-      desk_preview_view->GetBoundsInScreen().CenterPoint();
-  auto* event_generator = GetEventGenerator();
-  LongGestureTap(desk_preview_view_center, event_generator);
-
-  EXPECT_TRUE(mini_view->close_desk_button()->GetVisible());
-}
-
 // Tests that metrics are being recorded when a desk is renamed, when new desks
 // are added, and when a desk is being removed.
 TEST_P(DesksTest, TestCustomDeskNameMetricsRecording) {
@@ -8008,15 +8026,6 @@ class DesksCloseAllTest : public DesksTest {
     event_generator->MoveMouseTo(button_center);
     event_generator->ClickLeftButton();
   }
-
-  // DesksTest:
-  void SetUp() override {
-    scoped_feature_list_.InitAndEnableFeature(features::kDesksCloseAll);
-    DesksTest::SetUp();
-  }
-
- private:
-  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 // Runs through test cases for closing active and inactive desks with windows in

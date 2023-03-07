@@ -49,9 +49,9 @@ FUCHSIA_SDK_DIR = os.path.join(CHROMIUM_DIR, 'third_party', 'fuchsia-sdk',
                                'sdk')
 PINNED_CLANG_DIR = os.path.join(LLVM_BUILD_TOOLS_DIR, 'pinned-clang')
 
-BUG_REPORT_URL = ('https://crbug.com and run'
-                  ' tools/clang/scripts/process_crashreports.py'
-                  ' (only works inside Google) which will upload a report')
+BUG_REPORT_URL = ('https://crbug.com in the Tools>LLVM component,'
+                  ' run tools/clang/scripts/process_crashreports.py'
+                  ' (only if inside Google) to upload crash related files,')
 
 LIBXML2_VERSION = 'libxml2-v2.9.12'
 
@@ -603,6 +603,15 @@ def main():
   args = parser.parse_args()
 
   global CLANG_REVISION, PACKAGE_VERSION, LLVM_BUILD_DIR
+
+  # TODO(crbug.com/1410101): Remove in next Clang roll.
+  if args.llvm_force_head_revision:
+    global RELEASE_VERSION
+    RELEASE_VERSION = '17'
+    old_lib_dir = os.path.join(LLVM_BUILD_DIR, 'lib', 'clang', '16.0.0')
+    if (os.path.isdir(old_lib_dir)):
+      print('Removing old lib dir: ', old_lib_dir)
+      RmTree(old_lib_dir)
 
   if (args.pgo or args.thinlto) and not args.bootstrap:
     print('--pgo/--thinlto requires --bootstrap')

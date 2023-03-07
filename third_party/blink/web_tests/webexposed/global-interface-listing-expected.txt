@@ -639,21 +639,6 @@ interface ByteLengthQueuingStrategy
 interface CDATASection : Text
     attribute @@toStringTag
     method constructor
-interface CSPViolationReportBody : ReportBody
-    attribute @@toStringTag
-    getter blockedURL
-    getter columnNumber
-    getter disposition
-    getter documentURL
-    getter effectiveDirective
-    getter lineNumber
-    getter originalPolicy
-    getter referrer
-    getter sample
-    getter sourceFile
-    getter statusCode
-    method constructor
-    method toJSON
 interface CSSAnimation : Animation
     attribute @@toStringTag
     getter animationName
@@ -671,6 +656,8 @@ interface CSSConditionRule : CSSGroupingRule
     method constructor
 interface CSSContainerRule : CSSConditionRule
     attribute @@toStringTag
+    getter containerName
+    getter containerQuery
     method constructor
 interface CSSCounterStyleRule : CSSRule
     attribute @@toStringTag
@@ -1389,18 +1376,6 @@ interface CookieStoreManager
     method getSubscriptions
     method subscribe
     method unsubscribe
-interface CoopAccessViolationReportBody : ReportBody
-    attribute @@toStringTag
-    getter columnNumber
-    getter lineNumber
-    getter openeeURL
-    getter openerURL
-    getter otherDocumentURL
-    getter property
-    getter sourceFile
-    getter type
-    method constructor
-    method toJSON
 interface CountQueuingStrategy
     attribute @@toStringTag
     getter highWaterMark
@@ -1751,16 +1726,6 @@ interface DelegatedInkTrailPresenter
     getter presentationArea
     method constructor
     method updateInkTrailStartPoint
-interface DeprecationReportBody : ReportBody
-    attribute @@toStringTag
-    getter anticipatedRemoval
-    getter columnNumber
-    getter id
-    getter lineNumber
-    getter message
-    getter sourceFile
-    method constructor
-    method toJSON
 interface DeviceMotionEvent : Event
     static method requestPermission
     attribute @@toStringTag
@@ -2046,6 +2011,7 @@ interface Document : Node
     method replaceChildren
     method requestStorageAccess
     method requestStorageAccessForOrigin
+    method startViewTransition
     method webkitCancelFullScreen
     method webkitExitFullscreen
     method write
@@ -2213,16 +2179,6 @@ interface DocumentPictureInPictureEvent : Event
     attribute @@toStringTag
     getter window
     method constructor
-interface DocumentPolicyViolationReportBody : ReportBody
-    attribute @@toStringTag
-    getter columnNumber
-    getter disposition
-    getter featureId
-    getter lineNumber
-    getter message
-    getter sourceFile
-    method constructor
-    method toJSON
 interface DocumentTimeline : AnimationTimeline
     attribute @@toStringTag
     method constructor
@@ -5060,15 +5016,6 @@ interface IntersectionObserverEntry
     getter target
     getter time
     method constructor
-interface InterventionReportBody : ReportBody
-    attribute @@toStringTag
-    getter columnNumber
-    getter id
-    getter lineNumber
-    getter message
-    getter sourceFile
-    method constructor
-    method toJSON
 interface Keyboard
     attribute @@toStringTag
     method constructor
@@ -6482,18 +6429,8 @@ interface PaymentAddress
     getter sortingCode
     method constructor
     method toJSON
-interface PaymentInstruments
-    attribute @@toStringTag
-    method clear
-    method constructor
-    method delete
-    method get
-    method has
-    method keys
-    method set
 interface PaymentManager
     attribute @@toStringTag
-    getter instruments
     getter userHint
     method constructor
     method enableDelegations
@@ -6751,16 +6688,6 @@ interface Permissions
     method request
     method requestAll
     method revoke
-interface PermissionsPolicyViolationReportBody : ReportBody
-    attribute @@toStringTag
-    getter columnNumber
-    getter disposition
-    getter featureId
-    getter lineNumber
-    getter message
-    getter sourceFile
-    method constructor
-    method toJSON
 interface PictureInPictureEvent : Event
     attribute @@toStringTag
     getter pictureInPictureWindow
@@ -7327,17 +7254,6 @@ interface RemotePlayback : EventTarget
     setter onconnect
     setter onconnecting
     setter ondisconnect
-interface Report
-    attribute @@toStringTag
-    getter body
-    getter type
-    getter url
-    method constructor
-    method toJSON
-interface ReportBody
-    attribute @@toStringTag
-    method constructor
-    method toJSON
 interface ReportingObserver
     attribute @@toStringTag
     method constructor
@@ -9634,6 +9550,13 @@ interface ViewTimeline : ScrollTimeline
     getter startOffset
     getter subject
     method constructor
+interface ViewTransition
+    attribute @@toStringTag
+    getter finished
+    getter ready
+    getter updateCallbackDone
+    method constructor
+    method skipTransition
 interface VirtualKeyboard : EventTarget
     attribute @@toStringTag
     getter boundingRect
@@ -11864,11 +11787,38 @@ namespace CSS
     method vmax
     method vmin
     method vw
+namespace console
+    attribute @@toStringTag
+    getter memory
+    method assert
+    method clear
+    method context
+    method count
+    method countReset
+    method createTask
+    method debug
+    method dir
+    method dirxml
+    method error
+    method group
+    method groupCollapsed
+    method groupEnd
+    method info
+    method log
+    method profile
+    method profileEnd
+    method table
+    method time
+    method timeEnd
+    method timeLog
+    method timeStamp
+    method trace
+    method warn
+    setter memory
 [GLOBAL OBJECT]
     attribute GCController
     attribute accessibilityController
     attribute chrome
-    attribute console
     attribute eventSender
     attribute gamepadController
     attribute globalThis

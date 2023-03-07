@@ -7,6 +7,11 @@
 // Because the launcher is sometimes used in a root setuid context, it has
 // minimal dependencies and tries to harden the environment.
 //
+// If run with --test as the first argument, the launcher instead launches the
+// updater with the `--test` flag instead of the `--server` flag. The updater
+// will immediately exit in this case, but this is useful for testing the
+// launcher.
+//
 // In the system (setuid) context, the launcher verifies several security
 // attributes of the binary it intends to launch, the path leading to the
 // binary it intends to launch, and the non-chrootedness of its context; if any
@@ -72,63 +77,16 @@
 
 #define ARRAYSIZE(x) (sizeof(x) / sizeof(*(x)))
 
-// CopyCStringFromCFString converts a CFString to a C string allocated via
-// malloc. The caller is responsible for releasing the string.
-//
-// If NULL is passed as an argument, this returns an empty string (a 1-byte
-// buffer containing a single zero).
-//
-// If this method cannot allocate memory for a result or cannot convert the
-// provided CFString to a C string for any other reason, it exits with a failure
-// status.
-static const char* CopyCStringFromCFString(CFStringRef cfstr) {
-  if (!cfstr) {
-    char* ret = calloc(1, 1);
-    if (!ret) {
-      err(EX_UNAVAILABLE, "out of memory");
-    }
-    return ret;
-  }
-  CFIndex buf_sz = 1 + CFStringGetMaximumSizeForEncoding(
-                           CFStringGetLength(cfstr), kCFStringEncodingUTF8);
-  char* buf = malloc((size_t)buf_sz);
-  if (!buf) {
-    err(EX_UNAVAILABLE, "out of memory");
-  }
-  if (!CFStringGetCString(cfstr, buf, buf_sz, kCFStringEncodingUTF8)) {
-    errx(EX_UNAVAILABLE, "can't convert string");
-  }
-  return buf;
-}
-
-// CopySecError converts an OSStatus from a Security.h API to a C string
-// allocated via malloc. The caller is responsible for releasing the string
-// (assuming the process isn't crashing).
-static const char* CopySecError(OSStatus code) {
-  CFStringRef cfstr = SecCopyErrorMessageString(code, NULL);
-  if (!cfstr) {
-    char* ret = NULL;
-    if (asprintf(&ret, "unknown error %d", code) < 0) {
-      err(EX_UNAVAILABLE, "can't asprintf unknown error %d", code);
-    }
-    return ret;
-  }
-  const char* buf = CopyCStringFromCFString(cfstr);
-  CFRelease(cfstr);
-  return buf;
-}
-
 static bool StrAppend(char* dest, const char* suffix, size_t dest_size) {
   return strlcat(dest, suffix, dest_size) < dest_size;
 }
 
 // ErrSec exits the program with the specified return code, emitting an error
-// message of the form <msg>: <error>, using SecCopyErrorMessageString to get a
-// readable error message from the error code.
+// message of the form <msg>: <error code>.
 static __attribute__((noreturn)) void ErrSec(int rc,
                                              OSStatus error,
                                              const char* msg) {
-  errx(rc, "%s: %s", msg, CopySecError(error));
+  errx(rc, "%s: %d", msg, error);
 }
 
 // Checks whether extended POSIX ACLs allow write access on the specified path.
@@ -494,7 +452,7 @@ static void Harden(const char* target_path) {
   }
 }
 
-static void Launch(bool is_system, const char* path) {
+static void Launch(bool is_system, bool is_qualifying, const char* path) {
   if (chdir("/")) {
     err(EX_OSFILE, "can't chdir to /");
   }
@@ -565,7 +523,7 @@ static void Launch(bool is_system, const char* path) {
 
   char* const argv[] = {
       (char*)kExecutableName,  // posix_spawn will not overwrite the argv.
-      "--server",
+      is_qualifying ? "--test" : "--server",
       "--service=update",
       "--enable-logging",
       "--vmodule=*/components/update_client/*=2,*/chrome/updater/*=2",
@@ -580,7 +538,7 @@ static void Launch(bool is_system, const char* path) {
   }
 }
 
-void UserMain(uid_t euid) {
+void UserMain(uid_t euid, bool is_qualifying) {
   // Find home directory.
   const char* home = getenv("HOME");
   if (!home) {
@@ -602,20 +560,21 @@ void UserMain(uid_t euid) {
     err(EX_OSERR, "path to updater executable is too long");
   }
 
-  Launch(false, path);
+  Launch(false, is_qualifying, path);
 }
 
-void SystemMain() {
+void SystemMain(bool is_qualifying) {
   Harden(kExecutablePath);
-  Launch(true, kExecutablePath);
+  Launch(true, is_qualifying, kExecutablePath);
 }
 
 int main(int argc, char** argv) {
   const uid_t euid = geteuid();
+  bool is_qualifying = argc >= 2 && strcmp("--test", argv[1]) == 0;
   if (euid == 0) {
-    SystemMain();
+    SystemMain(is_qualifying);
   } else {
-    UserMain(euid);
+    UserMain(euid, is_qualifying);
   }
   return EX_OK;
 }

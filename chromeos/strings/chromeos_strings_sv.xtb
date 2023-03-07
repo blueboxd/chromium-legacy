@@ -196,6 +196,7 @@
 <translation id="2713444072780614174">Vit</translation>
 <translation id="2717139507051041123">Aktivera mörkt färgläge</translation>
 <translation id="2740531572673183784">OK</translation>
+<translation id="2744221223678373668">Delade</translation>
 <translation id="2751739896257479635">Fas 2 i EAP-autentisering</translation>
 <translation id="2783010256799387990">SLUTFÖRT</translation>
 <translation id="2789486458103222910">OK</translation>
@@ -270,6 +271,7 @@
 <translation id="3583278742022654445">Svag signalstyrka. Testa att gå närmare källan till wifi-signalen.</translation>
 <translation id="3595596368722241419">Batteriet är fulladdat</translation>
 <translation id="3600339377155080675">Tangenten för att spegla skärmen</translation>
+<translation id="3602290021589620013">Förhandsgranskning</translation>
 <translation id="3603829704940252505">Avatar</translation>
 <translation id="3604713164406837697">Ändra bakgrund</translation>
 <translation id="360565022852130722">wifi-nätverket använder det svaga säkerhetsprotokollet WEP 802.1x</translation>
@@ -293,6 +295,7 @@
 <translation id="385051799172605136">Föregående</translation>
 <translation id="3858860766373142691">Namn</translation>
 <translation id="3862598938296403232">Beskrivning krävs</translation>
+<translation id="3865289341173661845">Hjälpinnehållet är inte tillgängligt.</translation>
 <translation id="3865414814144988605">Upplösning</translation>
 <translation id="3866249974567520381">Beskrivning</translation>
 <translation id="387301095347517405">Antalet gånger som batteriet har laddats hela sin kapacitet</translation>
@@ -315,6 +318,7 @@
 <translation id="4044093238444069296">Det gick inte att kontakta gateway</translation>
 <translation id="4046123991198612571">Nästa spår</translation>
 <translation id="404928562651467259">VARNING</translation>
+<translation id="4054683689023980771">Laddar ned bild …</translation>
 <translation id="4060260348856573701">Nytt APN</translation>
 <translation id="4093865285251893588">Profilbild</translation>
 <translation id="409427325554347132">Spara testinformation</translation>
@@ -449,8 +453,6 @@
 <translation id="5168185087976003268">Batterinivå</translation>
 <translation id="5170568018924773124">Visa i mapp</translation>
 <translation id="5190187232518914472">Återupplev dina favoritminnen. Öppna <ph name="LINK_BEGIN" />Google Foto<ph name="LINK_END" /> om du vill lägga till eller redigera album.</translation>
-<translation id="5212543919916444558">Det finns inget på skärmen som jag kan hjälpa till med.
-Tryck på mikrofonen och fråga om något.</translation>
 <translation id="5212593641110061691">Tabloid</translation>
 <translation id="5222676887888702881">Logga ut</translation>
 <translation id="522307662484862935">Inkludera inte e-postadress</translation>
@@ -703,6 +705,7 @@ Tryck på mikrofonen och fråga om något.</translation>
 <translation id="7497215489070763236">Serverns CA-certifikat</translation>
 <translation id="7502658306369382406">IPv6-adress</translation>
 <translation id="7515998400212163428">Android</translation>
+<translation id="7528507600602050979">Hjälpinnehållet är inte tillgängligt</translation>
 <translation id="7535791657097741517">Aktivera ljust tema</translation>
 <translation id="7550715992156305117">Diagnostikrutiner</translation>
 <translation id="7551123448725492271">Enheten är en ljudenhet.</translation>

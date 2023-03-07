@@ -1543,6 +1543,7 @@ void LayoutMultiColumnFlowThread::ComputeLogicalHeight(
 
 void LayoutMultiColumnFlowThread::UpdateLogicalWidth() {
   NOT_DESTROYED();
+  DCHECK(!RuntimeEnabledFeatures::LayoutNGNoCopyBackEnabled());
   LayoutUnit column_width;
   CalculateColumnCountAndWidth(column_width, column_count_);
   SetLogicalWidth(column_width);
@@ -1631,6 +1632,12 @@ void LayoutMultiColumnFlowThread::RestoreMultiColumnLayoutState(
     const MultiColumnLayoutState& state) {
   NOT_DESTROYED();
   last_set_worked_on_ = state.ColumnSet();
+}
+
+LayoutSize LayoutMultiColumnFlowThread::Size() const {
+  NOT_DESTROYED();
+  // TODO(crbug.com/1353190): Do not refer to frame_size_.
+  return frame_size_;
 }
 
 }  // namespace blink

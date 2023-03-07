@@ -55,11 +55,6 @@ const char kAppDeduplicationServiceFondueDescription[] =
     "Enables pulling app duplicate data from a Google server to allow clients "
     "to determine app duplicates.";
 
-const char kLauncherAppSortName[] = "Productivity experiment: Reorder Apps";
-const char kLauncherAppSortDescription[] =
-    "To evaluate an enhanced Launcher experience that enables users to reorder "
-    "their apps in order to find them more easily.";
-
 const char kAlignWakeUpsName[] = "Align delayed wake ups at 125 Hz";
 const char kAlignWakeUpsDescription[] =
     "Run most delayed tasks with a non-zero delay (including DOM Timers) on a "
@@ -395,17 +390,17 @@ const char kAutofillEnableOffersInClankKeyboardAccessoryDescription[] =
     "When enabled, offers will be displayed in the keyboard accessory when "
     "available.";
 
-const char kAutofillEnableRankingFormulaName[] =
-    "Enable new Autofill suggestion ranking formula";
-const char kAutofillEnableRankingFormulaDescription[] =
-    "When enabled, Autofill will use a new ranking formula to rank Autofill "
-    "data model suggestions such as credit cards or profiles.";
-
 const char kAutofillEnableRankingFormulaAddressProfilesName[] =
     "Enable new Autofill suggestion ranking formula for profiles";
 const char kAutofillEnableRankingFormulaAddressProfilesDescription[] =
     "When enabled, Autofill will use a new ranking formula to rank Autofill "
     "profile suggestions.";
+
+const char kAutofillEnableRankingFormulaCreditCardsName[] =
+    "Enable new Autofill suggestion ranking formula for credit cards";
+const char kAutofillEnableRankingFormulaCreditCardsDescription[] =
+    "When enabled, Autofill will use a new ranking formula to rank Autofill "
+    "credit card suggestions.";
 
 const char kAutofillEnableRemadeDownstreamMetricsName[] =
     "Enable remade Autofill Downstream metrics logging";
@@ -687,6 +682,9 @@ const char kChromeLabsDescription[] =
     "Access Chrome Labs through the toolbar menu to see featured user-facing "
     "experimental features.";
 
+const char kChromeRefresh2023Name[] = "Chrome Refresh 2023";
+const char kChromeRefresh2023Description[] = "Refresh of Chrome Desktop UI";
+
 const char kClosedTabCacheName[] = "Closed Tab Cache";
 const char kClosedTabCacheDescription[] =
     "Enables closed tab cache to instantaneously restore recently closed tabs. "
@@ -707,6 +705,11 @@ const char kContextMenuSearchWithGoogleLensName[] =
 const char kContextMenuSearchWithGoogleLensDescription[] =
     "Replaces default image search with an intent to Google Lens when "
     "supported.";
+
+const char kContextMenuGoogleLensSearchOptimizationsName[] =
+    "Google Lens powered image search string variations in the context menu.";
+const char kContextMenuGoogleLensSearchOptimizationsDescription[] =
+    "Replaces Google Lens string variations when Google Lens is supported.";
 
 const char kClientStorageAccessContextAuditingName[] =
     "Access contexts for client-side storage";
@@ -965,6 +968,18 @@ const char kDesktopPWAsDetailedInstallDialogDescription[] =
     "Enable PWAs with screenshots to show a detailed install dialog during "
     "installation";
 
+const char kSkipServiceWorkerCheckInstallOnlyName[] =
+    "Skip service worker check for PWA installs";
+const char kSkipServiceWorkerCheckInstallOnlyDescription[] =
+    "Allows PWAs to be installed without a service worker.";
+
+const char kSkipServiceWorkerForInstallPromptName[] =
+    "Promote PWA installation without a service worker";
+const char kSkipServiceWorkerForInstallPromptDescription[] =
+    "Allows PWAs that can be installed without a service worker to be "
+    "promoted. Requires #enable-skip-service-worker-check-install-only flag to "
+    "also be enabled.";
+
 const char kEnablePreinstalledWebAppDuplicationFixerName[] =
     "Enable the app deduplication fix for migrated preinstalled web apps";
 const char kEnablePreinstalledWebAppDuplicationFixerDescription[] =
@@ -985,6 +1000,12 @@ const char kAccessibilityAcceleratorNotificationsTimeoutDescription[] =
     "Enables notifications for accessibility features turned on by keyboard "
     "shortcut (docked magnifier, screen magnifier and high contrast) to time "
     "out instead of remaining pinned.";
+
+const char kChromeVoxQ1FastTrackFeaturesName[] =
+    "ChromeVox Q1 Fast-Track Features";
+const char kChromeVoxQ1FastTrackFeaturesDescription[] =
+    "This option enables experimental Accessibility ChromeVox improvements for "
+    "Chrome OS.";
 
 const char kAccessibilityServiceName[] = "Experimental Accessibility Service";
 const char kAccessibilityServiceDescription[] =
@@ -2230,6 +2251,12 @@ const char kOmniboxDynamicMaxAutocompleteDescription[] =
     "Configures the maximum number of autocomplete matches displayed in the "
     "Omnibox UI dynamically based on the number of URL matches.";
 
+const char kOnlyShowNewShortcutsAppName[] =
+    "Only show the new Shortcut Viewer app";
+const char kOnlyShowNewShortcutsAppDescription[] =
+    "If enabled, the existing Shortcut Viewer app will be hidden and only the "
+    "new Shortcut Customization app will be discoverable.";
+
 const char kOptimizationGuideDebugLogsName[] =
     "Enable optimization guide debug logs";
 const char kOptimizationGuideDebugLogsDescription[] =
@@ -3090,19 +3117,14 @@ const char kUseSearchClickForRightClickDescription[] =
     "webpages and apps to consume alt+click. When disabled the legacy "
     "behavior of remapping alt+click to right click will remain unchanged.";
 
-const char kVCBackgroundBlurName[] = "Enable vc background blur";
-const char kVCBackgroundBlurDescription[] =
-    "Enables background blur feature for video conferencing on chromebooks.";
+const char kVideoConferenceName[] = "Enable video conference features";
+const char kVideoConferenceDescription[] =
+    "Enables all features for ChromeOS built-in video conferencing UI.";
 
-const char kVCBackgroundReplaceName[] = "Enable vc background replacement";
-const char kVCBackgroundReplaceDescription[] =
+const char kVcBackgroundReplaceName[] = "Enable vc background replacement";
+const char kVcBackgroundReplaceDescription[] =
     "Enables background replacement feature for video conferencing on "
     "chromebooks. THIS WILL OVERRIDE BACKGROUND BLUR.";
-
-const char kVCPortraitRelightingName[] = "Enable vc portrait relighting";
-const char kVCPortraitRelightingDescription[] =
-    "Enables portrait relighting feature for video conferencing on "
-    "chromebooks. THIS WILL OVERRIDE BACKGROUND BLUR & REPLACE.";
 
 const char kV8VmFutureName[] = "Future V8 VM features";
 const char kV8VmFutureDescription[] =
@@ -3509,6 +3531,10 @@ const char kCCTResizableForThirdPartiesDescription[] =
 const char kCCTResizableSideSheetName[] = "Side sheet Custom Tabs";
 const char kCCTResizableSideSheetDescription[] =
     "Enable side sheet Custom Tabs";
+const char kCCTResizableSideSheetForThirdPartiesName[] =
+    "Side sheet Custom Tabs (third party)";
+const char kCCTResizableSideSheetForThirdPartiesDescription[] =
+    "Enable side sheet Custom Tabs for third party apps.";
 
 const char kCCTRetainingStateInMemoryName[] =
     "Enable restoring of previous Custom Tab session";
@@ -4187,6 +4213,17 @@ const char kEnableAccessibilityLiveCaptionDescription[] =
     "media playing in Chrome. Turn the feature on in "
     "chrome://settings/accessibility.";
 
+const char kReadAnythingName[] = "Read Anything";
+const char kReadAnythingDescription[] =
+    "Enables the Read Anything feature which generates a reader-friendly view "
+    "of web pages. Open the side panel and select Read Anything to try the "
+    "feature.";
+
+const char kReadAnythingWithScreen2xName[] = "Read Anything with Screen2x";
+const char kReadAnythingWithScreen2xDescription[] =
+    "Have Read Anything use a local machine learning model for web page"
+    "distillation.";
+
 const char kEnableUserCloudSigninRestrictionPolicyName[] =
     "Cloud User level Signin Restrictions Policy";
 const char kEnableUserCloudSigninRestrictionPolicyDescription[] =
@@ -4863,10 +4900,6 @@ extern const char kDesks16Name[] = "Enable up to 16 virtual desks";
 extern const char kDesks16Description[] =
     "When enabled, up to 16 virtual desks are allowed.";
 
-const char kDesksCloseAllName[] = "Desks Close All";
-const char kDesksCloseAllDescription[] =
-    "Close a desk along with all of its windows and tabs.";
-
 const char kDesksSaveAndRecallName[] = "Desks Save and Recall";
 const char kDesksSaveAndRecallDescription[] =
     "Save a desk and its applications so that they can be recalled at a later "
@@ -4945,6 +4978,11 @@ const char kEnableServiceWorkersForChromeUntrustedName[] =
     "Enable chrome-untrusted:// Service Workers";
 const char kEnableServiceWorkersForChromeUntrustedDescription[] =
     "When enabled, allows chrome-untrusted:// WebUIs to use service workers.";
+
+const char kEnterpriseReportingUIName[] =
+    "Enable chrome://enterprise-reporting";
+const char kEnterpriseReportingUIDescription[] =
+    "When enabled, allows for chrome://enterprise-reporting to be visited";
 
 const char kCrostiniContainerInstallName[] =
     "Debian version for new Crostini containers";
@@ -5448,6 +5486,10 @@ const char kFocusFollowsCursorName[] = "Focus follows cursor";
 const char kFocusFollowsCursorDescription[] =
     "Enable window focusing by moving the cursor.";
 
+const char kForceReSyncDriveName[] = "Force resync drive";
+const char kForceReSyncDriveDescription[] =
+    "Enable Drive to forcibly resync office files.";
+
 const char kFrameThrottleFpsName[] = "Set frame throttling fps.";
 const char kFrameThrottleFpsDescription[] =
     "Set the throttle fps for compositor frame submission.";
@@ -5887,12 +5929,6 @@ const char kSystemJapanesePhysicalTypingDescription[] =
     "Use the system input engine instead of the Chrome extension for physical "
     "typing in Japanese. This also replaces the Japanese extension settings "
     "page with one built into the UI and migrates the data to a new location.";
-
-const char kQuickSettingsNetworkRevampName[] =
-    "Enables the Quick Settings Network revamp.";
-const char kQuickSettingsNetworkRevampDescription[] =
-    "Enables the Quick Settings Network revamp, which updates Network Quick "
-    "Settings UI and related infrastructure. See https://crbug.com/1169479.";
 
 const char kCaptivePortalErrorPageName[] =
     "Enables Captive Portal error page suggestions.";
@@ -6366,6 +6402,14 @@ const char kDcheckIsFatalDescription[] =
     "rather than crashing. If enabled, DCHECKs will crash the calling process.";
 #endif  // BUILDFLAG(DCHECK_IS_CONFIGURABLE)
 
+#if BUILDFLAG(ENABLE_CARDBOARD)
+extern const char kEnableCardboardName[] = "Enable Cardboard VR WebXR Runtime";
+extern const char kEnableCardboardDescription[] =
+    "Enables the use of the Cardboard SDK runtime for WebXR instead of the"
+    "Google VR Services (or GVR) runtime to start a WebXR-based immersive-vr"
+    "session.";
+#endif  // ENABLE_CARDBOARD
+
 #if BUILDFLAG(ENABLE_NACL)
 const char kNaclName[] = "Native Client";
 const char kNaclDescription[] =
@@ -6488,10 +6532,6 @@ const char kPromiseIconsName[] = "Promise Icons";
 const char kPromiseIconsDescription[] =
     "Enables promise icons in the Launcher and Shelf (if the app is pinned) "
     "for app installations.";
-
-const char kVcControlsUiName[] = "Video conferencing controls UI";
-const char kVcControlsUiDescription[] =
-    "Enables the built-in video conference controls UI";
 
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 

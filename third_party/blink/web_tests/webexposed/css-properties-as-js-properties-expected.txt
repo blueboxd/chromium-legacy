@@ -448,6 +448,7 @@ toggleRoot
 toggleTrigger
 toggleVisibility
 top
+topLayer
 touchAction
 transform
 transformBox
@@ -468,6 +469,7 @@ viewTimeline
 viewTimelineAxis
 viewTimelineInset
 viewTimelineName
+viewTransitionName
 visibility
 webkitAlignContent
 webkitAlignItems

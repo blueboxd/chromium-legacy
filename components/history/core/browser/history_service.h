@@ -603,11 +603,25 @@ class HistoryService : public KeyedService {
   virtual base::CancelableTaskTracker::TaskId AddVisitsToCluster(
       int64_t cluster_id,
       const std::vector<ClusterVisit>& visits,
+      base::OnceClosure callback,
       base::CancelableTaskTracker* tracker);
 
   // Updates the triggerability attributes for `clusters`.
   base::CancelableTaskTracker::TaskId UpdateClusterTriggerability(
       const std::vector<history::Cluster>& clusters,
+      base::OnceClosure callback,
+      base::CancelableTaskTracker* tracker);
+
+  // Sets scores of cluster visits to 0 to hide them from the webUI.
+  base::CancelableTaskTracker::TaskId HideVisits(
+      const std::vector<VisitID>& visit_ids,
+      base::OnceClosure callback,
+      base::CancelableTaskTracker* tracker);
+
+  // Updates the details of the existing cluster visit that has the same visit
+  // ID as `new_cluster_visit`.
+  virtual base::CancelableTaskTracker::TaskId UpdateClusterVisit(
+      const history::ClusterVisit& new_cluster_visit,
       base::OnceClosure callback,
       base::CancelableTaskTracker* tracker);
 

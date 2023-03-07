@@ -46,6 +46,7 @@
 #include "chrome/browser/ui/side_panel/customize_chrome/customize_chrome_tab_helper.h"
 #include "chrome/browser/ui/side_panel/customize_chrome/customize_chrome_utils.h"
 #include "chrome/browser/ui/webui/new_tab_page/ntp_pref_names.h"
+#include "chrome/browser/ui/webui/side_panel/customize_chrome/customize_chrome_section.h"
 #include "chrome/browser/ui/webui/webui_util.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
@@ -215,6 +216,10 @@ new_tab_page::mojom::ThemePtr MakeTheme(
   const bool side_panel_enabled = customize_chrome::IsSidePanelEnabled();
   if (theme_has_custom_image &&
       (!custom_background.has_value() || side_panel_enabled)) {
+    if (theme_service->UsingExtensionTheme()) {
+      background_image->image_source =
+          new_tab_page::mojom::NtpBackgroundImageSource::kThirdPartyTheme;
+    }
     theme->is_custom_background = false;
     most_visited->use_title_pill = !remove_scrim;
     auto theme_id = theme_service->GetThemeID();
@@ -265,6 +270,16 @@ new_tab_page::mojom::ThemePtr MakeTheme(
   } else if (custom_background.has_value()) {
     theme->is_custom_background = true;
     background_image->url = custom_background->custom_background_url;
+    new_tab_page::mojom::NtpBackgroundImageSource image_source = new_tab_page::
+        mojom::NtpBackgroundImageSource::kFirstPartyThemeWithoutDailyRefresh;
+    if (custom_background->daily_refresh_enabled) {
+      image_source = new_tab_page::mojom::NtpBackgroundImageSource::
+          kFirstPartyThemeWithDailyRefresh;
+    } else if (custom_background->is_uploaded_image) {
+      image_source =
+          new_tab_page::mojom::NtpBackgroundImageSource::kUploadedImage;
+    }
+    background_image->image_source = image_source;
   } else {
     background_image = nullptr;
   }
@@ -301,7 +316,8 @@ new_tab_page::mojom::ThemePtr MakeTheme(
         custom_background->custom_background_attribution_line_2;
     theme->background_image_attribution_url =
         custom_background->custom_background_attribution_action_url;
-    theme->daily_refresh_collection_id = custom_background->collection_id;
+    theme->background_image_collection_id = custom_background->collection_id;
+    theme->daily_refresh_enabled = custom_background->daily_refresh_enabled;
   }
 
   theme->most_visited = std::move(most_visited);
@@ -514,6 +530,7 @@ void NewTabPageHandler::RegisterProfilePrefs(PrefRegistrySimple* registry) {
   registry->RegisterIntegerPref(prefs::kNtpModulesShownCount, 0);
   registry->RegisterTimePref(prefs::kNtpModulesFirstShownTime, base::Time());
   registry->RegisterBooleanPref(prefs::kNtpModulesFreVisible, true);
+  registry->RegisterIntegerPref(prefs::kNtpCustomizeChromeButtonOpenCount, 0);
 }
 
 void NewTabPageHandler::SetMostVisitedSettings(bool custom_links_enabled,
@@ -545,19 +562,18 @@ void NewTabPageHandler::SetBackgroundImage(const std::string& attribution_1,
                                            const std::string& attribution_2,
                                            const GURL& attribution_url,
                                            const GURL& image_url,
-                                           const GURL& thumbnail_url) {
-  // Populating the |collection_id| turns on refresh daily which overrides the
-  // the selected image.
+                                           const GURL& thumbnail_url,
+                                           const std::string& collection_id) {
   ntp_custom_background_service_->SetCustomBackgroundInfo(
       image_url, thumbnail_url, attribution_1, attribution_2, attribution_url,
-      /* collection_id= */ "");
+      collection_id);
   LogEvent(NTP_BACKGROUND_IMAGE_SET);
 }
 
 void NewTabPageHandler::SetDailyRefreshCollectionId(
     const std::string& collection_id) {
-  // Populating the |collection_id| turns on refresh daily which overrides the
-  // the selected image.
+  // Only populating the |collection_id| turns on refresh daily which overrides
+  // the the selected image.
   ntp_custom_background_service_->SetCustomBackgroundInfo(
       /* image_url */ GURL(), /* thumbnail_url */ GURL(),
       /* attribution_line_1= */ "", /* attribution_line_2= */ "",
@@ -835,10 +851,38 @@ void NewTabPageHandler::LogModulesFreOptInStatus(
   }
 }
 
-void NewTabPageHandler::SetCustomizeChromeSidePanelVisible(bool visible) {
+void NewTabPageHandler::SetCustomizeChromeSidePanelVisible(
+    bool visible,
+    new_tab_page::mojom::CustomizeChromeSection section) {
+  CustomizeChromeSection section_enum;
+  switch (section) {
+    case new_tab_page::mojom::CustomizeChromeSection::kUnspecified:
+      section_enum = CustomizeChromeSection::kUnspecified;
+      break;
+    case new_tab_page::mojom::CustomizeChromeSection::kAppearance:
+      section_enum = CustomizeChromeSection::kAppearance;
+      break;
+    case new_tab_page::mojom::CustomizeChromeSection::kShortcuts:
+      section_enum = CustomizeChromeSection::kShortcuts;
+      break;
+    case new_tab_page::mojom::CustomizeChromeSection::kModules:
+      section_enum = CustomizeChromeSection::kModules;
+      break;
+  }
   auto* customize_chrome_tab_helper =
       CustomizeChromeTabHelper::FromWebContents(web_contents_);
-  customize_chrome_tab_helper->SetCustomizeChromeSidePanelVisible(visible);
+  customize_chrome_tab_helper->SetCustomizeChromeSidePanelVisible(visible,
+                                                                  section_enum);
+}
+
+void NewTabPageHandler::IncrementCustomizeChromeButtonOpenCount() {
+  CHECK(profile_);
+  CHECK(profile_->GetPrefs());
+  profile_->GetPrefs()->SetInteger(
+      prefs::kNtpCustomizeChromeButtonOpenCount,
+      profile_->GetPrefs()->GetInteger(
+          prefs::kNtpCustomizeChromeButtonOpenCount) +
+          1);
 }
 
 void NewTabPageHandler::OnPromoDataUpdated() {
@@ -1119,6 +1163,7 @@ void NewTabPageHandler::OnCollectionImagesAvailable() {
     image->attribution_url = info.attribution_action_url;
     image->image_url = info.image_url;
     image->preview_image_url = info.thumbnail_image_url;
+    image->collection_id = collection_id;
     images.push_back(std::move(image));
   }
   std::move(background_images_callback_).Run(std::move(images));

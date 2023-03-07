@@ -53,11 +53,12 @@ void RenderMediaClient::Initialize() {
 
 RenderMediaClient::RenderMediaClient()
     : main_task_runner_(base::SingleThreadTaskRunner::GetCurrentDefault()) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(main_thread_sequence_checker_);
 #if NEEDS_PROFILE_UPDATER
   // We'll first try to query the supported video decoder configurations
   // asynchronously. If IsSupportedVideoType() is called before we get a
-  // response, that method will fall back to querying the video decoder
-  // configurations synchronously.
+  // response, that method will block if its not on the main thread or fall
+  // back to querying the video decoder configurations synchronously otherwise.
   //
   // The base::Unretained()s here are safe here since the MediaClient is never
   // destructed.
@@ -98,20 +99,21 @@ bool RenderMediaClient::IsSupportedAudioType(const media::AudioType& type) {
 
 bool RenderMediaClient::IsSupportedVideoType(const media::VideoType& type) {
 #if NEEDS_PROFILE_UPDATER
-  {
-    base::AutoLock lock(supported_video_decoder_profiles_lock_);
-    if (!supported_video_decoder_profiles_are_known_) {
-      // We didn't get the response for the asynchronous query in time. Let's
-      // fall back to a synchronous query.
+  if (!did_update_.IsSignaled()) {
+    // The asynchronous request didn't complete in time, so we must now block
+    // or retrieve the information synchronously.
+    if (main_task_runner_->BelongsToCurrentThread()) {
       media::SupportedVideoDecoderConfigs configs;
       media::VideoDecoderType video_decoder_type;
       if (!video_decoder_for_supported_profiles_->GetSupportedConfigs(
               &configs, &video_decoder_type)) {
         configs.clear();
       }
-      UpdateVideoProfilesInternal(configs);
-      supported_video_decoder_profiles_are_known_ = true;
-      ResetConnectionForSupportedProfilesQuery();
+      OnGetSupportedVideoDecoderConfigs(configs, video_decoder_type);
+      DCHECK(did_update_.IsSignaled());
+    } else {
+      // There's already an asynchronous request on the main thread, so wait...
+      did_update_.Wait();
     }
   }
 #endif
@@ -135,29 +137,27 @@ void RenderMediaClient::OnGetSupportedVideoDecoderConfigs(
     const media::SupportedVideoDecoderConfigs& configs,
     media::VideoDecoderType type) {
 #if NEEDS_PROFILE_UPDATER
-  base::AutoLock lock(supported_video_decoder_profiles_lock_);
-  if (!supported_video_decoder_profiles_are_known_) {
-    UpdateVideoProfilesInternal(configs);
-    supported_video_decoder_profiles_are_known_ = true;
+  if (did_update_.IsSignaled()) {
+    return;
   }
-  ResetConnectionForSupportedProfilesQuery();
+
+  UpdateVideoProfilesInternal(configs);
+  did_update_.Signal();
+
+  // The base::Unretained() here is safe because the MediaClient is never
+  // destructed.
+  main_task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(&RenderMediaClient::
+                         ResetConnectionForSupportedProfilesQueryOnMainThread,
+                     base::Unretained(this)));
 #endif
 }
 
-void RenderMediaClient::ResetConnectionForSupportedProfilesQuery() {
+void RenderMediaClient::ResetConnectionForSupportedProfilesQueryOnMainThread() {
 #if NEEDS_PROFILE_UPDATER
-  if (!main_task_runner_->RunsTasksInCurrentSequence()) {
-    // The base::Unretained() here is safe because the MediaClient is never
-    // destructed.
-    main_task_runner_->PostTask(
-        FROM_HERE,
-        base::BindOnce(
-            &RenderMediaClient::ResetConnectionForSupportedProfilesQuery,
-            base::Unretained(this)));
-    return;
-  }
-  interface_factory_for_supported_profiles_.reset();
   video_decoder_for_supported_profiles_.reset();
+  interface_factory_for_supported_profiles_.reset();
 #endif
 }
 

@@ -135,8 +135,6 @@ uint32_t TagnameHash(const String& s) {
 // - Only a few named "&" character references are supported.
 // - No '\0'. The handling of '\0' varies depending upon where it is found
 //   and in general the correct handling complicates things.
-// - Fails if Document::IsDirAttributeDirty. This relies on
-//   BeginParsingChildren() and FinishParsingChildren() being called.
 // - Fails if an attribute name starts with 'on'. Such attributes are generally
 //   events that may be fired. Allowing this could be problematic if the fast
 //   path fails. For example, the 'onload' event of an <img> would be called
@@ -149,6 +147,9 @@ uint32_t TagnameHash(const String& s) {
 // - Fails if an <img> is encountered. Image elements request the image early
 //   on, resulting in network connections. Additionally, loading the image
 //   may consume preloaded resources.
+// - Fails if Document::IsDirAttributeDirty() is true and CSSPseudoDirEnabled is
+//   enabled. This is necessary as state needed to support css-pseudo dir is set
+//   in HTMLElement::BeginParsingChildren(), which this does not call.
 template <class Char>
 class HTMLFastPathParser {
   STACK_ALLOCATED();
@@ -477,14 +478,41 @@ class HTMLFastPathParser {
     }
   }
 
+  struct ScanTextResult {
+    // HTML strings of the form '\n<space>*' are widespread on the web. Caching
+    // them saves us allocations, which improves the runtime.
+    String TryCanonicalizeString() const {
+      DCHECK(!text.empty());
+      if (is_newline_then_whitespace_string &&
+          text.size() < WTF::NewlineThenWhitespaceStringsTable::kTableSize) {
+#if DCHECK_IS_ON()
+        DCHECK(WTF::NewlineThenWhitespaceStringsTable::IsNewlineThenWhitespaces(
+            String(text.data(), static_cast<unsigned>(text.size()))));
+#endif  // DCHECK_IS_ON()
+        return WTF::NewlineThenWhitespaceStringsTable::GetStringForLength(
+            text.size());
+      }
+      return String(text.data(), static_cast<unsigned>(text.size()));
+    }
+
+    Span text;
+    USpan escaped_text;
+    bool is_newline_then_whitespace_string = false;
+  };
+
   // We first try to scan text as an unmodified subsequence of the input.
   // However, if there are escape sequences, we have to copy the text to a
   // separate buffer and we might go outside of `Char` range if we are in an
   // `LChar` parser. Therefore, this function returns either a `Span` or a
   // `USpan`. Callers distinguish the two cases by checking if the `Span` is
   // empty, as only one of them can be non-empty.
-  std::pair<Span, USpan> ScanText() {
+  ScanTextResult ScanText() {
     const Char* start = pos_;
+    bool is_newline_then_whitespace_string = false;
+    if (pos_ != end_ && *pos_ == '\n') {
+      is_newline_then_whitespace_string = true;
+      ++pos_;
+    }
     while (pos_ != end_ && *pos_ != '<') {
       // '&' indicates escape sequences, '\r' might require
       // https://infra.spec.whatwg.org/#normalize-newlines
@@ -493,11 +521,16 @@ class HTMLFastPathParser {
         return {Span{}, ScanEscapedText()};
       } else if (UNLIKELY(*pos_ == '\0')) {
         return Fail(HtmlFastPathResult::kFailedContainsNull,
-                    std::pair{Span{}, USpan{}});
+                    ScanTextResult{Span{}, USpan{}});
+      }
+      if (*pos_ != ' ') {
+        is_newline_then_whitespace_string = false;
       }
       ++pos_;
     }
-    return {{start, static_cast<size_t>(pos_ - start)}, USpan{}};
+    return {{start, static_cast<size_t>(pos_ - start)},
+            USpan{},
+            is_newline_then_whitespace_string};
   }
 
   // Slow-path of `ScanText()`, which supports escape sequences by copying to a
@@ -795,25 +828,26 @@ class HTMLFastPathParser {
   template <class ParentTag>
   void ParseChildren(ContainerNode* parent) {
     while (true) {
-      std::pair<Span, USpan> text = ScanText();
+      ScanTextResult scanned_text = ScanText();
       if (failed_) {
         return;
       }
-      DCHECK(text.first.empty() || text.second.empty());
-      if (!text.first.empty()) {
-        if (text.first.size() >= Text::kDefaultLengthLimit) {
+      DCHECK(scanned_text.text.empty() || scanned_text.escaped_text.empty());
+      if (!scanned_text.text.empty()) {
+        const auto text = scanned_text.text;
+        if (text.size() >= Text::kDefaultLengthLimit) {
+          return Fail(HtmlFastPathResult::kFailedBigText);
+        }
+        parent->ParserAppendChild(
+            Text::Create(document_, scanned_text.TryCanonicalizeString()));
+      } else if (!scanned_text.escaped_text.empty()) {
+        if (scanned_text.escaped_text.size() >= Text::kDefaultLengthLimit) {
           return Fail(HtmlFastPathResult::kFailedBigText);
         }
         parent->ParserAppendChild(Text::Create(
-            document_, String(text.first.data(),
-                              static_cast<unsigned>(text.first.size()))));
-      } else if (!text.second.empty()) {
-        if (text.second.size() >= Text::kDefaultLengthLimit) {
-          return Fail(HtmlFastPathResult::kFailedBigText);
-        }
-        parent->ParserAppendChild(Text::Create(
-            document_, String(text.second.data(),
-                              static_cast<unsigned>(text.second.size()))));
+            document_,
+            String(scanned_text.escaped_text.data(),
+                   static_cast<unsigned>(scanned_text.escaped_text.size()))));
       }
       if (pos_ == end_) {
         return;
@@ -1076,13 +1110,53 @@ bool CanUseFastPath(Document& document,
     return false;
   }
 
-  // State used for this is updated in BeginParsingChildren() and
-  // FinishParsingChildren(), which this does not call.
-  if (document.IsDirAttributeDirty()) {
-    LogFastPathResult(HtmlFastPathResult::kFailedDirAttributeDirty);
+  if (document.IsDirAttributeDirty() &&
+      RuntimeEnabledFeatures::CSSPseudoDirEnabled()) {
+    LogFastPathResult(
+        HtmlFastPathResult::kFailedCssPseudoDirEnabledAndDirAttributeDirty);
     return false;
   }
   return true;
+}
+
+template <class Char>
+bool TryParsingHTMLFragmentImpl(const base::span<const Char>& source,
+                                Document& document,
+                                DocumentFragment& fragment,
+                                Element& context_element) {
+  base::ElapsedTimer parse_timer;
+  bool success;
+  int number_of_bytes_parsed;
+  HTMLFastPathParser<Char> parser{source, document, fragment};
+  success = parser.Run(context_element);
+  // The direction attribute may change as a result of parsing. Check again.
+  if (document.IsDirAttributeDirty() &&
+      RuntimeEnabledFeatures::CSSPseudoDirEnabled()) {
+    LogFastPathResult(
+        HtmlFastPathResult::kFailedCssPseudoDirEnabledAndDirAttributeDirty);
+    success = false;
+  } else {
+    LogFastPathResult(parser.parse_result());
+  }
+  number_of_bytes_parsed = parser.NumberOfBytesParsed();
+  // The time needed to parse is typically < 1ms (even at the 99%).
+  if (base::TimeTicks::IsHighResolution()) {
+    if (success) {
+      base::UmaHistogramCustomMicrosecondsTimes(
+          "Blink.HTMLFastPathParser.SuccessfulParseTime2",
+          parse_timer.Elapsed(), base::Microseconds(1), base::Milliseconds(10),
+          100);
+    } else {
+      base::UmaHistogramCustomMicrosecondsTimes(
+          "Blink.HTMLFastPathParser.AbortedParseTime2", parse_timer.Elapsed(),
+          base::Microseconds(1), base::Milliseconds(10), 100);
+    }
+  }
+  base::UmaHistogramCounts10M(
+      success ? "Blink.HTMLFastPathParser.SuccessfulParseSize"
+              : "Blink.HTMLFastPathParser.AbortedParseSize",
+      number_of_bytes_parsed);
+  return success;
 }
 
 }  // namespace
@@ -1097,32 +1171,11 @@ bool TryParsingHTMLFragment(const String& source,
                       include_shadow_roots)) {
     return false;
   }
-  base::ElapsedTimer parse_timer;
-  bool success;
-  int number_of_bytes_parsed;
-  if (source.Is8Bit()) {
-    HTMLFastPathParser<LChar> parser{source.Span8(), document, fragment};
-    success = parser.Run(context_element);
-    number_of_bytes_parsed = parser.NumberOfBytesParsed();
-    LogFastPathResult(parser.parse_result());
-  } else {
-    HTMLFastPathParser<UChar> parser{source.Span16(), document, fragment};
-    success = parser.Run(context_element);
-    number_of_bytes_parsed = parser.NumberOfBytesParsed();
-    LogFastPathResult(parser.parse_result());
-  }
-  if (success) {
-    base::UmaHistogramTimes("Blink.HTMLFastPathParser.SuccessfulParseTime",
-                            parse_timer.Elapsed());
-  } else {
-    base::UmaHistogramTimes("Blink.HTMLFastPathParser.AbortedParseTime",
-                            parse_timer.Elapsed());
-  }
-  base::UmaHistogramCounts10M(
-      success ? "Blink.HTMLFastPathParser.SuccessfulParseSize"
-              : "Blink.HTMLFastPathParser.AbortedParseSize",
-      number_of_bytes_parsed);
-  return success;
+  return source.Is8Bit()
+             ? TryParsingHTMLFragmentImpl<LChar>(source.Span8(), document,
+                                                 fragment, context_element)
+             : TryParsingHTMLFragmentImpl<UChar>(source.Span16(), document,
+                                                 fragment, context_element);
 }
 
 #undef SUPPORTED_TAGS

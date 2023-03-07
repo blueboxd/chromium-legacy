@@ -39,8 +39,7 @@ inline constexpr const char kSelectInactiveSourcesSql[] =
     ")LIMIT ?";
 
 inline constexpr const char kScanCandidateData[] =
-    "SELECT I.source_origin,I.destination_origin,I.reporting_origin,"
-    "I.source_id,C.report_id "
+    "SELECT I.reporting_origin,I.source_id,C.report_id "
     "FROM sources I LEFT JOIN event_level_reports C ON "
     "C.source_id=I.source_id WHERE"
     "(I.source_time BETWEEN ?1 AND ?2)OR"
@@ -62,8 +61,7 @@ inline constexpr const char kDedupKeySql[] =
     "SELECT dedup_key FROM dedup_keys WHERE source_id=? AND report_type=?";
 
 inline constexpr const char kScanCandidateDataAggregatable[] =
-    "SELECT I.source_origin,I.destination_origin,I.reporting_origin,"
-    "I.source_id,A.aggregation_id "
+    "SELECT I.reporting_origin,I.source_id,A.aggregation_id "
     "FROM sources I LEFT JOIN aggregatable_report_metadata A "
     "ON A.source_id=I.source_id WHERE"
     "(I.source_time BETWEEN ?1 AND ?2)OR"
@@ -78,6 +76,12 @@ inline constexpr const char kGetContributionsSql[] =
     "SELECT key_high_bits,key_low_bits,value "
     "FROM aggregatable_contributions "
     "WHERE aggregation_id=?";
+
+inline constexpr const char kGetSourcesDataKeysSql[] =
+    "SELECT DISTINCT reporting_origin FROM sources";
+
+inline constexpr const char kGetRateLimitDataKeysSql[] =
+    "SELECT DISTINCT reporting_origin FROM rate_limits";
 
 // We need to hint to the query planner that/ `event_level_active` and
 // `aggregatable_active` are booleans, so include them in the conditional.
@@ -219,6 +223,46 @@ inline constexpr const char kUpdateFailedAggregatableReportSql[] =
 #undef ATTRIBUTION_UPDATE_FAILED_REPORT_SQL
 
 // clang-format on
+
+inline constexpr const char kRateLimitAttributionAllowedSql[] =
+    "SELECT COUNT(*)FROM rate_limits "
+    "WHERE scope=1 "
+    "AND destination_site=? "
+    "AND source_site=? "
+    "AND reporting_origin=? "
+    "AND time>?";
+
+inline constexpr const char kRateLimitSourceAllowedSql[] =
+    "SELECT destination_site FROM rate_limits "
+    "WHERE scope=0 "
+    "AND source_site=? "
+    "AND reporting_origin=? "
+    "AND source_expiry_or_attribution_time>?";
+
+inline constexpr const char kRateLimitSelectReportingOriginsSql[] =
+    "SELECT reporting_origin FROM rate_limits "
+    "WHERE scope=? "
+    "AND source_site=? "
+    "AND destination_site=? "
+    "AND time>?";
+
+inline constexpr const char kDeleteRateLimitRangeSql[] =
+    "DELETE FROM rate_limits WHERE"
+    "(time BETWEEN ?1 AND ?2)OR"
+    "(scope=1 AND source_expiry_or_attribution_time BETWEEN ?1 AND ?2)";
+
+inline constexpr const char kSelectRateLimitsForDeletionSql[] =
+    "SELECT id,reporting_origin "
+    "FROM rate_limits WHERE"
+    "(time BETWEEN ?1 AND ?2)OR"
+    "(scope=1 AND source_expiry_or_attribution_time BETWEEN ?1 AND ?2)";
+
+inline constexpr const char kDeleteExpiredRateLimitsSql[] =
+    "DELETE FROM rate_limits "
+    "WHERE time<=? AND(scope=1 OR source_expiry_or_attribution_time<=?)";
+
+inline constexpr const char kDeleteRateLimitsBySourceIdSql[] =
+    "DELETE FROM rate_limits WHERE source_id=?";
 
 }  // namespace content::attribution_queries
 

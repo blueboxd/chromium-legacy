@@ -35,10 +35,12 @@
 #include "components/translate/core/browser/translate_pref_names.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/test/browser_test.h"
+#include "content/public/test/test_devtools_protocol_client.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/test_extension_registry_observer.h"
 #include "extensions/test/extension_test_message_listener.h"
 #include "extensions/test/result_catcher.h"
+#include "extensions/test/test_extension_dir.h"
 #include "media/media_buildflags.h"
 #include "third_party/blink/public/common/peerconnection/webrtc_ip_handling_policy.h"
 
@@ -123,6 +125,51 @@ class ExtensionPreferenceApiTest
         prefs->GetBoolean(password_manager::prefs::kCredentialsEnableService));
     EXPECT_FALSE(prefs->GetBoolean(prefs::kSafeBrowsingEnabled));
     EXPECT_FALSE(prefs->GetBoolean(prefs::kSearchSuggestEnabled));
+    VerifyPrefValueAndControlledState(prefs::kPrivacySandboxM1TopicsEnabled,
+                                      base::Value(true),
+                                      /* expected_controlled */ false);
+    VerifyPrefValueAndControlledState(prefs::kPrivacySandboxM1FledgeEnabled,
+                                      base::Value(true),
+                                      /* expected_controlled */ false);
+    VerifyPrefValueAndControlledState(
+        prefs::kPrivacySandboxM1AdMeasurementEnabled, base::Value(true),
+        /* expected_controlled */ false);
+  }
+
+  void CheckPrivacySandboxPreferencesDisabled() {
+    VerifyPrefValueAndControlledState(prefs::kPrivacySandboxApisEnabled,
+                                      base::Value(false),
+                                      /* expected_controlled */ true);
+    VerifyPrefValueAndControlledState(prefs::kPrivacySandboxM1TopicsEnabled,
+                                      base::Value(false),
+                                      /* expected_controlled */ true);
+    VerifyPrefValueAndControlledState(prefs::kPrivacySandboxM1FledgeEnabled,
+                                      base::Value(false),
+                                      /* expected_controlled */ true);
+    VerifyPrefValueAndControlledState(
+        prefs::kPrivacySandboxM1AdMeasurementEnabled, base::Value(false),
+        /* expected_controlled */ true);
+  }
+
+  void CheckPrivacySandboxPreferencesEnabled() {
+    VerifyPrefValueAndControlledState(prefs::kPrivacySandboxApisEnabled,
+                                      base::Value(true),
+                                      /* expected_controlled */ true);
+    VerifyPrefValueAndControlledState(prefs::kPrivacySandboxM1TopicsEnabled,
+                                      base::Value(true),
+                                      /* expected_controlled */ false);
+    VerifyPrefValueAndControlledState(prefs::kPrivacySandboxM1FledgeEnabled,
+                                      base::Value(true),
+                                      /* expected_controlled */ false);
+    VerifyPrefValueAndControlledState(
+        prefs::kPrivacySandboxM1AdMeasurementEnabled, base::Value(true),
+        /* expected_controlled */ false);
+  }
+
+  void CheckPrivacySandboxPreferencesCleared() {
+    VerifyPrefValueAndControlledState(prefs::kPrivacySandboxApisEnabled,
+                                      base::Value(true),
+                                      /* expected_controlled */ false);
     VerifyPrefValueAndControlledState(prefs::kPrivacySandboxM1TopicsEnabled,
                                       base::Value(true),
                                       /* expected_controlled */ false);
@@ -627,3 +674,291 @@ IN_PROC_BROWSER_TEST_P(ExtensionPreferenceApiTest, ThirdPartyCookiesAllowed) {
           content_settings::CookieControlsMode::kIncognitoOnly)),
       /* expected_controlled */ false);
 }
+
+// Tests the behavior of the PrivacySandboxEnabled API during the migration
+// period.
+// The preferences |kPrivacySandboxM1Topics|, |kPrivacySandboxM1Fledge| and
+// |kPrivacySandboxM1AdMeasurement| should be enforced to kOff if
+// |kPrivacySandboxApisEnabled| is set to false by an extension.
+// They should also be cleared if |kPrivacySandboxApisEnabled| is cleared.
+// This check is not done in the Standard test so we can test if the granular
+// Privacy Sandbox APIs are turned off, when |kPrivacySandboxApisEnabled| is
+// turned off, in isolation of controlling them directly.
+// Disabled due to flakes on multiple platforms; see https://crbug.com/1410736.
+IN_PROC_BROWSER_TEST_F(ExtensionPreferenceApiTest,
+                       DISABLED_PrivacySandboxMigration) {
+  PrefService* prefs = profile_->GetPrefs();
+  prefs->SetBoolean(prefs::kPrivacySandboxM1TopicsEnabled, true);
+  prefs->SetBoolean(prefs::kPrivacySandboxM1FledgeEnabled, true);
+  prefs->SetBoolean(prefs::kPrivacySandboxM1AdMeasurementEnabled, true);
+
+  base::FilePath extension_path =
+      test_data_dir_.AppendASCII("preference/privacy_sandbox_migration");
+
+  // STEP 1. Install extension and set the pref |kPrivacySandboxApisEnabled| to
+  // false.
+  // The preferences for PrivacySandbox, Topics, Fledge and AdMeasurement should
+  // all be disabled.
+  {
+    extensions::ResultCatcher catcher;
+    ExtensionTestMessageListener listener("ready", ReplyBehavior::kWillReply);
+    EXPECT_TRUE(LoadExtension(extension_path)) << message_;
+    EXPECT_TRUE(listener.WaitUntilSatisfied());
+    // Run the tests.
+    listener.Reply("run set to false test");
+    EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
+  }
+  CheckPrivacySandboxPreferencesDisabled();
+
+  // STEP 2. Reload extension.
+  // The preferences should not be reset when the extension is reloaded.
+  {
+    ExtensionTestMessageListener listener("ready", ReplyBehavior::kWillReply);
+    ReloadExtension(last_loaded_extension_id());
+    EXPECT_TRUE(listener.WaitUntilSatisfied());
+    listener.Reply("");
+  }
+  CheckPrivacySandboxPreferencesDisabled();
+
+  // STEP 4. Enable the pref |kPrivacySandboxApisEnabled|.
+  // The preference PrivacySandbox should be enabled but the preferences Topics,
+  // Fledge and AdMeasurement should all be cleared and on their default values.
+  {
+    extensions::ResultCatcher catcher;
+    ExtensionTestMessageListener listener("ready", ReplyBehavior::kWillReply);
+    ReloadExtension(last_loaded_extension_id());
+    EXPECT_TRUE(listener.WaitUntilSatisfied());
+    // Run the tests.
+    listener.Reply("run set to true test");
+    EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
+  }
+  CheckPrivacySandboxPreferencesEnabled();
+
+  // STEP 5. Redo Step 1.
+  // So we can see a meaningful change on Step 6.
+  {
+    extensions::ResultCatcher catcher;
+    ExtensionTestMessageListener listener("ready", ReplyBehavior::kWillReply);
+    ReloadExtension(last_loaded_extension_id());
+    EXPECT_TRUE(listener.WaitUntilSatisfied());
+    listener.Reply("run set to false test");
+    EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
+  }
+  CheckPrivacySandboxPreferencesDisabled();
+
+  // STEP 6. Clear the pref |kPrivacySandboxApisEnabled|.
+  // The preferences for PrivacySandbox, Topics, Fledge and AdMeasurement should
+  // all be cleared and on their default values.
+  {
+    extensions::ResultCatcher catcher;
+    ExtensionTestMessageListener listener("ready", ReplyBehavior::kWillReply);
+    ReloadExtension(last_loaded_extension_id());
+    EXPECT_TRUE(listener.WaitUntilSatisfied());
+    // Run the tests.
+    listener.Reply("run clear test");
+    EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
+  }
+  CheckPrivacySandboxPreferencesCleared();
+
+  // STEP 7. Redo Step 1.
+  // So we can see a meaningful change on Step 8.
+  {
+    extensions::ResultCatcher catcher;
+    ExtensionTestMessageListener listener("ready", ReplyBehavior::kWillReply);
+    ReloadExtension(last_loaded_extension_id());
+    EXPECT_TRUE(listener.WaitUntilSatisfied());
+    listener.Reply("run set to false test");
+    EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
+  }
+  CheckPrivacySandboxPreferencesDisabled();
+
+  // STEP 8. Uninstall and install the extension (without running the test
+  // that calls the extension API)
+  // Uninstalling and installing should clear the preferences.
+  extensions::TestExtensionRegistryObserver observer(
+      extensions::ExtensionRegistry::Get(profile_), last_loaded_extension_id());
+  UninstallExtension(last_loaded_extension_id());
+  observer.WaitForExtensionUninstalled();
+  CheckPrivacySandboxPreferencesCleared();
+
+  {
+    ExtensionTestMessageListener listener("ready", ReplyBehavior::kWillReply);
+    EXPECT_TRUE(LoadExtension(extension_path));
+    EXPECT_TRUE(listener.WaitUntilSatisfied());
+    listener.Reply("");
+  }
+  CheckPrivacySandboxPreferencesCleared();
+}
+
+namespace extensions {
+
+class ExtensionPrefDevToolsIssueTest
+    : public ExtensionPreferenceApiTest,
+      public content::TestDevToolsProtocolClient {
+ protected:
+  // Builds a test extension dir with a simple html file that runs a js that
+  // can call chrome.privacy.websites.privacySandboxEnabled and another API
+  // under chrome.privacy (i.e.
+  // chrome.privacy.websites.hyperlinkAuditingEnabled).
+  void BuildTestExtensionDir(TestExtensionDir& test_dir) {
+    constexpr char kManifestTemplate[] =
+        R"({
+              "name": "Bad Icon Path",
+              "manifest_version": 2,
+              "version": "0.1",
+              "permissions": ["privacy"]
+            })";
+
+    constexpr char kPageJsTemplate[] =
+        R"(function runGetScript() {
+              chrome.privacy.websites.privacySandboxEnabled.get({}, () => {
+                chrome.test.sendMessage('finish get');
+              });
+            }
+            function runSetScript() {
+              chrome.privacy.websites.privacySandboxEnabled
+                .set({value: false}, () => {
+                      chrome.test.sendMessage('finish set');
+              });
+            }
+            function runClearScript() {
+              chrome.privacy.websites.privacySandboxEnabled.clear({}, () => {
+                chrome.test.sendMessage('finish clear');
+              });
+            }
+            function runHyperlinkAuditingScript() {
+              chrome.privacy.websites.hyperlinkAuditingEnabled.get({}, () => {
+                chrome.test.sendMessage('finish hyperlinkAuditing');
+              });
+            })";
+
+    constexpr char kPageHtmlTemplate[] =
+        R"(<html><script src="page.js"></script></html>)";
+
+    // Building the test extension.
+    test_dir.WriteManifest(kManifestTemplate);
+    test_dir.WriteFile(FILE_PATH_LITERAL("page.html"), kPageHtmlTemplate);
+    test_dir.WriteFile(FILE_PATH_LITERAL("page.js"), kPageJsTemplate);
+  }
+
+  // Runs |script| in the background page of the extension with the given
+  // |extension_id|, and waits for it to send the |finish_message|.
+  void WaitForScriptToFinish(content::WebContents* web_contents,
+                             const std::string& script,
+                             const std::string finish_message) {
+    SCOPED_TRACE(script);
+    ExtensionTestMessageListener listener(finish_message);
+    content::ExecuteScriptAsync(web_contents, script);
+    EXPECT_TRUE(listener.WaitUntilSatisfied()) << message_;
+  }
+
+  void WaitAndCheckForIssueAddedNotification(const GURL& page_html_url) {
+    // STEP 5.1. Wait for notification of a deprecation issue
+    base::Value::Dict params = WaitForNotification("Audits.issueAdded", true);
+
+    // STEP 5.2. Check if the Deprecation Issue has all the correct properties.
+    EXPECT_EQ(*params.FindStringByDottedPath("issue.code"), "DeprecationIssue");
+
+    base::Value::Dict* deprecation_issue_details =
+        params.FindDictByDottedPath("issue.details.deprecationIssueDetails");
+    ASSERT_TRUE(deprecation_issue_details);
+
+    EXPECT_EQ(*deprecation_issue_details->FindString("type"),
+              "PrivacySandboxExtensionsAPI");
+    EXPECT_EQ(*deprecation_issue_details->FindStringByDottedPath(
+                  "sourceCodeLocation.url"),
+              page_html_url.spec());
+    EXPECT_EQ(*deprecation_issue_details->FindIntByDottedPath(
+                  "sourceCodeLocation.columnNumber"),
+              0);
+    EXPECT_EQ(*deprecation_issue_details->FindIntByDottedPath(
+                  "sourceCodeLocation.lineNumber"),
+              0);
+  }
+
+  void TearDownOnMainThread() override {
+    DetachProtocolClient();
+    ExtensionPreferenceApiTest::TearDownOnMainThread();
+  }
+};
+
+INSTANTIATE_TEST_SUITE_P(EventPage,
+                         ExtensionPrefDevToolsIssueTest,
+                         ::testing::Values(ContextType::kPersistentBackground));
+
+// Tests the correct logging of console warning messages when
+// PrivacySandboxEnabled API is called by an extension during the migration
+// period.
+IN_PROC_BROWSER_TEST_P(ExtensionPrefDevToolsIssueTest,
+                       PrivacySandboxMigrationExpectDevToolsIssue) {
+  // STEP 1. Build extension.
+  TestExtensionDir test_dir;
+  BuildTestExtensionDir(test_dir);
+
+  // STEP 2. Load extension.
+  const Extension* extension = LoadExtension(test_dir.UnpackedPath());
+  ASSERT_TRUE(extension);
+
+  // STEP 3. Navigate to the extension's html page and get access to its Web
+  // Contents.
+  GURL page_html_url = extension->GetResourceURL("page.html");
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), page_html_url));
+
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+
+  // STEP 4. Enable Audits so we can wait for issues' notifications.
+  AttachToWebContents(web_contents);
+  SendCommandSync("Audits.enable");
+  ClearNotifications();
+
+  // STEP 5. Check if the deprecation issue shows up in the DevTools Issues tab.
+  // Calling the chrome.privacy.websites.privacySandboxEnabled in a non-service
+  // worker context should report a deprecation issue of type
+  // PrivacySandboxExtensionsAPI to the DevTools Issues tab.
+
+  WaitForScriptToFinish(web_contents, "runGetScript();", "finish get");
+  WaitAndCheckForIssueAddedNotification(page_html_url);
+
+  WaitForScriptToFinish(web_contents, "runSetScript();", "finish set");
+  WaitAndCheckForIssueAddedNotification(page_html_url);
+
+  WaitForScriptToFinish(web_contents, "runClearScript();", "finish clear");
+  WaitAndCheckForIssueAddedNotification(page_html_url);
+}
+
+// Tests that no console warning messages are logged when other APIs under
+// chrome.privacy are called by an extension.
+IN_PROC_BROWSER_TEST_P(ExtensionPrefDevToolsIssueTest,
+                       PrivacySandboxMigrationDoesNotExpectDevToolsIssue) {
+  // STEP 1. Build extension.
+  TestExtensionDir test_dir;
+  BuildTestExtensionDir(test_dir);
+
+  // STEP 2. Load extension.
+  const Extension* extension = LoadExtension(test_dir.UnpackedPath());
+  ASSERT_TRUE(extension);
+
+  // STEP 3. Navigate to the extension's html page and get access to its Web
+  // Contents.
+  GURL page_html_url = extension->GetResourceURL("page.html");
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), page_html_url));
+
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+
+  // STEP 4. Enable Audits so we can wait for issues' notifications.
+  AttachToWebContents(web_contents);
+  SendCommandSync("Audits.enable");
+  ClearNotifications();
+
+  // STEP 5. Check if no deprecation issue shows up in the DevTools Issues tab
+  // when another API is called.
+  // If another extension API (e.g. under chrome.privacy) is called
+  // other than chrome.privacy.websites.privacySandboxEnabled, then no
+  // Deprecation Issue should be reported.
+  WaitForScriptToFinish(web_contents, "runHyperlinkAuditingScript();",
+                        "finish hyperlinkAuditing");
+  EXPECT_FALSE(HasExistingNotification()) << "Found other issues!";
+}
+}  // namespace extensions

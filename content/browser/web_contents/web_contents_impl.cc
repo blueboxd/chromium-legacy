@@ -106,7 +106,6 @@
 #include "content/browser/web_contents/java_script_dialog_commit_deferring_condition.h"
 #include "content/browser/web_contents/web_contents_view.h"
 #include "content/browser/web_contents/web_contents_view_child_frame.h"
-#include "content/browser/web_package/save_as_web_bundle_job.h"
 #include "content/browser/webui/web_ui_controller_factory_registry.h"
 #include "content/browser/webui/web_ui_impl.h"
 #include "content/browser/xr/service/xr_runtime_manager_impl.h"
@@ -909,6 +908,10 @@ class WebContentsOfBrowserContext : public base::SupportsUserData::Data {
     if (web_contents_set_.empty())
       return;  // Everything is okay - nothing to warn about.
 
+#if BUILDFLAG(IS_ANDROID)
+    JNIEnv* env = base::android::AttachCurrentThread();
+#endif  // BUILDFLAG(IS_ANDROID)
+
     // Any remaining WebContents contain dangling pointers to the
     // BrowserContext being destroyed.  Such WebContents (and their
     // RenderFrameHosts, SiteInstances, etc.) risk causing
@@ -920,6 +923,14 @@ class WebContentsOfBrowserContext : public base::SupportsUserData::Data {
                                 ->GetCreatorLocation()
                                 .ToString();
       SCOPED_CRASH_KEY_STRING256("shutdown", "web_contents/creator", creator);
+
+#if BUILDFLAG(IS_ANDROID)
+      // On Android, also report the Java stack trace from WebContents's
+      // creation.
+      WebContentsAndroid::ReportDanglingPtrToBrowserContext(
+          env, web_contents_with_dangling_ptr_to_browser_context);
+#endif  // BUILDFLAG(IS_ANDROID)
+
       NOTREACHED()
           << "BrowserContext is getting destroyed without first closing all "
           << "WebContents (for more info see https://crbug.com/1376879#c44); "
@@ -1622,7 +1633,8 @@ void WebContentsImpl::CancelActiveAndPendingDialogs() {
 
 void WebContentsImpl::ClosePage() {
   OPTIONAL_TRACE_EVENT0("content", "WebContentsImpl::ClosePage");
-  GetPrimaryMainFrame()->ClosePage();
+  GetPrimaryMainFrame()->ClosePage(
+      RenderFrameHostImpl::ClosePageSource::kBrowser);
 }
 
 RenderWidgetHostView* WebContentsImpl::GetRenderWidgetHostView() {
@@ -2429,12 +2441,9 @@ const base::Location& WebContentsImpl::GetCreatorLocation() {
   return creator_location_;
 }
 
-float WebContentsImpl::GetPictureInPictureInitialAspectRatio() {
-  return pip_initial_aspect_ratio_;
-}
-
-bool WebContentsImpl::GetPictureInPictureLockAspectRatio() {
-  return pip_lock_aspect_ratio_;
+const absl::optional<blink::mojom::PictureInPictureWindowOptions>&
+WebContentsImpl::GetPictureInPictureOptions() const {
+  return picture_in_picture_options_;
 }
 
 #if BUILDFLAG(IS_ANDROID)
@@ -3124,16 +3133,13 @@ void WebContentsImpl::Init(const WebContents::CreateParams& params,
   TRACE_EVENT0("content", "WebContentsImpl::Init");
 
   creator_location_ = params.creator_location;
+#if BUILDFLAG(IS_ANDROID)
+  java_creator_location_ = params.java_creator_location;
+#endif  // BUILDFLAG(IS_ANDROID)
 
-  // An initial aspect ratio of 0.0 implies that the website did not set one and
-  // therefore we should use a default value. We will also use a default value
-  // if the website has given an invalid aspect ratio (i.e. a negative one).
-  pip_initial_aspect_ratio_ =
-      params.initial_picture_in_picture_aspect_ratio <= 0.0f
-          ? 1.0f
-          : params.initial_picture_in_picture_aspect_ratio;
-
-  pip_lock_aspect_ratio_ = params.lock_picture_in_picture_aspect_ratio;
+  if (params.picture_in_picture_options.has_value()) {
+    picture_in_picture_options_ = params.picture_in_picture_options;
+  }
 
   // This is set before initializing the render manager since
   // RenderFrameHostManager::Init calls back into us via its delegate to ask if
@@ -4086,10 +4092,7 @@ FrameTree* WebContentsImpl::CreateNewWindow(
   create_params.renderer_initiated_creation = !is_new_browsing_instance;
 
   if (params.pip_options) {
-    create_params.initial_picture_in_picture_aspect_ratio =
-        params.pip_options->initial_aspect_ratio;
-    create_params.lock_picture_in_picture_aspect_ratio =
-        params.pip_options->lock_aspect_ratio;
+    create_params.picture_in_picture_options = *(params.pip_options);
   }
 
   // Check whether there is an available prerendered page for this navigation if
@@ -4600,6 +4603,16 @@ std::string WebContentsImpl::DumpAccessibilityTree(
   // This only runs during integration tests, or if a developer is
   // using an inspection tool, e.g. chrome://accessibility.
   BrowserAccessibilityManager::AlwaysFailFast();
+
+  // Since for Web Content we get the AXTree updates through the renderer at a
+  // point after the manager is created, there are cases where at this point in
+  // the lifecycle the AXTree associated with `ax_mgr` does not have a valid
+  // tree ID. As such, if this is the case we return an empty string early. If
+  // we don't have this check, there will be a scenario where we then try to get
+  // the manager using the ID (which at this point is invalid) which leads to a
+  // crash. See https://crbug.com/1405036.
+  if (!ax_mgr->HasValidTreeID())
+    return "-";
 
   std::unique_ptr<ui::AXTreeFormatter> formatter =
       internal ? AXInspectFactory::CreateBlinkFormatter()
@@ -5276,15 +5289,6 @@ void WebContentsImpl::GenerateMHTMLWithResult(
   OPTIONAL_TRACE_EVENT0("content", "WebContentsImpl::GenerateMHTMLWithResult");
   MHTMLGenerationManager::GetInstance()->SaveMHTML(this, params,
                                                    std::move(callback));
-}
-
-void WebContentsImpl::GenerateWebBundle(
-    const base::FilePath& file_path,
-    base::OnceCallback<void(uint64_t /* file_size */,
-                            data_decoder::mojom::WebBundlerError)> callback) {
-  OPTIONAL_TRACE_EVENT1("content", "WebContentsImpl::GenerateWebBundle",
-                        "file_path", file_path);
-  SaveAsWebBundleJob::Start(this, file_path, std::move(callback));
 }
 
 const std::string& WebContentsImpl::GetContentsMimeType() {
@@ -8355,6 +8359,11 @@ WebContentsImpl::GetJavaWebContents() {
   return GetWebContentsAndroid()->GetJavaObject();
 }
 
+base::android::ScopedJavaLocalRef<jthrowable>
+WebContentsImpl::GetJavaCreatorLocation() {
+  return base::android::ScopedJavaLocalRef<jthrowable>(java_creator_location_);
+}
+
 WebContentsAndroid* WebContentsImpl::GetWebContentsAndroid() {
   if (!web_contents_android_) {
     web_contents_android_ = std::make_unique<WebContentsAndroid>(this);
@@ -8537,6 +8546,8 @@ void WebContentsImpl::UpdateWindowControlsOverlay(
   if (RenderWidgetHost* render_widget_host =
           GetPrimaryMainFrame()->GetRenderWidgetHost())
     render_widget_host->SynchronizeVisualProperties();
+
+  view_->UpdateWindowControlsOverlay(bounding_rect);
 }
 
 BrowserPluginEmbedder* WebContentsImpl::GetBrowserPluginEmbedder() const {

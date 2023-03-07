@@ -23,7 +23,6 @@
 #include "chrome/browser/ui/views/profiles/avatar_toolbar_button.h"
 #include "chrome/browser/ui/views/toolbar/chrome_labs_bubble_view_model.h"
 #include "chrome/browser/ui/views/toolbar/side_panel_toolbar_button.h"
-#include "chrome/browser/upgrade_detector/upgrade_observer.h"
 #include "components/prefs/pref_member.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/base/accelerators/accelerator.h"
@@ -79,7 +78,6 @@ class ToolbarView : public views::AccessiblePaneView,
                     public LocationBarView::Delegate,
                     public CommandObserver,
                     public AppMenuIconController::Delegate,
-                    public UpgradeObserver,
                     public ToolbarButtonProvider,
                     public BrowserRootView::DropTarget {
  public:
@@ -154,7 +152,6 @@ class ToolbarView : public views::AccessiblePaneView,
   }
   ExtensionsToolbarButton* GetExtensionsButton() const;
   ReloadButton* reload_button() const { return reload_; }
-  ToolbarButton* left_side_panel_button() { return left_side_panel_button_; }
   LocationBarView* location_bar() const { return location_bar_; }
   CustomTabBarView* custom_tab_bar() { return custom_tab_bar_; }
   BatterySaverButton* battery_saver_button() const {
@@ -184,11 +181,6 @@ class ToolbarView : public views::AccessiblePaneView,
 
   // CommandObserver:
   void EnabledStateChangedForCommand(int id, bool enabled) override;
-
-  // UpgradeObserver toolbar_button_view_provider.
-  void OnOutdatedInstall() override;
-  void OnOutdatedInstallNoAutoUpdate() override;
-  void OnCriticalUpgradeInstalled() override;
 
   // ui::AcceleratorProvider:
   bool GetAcceleratorForCommandId(int command_id,
@@ -262,13 +254,6 @@ class ToolbarView : public views::AccessiblePaneView,
   // Loads the images for all the child views.
   void LoadImages();
 
-  // Shows the critical notification bubble against the app menu.
-  void ShowCriticalNotification();
-
-  // Shows the outdated install notification bubble against the app menu.
-  // |auto_update_enabled| is set to true when auto-upate is on.
-  void ShowOutdatedInstallNotification(bool auto_update_enabled);
-
   void OnShowHomeButtonChanged();
 
   void OnTouchUiChanged();
@@ -278,7 +263,6 @@ class ToolbarView : public views::AccessiblePaneView,
   // Controls. Most of these can be null, e.g. in popup windows. Only
   // |location_bar_| is guaranteed to exist. These pointers are owned by the
   // view hierarchy.
-  raw_ptr<ToolbarButton> left_side_panel_button_ = nullptr;
   raw_ptr<ToolbarButton> back_ = nullptr;
   raw_ptr<ToolbarButton> forward_ = nullptr;
   raw_ptr<ReloadButton> reload_ = nullptr;

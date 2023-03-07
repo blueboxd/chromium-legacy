@@ -2815,7 +2815,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.PackageStats.CacheSize" units="MB"
-    expires_after="2023-03-05">
+    expires_after="2024-03-05">
   <owner>nyquist@chromium.org</owner>
   <owner>yfriedman@chromium.org</owner>
   <summary>
@@ -2824,7 +2824,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.PackageStats.CodeSize" units="MB"
-    expires_after="2023-03-05">
+    expires_after="2024-03-05">
   <owner>nyquist@chromium.org</owner>
   <owner>yfriedman@chromium.org</owner>
   <summary>
@@ -2835,7 +2835,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.PackageStats.DataSize" units="MB"
-    expires_after="2023-03-05">
+    expires_after="2024-03-05">
   <owner>nyquist@chromium.org</owner>
   <owner>yfriedman@chromium.org</owner>
   <summary>
@@ -3111,9 +3111,7 @@ chromium-metrics-reviews@google.com.
 <histogram name="Android.PrepareMenu.OpenWebApkVisibilityCheck" units="ms"
     expires_after="2023-06-01">
   <owner>hartmanng@chromium.org</owner>
-  <owner>
-    src/chrome/android/java/src/org/chromium/chrome/browser/webapps/OWNERS
-  </owner>
+  <owner>src/chrome/android/webapk/OWNERS</owner>
   <summary>
     Measures the amount of time spent querying for whether a WebAPK is already
     installed.
@@ -3140,6 +3138,16 @@ chromium-metrics-reviews@google.com.
     means Mobile site while true means Desktop site. This is recorded when a
     user manually edits a domain level Request Desktop Setting from the site
     settings exception list.
+  </summary>
+</histogram>
+
+<histogram name="Android.RequestDesktopSite.PerSiteIphDismissed.AppMenuOpened"
+    enum="Boolean" expires_after="2023-07-26">
+  <owner>aishwaryarj@google.com</owner>
+  <owner>shuyng@google.com</owner>
+  <summary>
+    Records if a user opened the app menu as a consequence of showing the
+    per-site IPH, emitted when the IPH is dismissed.
   </summary>
 </histogram>
 
@@ -3521,6 +3529,7 @@ chromium-metrics-reviews@google.com.
     <variant name="StartSurface" summary="tabs opened from the start surface"/>
     <variant name="Startup" summary="tabs opened during the startup process"/>
     <variant name="TabGroupUI" summary="tabs opened from Tab group UI"/>
+    <variant name="TabSwitcherUI" summary="tabs opened from Tab Switcher UI"/>
     <variant name="TypeUnknown"
         summary="tabs opened from a different case than one's listed"/>
   </token>
@@ -3758,6 +3767,21 @@ chromium-metrics-reviews@google.com.
     Recorded on #isDirty calls that return false. Because #isDirty() is used to
     control when bitmap captures happen, this histogram holds the reason that
     the capture was not allowed.
+  </summary>
+</histogram>
+
+<histogram name="Android.TopToolbar.InMotionStage" enum="ToolbarInMotionStage"
+    expires_after="2023-12-31">
+  <owner>skym@chromium.org</owner>
+  <owner>seacow@google.com</owner>
+  <summary>
+    Captures the stages reached in the Toolbar's in motion handling. Recorded
+    every time the in motion state of the compositor changes, before the event
+    is routed to the renderer process. Motion states include: flinging, swiping,
+    and any gesture that the CompositorViewHolder is processing. This metric
+    shows how often the in motion handling had to request the toolbar's capture
+    readiness state, which is a computationally expensive operation, and could
+    slow down input handling.
   </summary>
 </histogram>
 

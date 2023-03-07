@@ -247,6 +247,8 @@ class PermissionRequestManager
     return !pending_permission_requests_.IsEmpty();
   }
 
+  void SetHatsShownCallback(base::OnceCallback<void()> callback) override;
+
  private:
   friend class test::PermissionRequestManagerTestApi;
   friend class content::WebContentsUserData<PermissionRequestManager>;
@@ -276,10 +278,10 @@ class PermissionRequestManager
   // Return true if we keep showing the current request, otherwise return false
   bool ReprioritizeCurrentRequestIfNeeded();
 
-  // Validate the input request. If the request is invalid, cancel and remove it
-  // from *_map_ and *_set_.
+  // Validate the input request. If the request is invalid and |should_finalize|
+  // is set, cancel and remove it from *_map_ and *_set_.
   // Return true if the request is valid, otherwise false.
-  bool ValidateRequest(PermissionRequest* request);
+  bool ValidateRequest(PermissionRequest* request, bool should_finalize = true);
 
   // Adds `request` into `pending_permission_requests_`, and request's
   // `source_frame` into `request_sources_map_`.
@@ -476,6 +478,8 @@ class PermissionRequestManager
   // A timer is used to pre-ignore the permission request if it's been displayed
   // as a quiet chip.
   base::OneShotTimer preignore_timer_;
+
+  absl::optional<base::OnceCallback<void()>> hats_shown_callback_;
 
   base::WeakPtrFactory<PermissionRequestManager> weak_factory_{this};
   WEB_CONTENTS_USER_DATA_KEY_DECL();

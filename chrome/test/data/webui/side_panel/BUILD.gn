@@ -2,14 +2,31 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//tools/typescript/ts_library.gni")
-import("//ui/webui/resources/tools/generate_grd.gni")
+import("../build_webui_tests.gni")
 
-ts_library("build_ts") {
-  root_dir = "./"
-  out_dir = "$target_gen_dir/tsc"
-  tsconfig_base = "tsconfig_base.json"
-  path_mappings = [
+build_webui_tests("build") {
+  resource_path_prefix = "side_panel"
+
+  files = [
+    "bookmarks/bookmark_folder_test.ts",
+    "bookmarks/bookmarks_drag_manager_test.ts",
+    "bookmarks/bookmarks_list_interactive_ui_test.ts",
+    "bookmarks/bookmarks_list_test.ts",
+    "bookmarks/power_bookmarks_edit_dialog_test.ts",
+    "bookmarks/power_bookmarks_list_test.ts",
+    "bookmarks/power_bookmarks_service_test.ts",
+    "bookmarks/test_bookmarks_api_proxy.ts",
+    "bookmarks/test_power_bookmarks_delegate.ts",
+    "bookmarks/commerce/shopping_list_test.ts",
+    "bookmarks/commerce/test_shopping_list_api_proxy.ts",
+    "reading_list/reading_list_app_test.ts",
+    "reading_list/test_reading_list_api_proxy.ts",
+    "read_anything/read_anything_app_test.ts",
+    "user_notes/app_test.ts",
+    "user_notes/test_user_notes_api_proxy.ts",
+  ]
+
+  ts_path_mappings = [
     "chrome://bookmarks-side-panel.top-chrome/*|" +
         rebase_path(
             "$root_gen_dir/chrome/browser/resources/side_panel/bookmarks/tsc/*",
@@ -23,47 +40,18 @@ ts_library("build_ts") {
     "chrome://user-notes-side-panel.top-chrome/*|" + rebase_path(
             "$root_gen_dir/chrome/browser/resources/side_panel/user_notes/tsc/*",
             target_gen_dir),
-    "chrome://webui-test/*|" +
-        rebase_path("$root_gen_dir/chrome/test/data/webui/tsc/*",
-                    target_gen_dir),
   ]
-  in_files = [
-    "bookmarks/bookmark_folder_test.ts",
-    "bookmarks/bookmarks_drag_manager_test.ts",
-    "bookmarks/bookmarks_list_interactive_ui_test.ts",
-    "bookmarks/bookmarks_list_test.ts",
-    "bookmarks/power_bookmarks_list_test.ts",
-    "bookmarks/power_bookmarks_service_test.ts",
-    "bookmarks/test_bookmarks_api_proxy.ts",
-    "bookmarks/commerce/shopping_list_test.ts",
-    "bookmarks/commerce/test_shopping_list_api_proxy.ts",
-    "reading_list/reading_list_app_test.ts",
-    "reading_list/test_reading_list_api_proxy.ts",
-    "read_anything/read_anything_app_test.ts",
-    "user_notes/app_test.ts",
-    "user_notes/test_user_notes_api_proxy.ts",
-  ]
-  definitions = [
+  ts_definitions = [
     "//chrome/browser/resources/side_panel/read_anything/read_anything.d.ts",
     "//tools/typescript/definitions/bookmarks.d.ts",
     "//tools/typescript/definitions/bookmark_manager_private.d.ts",
     "//tools/typescript/definitions/metrics_private.d.ts",
+    "//tools/typescript/definitions/pending.d.ts",
   ]
-  deps = [
-    "..:build_ts",
+  ts_deps = [
     "//chrome/browser/resources/side_panel/bookmarks:build_ts",
     "//chrome/browser/resources/side_panel/read_anything:build_ts",
     "//chrome/browser/resources/side_panel/reading_list:build_ts",
     "//chrome/browser/resources/side_panel/user_notes:build_ts",
   ]
-}
-
-generate_grd("build_grdp") {
-  grd_prefix = "webui_side_panel"
-  out_grd = "$target_gen_dir/resources.grdp"
-
-  deps = [ ":build_ts" ]
-  manifest_files =
-      filter_include(get_target_outputs(":build_ts"), [ "*.manifest" ])
-  resource_path_prefix = "side_panel"
 }

@@ -710,17 +710,29 @@ BASE_FEATURE(kCanvasFreeMemoryWhenHidden,
              "CanvasFreeMemoryWhenHidden",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+// When enabled, add a new option, {imageOrientation: 'none'}, to
+// createImageBitmap, which ignores the image orientation metadata of the source
+// and renders the image as encoded.
+BASE_FEATURE(kCreateImageBitmapOrientationNone,
+             "CreateImageBitmapOrientationNone",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // When enabled, frees up CachedMetadata after consumption by script resources
 // and modules. Needed for the experiment in http://crbug.com/1045052.
 BASE_FEATURE(kDiscardCodeCacheAfterFirstUse,
              "DiscardCodeCacheAfterFirstUse",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+// When enabled, code cache is produced asynchronously from the script execution
+// (https://crbug.com/1260908).
 BASE_FEATURE(kCacheCodeOnIdle,
              "CacheCodeOnIdle",
              base::FEATURE_DISABLED_BY_DEFAULT);
 const base::FeatureParam<int> kCacheCodeOnIdleDelayParam{&kCacheCodeOnIdle,
                                                          "delay-in-ms", 0};
+// Apply CacheCodeOnIdle only for service workers (https://crbug.com/1410082).
+const base::FeatureParam<bool> kCacheCodeOnIdleDelayServiceWorkerOnlyParam{
+    &kCacheCodeOnIdle, "service-worker-only", false};
 
 // Make all pending 'display: auto' web fonts enter the swap or failure period
 // immediately before reaching the LCP time limit (~2500ms), so that web fonts
@@ -1202,10 +1214,15 @@ int GetMaxUnthrottledTimeoutNestingLevel() {
   return kMaxUnthrottledTimeoutNestingLevelParam.Get();
 }
 
-// Enables reporting and web-exposure (respectively) of the time the first frame
-// of an animated image was painted.
+// Enables reporting as LCP of the time the first frame of an animated image was
+// painted.
 BASE_FEATURE(kLCPAnimatedImagesReporting,
              "LCPAnimatedImagesReporting",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Enables reporting as LCP of the time the first frame of a video was painted.
+BASE_FEATURE(kLCPVideoFirstFrame,
+             "LCPVideoFirstFrame",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 BASE_FEATURE(kOriginAgentClusterDefaultEnabled,
@@ -1555,10 +1572,6 @@ BASE_FEATURE(kThreadedBodyLoader,
              "ThreadedBodyLoader",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-BASE_FEATURE(kDocumentEventNodePathCaching,
-             "DocumentEventNodePathCaching",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
 BASE_FEATURE(kNewBaseUrlInheritanceBehavior,
              "NewBaseUrlInheritanceBehavior",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -1576,9 +1589,6 @@ bool IsNewBaseUrlInheritanceBehaviorEnabled() {
          !base::CommandLine::ForCurrentProcess()->HasSwitch(
              switches::kDisableNewBaseUrlInheritanceBehavior);
 }
-
-const base::FeatureParam<int> kDocumentMaxEventNodePathCachedEntries{
-    &kDocumentEventNodePathCaching, "max-cache-entries", 10};
 
 BASE_FEATURE(
     kPostMessageFirstPartyToThirdPartyDifferentBucketSameOriginBlocked,

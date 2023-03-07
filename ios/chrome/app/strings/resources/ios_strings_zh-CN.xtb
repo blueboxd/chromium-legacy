@@ -18,6 +18,7 @@
 <translation id="1066060668811609597">管理同步数据</translation>
 <translation id="1076421457278169141">已扫描代码</translation>
 <translation id="1076785341346483463">与受管理的帐号同步</translation>
+<translation id="1080365971383768617">在所有设备上使用您的密码</translation>
 <translation id="1084365883616172403">Facebook 信息发布已完成。</translation>
 <translation id="1085696779717592361">默认使用 Chrome</translation>
 <translation id="1103523840287552314">一律翻译<ph name="LANGUAGE" /></translation>
@@ -74,19 +75,19 @@
 <translation id="1404330357948037222">您已退出登录</translation>
 <translation id="1407135791313364759">全部打开</translation>
 <translation id="1430915738399379752">打印</translation>
-<translation id="1434356225517321998">您的浏览器处于受管理状态。<ph name="BEGIN_LINK" />详细信息<ph name="END_LINK" /></translation>
 <translation id="1449835205994625556">隐藏密码</translation>
 <translation id="1450170672351507823">已开启标准保护。若要进一步提升安全性，请使用增强型保护。</translation>
 <translation id="149095475893949513">此网站正要尝试下载一个配置文件。</translation>
 <translation id="1491277525950327607">点按两次即可切换设置</translation>
 <translation id="1492417797159476138">您已为此网站保存该用户名</translation>
+<translation id="1498283581832036924">您的 <ph name="WEBSITE" /> 帐号不会被删除。</translation>
 <translation id="1506063256525392513">这样您就能拍摄并上传照片，还能扫描二维码</translation>
 <translation id="1509486075633541495">登录网站</translation>
 <translation id="1509960214886564027">很多网站上的功能可能会无法正常运作</translation>
 <translation id="152234381334907219">一律不保存</translation>
 <translation id="1523341279170789507">允许所有 Cookie</translation>
 <translation id="1531836666020185856">精选</translation>
-<translation id="1535268707340844072">您目前的设置可能会导致部分网站无法正常运行。若要管理所有网站的 Cookie，请参阅 <ph name="BEGIN_LINK" />Cookie 设置<ph name="END_LINK" />。</translation>
+<translation id="1535268707340844072">您目前的设置可能会导致部分网站无法正常运行。若要管理所有网站的 Cookie，请查看 <ph name="BEGIN_LINK" />Cookie 设置<ph name="END_LINK" />。</translation>
 <translation id="1540800554400757039">地址第1行</translation>
 <translation id="1545749641540134597">扫描二维码</translation>
 <translation id="1552525382687785070">您的管理员已停用同步功能</translation>
@@ -145,6 +146,7 @@
 <translation id="2015722694326466240">要想查看密码，您必须先在设备上设置密码。</translation>
 <translation id="2021670401941426298">查看您所用搜索引擎的说明，了解如何删除您的搜索记录（若适用）。</translation>
 <translation id="202292859882676807">已启用麦克风使用权限</translation>
+<translation id="20485545164632846">新项</translation>
 <translation id="2050196510205866090">{count,plural, =1{键盘上方显示了 {count} 种已保存的付款方式。}other{键盘上方显示了 {count} 种已保存的付款方式。}}</translation>
 <translation id="2073572773299281212"><ph name="DAYS" /> 天前曾有活动</translation>
 <translation id="2074131957428911366">您始终可在<ph name="BEGIN_LINK" />设置<ph name="END_LINK" />中选择要同步的内容。</translation>
@@ -218,6 +220,7 @@
 <translation id="2664621323652615289">停止</translation>
 <translation id="2671426118752779020">您可在 iPhone 上的其他应用内使用已保存至 Google 密码管理器的密码。</translation>
 <translation id="2690858294534178585">相机正在使用中</translation>
+<translation id="26915454213703967">使用 Google 搜索图片中的内容</translation>
 <translation id="2691653761409724435">无法离线查看</translation>
 <translation id="2695507686909505111">网页翻译完毕</translation>
 <translation id="2697526135132990015">退出登录并清除数据</translation>
@@ -239,7 +242,7 @@
 <translation id="2781331604911854368">已开启</translation>
 <translation id="2781692009645368755">Google Pay</translation>
 <translation id="2783054063075604403">无法创建链接</translation>
-<translation id="2786701870377699570">跨各部已同步的设备搜索标签页</translation>
+<translation id="2786701870377699570">在所有已同步的设备上搜索标签页</translation>
 <translation id="2797029671965852011">显示历史记录</translation>
 <translation id="2800683595868705743">离开标签页切换器</translation>
 <translation id="2815198996063984598">2. 点按“默认浏览器应用”</translation>
@@ -276,7 +279,7 @@
 <translation id="2982481275546140226">清除数据</translation>
 <translation id="298306318844797842">添加付款方式…</translation>
 <translation id="2989805286512600854">在新标签页中打开</translation>
-<translation id="3020183492814296499">快捷键</translation>
+<translation id="3020183492814296499">快捷方式</translation>
 <translation id="3037605927509011580">喔唷，崩溃啦！</translation>
 <translation id="3039722182465315531">不登录</translation>
 <translation id="3076846064362030967">您不会因此而退出自己的 Google 帐号。当您登录后，系统可能会将<ph name="BEGIN_LINK" />其他形式的活动记录<ph name="END_LINK" />保存在您的 Google 帐号中。您可以随时删除这些记录。
@@ -345,10 +348,10 @@
 <translation id="3519193562722059437">打开一个标签页即可浏览网络。</translation>
 <translation id="3527085408025491307">文件夹</translation>
 <translation id="3529024052484145543">不安全</translation>
-<translation id="3530206579861815432">跨您的各部已同步的设备快速找到当前打开的和最近关闭的标签页。</translation>
+<translation id="3530206579861815432">在所有已同步的设备上快速找到当前打开的和最近关闭的标签页。</translation>
 <translation id="3533202363250687977">关闭所有无痕式标签页</translation>
 <translation id="3533436815740441613">打开新的标签页</translation>
-<translation id="3540141921715814660">添加到“书签”</translation>
+<translation id="3540141921715814660">添加到书签</translation>
 <translation id="3551320343578183772">关闭标签页</translation>
 <translation id="3565207542107370586">清除浏览数据…</translation>
 <translation id="3575234738189584619">使用智能镜头搜索</translation>
@@ -382,6 +385,7 @@
 <translation id="3819183753496523827">您未联网。请检查您的互联网连接状况，然后重试。</translation>
 <translation id="3835964409414434850">转到下一个标签页</translation>
 <translation id="385051799172605136">返回</translation>
+<translation id="3851938967634752633">用于登录 <ph name="WEBSITE" />、<ph name="SECOND_WEBSITE" /> 和另外 <ph name="NUMBER_OF_ACCOUNTS" /> 个网站的密码将被删除。您的相关帐号不会被删除。</translation>
 <translation id="3858860766373142691">名称</translation>
 <translation id="3861486700625780712">取消关注</translation>
 <translation id="3863769054730344136">发送到您的设备</translation>
@@ -397,7 +401,6 @@
 <translation id="3929457972718048006">地址</translation>
 <translation id="3943492037546055397">密码</translation>
 <translation id="3959736869653157332">菜单 → 打开新的无痕式标签页</translation>
-<translation id="3964173450954943920">您随时可在<ph name="BEGIN_LINK" />设置<ph name="END_LINK" />中选择要同步的内容。Google 可能会使用您的历史记录为您提供个性化的 Google 搜索和其他 Google 服务。</translation>
 <translation id="3967822245660637423">下载完毕</translation>
 <translation id="3968505803272650567">管理感兴趣的主题</translation>
 <translation id="3989635538409502728">退出</translation>
@@ -407,7 +410,7 @@
 <translation id="4018310736049373830">管理我的活动记录</translation>
 <translation id="4038354071007134711">此设备上没有可以打开该文件的应用。</translation>
 <translation id="4042870976416480368">在网页中查找</translation>
-<translation id="40433179647657191">创建并分享一个指向您已突出显示的网页区域的直接链接。</translation>
+<translation id="40433179647657191">为您突出显示的部分网页内容创建直接链接并分享。</translation>
 <translation id="4049507953662678203">请确保已连接到网络，然后重试。</translation>
 <translation id="4063300985191096908">前往 Feed</translation>
 <translation id="408404951701638773">现在可以更方便地使用搜索栏</translation>
@@ -518,6 +521,7 @@
 <translation id="4833786495304741580">自动将使用情况统计信息和崩溃报告发送至 Google。</translation>
 <translation id="4840495572919996524">您的书签、历史记录、密码和其他信息将不再同步到您的 Google 帐号中。</translation>
 <translation id="4844899002472726590">查看和修改您感兴趣的主题</translation>
+<translation id="4848999860252535517">删除用于登录 <ph name="WEBSITE" /> 的密码？</translation>
 <translation id="4854345657858711387">设置密码</translation>
 <translation id="4858786880085262208">尽可能升级到 HTTPS。安全网站可能会内嵌不安全的内容。</translation>
 <translation id="4860895144060829044">拨打</translation>
@@ -546,6 +550,7 @@
 <translation id="5056446788882570708"><ph name="TIME" />发现了问题。</translation>
 <translation id="5059136629401106827">知道了</translation>
 <translation id="5062321486222145940">安装Google云端硬盘</translation>
+<translation id="50641035439563602">现在，系统会将密码保存到您的 Google 帐号 (<ph name="ACCOUNT" />)。无论您在哪部设备上登录，都可以使用这些密码。如需关闭此功能，请前往<ph name="BEGIN_LINK" />设置<ph name="END_LINK" />页面。</translation>
 <translation id="5083464117946352670">无法确定文件大小。</translation>
 <translation id="5090832849094901128">删除此密码不会删除您在 <ph name="WEBSITE" /> 上的帐号。</translation>
 <translation id="5094827893301452931">Tweet 信息发布已完成。</translation>
@@ -590,7 +595,7 @@
 <translation id="5443952882982198570">信用卡</translation>
 <translation id="5444892875087332195">书签</translation>
 <translation id="5457226814769348910">打开离线版</translation>
-<translation id="5489208564673669003">若要管理所有网站的 Cookie，请参阅 <ph name="BEGIN_LINK" />Cookie 设置<ph name="END_LINK" />。</translation>
+<translation id="5489208564673669003">若要管理所有网站的 Cookie，请查看 <ph name="BEGIN_LINK" />Cookie 设置<ph name="END_LINK" />。</translation>
 <translation id="5490005495580364134">阻止所有 Cookie（不建议）</translation>
 <translation id="5513681519188741830"><ph name="TIME" /> 小时前</translation>
 <translation id="5520466080178053306">点按“密码管理工具”，然后点按“添加”</translation>
@@ -652,7 +657,6 @@
 <translation id="5899314093904173337">若要与附近的人分享，请让他们用相机或二维码扫描器应用扫描此二维码</translation>
 <translation id="5911030830365207728">Google 翻译</translation>
 <translation id="5913600720976431809">网页翻译选项</translation>
-<translation id="5933515656458364246">在所有设备上同步您的数据。</translation>
 <translation id="5938160824633642847">您设备上的存储空间即将用尽，请释放空间并重试。</translation>
 <translation id="5948291296578561264">这样，您便可将照片保存到您的照片库中。</translation>
 <translation id="5951816930277761335">分享链接</translation>
@@ -710,7 +714,7 @@
 <translation id="6284652193729350524">主动询问是否翻译<ph name="LANGUAGE" />内容</translation>
 <translation id="6289501276895392862">已取消关注“<ph name="CHANNEL_NAME" />”</translation>
 <translation id="6293101329759844770">如需开启“安全浏览”功能，请打开 <ph name="BEGIN_LINK" />Google 服务<ph name="END_LINK" />，然后点按“安全浏览”。</translation>
-<translation id="6321526113093607004">添加到“书签”</translation>
+<translation id="6321526113093607004">添加到书签</translation>
 <translation id="6324669097367352121">登录设置</translation>
 <translation id="6337234675334993532">加密</translation>
 <translation id="633809752005859102">出错了，我们马上处理。</translation>
@@ -740,6 +744,7 @@
 <translation id="6434591244308415567">发生错误，请稍后重试。</translation>
 <translation id="6435236283694032571">添加到阅读清单</translation>
 <translation id="6439338047467462846">全部允许</translation>
+<translation id="6442697326824312960">取消固定标签页</translation>
 <translation id="6445051938772793705">国家/地区</translation>
 <translation id="6445981559479772097">短信已发送。</translation>
 <translation id="6447842834002726250">Cookie</translation>
@@ -770,6 +775,7 @@
 <translation id="6598875554591387303">按发布者排序</translation>
 <translation id="6603393121510733479">贵单位关闭了无痕浏览。
 <ph name="BEGIN_LINK" />了解详情<ph name="END_LINK" /></translation>
+<translation id="6609890790934458793">用于登录 <ph name="WEBSITE" />、<ph name="SECOND_WEBSITE" /> 和 <ph name="THIRD_WEBSITE" /> 的密码将被删除。您的相关帐号不会被删除。</translation>
 <translation id="6610002944194042868">翻译选项</translation>
 <translation id="661266467055912436">为您和网络上的所有人提供更好的安全保障。</translation>
 <translation id="6620279676667515405">取消</translation>
@@ -839,6 +845,7 @@
 <translation id="7053983685419859001">禁止</translation>
 <translation id="7062545763355031412">接受并切换帐号</translation>
 <translation id="7080806333218412752">会将网址发送给“安全浏览”功能进行检查。还会发送网页、下载内容、扩展程序活动和系统信息的少量样本，以帮助发现新威胁。而且，会在您登录后暂时将这些数据关联到您的 Google 帐号，以便在各个 Google 应用中为您提供保护。</translation>
+<translation id="7095110968493193530">保存到 <ph name="EMAIL" /> 的 Google 密码管理工具</translation>
 <translation id="7099761977003084116">最近打开的标签页</translation>
 <translation id="7102005569666697658">正在下载…<ph name="FILE_SIZE" /></translation>
 <translation id="7108338896283013870">隐藏</translation>
@@ -951,6 +958,7 @@
 <translation id="7987685713885608670">为了提高安全性，请先在设备上对密码进行加密，然后再将其保存到 Google 密码管理器中。</translation>
 <translation id="7993619969781047893">某些网站上的功能可能会无法正常运作</translation>
 <translation id="800361585186029508">在 Google Chrome 中打开输入的网址。</translation>
+<translation id="8005666035647241369">保存到此设备上的 Google 密码管理器中</translation>
 <translation id="8016714545083187120">一律使用安全连接</translation>
 <translation id="802154636333426148">下载失败</translation>
 <translation id="8023878949384262191">展开此部分。</translation>
@@ -1032,6 +1040,7 @@
 <translation id="8680787084697685621">帐号登录详细信息已过期。</translation>
 <translation id="8693663554456874301">{count,plural, =1{关闭这个标签页}other{关闭这些标签页}}</translation>
 <translation id="8706588385081740091">密码</translation>
+<translation id="8712637175834984815">知道了</translation>
 <translation id="8717864919010420084">复制链接</translation>
 <translation id="8721297211384281569">工具菜单</translation>
 <translation id="8725066075913043281">重试</translation>
@@ -1044,6 +1053,7 @@
 <translation id="8756969031206844760">要更新密码吗？</translation>
 <translation id="8763613688786959833">转到最后一个标签页</translation>
 <translation id="8764015330924122850">取消关注“<ph name="DOMAIN_NAME" />”</translation>
+<translation id="8766790350274092814">用于登录 <ph name="WEBSITE" /> 和 <ph name="SECOND_WEBSITE" /> 的密码将被删除。您的相关帐号不会被删除。</translation>
 <translation id="8775144690796719618">网址无效</translation>
 <translation id="8787968206789828143">在网络上搜索</translation>
 <translation id="8792626944327216835">麦克风</translation>
@@ -1093,6 +1103,7 @@
 <translation id="9093271241977565440">点按屏幕顶部的“搜索”图标</translation>
 <translation id="9094033019050270033">更新密码</translation>
 <translation id="9097506547406246598">无法取消关注。出了点问题。</translation>
+<translation id="9098541895599151034">删除 <ph name="NUMBER_OF_ACCOUNTS" /> 个密码？</translation>
 <translation id="9100610230175265781">必须提供密码</translation>
 <translation id="9107664647686727385">检查是否有已泄露的密码</translation>
 <translation id="9124387962554796433">Google 可能会使用您的历史记录为您提供个性化的 Google 搜索和其他 Google 服务。</translation>

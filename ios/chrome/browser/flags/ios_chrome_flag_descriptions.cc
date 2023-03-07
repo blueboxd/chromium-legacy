@@ -43,17 +43,17 @@ const char kAutofillEnableNewCardUnmaskPromptViewDescription[] =
     "Displays the new autofill prompt for entering a credit card's CVC and "
     "(optional) expiration date.";
 
-const char kAutofillEnableRankingFormulaName[] =
-    "Enable new Autofill suggestion ranking formula";
-const char kAutofillEnableRankingFormulaDescription[] =
-    "When enabled, Autofill will use a new ranking formula to rank Autofill "
-    "data model suggestions such as credit cards or profiles";
-
 const char kAutofillEnableRankingFormulaAddressProfilesName[] =
     "Enable new Autofill suggestion ranking formula for address profiles";
 const char kAutofillEnableRankingFormulaAddressProfilesDescription[] =
     "When enabled, Autofill will use a new ranking formula to rank Autofill "
     "address profile suggestions.";
+
+const char kAutofillEnableRankingFormulaCreditCardsName[] =
+    "Enable new Autofill suggestion ranking formula for credit cards";
+const char kAutofillEnableRankingFormulaCreditCardsDescription[] =
+    "When enabled, Autofill will use a new ranking formula to rank Autofill "
+    "data model credit card suggestions.";
 
 const char kAutofillEnableRemadeDownstreamMetricsName[] =
     "Enable remade Autofill Downstream metrics logging";
@@ -252,6 +252,11 @@ const char kEnableDiscoverFeedTopSyncPromoDescription[] =
     "When enabled, a sync promotion will be presented to eligible users on top "
     "of the feed cards.";
 
+const char kEnableFeedHeaderSettingsName[] =
+    "Enables the feed header settings.";
+const char kEnableFeedHeaderSettingsDescription[] =
+    "When enabled, some UI elements of the feed header can be modified.";
+
 const char kDmTokenDeletionName[] = "DMToken deletion";
 const char kDmTokenDeletionDescription[] =
     "Delete the corresponding DMToken when a managed browser is deleted in "
@@ -291,6 +296,11 @@ const char kEnableDiscoverFeedDiscoFeedEndpointName[] =
 const char kEnableDiscoverFeedDiscoFeedEndpointDescription[] =
     "Enable using the discofeed endpoint for the discover feed.";
 
+const char kHideMVTAndShortcutsForNewUsersName[] =
+    "Enable hiding the Most Visited Tiles and Shortcuts";
+const char kHideMVTAndShortcutsForNewUsersDescription[] =
+    "Enable hiding the Most Visited Tiles and Shortcuts for new users";
+
 const char kEnableFeedAblationName[] = "Enables Feed Ablation";
 const char kEnableFeedAblationDescription[] =
     "If Enabled the Feed will be removed from the NTP";
@@ -307,14 +317,20 @@ const char kEnableFeedCardMenuSignInPromoDescription[] =
     "Display a sign-in promotion UI when signed out users click on "
     "personalization options within the feed card menu.";
 
+const char kEnableFeedImageCachingName[] = "Enable Feed image caching";
+const char kEnableFeedImageCachingDescription[] =
+    "If enabled images in the Feed will be cached for the next time the feed "
+    "is loaded.";
+
+const char kEnableFeedSyntheticCapabilitiesName[] =
+    "Enable Feed synthetic capabilities.";
+const char kEnableFeedSyntheticCapabilitiesDescription[] =
+    "If enabled synthethic capablities will be used to inform the server of "
+    "the client capabilities.";
+
 const char kEnableFullscreenAPIName[] = "Enable Fullscreen API";
 const char kEnableFullscreenAPIDescription[] =
     "Enable the Fullscreen API for web content (iOS 16.0+).";
-
-const char kEnableNewBookmarksImplementationName[] =
-    "Enable New Bookmarks Implementation";
-const char kEnableNewBookmarksImplementationDescription[] =
-    "Enable the new bookmarks implementation with coordinators";
 
 const char kPasswordsGroupingName[] =
     "Enable password grouping for the Password Manager";
@@ -861,6 +877,12 @@ const char kEnableLensInNTPDescription[] =
     "menu when Google is the selected search engine, accessible from the"
     "new tab page.";
 
+const char kEnableLensContextMenuAltTextName[] =
+    "Enable alternate text for Google Lens in Context Menu";
+const char kEnableLensContextMenuAltTextDescription[] =
+    "When enabled, use the alternate text for the search image with Google "
+    "Lens context menu string.";
+
 const char kEnableLensInOmniboxCopiedImageName[] =
     "Enable Google Lens in the Omnibox for Copied Images";
 const char kEnableLensInOmniboxCopiedImageDescription[] =
@@ -871,6 +893,15 @@ const char kEnableLensInOmniboxCopiedImageDescription[] =
 const char kTabGridRecencySortName[] = "Change TabGrid sorting";
 const char kTabGridRecencySortDescription[] =
     "When enabled, the tabs in the Tab Grid are sorted differently.";
+
+const char kTabStripContextMenuName[] = "Tab Strip Context Menu";
+const char kTabStripContextMenuDescription[] =
+    "Add context menu to tab strip items.";
+
+const char kTabInactivityThresholdName[] = "Change Tab inactivity threshold";
+const char kTabInactivityThresholdDescription[] =
+    "When enabled, the tabs older than the threshold are considered inactive "
+    "and set aside in the Inactive Tabs section of the TabGrid.";
 
 const char kUseLoadSimulatedRequestForOfflinePageName[] =
     "Use loadSimulatedRequest:responseHTMLString: when displaying offline "

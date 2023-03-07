@@ -231,6 +231,9 @@ public final class EventConstants {
     public static final String PAGE_INFO_STORE_INFO_ROW_CLICKED =
             "page_info_store_info_row_clicked";
 
+    /** PageZoom events. */
+    public static final String PAGE_ZOOM_OPENED = "page_zoom_opened";
+
     /** Permission events. */
     public static final String PERMISSION_REQUEST_SHOWN = "permission_request_shown";
 
@@ -313,6 +316,10 @@ public final class EventConstants {
 
     /** Desktop site opt-in message gesture event. */
     public static final String DESKTOP_SITE_OPT_IN_GESTURE = "desktop_site_opt_in_gesture";
+
+    /** An app menu desktop site exception addition event. */
+    public static final String APP_MENU_DESKTOP_SITE_EXCEPTION_ADDED =
+            "app_menu_desktop_site_exception_added";
 
     /**
      * Do not instantiate.

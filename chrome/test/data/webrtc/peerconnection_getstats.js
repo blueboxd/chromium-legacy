@@ -501,13 +501,14 @@ addRTCStatsToAllowlist(Presence.MANDATORY, 'certificate', kRTCCertificateStats);
  * @private
  */
 let kRTCAudioPlayoutStats = new RTCStats(null, {
+  kind: 'string',
   synthesizedSamplesDuration: 'number',
   synthesizedSamplesEvents: 'number',
   totalSamplesDuration: 'number',
   totalPlayoutDelay: 'number',
   totalSamplesCount: 'number',
 });
-addRTCStatsToAllowlist(Presence.OPTIONAL, 'audio-playout', kRTCAudioPlayoutStats);
+addRTCStatsToAllowlist(Presence.OPTIONAL, 'media-playout', kRTCAudioPlayoutStats);
 
 // Public interface to tests. These are expected to be called with
 // ExecuteJavascript invocations from the browser tests and will return answers

@@ -1662,7 +1662,7 @@ TEST_P(RenderFrameHostManagerTest, CloseWithPendingWhileUnresponsive) {
   TestRenderFrameHost* rfh1 = contents()->GetPrimaryMainFrame();
 
   // Start to close the tab, but assume it's unresponsive.
-  rfh1->ClosePage();
+  rfh1->ClosePage(RenderFrameHostImpl::ClosePageSource::kBrowser);
   EXPECT_EQ(rfh1->page_close_state_,
             RenderFrameHostImpl::PageCloseState::kRunningUnloadHandlers);
 
@@ -1673,7 +1673,7 @@ TEST_P(RenderFrameHostManagerTest, CloseWithPendingWhileUnresponsive) {
   EXPECT_TRUE(contents()->CrossProcessNavigationPending());
 
   // Simulate the unresponsiveness timer.  The tab should close.
-  rfh1->ClosePageTimeout();
+  rfh1->ClosePageTimeout(RenderFrameHostImpl::ClosePageSource::kBrowser);
   EXPECT_TRUE(close_delegate.is_closed());
 }
 
@@ -3582,9 +3582,10 @@ class RenderFrameHostManagerTestWithBackForwardCache
  public:
   RenderFrameHostManagerTestWithBackForwardCache() {
     scoped_feature_list_.InitWithFeaturesAndParameters(
-        {{features::kBackForwardCache,
+        {{features::kBackForwardCache, {{}}},
+         {features::kBackForwardCacheTimeToLiveControl,
           {
-              {"TimeToLiveInBackForwardCacheInSeconds", "3600"},
+              {"time_to_live_seconds", "3600"},
           }}},
         // Allow BackForwardCache for all devices regardless of their memory.
         /*disabled_features=*/{features::kBackForwardCacheMemoryControls});

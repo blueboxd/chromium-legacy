@@ -422,7 +422,6 @@ component("keyboard_hook") {
   }
 
   if (use_ozone) {
-    public += [ "ozone/keyboard_hook_ozone.h" ]
     sources += [ "ozone/keyboard_hook_ozone.cc" ]
     deps += [
       "//ui/base:features",
@@ -482,6 +481,7 @@ component("gesture_detection") {
     "//base",
     "//base/third_party/dynamic_annotations",
     "//build:chromeos_buildflags",
+    "//ui/base:features",
     "//ui/display",
     "//ui/gfx",
     "//ui/gfx/geometry",

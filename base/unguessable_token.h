@@ -56,23 +56,14 @@ class BASE_EXPORT UnguessableToken {
   // default constructor.
   static const UnguessableToken& Null();
 
-  // NOTE: This method is deprecated and will soon be replaced by the one below.
-  // Return a UnguessableToken built from the high/low bytes provided.
+  // Return an UnguessableToken built from the high/low bytes provided.
   // It should only be used in deserialization scenarios.
   //
-  // NOTE: If the deserialized token is empty, it means that it was never
+  // NOTE: If the returned `absl::optional` does not have a value, it means that
+  // `high` and `low` correspond to an `UnguesssableToken` that was never
   // initialized via Create(). This is a security issue, and should be handled.
-  static UnguessableToken Deserialize(uint64_t high, uint64_t low);
-
-  // Return a UnguessableToken built from the high/low bytes provided.
-  // It should only be used in deserialization scenarios.
-  //
-  // NOTE: Once `Deserialize` above is removed, this will be renamed to that.
-  //
-  // NOTE: If the deserialized token is empty, it means that it was never
-  // initialized via Create(). This is a security issue, and should be handled.
-  static absl::optional<UnguessableToken> Deserialize2(uint64_t high,
-                                                       uint64_t low);
+  static absl::optional<UnguessableToken> Deserialize(uint64_t high,
+                                                      uint64_t low);
 
   // Creates an empty UnguessableToken.
   // Assign to it with Create() before using it.
@@ -116,7 +107,9 @@ class BASE_EXPORT UnguessableToken {
 
 #if defined(UNIT_TEST)
   static UnguessableToken CreateForTesting(uint64_t high, uint64_t low) {
-    return Deserialize(high, low);
+    absl::optional<UnguessableToken> token = Deserialize(high, low);
+    DCHECK(token.has_value());
+    return token.value();
   }
 #endif
 

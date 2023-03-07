@@ -32,9 +32,14 @@ PermissionPromptChip::PermissionPromptChip(Browser* browser,
       delegate_(delegate) {
   DCHECK(delegate_);
   LocationBarView* lbv = GetLocationBarView();
+
   if (!lbv->chip_controller()->chip()) {
     lbv->CreateChip();
   }
+
+  // Before showing a chip make sure the LocationBar is in a valid state. That
+  // fixes a bug when a chip overlays the padlock icon.
+  lbv->InvalidateLayout();
 
   if (delegate->ShouldCurrentRequestUseQuietUI())
     PreemptivelyResolvePermissionRequest(web_contents, delegate);
@@ -46,7 +51,11 @@ PermissionPromptChip::PermissionPromptChip(Browser* browser,
 PermissionPromptChip::~PermissionPromptChip() = default;
 
 bool PermissionPromptChip::UpdateAnchor() {
-  UpdateBrowser();
+  if (UpdateBrowser()) {
+    // A ChipController instance is owned by a LocationBarView, which in turn
+    // is owned by the browser instance. Hence we have to recreate the view.
+    return false;
+  }
 
   LocationBarView* lbv = GetLocationBarView();
 
@@ -60,7 +69,6 @@ bool PermissionPromptChip::UpdateAnchor() {
       !is_location_bar_drawn) {
     chip_controller_->ResetPermissionPromptChip();
     if (delegate_) {
-      chip_controller_->UpdateBrowser(browser());
       return false;
     }
   }

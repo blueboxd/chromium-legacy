@@ -11,24 +11,27 @@ load("//lib/consoles.star", "consoles")
 load("//project.star", "settings")
 
 try_.defaults.set(
-    builder_group = "tryserver.chromium.android",
     executable = try_.DEFAULT_EXECUTABLE,
+    builder_group = "tryserver.chromium.android",
+    pool = try_.DEFAULT_POOL,
     cores = 8,
     os = os.LINUX_DEFAULT,
-    pool = try_.DEFAULT_POOL,
-    service_account = try_.DEFAULT_SERVICE_ACCOUNT,
     compilator_cores = 32,
     compilator_goma_jobs = goma.jobs.J300,
     execution_timeout = try_.DEFAULT_EXECUTION_TIMEOUT,
     goma_backend = goma.backend.RBE_PROD,
+
+    # TODO(crbug.com/1362440): remove this.
+    omit_python2 = False,
     orchestrator_cores = 4,
     reclient_instance = reclient.instance.DEFAULT_UNTRUSTED,
     reclient_jobs = reclient.jobs.HIGH_JOBS_FOR_CQ,
+    service_account = try_.DEFAULT_SERVICE_ACCOUNT,
 )
 
 consoles.list_view(
     name = "tryserver.chromium.android",
-    branch_selector = branches.STANDARD_MILESTONE,
+    branch_selector = branches.selector.ANDROID_BRANCHES,
 )
 
 try_.builder(
@@ -60,8 +63,7 @@ try_.builder(
 
 try_.orchestrator_builder(
     name = "android-12-x64-rel",
-    branch_selector = branches.STANDARD_MILESTONE,
-    compilator = "android-12-x64-rel-compilator",
+    branch_selector = branches.selector.ANDROID_BRANCHES,
     mirrors = [
         "ci/android-12-x64-rel",
     ],
@@ -70,11 +72,12 @@ try_.orchestrator_builder(
             condition = builder_config.rts_condition.QUICK_RUN_ONLY,
         ),
     ),
-    main_list_view = "try",
-    tryjob = try_.job(),
+    compilator = "android-12-x64-rel-compilator",
     experiments = {
         "chromium_rts.inverted_rts": 100,
     },
+    main_list_view = "try",
+    tryjob = try_.job(),
     # TODO(crbug.com/1372179): Use orchestrator pool once overloaded test pools
     # are addressed
     # use_orchestrator_pool = True,
@@ -82,7 +85,7 @@ try_.orchestrator_builder(
 
 try_.compilator_builder(
     name = "android-12-x64-rel-compilator",
-    branch_selector = branches.STANDARD_MILESTONE,
+    branch_selector = branches.selector.ANDROID_BRANCHES,
     main_list_view = "try",
 )
 
@@ -105,9 +108,8 @@ try_.builder(
 
 try_.orchestrator_builder(
     name = "android-arm64-rel",
+    branch_selector = branches.selector.ANDROID_BRANCHES,
     description_html = "This builder may trigger tests on multiple Android versions.",
-    branch_selector = branches.STANDARD_MILESTONE,
-    compilator = "android-arm64-rel-compilator",
     mirrors = [
         "ci/Android Release (Nexus 5X)",  # Nexus 5X on Nougat
         "ci/android-pie-arm64-rel",  # Pixel 1, 2 on Pie
@@ -117,12 +119,13 @@ try_.orchestrator_builder(
             condition = builder_config.rts_condition.QUICK_RUN_ONLY,
         ),
     ),
-    main_list_view = "try",
     check_for_flakiness = True,
-    tryjob = try_.job(),
+    compilator = "android-arm64-rel-compilator",
     experiments = {
         "chromium_rts.inverted_rts": 100,
     },
+    main_list_view = "try",
+    tryjob = try_.job(),
     # TODO(crbug.com/1372179): Use orchestrator pool once overloaded test pools
     # are addressed
     # use_orchestrator_pool = True,
@@ -131,7 +134,6 @@ try_.orchestrator_builder(
 
 try_.orchestrator_builder(
     name = "android-arm64-rel-inverse-fyi",
-    compilator = "android-arm64-rel-compilator",
     mirrors = [
         "ci/Android Release (Nexus 5X)",  # Nexus 5X on Nougat
         "ci/android-pie-arm64-rel",  # Pixel 1, 2 on Pie
@@ -142,19 +144,20 @@ try_.orchestrator_builder(
         ),
     ),
     check_for_flakiness = True,
+    compilator = "android-arm64-rel-compilator",
     experiments = {
         "chromium_rts.inverted_rts": 100,
         "chromium_rts.inverted_rts_bail_early": 100,
     },
-    use_orchestrator_pool = True,
     use_clang_coverage = True,
+    use_orchestrator_pool = True,
 )
 
 try_.compilator_builder(
     name = "android-arm64-rel-compilator",
-    branch_selector = branches.STANDARD_MILESTONE,
-    main_list_view = "try",
+    branch_selector = branches.selector.ANDROID_BRANCHES,
     check_for_flakiness = True,
+    main_list_view = "try",
 )
 
 try_.builder(
@@ -175,13 +178,13 @@ try_.builder(
 
 try_.builder(
     name = "android-binary-size",
-    branch_selector = branches.STANDARD_MILESTONE,
+    branch_selector = branches.selector.ANDROID_BRANCHES,
     executable = "recipe:binary_size_trybot",
     builderless = not settings.is_main,
     cores = 16,
     ssd = True,
-    main_list_view = "try",
     goma_backend = None,
+    main_list_view = "try",
 
     # TODO(crbug.com/1362440): remove this.
     omit_python2 = False,
@@ -206,12 +209,12 @@ try_.builder(
 
 try_.builder(
     name = "android-cronet-arm-dbg",
-    branch_selector = branches.STANDARD_MILESTONE,
+    branch_selector = branches.selector.ANDROID_BRANCHES,
     mirrors = [
         "ci/android-cronet-arm-dbg",
     ],
-    main_list_view = "try",
     goma_backend = None,
+    main_list_view = "try",
     reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
     tryjob = try_.job(
         location_filters = [
@@ -263,14 +266,14 @@ try_.builder(
 
 try_.builder(
     name = "android-cronet-x86-dbg-10-tests",
-    branch_selector = branches.STANDARD_MILESTONE,
+    branch_selector = branches.selector.ANDROID_BRANCHES,
     mirrors = [
         "ci/android-cronet-x86-dbg",
         "ci/android-cronet-x86-dbg-10-tests",
     ],
-    main_list_view = "try",
     check_for_flakiness = True,
     goma_backend = None,
+    main_list_view = "try",
     reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
     tryjob = try_.job(
         location_filters = [
@@ -353,8 +356,7 @@ try_.builder(
 
 try_.orchestrator_builder(
     name = "android-nougat-x86-rel",
-    branch_selector = branches.STANDARD_MILESTONE,
-    compilator = "android-nougat-x86-rel-compilator",
+    branch_selector = branches.selector.ANDROID_BRANCHES,
     mirrors = [
         "ci/android-nougat-x86-rel",
     ],
@@ -363,22 +365,22 @@ try_.orchestrator_builder(
             condition = builder_config.rts_condition.QUICK_RUN_ONLY,
         ),
     ),
-    main_list_view = "try",
     check_for_flakiness = True,
-    tryjob = try_.job(),
+    compilator = "android-nougat-x86-rel-compilator",
+    coverage_test_types = ["unit", "overall"],
     experiments = {
         "chromium_rts.inverted_rts": 100,
     },
+    main_list_view = "try",
+    tryjob = try_.job(),
     # TODO(crbug.com/1372179): Use orchestrator pool once overloaded test pools
     # are addressed
     # use_orchestrator_pool = True,
     use_java_coverage = True,
-    coverage_test_types = ["unit", "overall"],
 )
 
 try_.orchestrator_builder(
     name = "android-nougat-x86-rel-inverse-fyi",
-    compilator = "android-nougat-x86-rel-compilator",
     mirrors = [
         "ci/android-nougat-x86-rel",
     ],
@@ -388,26 +390,27 @@ try_.orchestrator_builder(
         ),
     ),
     check_for_flakiness = True,
+    compilator = "android-nougat-x86-rel-compilator",
+    coverage_test_types = ["unit", "overall"],
     experiments = {
         "chromium_rts.inverted_rts": 100,
         "chromium_rts.inverted_rts_bail_early": 100,
     },
-    use_orchestrator_pool = True,
     use_java_coverage = True,
-    coverage_test_types = ["unit", "overall"],
+    use_orchestrator_pool = True,
 )
 
 try_.compilator_builder(
     name = "android-nougat-x86-rel-compilator",
-    branch_selector = branches.STANDARD_MILESTONE,
+    branch_selector = branches.selector.ANDROID_BRANCHES,
     cores = 64 if settings.is_main else 32,
-    main_list_view = "try",
     check_for_flakiness = True,
+    main_list_view = "try",
 )
 
 try_.builder(
     name = "android-oreo-arm64-dbg",
-    branch_selector = branches.STANDARD_MILESTONE,
+    branch_selector = branches.selector.ANDROID_BRANCHES,
     mirrors = [
         "ci/Android arm64 Builder (dbg)",
         "ci/Oreo Phone Tester",
@@ -425,16 +428,16 @@ try_.builder(
 
 try_.builder(
     name = "android-pie-arm64-dbg",
-    branch_selector = branches.STANDARD_MILESTONE,
+    branch_selector = branches.selector.ANDROID_BRANCHES,
     mirrors = [
         "ci/Android arm64 Builder (dbg)",
         "ci/android-pie-arm64-dbg",
     ],
     builderless = False,
     cores = 16,
-    main_list_view = "try",
     check_for_flakiness = True,
     goma_backend = None,
+    main_list_view = "try",
     tryjob = try_.job(
         location_filters = [
             "chrome/android/features/vr/.+",
@@ -579,7 +582,7 @@ try_.builder(
 
 try_.builder(
     name = "android-x64-cast",
-    branch_selector = branches.STANDARD_MILESTONE,
+    branch_selector = branches.selector.ANDROID_BRANCHES,
     mirrors = [
         "ci/Cast Android (dbg)",
     ],
@@ -590,25 +593,26 @@ try_.builder(
 
 try_.builder(
     name = "android_compile_dbg",
-    branch_selector = branches.STANDARD_MILESTONE,
+    branch_selector = branches.selector.ANDROID_BRANCHES,
     mirrors = [
-        "ci/Android arm64 Builder (dbg)",
+        "ci/Android arm64 Builder All Targets (dbg)",
     ],
     try_settings = builder_config.try_settings(
         include_all_triggered_testers = True,
         is_compile_only = True,
     ),
     builderless = not settings.is_main,
-    cores = 32 if settings.is_main else 8,
-    main_list_view = "try",
+    cores = 32 if settings.is_main else 16,
+    ssd = True,
     goma_backend = None,
+    main_list_view = "try",
     reclient_jobs = reclient.jobs.HIGH_JOBS_FOR_CQ,
     tryjob = try_.job(),
 )
 
 try_.builder(
     name = "android_compile_x64_dbg",
-    branch_selector = branches.STANDARD_MILESTONE,
+    branch_selector = branches.selector.ANDROID_BRANCHES,
     # Since we expect this builder to compile all, let it mirror
     # "Android x64 Builder All Targets (dbg)" rather than
     # "Android x64 Builder (dbg)"
@@ -621,8 +625,8 @@ try_.builder(
     ),
     cores = 16,
     ssd = True,
-    main_list_view = "try",
     goma_backend = None,
+    main_list_view = "try",
     tryjob = try_.job(
         location_filters = [
             "chrome/android/java/src/org/chromium/chrome/browser/vr/.+",
@@ -639,7 +643,7 @@ try_.builder(
 
 try_.builder(
     name = "android_compile_x86_dbg",
-    branch_selector = branches.STANDARD_MILESTONE,
+    branch_selector = branches.selector.ANDROID_BRANCHES,
     mirrors = [
         "ci/Android x86 Builder (dbg)",
     ],
@@ -649,8 +653,8 @@ try_.builder(
     ),
     cores = 16,
     ssd = True,
-    main_list_view = "try",
     goma_backend = None,
+    main_list_view = "try",
     tryjob = try_.job(
         location_filters = [
             "chrome/android/java/src/org/chromium/chrome/browser/vr/.+",
@@ -667,7 +671,7 @@ try_.builder(
 
 try_.builder(
     name = "android_cronet",
-    branch_selector = branches.STANDARD_MILESTONE,
+    branch_selector = branches.selector.ANDROID_BRANCHES,
     mirrors = [
         "ci/android-cronet-arm-rel",
     ],
@@ -675,8 +679,8 @@ try_.builder(
         is_compile_only = True,
     ),
     builderless = not settings.is_main,
-    main_list_view = "try",
     goma_backend = None,
+    main_list_view = "try",
     tryjob = try_.job(),
 )
 
@@ -690,7 +694,7 @@ try_.builder(
 
 try_.builder(
     name = "try-nougat-phone-tester",
-    branch_selector = branches.STANDARD_MILESTONE,
+    branch_selector = branches.selector.ANDROID_BRANCHES,
     mirrors = [
         "ci/Android arm64 Builder (dbg)",
         "ci/Nougat Phone Tester",
@@ -700,7 +704,7 @@ try_.builder(
 
 try_.gpu.optional_tests_builder(
     name = "android_optional_gpu_tests_rel",
-    branch_selector = branches.STANDARD_MILESTONE,
+    branch_selector = branches.selector.ANDROID_BRANCHES,
     builder_spec = builder_config.builder_spec(
         gclient_config = builder_config.gclient_config(
             config = "chromium",
@@ -720,10 +724,10 @@ try_.gpu.optional_tests_builder(
     try_settings = builder_config.try_settings(
         retry_failed_shards = False,
     ),
-    main_list_view = "try",
     check_for_flakiness = True,
     goma_backend = None,
     goma_jobs = goma.jobs.J150,
+    main_list_view = "try",
     tryjob = try_.job(
         location_filters = [
             cq.location_filter(path_regexp = "cc/.+"),

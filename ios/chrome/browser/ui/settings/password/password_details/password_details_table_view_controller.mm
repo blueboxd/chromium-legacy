@@ -126,6 +126,9 @@ const CGFloat kCompromisedPasswordSymbolSize = 22;
 // If YES, the password details are shown without requiring any authentication.
 @property(nonatomic, assign) BOOL showPasswordWithoutAuth;
 
+// YES if this is the details view for a blocked site (never saved password).
+@property(nonatomic, assign) BOOL isBlockedSite;
+
 // Stores the user email if the user is authenticated amd syncing passwords.
 @property(nonatomic, readonly) NSString* syncingUserEmail;
 
@@ -174,6 +177,11 @@ const CGFloat kCompromisedPasswordSymbolSize = 22;
   // reauthentication.
   if (![self hasAtLeastOnePassword]) {
     [super editButtonPressed];
+
+    // Reload view to show the delete button.
+    if (IsPasswordGroupingEnabled()) {
+      [self reloadData];
+    }
     return;
   }
 
@@ -227,6 +235,10 @@ const CGFloat kCompromisedPasswordSymbolSize = 22;
       IsPasswordGroupingEnabled() ? IDS_IOS_SHOW_PASSWORD_VIEW_SITES
                                   : IDS_IOS_SHOW_PASSWORD_VIEW_SITE);
   item.detailTexts = passwordDetails.websites;
+  if (IsPasswordGroupingEnabled()) {
+    item.detailTextColor = [UIColor colorNamed:kTextSecondaryColor];
+    item.accessibilityTraits = UIAccessibilityTraitNotEnabled;
+  }
 
   return item;
 }
@@ -242,7 +254,7 @@ const CGFloat kCompromisedPasswordSymbolSize = 22;
   // If password is missing (federated credential) don't allow to edit username.
   if (passwordDetails.credentialType != CredentialTypeFederation) {
     item.textFieldEnabled = self.tableView.editing;
-    item.hideIcon = !self.tableView.editing;
+    item.hideIcon = !self.tableView.editing || IsPasswordGroupingEnabled();
     item.autoCapitalizationType = UITextAutocapitalizationTypeNone;
     item.delegate = self;
   } else {
@@ -251,6 +263,9 @@ const CGFloat kCompromisedPasswordSymbolSize = 22;
   }
   item.textFieldPlaceholder = l10n_util::GetNSString(
       IDS_IOS_PASSWORD_SETTINGS_USERNAME_PLACEHOLDER_TEXT);
+  if (IsPasswordGroupingEnabled() && !self.tableView.editing) {
+    item.textFieldTextColor = [UIColor colorNamed:kTextSecondaryColor];
+  }
   return item;
 }
 
@@ -265,7 +280,7 @@ const CGFloat kCompromisedPasswordSymbolSize = 22;
                             ? passwordDetails.password
                             : kMaskedPassword;
   item.textFieldEnabled = self.tableView.editing;
-  item.hideIcon = !self.tableView.editing;
+  item.hideIcon = !self.tableView.editing || IsPasswordGroupingEnabled();
   item.autoCapitalizationType = UITextAutocapitalizationTypeNone;
   item.keyboardType = UIKeyboardTypeURL;
   item.returnKeyType = UIReturnKeyDone;
@@ -292,6 +307,9 @@ const CGFloat kCompromisedPasswordSymbolSize = 22;
     item.identifyingIconAccessibilityLabel = l10n_util::GetNSString(
         [self isPasswordShown] ? IDS_IOS_SETTINGS_PASSWORD_HIDE_BUTTON
                                : IDS_IOS_SETTINGS_PASSWORD_SHOW_BUTTON);
+  }
+  if (IsPasswordGroupingEnabled() && !self.tableView.editing) {
+    item.textFieldTextColor = [UIColor colorNamed:kTextSecondaryColor];
   }
   return item;
 }
@@ -327,7 +345,8 @@ const CGFloat kCompromisedPasswordSymbolSize = 22;
       IDS_IOS_CHANGE_COMPROMISED_PASSWORD_DESCRIPTION_BRANDED);
   item.image = [self compromisedIcon];
   if (UseSymbols()) {
-    item.imageViewTintColor = [UIColor colorNamed:kRedColor];
+    item.imageViewTintColor = [UIColor
+        colorNamed:IsPasswordGroupingEnabled() ? kRed500Color : kRedColor];
   }
   return item;
 }
@@ -336,7 +355,11 @@ const CGFloat kCompromisedPasswordSymbolSize = 22;
     (PasswordDetails*)passwordDetails {
   TableViewTextButtonItem* item = [[TableViewTextButtonItem alloc]
       initWithType:PasswordDetailsItemTypeDeleteButton];
-  item.buttonText = l10n_util::GetNSString(IDS_IOS_SETTINGS_TOOLBAR_DELETE);
+  item.buttonText = l10n_util::GetNSString(
+      self.isBlockedSite ? IDS_IOS_DELETE_ACTION_TITLE
+                         : IDS_IOS_CONFIRM_PASSWORD_DELETION);
+  item.buttonContentHorizontalAlignment =
+      UIControlContentHorizontalAlignmentLeft;
   item.boldButtonText = NO;
   item.disableButtonIntrinsicWidth = YES;
   item.buttonTextColor = [UIColor colorNamed:kRedColor];
@@ -537,6 +560,10 @@ const CGFloat kCompromisedPasswordSymbolSize = 22;
   [self reloadData];
 }
 
+- (void)setIsBlockedSite:(BOOL)isBlockedSite {
+  _isBlockedSite = isBlockedSite;
+}
+
 #pragma mark - TableViewTextEditItemDelegate
 
 - (void)tableViewItemDidBeginEditing:(TableViewTextEditItem*)tableViewItem {
@@ -569,16 +596,8 @@ const CGFloat kCompromisedPasswordSymbolSize = 22;
   // Remove this verification when it is implemented for password grouping.
   if (!IsPasswordGroupingEnabled()) {
     DCHECK(self.handler);
-    // Pass origin only if password is present as confirmation message makes
-    // sense only in this case.
-    if ([self.passwords[0].password length]) {
-      [self.handler
-          showPasswordDeleteDialogWithOrigin:self.passwords[0].origin
-                         compromisedPassword:self.passwords[0].isCompromised];
-    } else {
-      [self.handler showPasswordDeleteDialogWithOrigin:nil
-                                   compromisedPassword:NO];
-    }
+    [self.handler showPasswordDeleteDialogWithPasswordDetails:self.passwords[0]
+                                                   anchorView:nil];
   }
 }
 
@@ -596,7 +615,9 @@ const CGFloat kCompromisedPasswordSymbolSize = 22;
 // Applies tint colour and resizes image.
 - (UIImage*)compromisedIcon {
   if (UseSymbols()) {
-    return DefaultSymbolTemplateWithPointSize(kWarningFillSymbol,
+    return DefaultSymbolTemplateWithPointSize(IsPasswordGroupingEnabled()
+                                                  ? kErrorCircleFillSymbol
+                                                  : kWarningFillSymbol,
                                               kCompromisedPasswordSymbolSize);
   }
   return [UIImage imageNamed:@"round_settings_unsafe_state"];
@@ -841,7 +862,7 @@ const CGFloat kCompromisedPasswordSymbolSize = 22;
 // Updates the title displayed in the navigation bar.
 - (void)updateNavigationTitle {
   if (!self.pageTitle || self.pageTitle.length == 0) {
-    self.pageTitle = self.passwords[0].origin;
+    self.pageTitle = self.passwords[0].origins[0];
   }
   _titleLabel.text = self.pageTitle;
 }
@@ -1086,8 +1107,7 @@ const CGFloat kCompromisedPasswordSymbolSize = 22;
   DCHECK(self.handler);
   [self.handler
       showPasswordDeleteDialogWithPasswordDetails:self.passwords[position]
-                                       anchorView:buttonView
-                                       anchorRect:buttonView.frame];
+                                       anchorView:buttonView];
 }
 
 #pragma mark - UIResponder

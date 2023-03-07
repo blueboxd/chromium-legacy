@@ -143,78 +143,6 @@ const char kSupervisedUserApprovedExtensions[] =
 const char kSupervisedUserMetricsDayId[] = "supervised_user.metrics.day_id";
 #endif  // BUILDFLAG(ENABLE_SUPERVISED_USERS)
 
-// Stores the email address associated with the google account of the custodian
-// of the supervised user, set when the supervised user is created.
-const char kSupervisedUserCustodianEmail[] = "profile.managed.custodian_email";
-
-// Stores the display name associated with the google account of the custodian
-// of the supervised user, updated (if possible) each time the supervised user
-// starts a session.
-const char kSupervisedUserCustodianName[] = "profile.managed.custodian_name";
-
-// Stores the obfuscated gaia id associated with the google account of the
-// custodian of the supervised user, updated (if possible) each time the
-// supervised user starts a session.
-const char kSupervisedUserCustodianObfuscatedGaiaId[] =
-    "profile.managed.custodian_obfuscated_gaia_id";
-
-// Stores the URL of the profile image associated with the google account of the
-// custodian of the supervised user.
-const char kSupervisedUserCustodianProfileImageURL[] =
-    "profile.managed.custodian_profile_image_url";
-
-// Stores the URL of the profile associated with the google account of the
-// custodian of the supervised user.
-const char kSupervisedUserCustodianProfileURL[] =
-    "profile.managed.custodian_profile_url";
-
-// Whether the supervised user may approve extension permission requests. If
-// false, extensions should not be able to request new permissions, and new
-// extensions should not be installable.
-const char kSupervisedUserExtensionsMayRequestPermissions[] =
-    "profile.managed.extensions_may_request_permissions";
-
-// Maps host names to whether the host is manually allowed or blocked.
-const char kSupervisedUserManualHosts[] = "profile.managed.manual_hosts";
-
-// Maps URLs to whether the URL is manually allowed or blocked.
-const char kSupervisedUserManualURLs[] = "profile.managed.manual_urls";
-
-// Stores whether the SafeSites filter is enabled.
-const char kSupervisedUserSafeSites[] = "profile.managed.safe_sites";
-
-// Stores the email address associated with the google account of the secondary
-// custodian of the supervised user, set when the supervised user is created.
-const char kSupervisedUserSecondCustodianEmail[] =
-    "profile.managed.second_custodian_email";
-
-// Stores the display name associated with the google account of the secondary
-// custodian of the supervised user, updated (if possible) each time the
-// supervised user starts a session.
-const char kSupervisedUserSecondCustodianName[] =
-    "profile.managed.second_custodian_name";
-
-// Stores the obfuscated gaia id associated with the google account of the
-// secondary custodian of the supervised user, updated (if possible) each time
-// the supervised user starts a session.
-const char kSupervisedUserSecondCustodianObfuscatedGaiaId[] =
-    "profile.managed.second_custodian_obfuscated_gaia_id";
-
-// Stores the URL of the profile image associated with the google account of the
-// secondary custodian of the supervised user.
-const char kSupervisedUserSecondCustodianProfileImageURL[] =
-    "profile.managed.second_custodian_profile_image_url";
-
-// Stores the URL of the profile associated with the google account of the
-// secondary custodian of the supervised user.
-const char kSupervisedUserSecondCustodianProfileURL[] =
-    "profile.managed.second_custodian_profile_url";
-
-// Stores settings that can be modified both by a supervised user and their
-// manager. See SupervisedUserSharedSettingsService for a description of
-// the format.
-const char kSupervisedUserSharedSettings[] = "profile.managed.shared_settings";
-
 #if BUILDFLAG(ENABLE_RLZ)
 // Integer. RLZ ping delay in seconds.
 const char kRlzPingDelaySeconds[] = "rlz_ping_delay";
@@ -2076,6 +2004,10 @@ const char kNtpCollapsedSyncPromo[] = "ntp.collapsed_sync_promo";
 const char kNtpCustomBackgroundDict[] = "ntp.custom_background_dict";
 const char kNtpCustomBackgroundLocalToDevice[] =
     "ntp.custom_background_local_to_device";
+// Number of times the user has opened the side panel with the customize chrome
+// button.
+const char kNtpCustomizeChromeButtonOpenCount[] =
+    "NewTabPage.CustomizeChromeButtonOpenCount";
 // List keeping track of disabled NTP modules.
 const char kNtpDisabledModules[] = "NewTabPage.DisabledModules";
 // List keeping track of NTP modules order.
@@ -3741,5 +3673,19 @@ const char kThrottleNonVisibleCrossOriginIframesAllowed[] =
 // attempts to enable the feature will be disallowed.
 const char kNewBaseUrlInheritanceBehaviorAllowed[] =
     "new_base_url_inheritance_behavior_allowed";
+
+#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_LINUX)
+// If this exists and is true, Chrome may run system DNS resolution out of the
+// network process. If false, Chrome will run system DNS resolution in the
+// network process. If non-existent, Chrome will decide where to run system DNS
+// resolution (in the network process, out of the network process, or partially
+// inside the network process and partially out) based on system configuration
+// and feature flags.
+//
+// Only necessary on Android and Linux, where it is difficult to sandbox the
+// network process with system DNS resolution running inside it.
+const char kOutOfProcessSystemDnsResolutionEnabled[] =
+    "net.out_of_process_system_dns_resolution_enabled";
+#endif  // BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_LINUX)
 
 }  // namespace prefs

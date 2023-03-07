@@ -85,23 +85,18 @@ const char* FetchHandlerTypeToString(
   }
 }
 
-// Returns the list of origins in which fetch handlers are bypassed.
-const std::vector<url::Origin> FetchHandlerBypassedOrigins() {
-  std::vector<url::Origin> origins;
-  std::vector<std::string> parsed_params = base::SplitString(
-      features::kServiceWorkerBypassFetchHandlerBypassedOrigins.Get(), ",",
-      base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
-  for (const auto& it : parsed_params) {
-    const GURL url = GURL(it);
-    if (url.is_valid()) {
-      origins.push_back(url::Origin::Create(url));
-    }
-  }
+// Returns the set of hash strings of fetch handlers which can be bypassed.
+const base::flat_set<std::string> FetchHandlerBypassedHashStrings() {
+  const static base::NoDestructor<base::flat_set<std::string>> result(
+      base::SplitString(
+          features::kServiceWorkerBypassFetchHandlerBypassedHashStrings.Get(),
+          ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY));
 
-  return origins;
+  return *result;
 }
 
-bool ShouldBypassFetchHandlerForMainResource(const GURL& stripped_url) {
+bool ShouldBypassFetchHandlerForMainResource(
+    const std::string& sha256_script_checksum) {
   if (!base::FeatureList::IsEnabled(
           features::kServiceWorkerBypassFetchHandler)) {
     return false;
@@ -124,21 +119,14 @@ bool ShouldBypassFetchHandlerForMainResource(const GURL& stripped_url) {
               kMainResourceSkippedDueToFeatureFlag);
       return true;
     // If kAllowList, the allowlist should be specified. In this case, main
-    // resource fetch handlers are bypassed only when the url's origin is in
-    // the allowlist.
+    // resource fetch handlers are bypassed only when the sha256 checksum of the
+    // script is in the allowlist.
     case features::ServiceWorkerBypassFetchHandlerStrategy::kAllowList:
-      const static base::NoDestructor<std::vector<url::Origin>>
-          bypassed_origins(FetchHandlerBypassedOrigins());
-      for (const auto& it : *bypassed_origins) {
-        // Skip comparing port numbers because some tests run the mock HTTP
-        // server with a random port number.
-        if (it.scheme() == stripped_url.scheme() &&
-            it.host() == stripped_url.host()) {
-          RecordSkipReason(
-              ServiceWorkerControlleeRequestHandler::FetchHandlerSkipReason::
-                  kMainResourceSkippedBecauseMatchedWithAllowedOriginList);
-          return true;
-        }
+      if (FetchHandlerBypassedHashStrings().contains(sha256_script_checksum)) {
+        RecordSkipReason(
+            ServiceWorkerControlleeRequestHandler::FetchHandlerSkipReason::
+                kMainResourceSkippedBecauseMatchedWithAllowedScriptList);
+        return true;
       }
       return false;
   }
@@ -282,7 +270,8 @@ void ServiceWorkerControlleeRequestHandler::MaybeCreateLoader(
       stripped_url_, storage_key_,
       base::BindOnce(
           &ServiceWorkerControlleeRequestHandler::ContinueWithRegistration,
-          weak_factory_.GetWeakPtr(), base::TimeTicks::Now()));
+          weak_factory_.GetWeakPtr(), /*is_for_navigation=*/true,
+          base::TimeTicks::Now()));
 }
 
 void ServiceWorkerControlleeRequestHandler::InitializeContainerHost(
@@ -308,12 +297,18 @@ void ServiceWorkerControlleeRequestHandler::InitializeContainerHost(
 }
 
 void ServiceWorkerControlleeRequestHandler::ContinueWithRegistration(
+    bool is_for_navigation,
     base::TimeTicks start_time,
     blink::ServiceWorkerStatusCode status,
     scoped_refptr<ServiceWorkerRegistration> registration) {
-  if (!start_time.is_null()) {
+  if (is_for_navigation) {
+    DCHECK(!start_time.is_null());
     ServiceWorkerMetrics::RecordFindRegistrationForClientUrlTime(
         base::TimeTicks::Now() - start_time);
+
+    base::UmaHistogramBoolean(
+        "ServiceWorker.FoundServiceWorkerRegistrationOnNavigation",
+        status == blink::ServiceWorkerStatusCode::kOk);
   }
 
   if (status != blink::ServiceWorkerStatusCode::kOk) {
@@ -564,7 +559,8 @@ void ServiceWorkerControlleeRequestHandler::ContinueWithActivatedVersion(
       // feature flag and the url.
       if (ShouldBypassFetchHandlerForMainResourceByOriginTrial(
               registration->active_version()) ||
-          ShouldBypassFetchHandlerForMainResource(stripped_url_)) {
+          ShouldBypassFetchHandlerForMainResource(
+              registration->active_version()->sha256_script_checksum())) {
         // If true, the main resource request bypasses ServiceWorker and starts
         // the worker in parallel for subsequent subresources.
         CompleteWithoutLoader();
@@ -639,7 +635,8 @@ void ServiceWorkerControlleeRequestHandler::DidUpdateRegistration(
         stripped_url_, storage_key_,
         base::BindOnce(
             &ServiceWorkerControlleeRequestHandler::ContinueWithRegistration,
-            weak_factory_.GetWeakPtr(), base::TimeTicks()));
+            weak_factory_.GetWeakPtr(), /*is_for_navigation=*/false,
+            base::TimeTicks()));
     TRACE_EVENT_WITH_FLOW1(
         "ServiceWorker",
         "ServiceWorkerControlleeRequestHandler::DidUpdateRegistration",
@@ -695,7 +692,8 @@ void ServiceWorkerControlleeRequestHandler::OnUpdatedVersionStatusChanged(
         stripped_url_, storage_key_,
         base::BindOnce(
             &ServiceWorkerControlleeRequestHandler::ContinueWithRegistration,
-            weak_factory_.GetWeakPtr(), base::TimeTicks()));
+            weak_factory_.GetWeakPtr(), /*is_for_navigation=*/false,
+            base::TimeTicks()));
     return;
   }
   version->RegisterStatusChangeCallback(base::BindOnce(

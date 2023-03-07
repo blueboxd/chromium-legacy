@@ -198,7 +198,9 @@ NotReachedError NotReachedError::NotReached(const char* file, int line) {
 }
 
 void NotReachedError::TriggerNotReached() {
-  NotReached("", -1);
+  // TODO(pbos): Add back NotReachedError("", -1) here asap. This was removed to
+  // disable NOTREACHED() reports temporarily for M111 and should be added
+  // back once this change has merged to M111.
 }
 
 NotReachedError::~NotReachedError() = default;

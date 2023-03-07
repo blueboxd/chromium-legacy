@@ -32,6 +32,43 @@ extern const char
 extern const char
     kHistogramPrerenderWorstUserInteractionLatencyMaxEventDuration[];
 
+extern const char kPageLoadPrerenderObserverEvent[];
+
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+enum class PageLoadPrerenderObserverEvent {
+  kOnPrerenderStart = 0,
+  kDidActivatePrerenderedPage = 1,
+  kOnFirstPaintInPage = 2,
+  kOnFirstContentfulPaintInPage = 3,
+  kOnFirstInputInPage = 4,
+  kOnComplete = 5,
+  kFlushMetricsOnAppEnterBackground = 6,
+  kRecordSessionEndHistograms = 7,
+  kRecordLayoutShiftScoreMetrics = 8,
+  kRecordNormalizedResponsivenessMetrics = 9,
+  kMaxValue = kRecordNormalizedResponsivenessMetrics,
+};
+
+extern const char kPageLoadPrerenderForegroundCheckResult[];
+
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+enum class PageLoadPrerenderForegroundCheckResult {
+  kActivatedInBackground = 0,
+  kNoEventTime = 1,
+  kBackgroundedBeforeEvent = 2,
+  kPassed = 3,
+  kMaxValue = kPassed
+};
+
+enum class PageLoadPrerenderForegroundCheckEvent {
+  kFirstPaint,
+  kFirstContentfulPaint,
+  kFirstInputDelay,
+  kLargestContentfulPaint
+};
+
 }  // namespace internal
 
 // Prerender2 (content/browser/preloading/prerender/README.md):

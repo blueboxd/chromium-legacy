@@ -38,6 +38,13 @@ suite('ShortcutsTest', () => {
     callbackRouterRemote.setMostVisitedSettings(
         customLinksEnabled, shortcutsVisible);
     await callbackRouterRemote.$.flushForTesting();
+    assertTrue(customizeShortcutsElement.$.customLinksButton.hideLabelText);
+    assertTrue(customizeShortcutsElement.$.mostVisitedButton.hideLabelText);
+    assertEquals(
+        customizeShortcutsElement.$.customLinksButton.label, 'My shortcuts');
+    assertEquals(
+        customizeShortcutsElement.$.mostVisitedButton.label,
+        'Most visited sites');
   }
 
   function assertShown(shown: boolean) {
@@ -123,5 +130,32 @@ suite('ShortcutsTest', () => {
     const [customLinksEnabled, shortcutsVisible] = await setSettingsCalled;
     assertFalse(customLinksEnabled);
     assertTrue(shortcutsVisible);
+  });
+
+  test('only animates after initialization', async () => {
+    customizeShortcutsElement =
+        document.createElement('customize-chrome-shortcuts');
+    document.body.appendChild(customizeShortcutsElement);
+    const ironCollapse =
+        customizeShortcutsElement.shadowRoot!.querySelector('iron-collapse')!;
+
+    // No animation before initialize.
+    assertTrue(ironCollapse.noAnimation!);
+
+    // Initialize.
+    callbackRouterRemote.setMostVisitedSettings(
+        /*customLinksEnabled=*/ true, /*shortcutsVisible=*/ true);
+    await callbackRouterRemote.$.flushForTesting();
+
+    // Animation after initialize.
+    assertFalse(ironCollapse.noAnimation!);
+
+    // Update.
+    callbackRouterRemote.setMostVisitedSettings(
+        /*customLinksEnabled=*/ false, /*shortcutsVisible=*/ true);
+    await callbackRouterRemote.$.flushForTesting();
+
+    // Still animation after update.
+    assertFalse(ironCollapse.noAnimation!);
   });
 });

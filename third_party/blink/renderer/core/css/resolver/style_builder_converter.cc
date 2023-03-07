@@ -332,10 +332,11 @@ FontDescription::FamilyDescription StyleBuilderConverterBase::ConvertFontFamily(
 
 FontDescription::FamilyDescription StyleBuilderConverter::ConvertFontFamily(
     StyleResolverState& state,
-    const ScopedCSSValue& scoped_value) {
-  state.GetFontBuilder().SetFamilyTreeScope(scoped_value.GetTreeScope());
+    const CSSValue& value) {
+  // TODO(crbug.com/336876): Use the correct tree scope.
+  state.GetFontBuilder().SetFamilyTreeScope(&state.GetDocument());
   return StyleBuilderConverterBase::ConvertFontFamily(
-      scoped_value.GetCSSValue(),
+      value,
       state.GetDocument().GetSettings() ? &state.GetFontBuilder() : nullptr,
       &state.GetDocument());
 }
@@ -1514,13 +1515,6 @@ Length StyleBuilderConverter::ConvertLength(const StyleResolverState& state,
   return To<CSSPrimitiveValue>(value).ConvertToLength(
       state.CssToLengthConversionData());
 }
-Length StyleBuilderConverter::ConvertLength(
-    const StyleResolverState& state,
-    const ScopedCSSValue& scoped_value) {
-  return To<CSSPrimitiveValue>(scoped_value.GetCSSValue())
-      .ConvertToLength(state.GetScopedCSSToLengthConversionData(
-          scoped_value.GetTreeScope()));
-}
 
 UnzoomedLength StyleBuilderConverter::ConvertUnzoomedLength(
     StyleResolverState& state,
@@ -1555,35 +1549,19 @@ float StyleBuilderConverter::ConvertZoom(const StyleResolverState& state,
 Length StyleBuilderConverter::ConvertLengthOrAuto(
     const StyleResolverState& state,
     const CSSValue& value) {
-  return ConvertLengthOrAuto(state,
-                             ScopedCSSValue(value, nullptr /* TreeScope */));
-}
-
-Length StyleBuilderConverter::ConvertLengthOrAuto(
-    const StyleResolverState& state,
-    const ScopedCSSValue& scoped_value) {
-  const CSSValue& value = scoped_value.GetCSSValue();
   auto* identifier_value = DynamicTo<CSSIdentifierValue>(value);
   if (identifier_value && identifier_value->GetValueID() == CSSValueID::kAuto) {
     return Length::Auto();
   }
   return To<CSSPrimitiveValue>(value).ConvertToLength(
-      state.GetScopedCSSToLengthConversionData(scoped_value.GetTreeScope()));
+      state.CssToLengthConversionData());
 }
 
 Length StyleBuilderConverter::ConvertLengthSizing(StyleResolverState& state,
                                                   const CSSValue& value) {
-  return ConvertLengthSizing(state,
-                             ScopedCSSValue(value, nullptr /* TreeScope */));
-}
-
-Length StyleBuilderConverter::ConvertLengthSizing(
-    StyleResolverState& state,
-    const ScopedCSSValue& scoped_value) {
-  const CSSValue& value = scoped_value.GetCSSValue();
   const auto* identifier_value = DynamicTo<CSSIdentifierValue>(value);
   if (!identifier_value) {
-    return ConvertLength(state, scoped_value);
+    return ConvertLength(state, value);
   }
 
   switch (identifier_value->GetValueID()) {
@@ -1615,17 +1593,6 @@ Length StyleBuilderConverter::ConvertLengthMaxSizing(StyleResolverState& state,
     return Length::None();
   }
   return ConvertLengthSizing(state, value);
-}
-
-Length StyleBuilderConverter::ConvertLengthMaxSizing(
-    StyleResolverState& state,
-    const ScopedCSSValue& scoped_value) {
-  const CSSValue& value = scoped_value.GetCSSValue();
-  auto* identifier_value = DynamicTo<CSSIdentifierValue>(value);
-  if (identifier_value && identifier_value->GetValueID() == CSSValueID::kNone) {
-    return Length::None();
-  }
-  return ConvertLengthSizing(state, scoped_value);
 }
 
 TabSize StyleBuilderConverter::ConvertLengthOrTabSpaces(
@@ -1699,14 +1666,17 @@ float StyleBuilderConverter::ConvertAlpha(StyleResolverState& state,
   return ClampTo<float>(ConvertNumberOrPercentage(state, value), 0, 1);
 }
 
-AtomicString StyleBuilderConverter::ConvertNoneOrCustomIdent(
+ScopedCSSName* StyleBuilderConverter::ConvertNoneOrCustomIdent(
     StyleResolverState& state,
     const CSSValue& value) {
+  DCHECK(value.IsScopedValue());
   if (const auto* identifier_value = DynamicTo<CSSIdentifierValue>(value)) {
     DCHECK_EQ(identifier_value->GetValueID(), CSSValueID::kNone);
-    return g_null_atom;
+    return nullptr;
   }
-  return To<CSSCustomIdentValue>(value).Value();
+  const CSSCustomIdentValue& custom_ident = To<CSSCustomIdentValue>(value);
+  return MakeGarbageCollected<ScopedCSSName>(custom_ident.Value(),
+                                             custom_ident.GetTreeScope());
 }
 
 ScopedCSSName* StyleBuilderConverter::ConvertNoneOrCustomIdent(
@@ -1724,9 +1694,9 @@ ScopedCSSName* StyleBuilderConverter::ConvertNoneOrCustomIdent(
 
 AnchorScrollValue* StyleBuilderConverter::ConvertAnchorScroll(
     StyleResolverState& state,
-    const ScopedCSSValue& value) {
-  if (const auto* identifier_value =
-          DynamicTo<CSSIdentifierValue>(value.GetCSSValue())) {
+    const CSSValue& value) {
+  DCHECK(value.IsScopedValue());
+  if (const auto* identifier_value = DynamicTo<CSSIdentifierValue>(value)) {
     switch (identifier_value->GetValueID()) {
       case CSSValueID::kNone:
         return nullptr;
@@ -1737,10 +1707,10 @@ AnchorScrollValue* StyleBuilderConverter::ConvertAnchorScroll(
         return nullptr;
     }
   }
+  const CSSCustomIdentValue& custom_ident = To<CSSCustomIdentValue>(value);
   return MakeGarbageCollected<AnchorScrollValue>(
-      *MakeGarbageCollected<ScopedCSSName>(
-          To<CSSCustomIdentValue>(value.GetCSSValue()).Value(),
-          value.GetTreeScope()));
+      *MakeGarbageCollected<ScopedCSSName>(custom_ident.Value(),
+                                           custom_ident.GetTreeScope()));
 }
 
 StyleInitialLetter StyleBuilderConverter::ConvertInitialLetter(

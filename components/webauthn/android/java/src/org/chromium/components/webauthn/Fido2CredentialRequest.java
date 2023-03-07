@@ -141,9 +141,13 @@ public class Fido2CredentialRequest implements Callback<Pair<Integer, Intent>> {
         // discouraged here if the payment extension is present.
         //
         // See https://crbug.com/1393662
-        if (options.isPaymentCredentialCreation) {
+        if (options.isPaymentCredentialCreation
+                && !PaymentFeatureList.isEnabled(
+                        PaymentFeatureList
+                                .ALLOW_DISCOVERABLE_CREDENTIALS_FOR_SECURE_PAYMENT_CONFIRMATION)) {
             // Earlier code should reject an attempt by a developer to use residentKey=required or
             // discouraged on Android - only preferred should have made it this far.
+            assert options.authenticatorSelection != null;
             assert options.authenticatorSelection.residentKey == ResidentKeyRequirement.PREFERRED;
             options.authenticatorSelection.residentKey = ResidentKeyRequirement.DISCOURAGED;
         }
@@ -153,8 +157,8 @@ public class Fido2CredentialRequest implements Callback<Pair<Integer, Intent>> {
         // on security keys. There was a bug where discoverable credentials
         // accidentally included attestation, which was confusing, so that's
         // filtered here.
-        mAttestationAcceptable =
-                options.authenticatorSelection.residentKey == ResidentKeyRequirement.DISCOURAGED;
+        mAttestationAcceptable = options.authenticatorSelection == null
+                || options.authenticatorSelection.residentKey == ResidentKeyRequirement.DISCOURAGED;
         mEchoCredProps = options.credProps;
 
         Fido2ApiCall call = new Fido2ApiCall(ContextUtils.getApplicationContext(), mSupportLevel);

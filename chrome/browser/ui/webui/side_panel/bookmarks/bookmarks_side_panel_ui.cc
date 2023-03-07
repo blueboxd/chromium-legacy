@@ -39,6 +39,7 @@
 #include "ui/base/ui_base_features.h"
 #include "ui/base/webui/web_ui_util.h"
 #include "ui/views/style/platform_style.h"
+#include "ui/webui/color_change_listener/color_change_handler.h"
 
 BookmarksSidePanelUI::BookmarksSidePanelUI(content::WebUI* web_ui)
     : ui::MojoBubbleWebUIController(web_ui, true) {
@@ -55,6 +56,7 @@ BookmarksSidePanelUI::BookmarksSidePanelUI(content::WebUI* web_ui)
       {"tooltipClose", IDS_CLOSE},
       {"tooltipDelete", IDS_DELETE},
       {"tooltipMore", IDS_BOOKMARKS_EDIT_MORE},
+      {"tooltipMove", IDS_BOOKMARKS_EDIT_MOVE_TO_ANOTHER_FOLDER},
       {"shoppingListFolderTitle", IDS_SIDE_PANEL_TRACKED_PRODUCTS},
       {"shoppingListTrackPriceButtonDescription",
        IDS_PRICE_TRACKING_TRACK_PRODUCT_ACCESSIBILITY},
@@ -97,6 +99,11 @@ BookmarksSidePanelUI::BookmarksSidePanelUI(content::WebUI* web_ui)
       {"menuRename", IDS_BOOKMARKS_RENAME},
       {"newFolderTitle", IDS_BOOKMARK_EDITOR_NEW_FOLDER_NAME},
       {"undoBookmarkDeletion", IDS_UNDO_BOOKMARK_DELETION},
+      {"urlFolderDescription", IDS_BOOKMARKS_URL_FOLDER_DESCRIPTION},
+      {"editMoveFolderTo", IDS_BOOKMARKS_EDIT_MOVE_TO},
+      {"editNewFolder", IDS_BOOKMARKS_EDIT_NEW_FOLDER},
+      {"editCancel", IDS_BOOKMARKS_EDIT_CANCEL},
+      {"editSave", IDS_BOOKMARKS_EDIT_SAVE},
   };
   for (const auto& str : kLocalizedStrings)
     webui::AddLocalizedString(source, str.name, str.id);
@@ -172,6 +179,13 @@ void BookmarksSidePanelUI::BindInterface(
         receiver) {
   shopping_list_factory_receiver_.reset();
   shopping_list_factory_receiver_.Bind(std::move(receiver));
+}
+
+void BookmarksSidePanelUI::BindInterface(
+    mojo::PendingReceiver<color_change_listener::mojom::PageHandler>
+        pending_receiver) {
+  color_provider_handler_ = std::make_unique<ui::ColorChangeHandler>(
+      web_ui()->GetWebContents(), std::move(pending_receiver));
 }
 
 void BookmarksSidePanelUI::CreateBookmarksPageHandler(

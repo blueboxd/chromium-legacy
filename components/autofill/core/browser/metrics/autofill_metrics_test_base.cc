@@ -7,6 +7,7 @@
 #include "components/autofill/core/browser/autofill_form_test_utils.h"
 #include "components/autofill/core/browser/data_model/credit_card.h"
 #include "components/autofill/core/browser/payments/credit_card_access_manager.h"
+#include "components/autofill/core/browser/touch_to_fill_delegate_impl.h"
 #include "components/autofill/core/common/autofill_clock.h"
 #include "components/autofill/core/common/autofill_features.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
@@ -38,7 +39,7 @@ AutofillMetricsBaseTest::AutofillMetricsBaseTest(bool is_in_any_main_frame)
 
 AutofillMetricsBaseTest::~AutofillMetricsBaseTest() = default;
 
-void AutofillMetricsBaseTest::SetUp() {
+void AutofillMetricsBaseTest::SetUpHelper() {
   autofill_client_ = std::make_unique<MockAutofillClient>();
   autofill_client_->SetPrefs(test::PrefServiceForTesting());
   test_ukm_recorder_ = autofill_client_->GetTestUkmRecorder();
@@ -77,11 +78,17 @@ void AutofillMetricsBaseTest::SetUp() {
   external_delegate_ = external_delegate.get();
   autofill_manager().SetExternalDelegateForTest(std::move(external_delegate));
 
+  auto touch_to_fill_delegate_uptr =
+      std::make_unique<TouchToFillDelegateImpl>(&autofill_manager());
+  touch_to_fill_delgate_ = touch_to_fill_delegate_uptr.get();
+  autofill_manager().SetTouchToFillDelegateImplForTest(
+      std::move(touch_to_fill_delegate_uptr));
+
 #if !BUILDFLAG(IS_IOS)
   autofill_manager()
       .GetCreditCardAccessManager()
       ->set_fido_authenticator_for_testing(
-          std::make_unique<TestCreditCardFIDOAuthenticator>(
+          std::make_unique<TestCreditCardFidoAuthenticator>(
               autofill_driver_.get(), autofill_client_.get()));
 #endif
 
@@ -89,7 +96,7 @@ void AutofillMetricsBaseTest::SetUp() {
   CreateTestAutofillProfiles();
 }
 
-void AutofillMetricsBaseTest::TearDown() {
+void AutofillMetricsBaseTest::TearDownHelper() {
   test_ukm_recorder_->Purge();
   autofill_driver_.reset();
   autofill_client_.reset();
@@ -134,8 +141,8 @@ void AutofillMetricsBaseTest::SetFidoEligibility(bool is_verifiable) {
   CreditCardAccessManager* access_manager =
       autofill_manager().GetCreditCardAccessManager();
 #if !BUILDFLAG(IS_IOS)
-  static_cast<TestCreditCardFIDOAuthenticator*>(
-      access_manager->GetOrCreateFIDOAuthenticator())
+  static_cast<TestCreditCardFidoAuthenticator*>(
+      access_manager->GetOrCreateFidoAuthenticator())
       ->SetUserVerifiable(is_verifiable);
 #endif
   static_cast<payments::TestPaymentsClient*>(

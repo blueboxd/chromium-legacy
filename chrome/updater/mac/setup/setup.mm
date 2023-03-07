@@ -35,6 +35,7 @@
 #include "chrome/updater/setup.h"
 #include "chrome/updater/updater_branding.h"
 #include "chrome/updater/updater_scope.h"
+#include "chrome/updater/updater_version.h"
 #include "chrome/updater/util/launchd_util.h"
 #import "chrome/updater/util/mac_util.h"
 #import "chrome/updater/util/posix_util.h"
@@ -249,28 +250,28 @@ int PromoteCandidate(UpdaterScope scope) {
       GetBaseInstallDirectory(scope);
   const absl::optional<base::FilePath> bundle_path =
       GetUpdaterAppBundlePath(scope);
-  if (!updater_executable_path || !bundle_path || !install_dir) {
+  if (!updater_executable_path || !install_dir || !bundle_path) {
     return kErrorFailedToGetVersionedInstallDirectory;
   }
 
-  // Update the launcher hard link.
-  base::FilePath tmp_launcher_name = install_dir->Append("launcher_new");
-  if (link(bundle_path->Append("Contents")
-               .Append("Helpers")
-               .Append("launcher")
-               .value()
-               .c_str(),
-           tmp_launcher_name.value().c_str())) {
+  // Update the launcher sym link.
+  base::FilePath tmp_launcher_name = install_dir->Append("NewCurrent");
+  if (!base::DeleteFile(tmp_launcher_name)) {
+    VLOG(1) << "Failed to delete existing " << tmp_launcher_name.value();
+  }
+  if (symlink(kUpdaterVersion, tmp_launcher_name.value().c_str())) {
     return kErrorFailedToLinkLauncher;
   }
   if (rename(tmp_launcher_name.value().c_str(),
-             install_dir->Append("launcher").value().c_str())) {
+             install_dir->Append("Current").value().c_str())) {
     return kErrorFailedToRenameLauncher;
   }
   if (scope == UpdaterScope::kSystem) {
-    base::FilePath path = install_dir->Append("launcher");
+    base::FilePath path =
+        bundle_path->Append("Contents").Append("Helpers").Append("launcher");
     struct stat info;
-    if (stat(path.value().c_str(), &info) || info.st_uid ||
+    if (lstat(path.value().c_str(), &info) || info.st_uid ||
+        !(S_IFREG & info.st_mode) ||
         lchmod(path.value().c_str(),
                S_IRWXU | S_IRGRP | S_IXGRP | S_IROTH | S_IXOTH | S_ISUID)) {
       VPLOG(1) << "Launcher lchmod failed. Cross-user on-demand will not work";

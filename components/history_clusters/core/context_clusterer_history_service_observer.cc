@@ -6,6 +6,7 @@
 
 #include "base/metrics/histogram_functions.h"
 #include "base/time/default_clock.h"
+#include "base/timer/elapsed_timer.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/history_clusters/core/config.h"
 #include "components/history_clusters/core/history_clusters_util.h"
@@ -32,6 +33,75 @@ bool ShouldAddVisitToCluster(const history::VisitRow& new_visit,
 
   return true;
 }
+
+enum class ContextClustererDbLatencyType {
+  kReserveNextClusterId = 0,
+  kAddVisitsToCluster = 1,
+  kUpdateClusterVisit = 2,
+
+  // If adding more values here, please add the new stage to the variants under
+  // the `History.Clusters.ContextClusterer.DbLatency` in
+  // history/histograms.xml.
+};
+
+std::string DbLatencyHistogramSuffix(
+    ContextClustererDbLatencyType db_latency_type) {
+  switch (db_latency_type) {
+    case ContextClustererDbLatencyType::kReserveNextClusterId:
+      return ".ReserveNextClusterId";
+    case ContextClustererDbLatencyType::kAddVisitsToCluster:
+      return ".AddVisitsToCluster";
+    case ContextClustererDbLatencyType::kUpdateClusterVisit:
+      return ".UpdateClusterVisit";
+  }
+}
+
+void LogDbLatencyHistogram(ContextClustererDbLatencyType db_latency_type,
+                           base::TimeTicks start_time) {
+  base::UmaHistogramTimes("History.Clusters.ContextClusterer.DbLatency" +
+                              DbLatencyHistogramSuffix(db_latency_type),
+                          base::TimeTicks::Now() - start_time);
+}
+
+enum class VisitProcessingStage {
+  kUrlVisited = 0,
+  kUrlsDeleted = 1,
+  kCleanUpTimer = 2,
+
+  // If adding more values here, please add the new stage to the variants under
+  // the `History.Clusters.ContextClusterer.VisitProcessingLatency` in
+  // history/histograms.xml.
+};
+
+std::string VisitProcessingStageHistogramSuffix(
+    VisitProcessingStage visit_processing_stage) {
+  switch (visit_processing_stage) {
+    case VisitProcessingStage::kUrlVisited:
+      return ".UrlVisited";
+    case VisitProcessingStage::kUrlsDeleted:
+      return ".UrlsDeleted";
+    case VisitProcessingStage::kCleanUpTimer:
+      return ".CleanUpTimer";
+  };
+}
+
+class ScopedVisitProcessingTimer {
+ public:
+  explicit ScopedVisitProcessingTimer(
+      VisitProcessingStage visit_processing_stage)
+      : visit_processing_stage_(visit_processing_stage) {}
+  ~ScopedVisitProcessingTimer() {
+    base::UmaHistogramTimes(
+        "History.Clusters.ContextClusterer.VisitProcessingLatency" +
+            VisitProcessingStageHistogramSuffix(visit_processing_stage_),
+        elapsed_timer_.Elapsed());
+  }
+
+ private:
+  VisitProcessingStage visit_processing_stage_;
+
+  base::ElapsedTimer elapsed_timer_;
+};
 
 }  // namespace
 
@@ -66,20 +136,8 @@ void ContextClustererHistoryServiceObserver::OnURLVisited(
     history::HistoryService* history_service,
     const history::URLRow& url_row,
     const history::VisitRow& new_visit) {
-  if (!new_visit.originator_cache_guid.empty()) {
-    // Skip remote synced visits. Remote synced visits are context clustered on
-    // the originator machine and persisted via `HistorySyncBridge`.
-    return;
-  }
-
-  if (optimization_guide_decider_ &&
-      optimization_guide_decider_->CanApplyOptimization(
-          url_row.url(), optimization_guide::proto::HISTORY_CLUSTERS,
-          /*optimization_metadata=*/nullptr) !=
-          optimization_guide::OptimizationGuideDecision::kTrue) {
-    // Skip visits that are on the blocklist.
-    return;
-  }
+  ScopedVisitProcessingTimer url_visited_processing_timer(
+      VisitProcessingStage::kUrlVisited);
 
   // Update the normalized URL if it's a search URL.
   std::string normalized_url = url_row.url().possibly_invalid_spec();
@@ -91,6 +149,39 @@ void ContextClustererHistoryServiceObserver::OnURLVisited(
       normalized_url = search_metadata->normalized_url.possibly_invalid_spec();
       search_terms = search_metadata->search_terms;
     }
+  }
+
+  history::ClusterVisit cluster_visit =
+      CreateClusterVisit(normalized_url, new_visit);
+
+  if (!new_visit.originator_cache_guid.empty()) {
+    // Skip determining the exact cluster id for remote synced visits.
+
+    if (ShouldUseNavigationContextClustersFromPersistence()) {
+      // Remote synced visits are context clustered on the originator machine
+      // and persisted via `HistorySyncBridge`; however, it still requires it's
+      // ClusterVisit metadata. It is calculated here instead of in
+      // `HistorySyncBridge` to avoid a circular dependency.
+      //
+      // If the sender device does not have context clustering at nav time
+      // enabled, this ends up being a no-op.
+      history_service_->UpdateClusterVisit(
+          std::move(cluster_visit),
+          base::BindOnce(&LogDbLatencyHistogram,
+                         ContextClustererDbLatencyType::kUpdateClusterVisit,
+                         base::TimeTicks::Now()),
+          &task_tracker_);
+    }
+    return;
+  }
+
+  if (optimization_guide_decider_ &&
+      optimization_guide_decider_->CanApplyOptimization(
+          url_row.url(), optimization_guide::proto::HISTORY_CLUSTERS,
+          /*optimization_metadata=*/nullptr) !=
+          optimization_guide::OptimizationGuideDecision::kTrue) {
+    // Skip local visits that are on the blocklist.
+    return;
   }
 
   // See what cluster we should add it to.
@@ -154,18 +245,6 @@ void ContextClustererHistoryServiceObserver::OnURLVisited(
   // cluster maps in case newer visits reference it though.
   if (ShouldUseNavigationContextClustersFromPersistence() &&
       IsTransitionUserVisible(new_visit.transition)) {
-    history::ClusterVisit cluster_visit;
-    cluster_visit.annotated_visit.visit_row.visit_id = new_visit.visit_id;
-    cluster_visit.normalized_url = GURL(normalized_url);
-    cluster_visit.url_for_deduping =
-        ComputeURLForDeduping(cluster_visit.normalized_url);
-    cluster_visit.url_for_display =
-        ComputeURLForDisplay(cluster_visit.normalized_url);
-    if (engagement_score_provider_) {
-      cluster_visit.engagement_score =
-          engagement_score_provider_->GetScore(cluster_visit.normalized_url);
-    }
-
     // For new clusters, asyncly reserve an ID and have the
     //   `OnPersistedClusterIdReceived()` callback add the visits.
     // For clusters created recently for which history service hasn't yet
@@ -176,6 +255,9 @@ void ContextClustererHistoryServiceObserver::OnURLVisited(
       // Persist visit to existing cluster.
       history_service->AddVisitsToCluster(
           in_progress_cluster.persisted_cluster_id, {std::move(cluster_visit)},
+          base::BindOnce(&LogDbLatencyHistogram,
+                         ContextClustererDbLatencyType::kAddVisitsToCluster,
+                         base::TimeTicks::Now()),
           &task_tracker_);
       return;
     }
@@ -190,7 +272,8 @@ void ContextClustererHistoryServiceObserver::OnURLVisited(
       history_service->ReserveNextClusterId(
           base::BindOnce(&ContextClustererHistoryServiceObserver::
                              OnPersistedClusterIdReceived,
-                         weak_ptr_factory_.GetWeakPtr(), *cluster_id),
+                         weak_ptr_factory_.GetWeakPtr(), base::TimeTicks::Now(),
+                         *cluster_id),
           &task_tracker_);
     }
   }
@@ -199,6 +282,9 @@ void ContextClustererHistoryServiceObserver::OnURLVisited(
 void ContextClustererHistoryServiceObserver::OnURLsDeleted(
     history::HistoryService* history_service,
     const history::DeletionInfo& deletion_info) {
+  ScopedVisitProcessingTimer urls_deleted_processing_timer(
+      VisitProcessingStage::kUrlsDeleted);
+
   // Clear out everything if the user deleted all history.
   if (deletion_info.IsAllHistory()) {
     in_progress_clusters_.clear();
@@ -234,6 +320,9 @@ void ContextClustererHistoryServiceObserver::OnURLsDeleted(
 }
 
 void ContextClustererHistoryServiceObserver::CleanUpClusters() {
+  ScopedVisitProcessingTimer clean_up_timer(
+      VisitProcessingStage::kCleanUpTimer);
+
   if (in_progress_clusters_.empty()) {
     // Nothing to clean up, just return.
     return;
@@ -279,14 +368,16 @@ void ContextClustererHistoryServiceObserver::FinalizeCluster(
     visit_id_to_cluster_map_.erase(visit_id);
   }
 
-  // TODO(b/259466296): Kick off persisting keywords and prominence bits.
-
   in_progress_clusters_.erase(cluster_id);
 }
 
 void ContextClustererHistoryServiceObserver::OnPersistedClusterIdReceived(
+    base::TimeTicks start_time,
     int64_t cluster_id,
     int64_t persisted_cluster_id) {
+  LogDbLatencyHistogram(ContextClustererDbLatencyType::kReserveNextClusterId,
+                        start_time);
+
   auto cluster_it = in_progress_clusters_.find(cluster_id);
   base::UmaHistogramBoolean(
       "History.Clusters.ContextClusterer.ClusterCleanedUpBeforePersistence",
@@ -297,14 +388,35 @@ void ContextClustererHistoryServiceObserver::OnPersistedClusterIdReceived(
 
   cluster_it->second.persisted_cluster_id = persisted_cluster_id;
   // Persist all visits we've seen so far.
-  history_service_->AddVisitsToCluster(persisted_cluster_id,
-                                       cluster_it->second.unpersisted_visits,
-                                       &task_tracker_);
+  history_service_->AddVisitsToCluster(
+      persisted_cluster_id, cluster_it->second.unpersisted_visits,
+      base::BindOnce(&LogDbLatencyHistogram,
+                     ContextClustererDbLatencyType::kAddVisitsToCluster,
+                     base::TimeTicks::Now()),
+      &task_tracker_);
 
   // Clear these out since the visits have now been requested to be persisted.
   // This is safe to clear here as the vector should have already been copied to
   // the history DB thread in `AddVisitsToCluster()`.
   cluster_it->second.unpersisted_visits.clear();
+}
+
+history::ClusterVisit
+ContextClustererHistoryServiceObserver::CreateClusterVisit(
+    const std::string& normalized_url,
+    const history::VisitRow& visit_row) {
+  history::ClusterVisit cluster_visit;
+  cluster_visit.annotated_visit.visit_row.visit_id = visit_row.visit_id;
+  cluster_visit.normalized_url = GURL(normalized_url);
+  cluster_visit.url_for_deduping =
+      ComputeURLForDeduping(cluster_visit.normalized_url);
+  cluster_visit.url_for_display =
+      ComputeURLForDisplay(cluster_visit.normalized_url);
+  if (engagement_score_provider_) {
+    cluster_visit.engagement_score =
+        engagement_score_provider_->GetScore(cluster_visit.normalized_url);
+  }
+  return cluster_visit;
 }
 
 void ContextClustererHistoryServiceObserver::OverrideClockForTesting(

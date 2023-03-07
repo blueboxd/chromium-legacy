@@ -4,12 +4,16 @@
 
 #import "ios/chrome/browser/ui/default_promo/default_browser_utils.h"
 
-#import "base/feature_list.h"
 #import "base/ios/ios_util.h"
 #import "base/mac/foundation_util.h"
 #import "base/metrics/field_trial_params.h"
+#import "base/metrics/user_metrics.h"
 #import "base/notreached.h"
 #import "base/time/time.h"
+#import "components/feature_engagement/public/event_constants.h"
+#import "components/feature_engagement/public/feature_constants.h"
+#import "components/feature_engagement/public/tracker.h"
+#import "ios/chrome/browser/feature_engagement/tracker_factory.h"
 #import "ios/chrome/browser/ui/ui_feature_flags.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -128,9 +132,8 @@ constexpr base::TimeDelta kPromosShortCoolDown = base::Days(3);
 constexpr base::TimeDelta kMaximumTimeBetweenFirstPartyAppLaunches =
     base::Days(7);
 
-// Minimum time range between first-party app launches to notify the FET.
-constexpr base::TimeDelta kMinimumTimeBetweenFirstPartyAppLaunches =
-    base::Hours(6);
+// Maximum time representing one user session.
+constexpr base::TimeDelta kMaximumTimeOneUserSession = base::Hours(6);
 
 // Maximum time range between valid user URL pastes to notify the FET.
 constexpr base::TimeDelta kMaximumTimeBetweenValidURLPastes = base::Days(7);
@@ -342,6 +345,28 @@ void LogRemindMeLaterPromoActionInteraction() {
                              [NSDate date]);
 }
 
+void LogToFETDefaultBrowserPromoShown(feature_engagement::Tracker* tracker) {
+  // OTR browsers can sometimes pass a null tracker, check for that here.
+  if (!tracker) {
+    return;
+  }
+  tracker->NotifyEvent(feature_engagement::events::kDefaultBrowserPromoShown);
+}
+
+void LogToFETUserPastedURLIntoOmnibox(feature_engagement::Tracker* tracker) {
+  base::RecordAction(
+      base::UserMetricsAction("Mobile.Omnibox.iOS.PastedValidURL"));
+
+  // OTR browsers can sometimes pass a null tracker, check for that here.
+  if (!tracker) {
+    return;
+  }
+
+  if (HasRecentValidURLPastesAndRecordsCurrentPaste()) {
+    tracker->NotifyEvent(feature_engagement::events::kBlueDotPromoCriterionMet);
+  }
+}
+
 bool ShouldShowRemindMeLaterDefaultBrowserFullscreenPromo() {
   if (!IsInRemindMeLaterGroup()) {
     return false;
@@ -349,6 +374,35 @@ bool ShouldShowRemindMeLaterDefaultBrowserFullscreenPromo() {
 
   return HasRecordedEventForKeyMoreThanDelay(
       kRemindMeLaterPromoActionInteraction, kRemindMeLaterPresentationDelay);
+}
+
+bool ShouldTriggerDefaultBrowserBlueDotBadgeFeature(
+    const base::Feature& feature,
+    feature_engagement::Tracker* tracker) {
+  // TODO(crbug.com/1410229) clean-up experiment code when fully launched.
+  if (!IsInBlueDotExperimentEnabledGroup() || IsChromeLikelyDefaultBrowser()) {
+    return false;
+  }
+
+  // We need to ask the FET whether or not we should show this IPH because if
+  // yes, this will automatically notify the other dependent FET features that
+  // their criteria have been met. We then automatically dismiss it. Since it's
+  // just a shadow feature to enable the other two needed for the blue dot
+  // promo, we ignore `ShouldTriggerHelpUI`'s return value.
+  if (tracker->ShouldTriggerHelpUI(
+          feature_engagement::kIPHiOSDefaultBrowserBadgeEligibilityFeature)) {
+    tracker->Dismissed(
+        feature_engagement::kIPHiOSDefaultBrowserBadgeEligibilityFeature);
+  }
+
+  // Now, we ask the appropriate FET feature if it should trigger, i.e. if we
+  // should show the blue dot promo badge.
+  if (tracker->ShouldTriggerHelpUI(feature)) {
+    tracker->Dismissed(feature);
+    return true;
+  }
+
+  return false;
 }
 
 bool IsInRemindMeLaterGroup() {
@@ -363,6 +417,19 @@ bool IsInModifiedStringsGroup() {
       kDefaultBrowserFullscreenPromoExperiment,
       kDefaultBrowserFullscreenPromoExperimentChangeStringsGroupParam);
   return !paramValue.empty();
+}
+
+bool IsInBlueDotExperiment() {
+  return base::FeatureList::IsEnabled(kDefaultBrowserBlueDotPromo);
+}
+
+bool IsInBlueDotExperimentEnabledGroup() {
+  if (base::FeatureList::IsEnabled(kDefaultBrowserBlueDotPromo)) {
+    return kBlueDotPromoUserGroupParam.Get() ==
+           BlueDotPromoUserGroup::kOnlyBlueDotPromoEnabled;
+  }
+
+  return false;
 }
 
 bool NonModalPromosEnabled() {
@@ -446,7 +513,7 @@ bool HasRecentFirstPartyIntentLaunchesAndRecordsCurrentLaunch() {
           kMaximumTimeBetweenFirstPartyAppLaunches)) {
     if (HasRecordedEventForKeyMoreThanDelay(
             kTimestampAppLastOpenedViaFirstPartyIntent,
-            kMinimumTimeBetweenFirstPartyAppLaunches)) {
+            kMaximumTimeOneUserSession)) {
       SetObjectIntoStorageForKey(kTimestampAppLastOpenedViaFirstPartyIntent,
                                  [NSDate date]);
       return YES;
@@ -468,6 +535,16 @@ bool HasRecentValidURLPastesAndRecordsCurrentPaste() {
   }
 
   SetObjectIntoStorageForKey(kTimestampLastValidURLPasted, [NSDate date]);
+  return NO;
+}
+
+bool HasRecentTimestampForKey(NSString* eventKey) {
+  if (HasRecordedEventForKeyLessThanDelay(eventKey,
+                                          kMaximumTimeOneUserSession)) {
+    return YES;
+  }
+
+  SetObjectIntoStorageForKey(eventKey, [NSDate date]);
   return NO;
 }
 

@@ -314,6 +314,7 @@
 #include "third_party/blink/renderer/core/timing/render_blocking_metrics_reporter.h"
 #include "third_party/blink/renderer/core/timing/soft_navigation_heuristics.h"
 #include "third_party/blink/renderer/core/trustedtypes/trusted_html.h"
+#include "third_party/blink/renderer/core/view_transition/view_transition_supplement.h"
 #include "third_party/blink/renderer/core/view_transition/view_transition_utils.h"
 #include "third_party/blink/renderer/core/xml/parser/xml_document_parser.h"
 #include "third_party/blink/renderer/core/xml_names.h"
@@ -392,7 +393,7 @@ void FireRequestStorageAccessHistogram(RequestStorageResult result) {
 
 void FireRequestStorageAccessForOriginHistogram(RequestStorageResult result) {
   base::UmaHistogramEnumeration(
-      "API.StorageAccess.RequestStorageAccessForOrigin", result);
+      "API.TopLevelStorageAccess.RequestStorageAccessForOrigin", result);
 }
 
 class IntrinsicSizeResizeObserverDelegate : public ResizeObserver::Delegate {
@@ -3050,7 +3051,18 @@ static ui::AXMode ComputeAXModeFromAXContexts(Vector<AXContext*> ax_contexts) {
   return ax_mode;
 }
 
+namespace {
+
+// Simple count of AXObjectCache objects that are reachable from Documents. The
+// count assumes that multiple Documents in a single process can have such
+// caches and that the caches will only ever be created from the main rendering
+// thread.
+size_t g_ax_object_cache_count = 0;
+
+}  // namespace
+
 void Document::AddAXContext(AXContext* context) {
+  DCHECK(IsMainThread());
   // The only case when |&cache_owner| is not |this| is when this is a
   // popup. We want popups to share the AXObjectCache of their parent
   // document. However, there's no valid reason to explicitly create an
@@ -3072,6 +3084,7 @@ void Document::AddAXContext(AXContext* context) {
   if (!ax_object_cache_) {
     ax_object_cache_ =
         AXObjectCache::Create(*this, ComputeAXModeFromAXContexts(ax_contexts_));
+    g_ax_object_cache_count++;
   }
 }
 
@@ -3094,13 +3107,17 @@ void Document::RemoveAXContext(AXContext* context) {
 }
 
 void Document::ClearAXObjectCache() {
+  DCHECK(IsMainThread());
   DCHECK_EQ(&AXObjectCacheOwner(), this);
 
   // Clear the cache member variable before calling delete because attempts
   // are made to access it during destruction.
-  if (ax_object_cache_)
+  if (ax_object_cache_) {
     ax_object_cache_->Dispose();
-  ax_object_cache_.Clear();
+    ax_object_cache_.Clear();
+    DCHECK_NE(g_ax_object_cache_count, 0u);
+    g_ax_object_cache_count--;
+  }
 
   // If there's at least one AXContext in scope and there's still a LayoutView
   // around, recreate an empty AXObjectCache.
@@ -3112,10 +3129,16 @@ void Document::ClearAXObjectCache() {
   if (ax_contexts_.size() > 0 && GetLayoutView()) {
     ax_object_cache_ =
         AXObjectCache::Create(*this, ComputeAXModeFromAXContexts(ax_contexts_));
+    g_ax_object_cache_count++;
   }
 }
 
 AXObjectCache* Document::ExistingAXObjectCache() const {
+  DCHECK(IsMainThread());
+  if (g_ax_object_cache_count == 0) {
+    return nullptr;
+  }
+
   auto& cache_owner = AXObjectCacheOwner();
 
   // If the LayoutView is gone then we are in the process of destruction.
@@ -3123,16 +3146,6 @@ AXObjectCache* Document::ExistingAXObjectCache() const {
     return nullptr;
 
   return cache_owner.ax_object_cache_.Get();
-}
-
-bool Document::HasAXObjectCache() const {
-  auto& cache_owner = AXObjectCacheOwner();
-
-  // If the LayoutView is gone then we are in the process of destruction.
-  if (!cache_owner.layout_view_)
-    return false;
-
-  return cache_owner.ax_object_cache_;
 }
 
 CanvasFontCache* Document::GetCanvasFontCache() {
@@ -4285,23 +4298,6 @@ void Document::UpdateBaseURL() {
   if (!base_url_.IsValid())
     base_url_ = KURL();
 
-  // The RenderFrameHost won't know anything about the state of
-  // `base_element_url_` or `base_url_override_`, so if either of these affect
-  // `base_url_` we should share it with the frame host.
-  bool has_overridden_base_url =
-      !base_element_url_.IsEmpty() || !base_url_override_.IsEmpty();
-  // Avoid sending a spurious IPC if this is the first UpdateBaseURL() call
-  // and there is no overridden base URL. There may not be a frame since
-  // UpdateBaseURL() is called for documents that do not have a frame;
-  // there is nothing to notify in that case however.
-  // If we sent `base_url_` to the frame host, and then later its dependence
-  // on `base_element_url_`/`base_url_override_` ends, we should notify the
-  // frame host so it can reset its copy.
-  if ((!old_base_url.IsNull() || has_overridden_base_url) && GetFrame()) {
-    GetFrame()->GetLocalFrameHostRemote().DidChangeBaseURL(
-        has_overridden_base_url ? base_url_ : KURL());
-  }
-
   if (elem_sheet_) {
     // Element sheet is silly. It never contains anything.
     DCHECK(!elem_sheet_->Contents()->RuleCount());
@@ -4338,24 +4334,26 @@ KURL Document::FallbackBaseURL() const {
   //           document base URL of document's browsing context's container
   //           document.
   if (IsSrcdocDocument()) {
-    // Return the base_url value that was sent from the parent along with the
+    // Return the base_url value that was sent from the initiator along with the
     // srcdoc attribute's value.
     if (fallback_base_url_for_srcdoc_.IsValid())
       return fallback_base_url_for_srcdoc_;
-    // Until https://crbug.com/1356658 is resolved,
-    // `fallback_base_url_for_srcdoc_` will only be sent from the frame host if
-    // we are process isolating sandboxed srcdoc iframes (although when the
-    // IsolateSandboxedIframes feature is enabled we will send it for all srcdoc
-    // iframes, not just sandboxed ones). The fallback base url will also be
-    // sent from the frame host if kNewBaseUrlInheritanceBehavior is enabled.
-    // If `fallback_base_url_for_srcdoc_` isn't sent, then we must still check
-    // that `ParentDocument()` is non-null, in case this function is called
-    // while the document is detached.
-    // TODO(https://crbug.com/751329, https://crbug.com/1336904): Referring to
-    // ParentDocument() is not correct.
-    DCHECK(!blink::features::IsNewBaseUrlInheritanceBehaviorEnabled());
-    if (ParentDocument())
+    // We only use the parent document's base URL in legacy behavior. There are
+    // cases where fallback_base_url_for_srcdoc_ may not be set in the new base
+    // URL inheritance mode (e.g., browser-initiated navigations as in
+    // NavigationBrowserTest.BlockedSrcDocBrowserInitiated), but we should avoid
+    // trying to look at the parent document's current value in those cases. In
+    // legacy behavior, we still use the parent document's base URL (unless
+    // ParentDocument() is null, such as for detached documents).
+    // TODO(https://crbug.com/1408782): handle cases where
+    // NewBaseUrlInheritanceBehavior is enabled, but legacy session-history is
+    // missing initiator_base_url information.
+    if (!blink::features::IsNewBaseUrlInheritanceBehaviorEnabled() &&
+        ParentDocument()) {
+      // TODO(https://crbug.com/751329, https://crbug.com/1336904): Referring to
+      // ParentDocument() is not correct.
       return ParentDocument()->BaseURL();
+    }
   }
 
   // [spec] 2. If document's URL is about:blank, and document's browsing
@@ -8574,10 +8572,6 @@ void Document::Trace(Visitor* visitor) const {
   visitor->Trace(anchor_element_interaction_tracker_);
   visitor->Trace(focused_element_change_observers_);
   visitor->Trace(pending_link_header_preloads_);
-  visitor->Trace(event_node_path_cache_);
-  visitor->Trace(event_node_path_cache_key_list_);
-  visitor->Trace(latest_cached_event_node_);
-  visitor->Trace(latest_cached_event_node_path_);
   Supplementable<Document>::Trace(visitor);
   TreeScope::Trace(visitor);
   ContainerNode::Trace(visitor);
@@ -8954,76 +8948,6 @@ Document::PendingJavascriptUrl::PendingJavascriptUrl(
     : url(input_url), world(std::move(world)) {}
 
 Document::PendingJavascriptUrl::~PendingJavascriptUrl() = default;
-
-static wtf_size_t MaxEventNodePathCachedEntriesValue() {
-  // The cache stores N entries/nodes that are receiving events simultaneously
-  // in a document. The size of this cache will be O(kN) where k is the average
-  // tree depth of the stored nodes.
-  static const wtf_size_t kMaxEventNodePathCachedEntriesValue =
-      features::kDocumentMaxEventNodePathCachedEntries.Get();
-  return kMaxEventNodePathCachedEntriesValue;
-}
-
-static bool EventNodePathCachingEnabled() {
-  // Cache the feature value since checking for each event path regresses
-  // performance.
-  static const bool kEnabled =
-      base::FeatureList::IsEnabled(features::kDocumentEventNodePathCaching);
-  return kEnabled;
-}
-
-const EventPath::NodePath& Document::GetOrCalculateEventNodePath(Node& node) {
-  DCHECK(EventNodePathCachingEnabled());
-  wtf_size_t max_entries = MaxEventNodePathCachedEntriesValue();
-  if (max_entries == 1) {
-    if (event_node_path_dom_tree_version_ == dom_tree_version_ &&
-        latest_cached_event_node_ == &node) {
-      return *latest_cached_event_node_path_;
-    } else {
-      EventPath::NodePath node_path = EventPath::CalculateNodePath(node);
-      event_node_path_dom_tree_version_ = dom_tree_version_;
-      latest_cached_event_node_ = &node;
-      latest_cached_event_node_path_ =
-          MakeGarbageCollected<EventPath::NodePath>(std::move(node_path));
-      return *latest_cached_event_node_path_;
-    }
-  }
-
-  if (event_node_path_dom_tree_version_ != dom_tree_version_) {
-    if (!event_node_path_cache_.empty()) {
-      event_node_path_cache_.clear();
-      event_node_path_cache_key_list_.clear();
-    } else {
-      DCHECK(event_node_path_cache_key_list_.empty());
-    }
-    event_node_path_dom_tree_version_ = dom_tree_version_;
-  }
-
-  EventPath::NodePath* event_node_path = nullptr;
-  {
-    // Keep `result` within own scope to avoid dangling references into cache,
-    // because it might get modified during pruning.
-    auto result = event_node_path_cache_.insert(&node, nullptr);
-    if (result.is_new_entry) {
-      EventPath::NodePath node_path = EventPath::CalculateNodePath(node);
-      result.stored_value->value =
-          MakeGarbageCollected<EventPath::NodePath>(std::move(node_path));
-    }
-    event_node_path = result.stored_value->value;
-  }
-  event_node_path_cache_key_list_.PrependOrMoveToFirst(&node);
-
-  // Prune oldest cached node if size is bigger than max.
-  if (event_node_path_cache_key_list_.size() > max_entries) {
-    DCHECK_EQ(event_node_path_cache_key_list_.size(), max_entries + 1);
-    event_node_path_cache_.erase(event_node_path_cache_key_list_.back());
-    event_node_path_cache_key_list_.pop_back();
-  }
-
-  DCHECK_EQ(event_node_path_cache_.size(),
-            event_node_path_cache_key_list_.size());
-  return *event_node_path;
-}
 
 void Document::ResetAgent(Agent& agent) {
   agent_ = agent;

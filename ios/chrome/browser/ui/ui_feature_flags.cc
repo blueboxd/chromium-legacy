@@ -83,6 +83,10 @@ BASE_FEATURE(kEnableLensInNTP,
              "EnableLensInNTP",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+BASE_FEATURE(kEnableLensContextMenuAltText,
+             "EnableLensContextMenuAltText",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 BASE_FEATURE(kEnableLensInOmniboxCopiedImage,
              "EnableLensInOmniboxCopiedImage",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -130,16 +134,16 @@ BASE_FEATURE(kTabGridRecencySort,
              "TabGridRecencySort",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-BASE_FEATURE(kEnableNewBookmarksImplementation,
-             "EnableNewBookmarksImplementation",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
 BASE_FEATURE(kMultilineFadeTruncatingLabel,
              "MultilineFadeTruncatingLabel",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 BASE_FEATURE(kEnableAccessibilityIdentifierToOmniboxLeadingImage,
              "EnableAccessibilityIdentifierToOmniboxLeadingImage",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+BASE_FEATURE(kTabStripContextMenu,
+             "TabStripContextMenu",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 bool IsTabGridSortedByRecency() {

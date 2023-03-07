@@ -87,10 +87,9 @@ class ToolbarView;
 class TopContainerLoadingBar;
 class TopContainerView;
 class TopControlsSlideControllerTest;
+class WebAppFrameToolbarView;
 class WebContentsCloseHandler;
 class WebUITabStripContainerView;
-
-class SideSearchBrowserController;
 
 namespace ui {
 class NativeTheme;
@@ -130,7 +129,12 @@ class BrowserView : public BrowserWindow,
   BrowserView& operator=(const BrowserView&) = delete;
   ~BrowserView() override;
 
-  void set_frame(BrowserFrame* frame) { frame_ = frame; }
+  void set_frame(BrowserFrame* frame) {
+    frame_ = frame;
+    paint_as_active_subscription_ =
+        frame_->RegisterPaintAsActiveChangedCallback(base::BindRepeating(
+            &BrowserView::PaintAsActiveChanged, base::Unretained(this)));
+  }
   BrowserFrame* frame() const { return frame_; }
 
   // Returns a pointer to the BrowserView* interface implementation (an
@@ -206,10 +210,6 @@ class BrowserView : public BrowserWindow,
 
   SidePanelCoordinator* side_panel_coordinator() {
     return side_panel_coordinator_.get();
-  }
-
-  SideSearchBrowserController* side_search_controller() {
-    return side_search_controller_.get();
   }
 
   void set_contents_border_widget(views::Widget* contents_border_widget) {
@@ -420,6 +420,8 @@ class BrowserView : public BrowserWindow,
   // settings page.
   void UpdateSidePanelHorizontalAlignment();
 
+  void UpdateWebAppStatusIconsVisiblity();
+
   // BrowserWindow:
   void Show() override;
   void ShowInactive() override;
@@ -447,7 +449,6 @@ class BrowserView : public BrowserWindow,
   void SetTopControlsGestureScrollInProgress(bool in_progress) override;
   StatusBubble* GetStatusBubble() override;
   void UpdateTitleBar() override;
-  void UpdateFrameColor() override;
   void BookmarkBarStateChanged(
       BookmarkBar::AnimateChangeType change_type) override;
   void UpdateDevTools() override;
@@ -541,6 +542,7 @@ class BrowserView : public BrowserWindow,
       bool show_signin_button) override;
 #if BUILDFLAG(IS_CHROMEOS)
   views::Button* GetSharingHubIconButton() override;
+  void ToggleMultitaskMenu() const override;
 #else
   sharing_hub::SharingHubBubbleView* ShowSharingHubBubble(
       share::ShareAttempt attempt) override;
@@ -768,10 +770,6 @@ class BrowserView : public BrowserWindow,
   // side panel being closed.
   bool CloseOpenRightAlignedSidePanel(bool exclude_side_search = false);
 
-  // Clobbers all right aligned side search side panels if
-  // kClobberAllSideSearchSidePanels is enabled.
-  void MaybeClobberAllSideSearchSidePanels();
-
   bool should_show_window_controls_overlay_toggle() const {
     return should_show_window_controls_overlay_toggle_;
   }
@@ -952,6 +950,11 @@ class BrowserView : public BrowserWindow,
   // Updates whether the web app is an isolated web app.
   void UpdateIsIsolatedWebApp();
 
+  WebAppFrameToolbarView* web_app_frame_toolbar();
+  const WebAppFrameToolbarView* web_app_frame_toolbar() const;
+
+  void PaintAsActiveChanged();
+
   // The BrowserFrame that hosts this view.
   raw_ptr<BrowserFrame, DanglingUntriaged> frame_ = nullptr;
 
@@ -1081,9 +1084,6 @@ class BrowserView : public BrowserWindow,
   std::unique_ptr<SidePanelVisibilityController>
       side_panel_visibility_controller_;
 
-  // Controls the browser window's side panel for the Side Search feature.
-  std::unique_ptr<SideSearchBrowserController> side_search_controller_;
-
   // Provides access to the toolbar buttons this browser view uses. Buttons may
   // appear in a hosted app frame or in a tabbed UI toolbar.
   raw_ptr<ToolbarButtonProvider, DanglingUntriaged> toolbar_button_provider_ =
@@ -1206,6 +1206,8 @@ class BrowserView : public BrowserWindow,
   bool is_isolated_web_app_ = false;
   absl::optional<content::PermissionController::SubscriptionId>
       window_management_subscription_id_;
+
+  base::CallbackListSubscription paint_as_active_subscription_;
 
   mutable base::WeakPtrFactory<BrowserView> weak_ptr_factory_{this};
 };

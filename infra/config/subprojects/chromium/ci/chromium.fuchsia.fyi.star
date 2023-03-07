@@ -10,17 +10,17 @@ load("//lib/ci.star", "ci")
 load("//lib/consoles.star", "consoles")
 
 ci.defaults.set(
-    builder_group = "chromium.fuchsia.fyi",
     executable = ci.DEFAULT_EXECUTABLE,
+    builder_group = "chromium.fuchsia.fyi",
+    pool = ci.DEFAULT_POOL,
     cores = 8,
     os = os.LINUX_DEFAULT,
-    pool = ci.DEFAULT_POOL,
     sheriff_rotations = sheriff_rotations.FUCHSIA,
-    service_account = ci.DEFAULT_SERVICE_ACCOUNT,
     execution_timeout = 10 * time.hour,
     notifies = ["cr-fuchsia"],
     reclient_instance = reclient.instance.DEFAULT_TRUSTED,
     reclient_jobs = reclient.jobs.DEFAULT,
+    service_account = ci.DEFAULT_SERVICE_ACCOUNT,
 )
 
 consoles.console_view(
@@ -68,7 +68,7 @@ ci.builder(
             short_name = "a64-chrome",
         ),
         consoles.console_view_entry(
-            branch_selector = branches.MAIN,
+            branch_selector = branches.selector.MAIN,
             console_view = "sheriff.fuchsia",
             # TODO(crbug.com/1372224): Move to "fuchsia ci|arm64" once green.
             category = "fyi|arm64",
@@ -106,7 +106,7 @@ ci.builder(
             short_name = "arm64",
         ),
         consoles.console_view_entry(
-            branch_selector = branches.MAIN,
+            branch_selector = branches.selector.MAIN,
             console_view = "sheriff.fuchsia",
             category = "gardener|fuchsia ci|arm64",
             short_name = "dbg",
@@ -140,7 +140,7 @@ ci.builder(
             short_name = "x64",
         ),
         consoles.console_view_entry(
-            branch_selector = branches.MAIN,
+            branch_selector = branches.selector.MAIN,
             console_view = "sheriff.fuchsia",
             category = "gardener|fuchsia ci|x64",
             short_name = "asan",
@@ -174,7 +174,7 @@ ci.builder(
             short_name = "x64",
         ),
         consoles.console_view_entry(
-            branch_selector = branches.MAIN,
+            branch_selector = branches.selector.MAIN,
             console_view = "sheriff.fuchsia",
             category = "gardener|fuchsia ci|x64",
             short_name = "dbg",
@@ -209,46 +209,11 @@ ci.builder(
             short_name = "x64-chrome",
         ),
         consoles.console_view_entry(
-            branch_selector = branches.MAIN,
+            branch_selector = branches.selector.MAIN,
             console_view = "sheriff.fuchsia",
             # TODO(crbug.com/1372224): Move to "fuchsia ci|x64" once green.
             category = "fyi|x64",
             short_name = "chrome",
-        ),
-    ],
-)
-
-ci.builder(
-    name = "fuchsia-x64-workstation",
-    builder_spec = builder_config.builder_spec(
-        gclient_config = builder_config.gclient_config(
-            config = "chromium",
-            apply_configs = [
-                "fuchsia_workstation",
-            ],
-        ),
-        chromium_config = builder_config.chromium_config(
-            config = "chromium",
-            apply_configs = [
-                "mb",
-            ],
-            build_config = builder_config.build_config.RELEASE,
-            target_bits = 64,
-            target_platform = builder_config.target_platform.FUCHSIA,
-        ),
-        build_gs_bucket = "chromium-fyi-archive",
-        run_tests_serially = True,
-    ),
-    console_view_entry = [
-        consoles.console_view_entry(
-            category = "fuchsia|x64",
-            short_name = "work",
-        ),
-        consoles.console_view_entry(
-            branch_selector = branches.MAIN,
-            console_view = "sheriff.fuchsia",
-            category = "fyi|x64",
-            short_name = "work",
         ),
     ],
 )

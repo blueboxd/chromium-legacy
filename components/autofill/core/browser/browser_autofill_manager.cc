@@ -2209,6 +2209,19 @@ void BrowserAutofillManager::FillOrPreviewDataModelForm(
       continue;
     }
 
+    // If `kAutofillFillAndImportFromMoreFields` is enabled, predictions are
+    // generated for autocomplete=unrecognized fields. The fields are only
+    // filled when the `kAutofillFillAutocompleteUnrecognized` parameter is
+    // enabled.
+    if (form_structure->field(i)
+            ->HasPredictionDespiteUnrecognizedAutocompleteAttribute() &&
+        !features::kAutofillFillAutocompleteUnrecognized.Get()) {
+      LOG_AF(buffer)
+          << Tr{}
+          << "Skipped: kAutofillFillAutoccompleteUnrecognized not enabled";
+      continue;
+    }
+
     // TODO(crbug/1203667#c9): Skip if the form has changed in the meantime,
     // which may happen with refills.
     if (autofill_field->global_id() != result.fields[i].global_id()) {
@@ -3078,7 +3091,7 @@ void BrowserAutofillManager::GetAvailableSuggestions(
   // attribute, unless those are credit card fields.
   if (context->focused_field &&
       context->focused_field
-          ->ShouldSuppressPromptDueToUnrecognizedAutocompleteAttribute()) {
+          ->HasPredictionDespiteUnrecognizedAutocompleteAttribute()) {
     context->suppress_reason = SuppressReason::kAutocompleteUnrecognized;
     suggestions->clear();
     return;
@@ -3340,9 +3353,10 @@ void BrowserAutofillManager::OnSeePromoCodeOfferDetailsSelected(
   OnSingleFieldSuggestionSelected(value, frontend_id);
 }
 
-void BrowserAutofillManager::SetSuggestionOriginMetricState(
-    AutofillSuggestionMethod state) {
-  autofill_suggestion_method_ = state;
+void BrowserAutofillManager::SetAutofillSuggestionMethod(
+    AutofillSuggestionMethod method) {
+  autofill_suggestion_method_ = method;
+  credit_card_form_event_logger_->set_autofill_suggestion_method(method);
 }
 
 void BrowserAutofillManager::SetShouldSuppressKeyboard(bool suppress) {

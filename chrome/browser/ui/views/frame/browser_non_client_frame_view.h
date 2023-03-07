@@ -105,10 +105,6 @@ class BrowserNonClientFrameView : public views::NonClientFrameView,
   // tabstrip background.
   virtual SkColor GetFrameColor(BrowserFrameActiveState active_state) const;
 
-  // Called by BrowserView to signal the frame color has changed and needs
-  // to be repainted.
-  virtual void UpdateFrameColor();
-
   // For non-transparent windows, returns the background tab image resource ID
   // if the image has been customized, directly or indirectly, by the theme.
   absl::optional<int> GetCustomBackgroundId(
@@ -124,21 +120,24 @@ class BrowserNonClientFrameView : public views::NonClientFrameView,
   // or disabled.
   virtual void WindowControlsOverlayEnabledChanged() {}
 
-  // Set the visibility of the window controls overlay toggle button.
-  void SetWindowControlsOverlayToggleVisible(bool visible);
-
-  // Updates the visibility of the title bar based on the visibility of the
-  // borderless mode.
-  void UpdateBorderlessModeEnabled();
-
   // views::NonClientFrameView:
   using views::NonClientFrameView::ShouldPaintAsActive;
   void Layout() override;
   void VisibilityChanged(views::View* starting_from, bool is_visible) override;
   int NonClientHitTest(const gfx::Point& point) override;
-  void ResetWindowControls() override;
 
   WebAppFrameToolbarView* web_app_frame_toolbar_for_testing() {
+    return web_app_frame_toolbar_;
+  }
+
+  // TODO(https://crbug.com/1407240): Remove these methods (and all other
+  // WebAppFrameToolbarView access/usage) from this class once work to refactor
+  // ownership has been completed.
+  WebAppFrameToolbarView* web_app_frame_toolbar(base::PassKey<BrowserView>) {
+    return web_app_frame_toolbar_;
+  }
+  const WebAppFrameToolbarView* web_app_frame_toolbar(
+      base::PassKey<BrowserView>) const {
     return web_app_frame_toolbar_;
   }
 

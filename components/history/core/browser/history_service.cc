@@ -315,13 +315,15 @@ base::CancelableTaskTracker::TaskId HistoryService::ReserveNextClusterId(
 base::CancelableTaskTracker::TaskId HistoryService::AddVisitsToCluster(
     int64_t cluster_id,
     const std::vector<ClusterVisit>& visits,
+    base::OnceClosure callback,
     base::CancelableTaskTracker* tracker) {
   DCHECK(backend_task_runner_) << "History service being called after cleanup";
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return tracker->PostTask(
+  return tracker->PostTaskAndReply(
       backend_task_runner_.get(), FROM_HERE,
       base::BindOnce(&HistoryBackend::AddVisitsToCluster, history_backend_,
-                     cluster_id, visits));
+                     cluster_id, visits),
+      std::move(callback));
 }
 
 base::CancelableTaskTracker::TaskId HistoryService::UpdateClusterTriggerability(
@@ -334,6 +336,31 @@ base::CancelableTaskTracker::TaskId HistoryService::UpdateClusterTriggerability(
       backend_task_runner_.get(), FROM_HERE,
       base::BindOnce(&HistoryBackend::UpdateClusterTriggerability,
                      history_backend_, clusters),
+      std::move(callback));
+}
+
+base::CancelableTaskTracker::TaskId HistoryService::HideVisits(
+    const std::vector<VisitID>& visit_ids,
+    base::OnceClosure callback,
+    base::CancelableTaskTracker* tracker) {
+  DCHECK(backend_task_runner_) << "History service being called after cleanup";
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return tracker->PostTaskAndReply(
+      backend_task_runner_.get(), FROM_HERE,
+      base::BindOnce(&HistoryBackend::HideVisits, history_backend_, visit_ids),
+      std::move(callback));
+}
+
+base::CancelableTaskTracker::TaskId HistoryService::UpdateClusterVisit(
+    const history::ClusterVisit& cluster_visit,
+    base::OnceClosure callback,
+    base::CancelableTaskTracker* tracker) {
+  DCHECK(backend_task_runner_) << "History service being called after cleanup";
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return tracker->PostTaskAndReply(
+      backend_task_runner_.get(), FROM_HERE,
+      base::BindOnce(&HistoryBackend::UpdateClusterVisit, history_backend_,
+                     cluster_visit),
       std::move(callback));
 }
 

@@ -5,6 +5,9 @@
 #import "ios/chrome/browser/ui/omnibox/popup/omnibox_popup_row_cell.h"
 
 #import "base/check.h"
+#import "base/i18n/rtl.h"
+#import "base/metrics/histogram_macros.h"
+#import "base/strings/sys_string_conversions.h"
 #import "components/omnibox/common/omnibox_features.h"
 #import "ios/chrome/browser/ui/elements/extended_touch_target_button.h"
 #import "ios/chrome/browser/ui/elements/fade_truncating_label.h"
@@ -13,6 +16,7 @@
 #import "ios/chrome/browser/ui/omnibox/popup/autocomplete_suggestion.h"
 #import "ios/chrome/browser/ui/omnibox/popup/omnibox_icon_view.h"
 #import "ios/chrome/browser/ui/toolbar/public/toolbar_constants.h"
+#import "ios/chrome/browser/ui/util/attributed_string_util.h"
 #import "ios/chrome/browser/ui/util/layout_guide_names.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/browser/ui/util/util_swift.h"
@@ -29,7 +33,13 @@
 #endif
 
 namespace {
-const CGFloat kTextTopMargin = 6;
+const CGFloat kTextTopMargin = 6.0;
+const CGFloat kMultilineTextTopMargin = 11.0;
+/// Trailing margin of the text. This margin is increased when the text is on
+/// multiple lines, otherwise text of the first lines without the gradient seems
+/// too close to the trailing (button/end).
+const CGFloat kTextTrailingMargin = 0.0;
+const CGFloat kMultilineTextTrailingMargin = 4.0;
 const CGFloat kTrailingButtonSize = 24;
 const CGFloat kTrailingButtonTrailingMargin = 14;
 const CGFloat kTopGradientColorOpacity = 0.85;
@@ -44,6 +54,16 @@ const NSInteger kSearchSuggestNumberOfLines = 2;
 
 NSString* const kOmniboxPopupRowSwitchTabAccessibilityIdentifier =
     @"OmniboxPopupRowSwitchTabAccessibilityIdentifier";
+
+/// Name of the histogram recording the number of lines in search suggestions.
+const char kOmniboxSearchSuggestionNumberOfLines[] =
+    "IOS.Omnibox.SearchSuggestionNumberOfLines";
+
+/// Returns `YES` if `kOmniboxMultilineSearchSuggest` is enabled.
+BOOL IsMultilineSearchSuggestionEnabled() {
+  return base::FeatureList::IsEnabled(kOmniboxMultilineSearchSuggest);
+}
+
 }  // namespace
 
 @interface OmniboxPopupRowCell ()
@@ -79,6 +99,11 @@ NSString* const kOmniboxPopupRowSwitchTabAccessibilityIdentifier =
 /// The layout guides tracking external views to base layout off of.
 @property(nonatomic, strong) UILayoutGuide* imageLayoutGuide;
 @property(nonatomic, strong) UILayoutGuide* textLayoutGuide;
+
+/// Constraints that changes when the text is a multi-lines search suggestion.
+@property(nonatomic, strong) NSLayoutConstraint* textTopConstraint;
+@property(nonatomic, strong) NSLayoutConstraint* textTrailingToButtonConstraint;
+@property(nonatomic, strong) NSLayoutConstraint* textTrailingConstraint;
 
 @end
 
@@ -245,6 +270,12 @@ NSString* const kOmniboxPopupRowSwitchTabAccessibilityIdentifier =
       [self.layoutGuideCenter makeLayoutGuideNamed:kOmniboxTextFieldGuide];
   [self.contentView addLayoutGuide:self.textLayoutGuide];
 
+  // Top space should be at least the given top margin, but can be more if
+  // the row is short enough to use the minimum height constraint above.
+  self.textTopConstraint = [self.textStackView.topAnchor
+      constraintGreaterThanOrEqualToAnchor:self.contentView.topAnchor
+                                  constant:kTextTopMargin];
+
   [NSLayoutConstraint activateConstraints:@[
     // Row has a minimum height.
     [self.contentView.heightAnchor
@@ -261,11 +292,7 @@ NSString* const kOmniboxPopupRowSwitchTabAccessibilityIdentifier =
     // Position textStackView "after" leadingIconView. The horizontal position
     // is actually left off because it will be added via a
     // layout guide once the cell has been added to the view hierarchy.
-    // Top space should be at least the given top margin, but can be more if
-    // the row is short enough to use the minimum height constraint above.
-    [self.textStackView.topAnchor
-        constraintGreaterThanOrEqualToAnchor:self.contentView.topAnchor
-                                    constant:kTextTopMargin],
+    self.textTopConstraint,
     [self.textStackView.centerYAnchor
         constraintEqualToAnchor:self.contentView.centerYAnchor],
 
@@ -292,14 +319,17 @@ NSString* const kOmniboxPopupRowSwitchTabAccessibilityIdentifier =
 /// Add the trailing button as a subview and setup its constraints.
 - (void)setupTrailingButtonLayout {
   [self.contentView addSubview:self.trailingButton];
+
+  self.textTrailingToButtonConstraint = [self.trailingButton.leadingAnchor
+      constraintEqualToAnchor:self.textStackView.trailingAnchor
+                     constant:kTextTrailingMargin];
   [NSLayoutConstraint activateConstraints:@[
     [self.trailingButton.centerYAnchor
         constraintEqualToAnchor:self.contentView.centerYAnchor],
     [self.contentView.trailingAnchor
         constraintEqualToAnchor:self.trailingButton.trailingAnchor
                        constant:kTrailingButtonTrailingMargin],
-    [self.trailingButton.leadingAnchor
-        constraintEqualToAnchor:self.textStackView.trailingAnchor],
+    self.textTrailingToButtonConstraint,
   ]];
 }
 
@@ -308,12 +338,14 @@ NSString* const kOmniboxPopupRowSwitchTabAccessibilityIdentifier =
   DCHECK(self.imageLayoutGuide);
   DCHECK(self.textLayoutGuide);
 
-  // The text should extend to the cell's trailing edge when there is no
-  // trailing button.
+  // When there is no trailing button, the text should extend to the cell's
+  // trailing edge with a padding.
   NSLayoutConstraint* stackViewToCellTrailing =
       [self.textStackView.trailingAnchor
-          constraintEqualToAnchor:self.contentView.trailingAnchor];
+          constraintEqualToAnchor:self.contentView.trailingAnchor
+                         constant:-kTextTrailingMargin];
   stackViewToCellTrailing.priority = UILayoutPriorityDefaultHigh;
+  self.textTrailingConstraint = stackViewToCellTrailing;
 
   // These constraints need to be removed when freezing the position of these
   // views. See -freezeLayoutGuidePositions for the reason why.
@@ -401,6 +433,9 @@ NSString* const kOmniboxPopupRowSwitchTabAccessibilityIdentifier =
 
   // Clear text.
   self.textTruncatingLabel.attributedText = nil;
+  self.textTruncatingLabel.truncateMode = FadeTruncatingTail;
+  self.textTruncatingLabel.semanticContentAttribute =
+      UISemanticContentAttributeUnspecified;
   self.detailTruncatingLabel.attributedText = nil;
   self.detailAnswerLabel.attributedText = nil;
 
@@ -415,6 +450,19 @@ NSString* const kOmniboxPopupRowSwitchTabAccessibilityIdentifier =
   self.trailingButton.accessibilityIdentifier = nil;
 
   self.accessibilityCustomActions = nil;
+}
+
+/// Updates the text constraint according to `isMultiline`.
+- (void)updateTextConstraints:(BOOL)isMultiline {
+  if (isMultiline) {
+    self.textTopConstraint.constant = kMultilineTextTopMargin;
+    self.textTrailingConstraint.constant = kMultilineTextTrailingMargin;
+    self.textTrailingToButtonConstraint.constant = kMultilineTextTrailingMargin;
+  } else {
+    self.textTopConstraint.constant = kTextTopMargin;
+    self.textTrailingConstraint.constant = kTextTrailingMargin;
+    self.textTrailingToButtonConstraint.constant = kTextTrailingMargin;
+  }
 }
 
 #pragma mark - Cell setup with data
@@ -452,15 +500,26 @@ NSString* const kOmniboxPopupRowSwitchTabAccessibilityIdentifier =
       self.highlighted
           ? [self highlightedAttributedStringWithString:suggestion.text]
           : suggestion.text;
-  if (base::FeatureList::IsEnabled(kOmniboxMultilineSearchSuggest) &&
-      suggestion.isMatchTypeSearch) {
-    self.textTruncatingLabel.lineBreakMode = NSLineBreakByWordWrapping;
-    self.textTruncatingLabel.numberOfLines = kSearchSuggestNumberOfLines;
+  if (suggestion.isWrapping) {
+    [self logNumberOfLinesSearchSuggestions:self.textTruncatingLabel
+                                                .attributedText];
+    if (base::FeatureList::IsEnabled(kOmniboxMultilineSearchSuggest)) {
+      self.textTruncatingLabel.numberOfLines = kSearchSuggestNumberOfLines;
+      base::i18n::TextDirection textDirection = base::i18n::GetStringDirection(
+          base::SysNSStringToUTF16(self.textTruncatingLabel.text));
+      if (textDirection == base::i18n::RIGHT_TO_LEFT) {
+        self.textTruncatingLabel.semanticContentAttribute =
+            UISemanticContentAttributeForceRightToLeft;
+        self.textTruncatingLabel.truncateMode = FadeTruncatingHead;
+      }
+    }
   } else {
     // Default values for FadeTruncatingLabel.
     self.textTruncatingLabel.lineBreakMode = NSLineBreakByClipping;
     self.textTruncatingLabel.numberOfLines = 1;
   }
+  [self updateTextConstraints:IsMultilineSearchSuggestionEnabled() &&
+                              suggestion.isWrapping];
 
   // URLs have have special layout requirements.
   self.detailTruncatingLabel.displayAsURL = suggestion.isURL;
@@ -557,6 +616,17 @@ NSString* const kOmniboxPopupRowSwitchTabAccessibilityIdentifier =
 
 - (void)trailingButtonTapped {
   [self.delegate trailingButtonTappedForCell:self];
+}
+
+#pragma mark - Metrics
+
+- (void)logNumberOfLinesSearchSuggestions:
+    (NSAttributedString*)attributedString {
+  CGFloat width = CGRectGetWidth(self.textStackView.frame);
+  NSInteger numberOfLines =
+      NumberOfLinesOfAttributedString(attributedString, width);
+  UMA_HISTOGRAM_EXACT_LINEAR(kOmniboxSearchSuggestionNumberOfLines,
+                             static_cast<int>(numberOfLines), 10);
 }
 
 @end

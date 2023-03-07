@@ -62,9 +62,6 @@ Config::Config() {
             internal::kJourneys, "JourneysNumVisitsToAlwaysShowAboveTheFold",
             num_visits_to_always_show_above_the_fold);
 
-    drop_hidden_visits = base::GetFieldTrialParamByFeatureAsBool(
-        internal::kJourneys, "drop_hidden_visits", drop_hidden_visits);
-
     rescore_visits_within_clusters_for_query =
         base::GetFieldTrialParamByFeatureAsBool(
             internal::kJourneys, "JourneysRescoreVisitsWithinClustersForQuery",
@@ -287,12 +284,6 @@ Config::Config() {
     content_clustering_enabled = base::FeatureList::IsEnabled(
         features::kOnDeviceClusteringContentClustering);
 
-    content_clustering_entity_similarity_weight =
-        GetFieldTrialParamByFeatureAsDouble(
-            features::kOnDeviceClusteringContentClustering,
-            "content_clustering_entity_similarity_weight",
-            content_clustering_entity_similarity_weight);
-
     content_clustering_similarity_threshold =
         GetFieldTrialParamByFeatureAsDouble(
             features::kOnDeviceClusteringContentClustering,
@@ -302,22 +293,6 @@ Config::Config() {
     DCHECK_GE(content_clustering_similarity_threshold, 0.0f);
     DCHECK_LE(content_clustering_similarity_threshold, 1.0f);
 
-    content_cluster_on_intersection_similarity =
-        GetFieldTrialParamByFeatureAsBool(
-            features::kOnDeviceClusteringContentClustering,
-            "use_content_clustering_intersection_similarity",
-            content_cluster_on_intersection_similarity);
-
-    cluster_interaction_threshold = GetFieldTrialParamByFeatureAsInt(
-        features::kOnDeviceClusteringContentClustering,
-        "content_clustering_intersection_threshold",
-        cluster_interaction_threshold);
-
-    content_cluster_using_cosine_similarity = GetFieldTrialParamByFeatureAsBool(
-        features::kOnDeviceClusteringContentClustering,
-        "use_content_clustering_cosine_similarity",
-        content_cluster_using_cosine_similarity);
-
     exclude_entities_that_have_no_collections_from_content_clustering =
         GetFieldTrialParamByFeatureAsBool(
             features::kOnDeviceClusteringContentClustering,
@@ -326,6 +301,14 @@ Config::Config() {
 
     collections_to_block_from_content_clustering =
         JourneysCollectionContentClusteringBlocklist();
+
+    use_pairwise_merge = GetFieldTrialParamByFeatureAsBool(
+        features::kOnDeviceClusteringContentClustering, "use_pairwise_merge",
+        use_pairwise_merge);
+
+    max_pairwise_merge_iterations = GetFieldTrialParamByFeatureAsInt(
+        features::kOnDeviceClusteringContentClustering,
+        "max_pairwise_merge_iterations", max_pairwise_merge_iterations);
   }
 
   // The `kHistoryClustersVisitDeduping` feature and child params.
@@ -376,6 +359,14 @@ Config::Config() {
             internal::kHistoryClustersNavigationContextClustering,
             "cluster_triggerability_cutoff_duration_minutes",
             cluster_triggerability_cutoff_duration.InMinutes()));
+  }
+
+  // WebUI features and params.
+  {
+    hide_visits = base::FeatureList::IsEnabled(internal::kHideVisits);
+
+    hide_visits_icon = GetFieldTrialParamByFeatureAsBool(
+        internal::kHideVisits, "hide_visits_icon", hide_visits_icon);
   }
 
   // Lonely features without child params.

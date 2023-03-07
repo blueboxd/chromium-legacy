@@ -22,20 +22,37 @@ IcuEnvironment* env = new IcuEnvironment();
 
 DEFINE_PROTO_FUZZER(
     const storage_key_proto::StorageKeyFuzzer& storage_key_fuzzer) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(
-      net::features::kThirdPartyStoragePartitioning);
+  for (const bool toggle : {false, true}) {
+    base::test::ScopedFeatureList scope_feature_list;
+    scope_feature_list.InitWithFeatureState(
+        net::features::kThirdPartyStoragePartitioning, toggle);
 
-  blink::StorageKey storage_key = Convert(storage_key_fuzzer.storage_key());
+    blink::StorageKey storage_key = Convert(storage_key_fuzzer.storage_key());
 
-  std::string result = storage_key.Serialize();
-  absl::optional<blink::StorageKey> maybe_storage_key =
-      blink::StorageKey::Deserialize(result);
-  if (maybe_storage_key) {
+    // General serialization test.
+    absl::optional<blink::StorageKey> maybe_storage_key =
+        blink::StorageKey::Deserialize(storage_key.Serialize());
     assert(storage_key == maybe_storage_key.value());
-  }
 
-  // TODO(crbug.com/1270350): This could be a little closer to the serialization
-  // format
-  blink::StorageKey::Deserialize(storage_key_fuzzer.deserialize());
+    // LocalStorage serialization test.
+    maybe_storage_key = blink::StorageKey::DeserializeForLocalStorage(
+        storage_key.SerializeForLocalStorage());
+    assert(storage_key == maybe_storage_key.value());
+
+    // General deserialization test.
+    maybe_storage_key =
+        blink::StorageKey::Deserialize(storage_key_fuzzer.deserialize());
+    if (maybe_storage_key) {
+      assert(maybe_storage_key->Serialize() ==
+             storage_key_fuzzer.deserialize());
+    }
+
+    // LocalStorage deserialization test.
+    maybe_storage_key = blink::StorageKey::DeserializeForLocalStorage(
+        storage_key_fuzzer.deserialize());
+    if (maybe_storage_key) {
+      assert(maybe_storage_key->SerializeForLocalStorage() ==
+             storage_key_fuzzer.deserialize());
+    }
+  }
 }

@@ -138,21 +138,16 @@ CameraEffectsController::~CameraEffectsController() {
   }
 }
 
+// TODO(b/265586822): this should be eventually detected from hardware support.
 bool CameraEffectsController::IsCameraEffectsSupported(
     cros::mojom::CameraEffect effect) {
   switch (effect) {
-    case cros::mojom::CameraEffect::kBackgroundBlur:
-      return features::IsVCBackgroundBlurEnabled();
-    case cros::mojom::CameraEffect::kBackgroundReplace:
-      return features::IsVCBackgroundReplaceEnabled();
-    case cros::mojom::CameraEffect::kPortraitRelight:
-      return features::IsVCPortraitRelightingEnabled();
-
-    // returns if any effects is supported for kNone.
     case cros::mojom::CameraEffect::kNone:
-      return features::IsVCBackgroundBlurEnabled() ||
-             features::IsVCBackgroundReplaceEnabled() ||
-             features::IsVCPortraitRelightingEnabled();
+    case cros::mojom::CameraEffect::kBackgroundBlur:
+    case cros::mojom::CameraEffect::kPortraitRelight:
+      return features::IsVideoConferenceEnabled();
+    case cros::mojom::CameraEffect::kBackgroundReplace:
+      return features::IsVcBackgroundReplaceEnabled();
   }
 }
 
@@ -373,7 +368,7 @@ void CameraEffectsController::SetEffectsConfigToPref(
 
 bool CameraEffectsController::IsEffectControlAvailable(
     cros::mojom::CameraEffect effect /* = cros::mojom::CameraEffect::kNone*/) {
-  if (!ash::features::IsVcControlsUiEnabled()) {
+  if (!ash::features::IsVideoConferenceEnabled()) {
     return false;
   }
 
@@ -472,8 +467,9 @@ void CameraEffectsController::AddBackgroundBlurStateToEffect(
     int state_value,
     int string_id) {
   DCHECK(effect);
+  // TODO(b/265200087): Replace the icon with the proper icon per effect.
   effect->AddState(std::make_unique<VcEffectState>(
-      /*icon=*/nullptr,
+      /*icon=*/&ash::kPrivacyIndicatorsCameraIcon,
       /*label_text=*/l10n_util::GetStringUTF16(string_id),
       /*accessible_name_id=*/string_id,
       /*button_callback=*/

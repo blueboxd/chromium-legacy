@@ -1259,6 +1259,10 @@ TEST_P(WaylandSurfaceFactoryTest, CanvasBufferSwapAck3) {
     gfx::Size new_size = bounds_px.size() + gfx::Size(2, 2);
     canvas->ResizeCanvas(new_size, kDefaultScaleFactor);
 
+    // |Resize| will reset pending frames, which will post tasks for pending
+    // buffer ack swap callbacks.
+    base::RunLoop().RunUntilIdle();
+
     // OnSubmission must be called. The last swap id corresponds to the very
     // last frame.
     EXPECT_EQ(cbs_helper.GetLastCanvasSwapPixelSize(), bounds_px.size());

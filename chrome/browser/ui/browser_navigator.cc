@@ -55,12 +55,9 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/site_isolation_policy.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/content_features.h"
 #include "extensions/buildflags/buildflags.h"
-#include "third_party/blink/public/common/features.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
-#include "ui/gfx/geometry/resize_utils.h"
 #include "url/url_constants.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -169,34 +166,6 @@ bool AdjustNavigateParamsForURL(NavigateParams* params) {
   return true;
 }
 
-gfx::Rect CalculateInitialPictureInPictureWindowBounds(
-    float initial_aspect_ratio) {
-  DCHECK(initial_aspect_ratio > 0);
-
-  // TODO(https://crbug.com/1327797): This copies a bunch of logic from
-  // OverlayWindowViews. The sizing logic should be delegated to a PiP-specific
-  // controller.
-  gfx::Rect work_area =
-      display::Screen::GetScreen()->GetDisplayForNewWindows().work_area();
-  gfx::Rect window_bounds(work_area.width() / 5, work_area.height() / 5);
-  gfx::SizeRectToAspectRatio(gfx::ResizeEdge::kTopLeft, initial_aspect_ratio,
-                             gfx::Size(0, 0), work_area.size(), &window_bounds);
-
-  int window_diff_width = work_area.right() - window_bounds.width();
-  int window_diff_height = work_area.bottom() - window_bounds.height();
-
-  // Keep a margin distance of 2% the average of the two window size
-  // differences, keeping the margins consistent.
-  int buffer = (window_diff_width + window_diff_height) / 2 * 0.02;
-
-  gfx::Point default_origin =
-      gfx::Point(window_diff_width - buffer, window_diff_height - buffer);
-  default_origin += work_area.OffsetFromOrigin();
-  window_bounds.set_origin(default_origin);
-
-  return window_bounds;
-}
-
 // Returns a Browser and tab index. The browser can host the navigation or
 // tab addition specified in |params|.  This might just return the same
 // Browser specified in |params|, or some other if that Browser is deemed
@@ -294,11 +263,6 @@ std::pair<Browser*, int> GetBrowserAndTabForDisposition(
       return {GetOrCreateBrowser(profile, params.user_gesture), -1};
     case WindowOpenDisposition::NEW_PICTURE_IN_PICTURE:
 #if !BUILDFLAG(IS_ANDROID)
-      if (!base::FeatureList::IsEnabled(
-              blink::features::kDocumentPictureInPictureAPI)) {
-        return {nullptr, -1};
-      }
-
       // Picture in picture windows may not be opened by other picture in
       // picture windows.
       if (params.browser->is_type_picture_in_picture())
@@ -309,15 +273,20 @@ std::pair<Browser*, int> GetBrowserAndTabForDisposition(
                                              profile, params.user_gesture);
         browser_params.trusted_source = params.trusted_source;
         if (params.contents_to_insert) {
-          browser_params.initial_bounds =
+          auto pip_options =
+              params.contents_to_insert->GetPictureInPictureOptions();
+          if (!pip_options.has_value()) {
+            return {nullptr, -1};
+          }
+          browser_params.initial_bounds = PictureInPictureWindowManager::
               CalculateInitialPictureInPictureWindowBounds(
-                  params.contents_to_insert
-                      ->GetPictureInPictureInitialAspectRatio());
+                  *pip_options,
+                  display::Screen::GetScreen()->GetDisplayForNewWindows());
           browser_params.initial_aspect_ratio =
-              params.contents_to_insert
-                  ->GetPictureInPictureInitialAspectRatio();
-          browser_params.lock_aspect_ratio =
-              params.contents_to_insert->GetPictureInPictureLockAspectRatio();
+              pip_options->initial_aspect_ratio > 0.0
+                  ? pip_options->initial_aspect_ratio
+                  : 1.0;
+          browser_params.lock_aspect_ratio = pip_options->lock_aspect_ratio;
           browser_params.omit_from_session_restore = true;
         }
 

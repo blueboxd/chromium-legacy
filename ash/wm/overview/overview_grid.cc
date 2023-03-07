@@ -21,6 +21,7 @@
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/toast/toast_manager_impl.h"
 #include "ash/wallpaper/wallpaper_controller_impl.h"
+#include "ash/wm/desks/cros_next_desk_button.h"
 #include "ash/wm/desks/desk_mini_view.h"
 #include "ash/wm/desks/desk_name_view.h"
 #include "ash/wm/desks/desks_bar_view.h"
@@ -319,6 +320,8 @@ std::unique_ptr<views::Widget> CreateSaveDeskButtonContainerWidget(
   auto widget = std::make_unique<views::Widget>();
   widget->set_focus_on_creation(false);
   widget->Init(std::move(params));
+  // Turn off default widget animations.
+  widget->SetVisibilityAnimationTransition(views::Widget::ANIMATE_NONE);
 
   aura::Window* window = widget->GetNativeWindow();
   window->parent()->StackChildAtBottom(window);
@@ -644,12 +647,9 @@ void OverviewGrid::PositionWindows(
     bool should_animate_item = animate;
     // If we're in entering overview process, not all window items in the grid
     // might need animation even if the grid needs animation.
-    if (animate && transition == OverviewTransition::kEnter)
-      should_animate_item = window_item->should_animate_when_entering();
-
     if (animate && transition == OverviewTransition::kEnter) {
-      if (window_item->should_animate_when_entering() &&
-          !has_non_cover_animating) {
+      should_animate_item = window_item->should_animate_when_entering();
+      if (should_animate_item && !has_non_cover_animating) {
         has_non_cover_animating |=
             !CanCoverAvailableWorkspace(window_item->GetWindow());
         ++animate_count;
@@ -1550,6 +1550,13 @@ bool OverviewGrid::MaybeDropItemOnDeskMiniViewOrNewDeskButton(
     if (target_desk == desks_controller->active_desk())
       return false;
 
+    if (features::IsJellyrollEnabled()) {
+      // Make sreut that new desk button goes back to the expanded state after
+      // the window is dropped on an existing desk.
+      desks_bar_view_->UpdateNewDeskButton(
+          CrOSNextDeskIconButton::State::kExpanded);
+    }
+
     return desks_controller->MoveWindowFromActiveDeskTo(
         dragged_window, target_desk, root_window_,
         DesksMoveWindowFromActiveDeskSource::kDragAndDrop);
@@ -1561,9 +1568,15 @@ bool OverviewGrid::MaybeDropItemOnDeskMiniViewOrNewDeskButton(
   if (!desks_controller->CanCreateDesks())
     return false;
 
-  if (!desks_bar_view_->expanded_state_new_desk_button()->IsPointOnButton(
-          screen_location)) {
-    return false;
+  if (features::IsJellyrollEnabled()) {
+    if (!desks_bar_view_->new_desk_button()->IsPointOnButton(screen_location)) {
+      return false;
+    }
+  } else {
+    if (!desks_bar_view_->expanded_state_new_desk_button()->IsPointOnButton(
+            screen_location)) {
+      return false;
+    }
   }
 
   desks_bar_view_->OnNewDeskButtonPressed(

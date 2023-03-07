@@ -230,6 +230,8 @@ UseCounterMetricsRecorder::GetAllowedUkmFeatures() {
           WebFeature::kWebCodecsVideoFrameFromBuffer,
           WebFeature::kOpenWebDatabaseInsecureContext,
           WebFeature::kPrivateNetworkAccessIgnoredPreflightError,
+          WebFeature::kPrivateNetworkAccessIgnoredCrossOriginPreflightError,
+          WebFeature::kPrivateNetworkAccessIgnoredCrossSitePreflightError,
           WebFeature::kWebBluetoothGetAvailability,
           WebFeature::kCookieHasNotBeenRefreshedIn201To300Days,
           WebFeature::kCookieHasNotBeenRefreshedIn301To350Days,
@@ -269,6 +271,11 @@ UseCounterMetricsRecorder::GetAllowedUkmFeatures() {
           WebFeature::kGetDisplayMediaWithoutUserActivation,
           WebFeature::kDataUrlInSvgUse,
           WebFeature::kExecutedNonTrivialJavaScriptURL,
+          WebFeature::kV8DeprecatedStorageQuota_QueryUsageAndQuota_Method,
+          WebFeature::kV8DeprecatedStorageQuota_RequestQuota_Method,
+          WebFeature::kRequestFileSystem,
+          WebFeature::kRequestFileSystemWorker,
+          WebFeature::kRequestFileSystemSyncWorker,
       }));
   return *opt_in_features;
 }

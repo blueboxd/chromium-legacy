@@ -10,7 +10,6 @@
 #include "base/functional/callback_forward.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
-#include "base/supports_user_data.h"
 #include "components/password_manager/core/browser/insecure_credentials_table.h"
 #include "components/password_manager/core/browser/password_store_consumer.h"
 
@@ -60,9 +59,6 @@ class StoreMetricsReporter : public PasswordStoreConsumer {
       PasswordStoreInterface* store,
       std::vector<std::unique_ptr<PasswordForm>> results) override;
 
-  void ReportStoreMetrics(bool is_account_store,
-                          std::vector<std::unique_ptr<PasswordForm>> results);
-
   // Since metrics reporting is run in a delayed task, we grab refptrs to the
   // stores, to ensure they're still alive when the delayed task runs.
   scoped_refptr<PasswordStoreInterface> profile_store_;
@@ -76,14 +72,14 @@ class StoreMetricsReporter : public PasswordStoreConsumer {
 
   BulkCheckDone bulk_check_done_;
 
-  bool is_opted_in_;
+  bool is_opted_in_account_storage_;
 
-  // Maps from (signon_realm, username) to password.
-  std::unique_ptr<
-      std::map<std::pair<std::string, std::u16string>, std::u16string>>
+  // Temporarily holds the credentials stored in the profile and account stores
+  // till the actual metric computation starts. They don't have a value until
+  // the credentials are loaded from the storage.
+  absl::optional<std::vector<std::unique_ptr<PasswordForm>>>
       profile_store_results_;
-  std::unique_ptr<
-      std::map<std::pair<std::string, std::u16string>, std::u16string>>
+  absl::optional<std::vector<std::unique_ptr<PasswordForm>>>
       account_store_results_;
 
   base::OnceClosure done_callback_;

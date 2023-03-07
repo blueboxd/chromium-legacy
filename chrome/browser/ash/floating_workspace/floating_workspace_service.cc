@@ -14,6 +14,7 @@
 #include "base/check_is_test.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/time/time.h"
+#include "chrome/browser/ash/floating_workspace/floating_workspace_metrics_util.h"
 #include "chrome/browser/ash/floating_workspace/floating_workspace_service_factory.h"
 #include "chrome/browser/ash/floating_workspace/floating_workspace_util.h"
 #include "chrome/browser/ash/login/session/user_session_manager.h"
@@ -30,21 +31,6 @@
 #include "components/sync_sessions/synced_session.h"
 
 namespace ash {
-
-// Max time floating workspace service can wait after user login.
-// After that even a more recent foreign session change is detected
-// restore will not take place.
-// TODO(b/263417467): let the following parameters be controlled by Finch or
-// policy override.
-constexpr base::TimeDelta kMaxTimeAvaliableForRestoreAfterLogin =
-    base::Seconds(3);
-
-constexpr base::TimeDelta kMaxTimeAvaliableForRestoreAfterLoginV2 =
-    base::Seconds(15);
-
-// Time interval to capture current desk as desk template
-// and upload template to server.
-constexpr base::TimeDelta kPeriodicJobIntervalInSeconds = base::Seconds(30);
 
 // Static
 FloatingWorkspaceService* FloatingWorkspaceService::GetForProfile(
@@ -68,6 +54,8 @@ FloatingWorkspaceService::~FloatingWorkspaceService() {
 void FloatingWorkspaceService::Init() {
   is_testing_ = false;
   if (floating_workspace_util::IsFloatingWorkspaceV1Enabled()) {
+    floating_workspace_metrics_util::
+        RecordFloatingWorkspaceV1InitializedHistogram();
     InitForV1();
     return;
   }
@@ -115,7 +103,9 @@ void FloatingWorkspaceService::
   if (!should_run_restore_)
     return;
   if (base::TimeTicks::Now() >
-      initialization_timestamp_ + kMaxTimeAvaliableForRestoreAfterLogin) {
+      initialization_timestamp_ +
+          ash::features::kFloatingWorkspaceMaxTimeAvaliableForRestoreAfterLogin
+              .Get()) {
     // No need to restore any remote session 3 seconds (TBD) after login.
     should_run_restore_ = false;
     return;
@@ -135,7 +125,8 @@ void FloatingWorkspaceService::
         base::BindOnce(
             &FloatingWorkspaceService::TryRestoreMostRecentlyUsedSession,
             weak_pointer_factory_.GetWeakPtr()),
-        kMaxTimeAvaliableForRestoreAfterLogin);
+        ash::features::kFloatingWorkspaceMaxTimeAvaliableForRestoreAfterLogin
+            .Get());
     should_run_restore_ = false;
     return;
   }
@@ -225,6 +216,10 @@ void FloatingWorkspaceService::RestoreForeignSessionWindows(
                                                 &session_windows)) {
     SessionRestore::RestoreForeignSessionWindows(
         profile_, session_windows.begin(), session_windows.end());
+    floating_workspace_metrics_util::
+        RecordFloatingWorkspaceV1RestoredSessionType(
+            floating_workspace_metrics_util::RestoredBrowserSessionType::
+                kRemote);
   }
 }
 
@@ -232,6 +227,8 @@ void FloatingWorkspaceService::RestoreLocalSessionWindows() {
   // Restore local session based on user settings in
   // chrome://settings/onStartup.
   UserSessionManager::GetInstance()->LaunchBrowser(profile_);
+  floating_workspace_metrics_util::RecordFloatingWorkspaceV1RestoredSessionType(
+      floating_workspace_metrics_util::RestoredBrowserSessionType::kLocal);
 }
 
 sync_sessions::OpenTabsUIDelegate*
@@ -241,8 +238,10 @@ FloatingWorkspaceService::GetOpenTabsUIDelegate() {
 }
 
 void FloatingWorkspaceService::StartCaptureAndUploadActiveDesk() {
-  timer_.Start(FROM_HERE, kPeriodicJobIntervalInSeconds, this,
-               &FloatingWorkspaceService::CaptureAndUploadActiveDesk);
+  timer_.Start(
+      FROM_HERE,
+      ash::features::kFloatingWorkspaceV2PeriodicJobIntervalInSeconds.Get(),
+      this, &FloatingWorkspaceService::CaptureAndUploadActiveDesk);
 }
 
 void FloatingWorkspaceService::StopCaptureAndUploadActiveDesk() {
@@ -265,7 +264,9 @@ void FloatingWorkspaceService::RestoreFloatingWorkspaceTemplate(
 
   // Check if template has been downloaded after 15 seconds (TBD).
   if (base::TimeTicks::Now() >
-      initialization_timestamp_ + kMaxTimeAvaliableForRestoreAfterLoginV2) {
+      initialization_timestamp_ +
+          ash::features::
+              kFloatingWorkspaceV2MaxTimeAvaliableForRestoreAfterLogin.Get()) {
     // No need to restore any remote session 15 seconds (TBD) after login.
     should_run_restore_ = false;
     return;

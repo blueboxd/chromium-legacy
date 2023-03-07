@@ -160,8 +160,6 @@ public final class ProductionSupportedFlagList {
                             + "classifications."),
             Flag.baseFeature(AutofillFeatures.AUTOFILL_ENABLE_DEPENDENT_LOCALITY_PARSING,
                     "Enables parsing dependent locality fields (e.g. Bairros in Brazil)."),
-            Flag.baseFeature(AutofillFeatures.AUTOFILL_ENABLE_RANKING_FORMULA,
-                    "Enables new autofill suggestion ranking formula"),
             Flag.baseFeature(AutofillFeatures.AUTOFILL_ENFORCE_DELAYS_IN_STRIKE_DATABASE,
                     "Enforce delay between offering Autofill opportunities in the "
                             + "strike database."),
@@ -234,8 +232,6 @@ public final class ProductionSupportedFlagList {
                     "Free Canvas2D resources when the webview is in the background."),
             Flag.baseFeature(GpuFeatures.USE_GPU_SCHEDULER_DFS,
                     "Uses the new SchedulerDFS GPU job scheduler."),
-            Flag.baseFeature(VizFeatures.SURFACE_SYNC_THROTTLING,
-                    "Enables throttling of Surface Sync to improve rotations"),
             Flag.baseFeature(BlinkFeatures.AUTOFILL_SHADOW_DOM,
                     "Enables Autofill associate form elements with form "
                             + "control elements across shadow boundaries."),
@@ -315,8 +311,6 @@ public final class ProductionSupportedFlagList {
                     "Switches skia to use DMSAA instead of MSAA for tile raster"),
             Flag.baseFeature(
                     CcFeatures.AVOID_RASTER_DURING_ELASTIC_OVERSCROLL, "No effect on webview"),
-            Flag.baseFeature(BlinkFeatures.DOCUMENT_EVENT_NODE_PATH_CACHING,
-                    "Enables a performance optimization that caches event paths."),
             Flag.baseFeature(BlinkFeatures.WEB_RTC_METRONOME,
                     "Inject a metronome into webrtc to allow task coalescing, "
                             + " including synchronized decoding."),
@@ -350,6 +344,12 @@ public final class ProductionSupportedFlagList {
             Flag.baseFeature(MetricsFeatures.METRICS_SERVICE_ASYNC_COLLECTION,
                     "Controls whether the metrics service creates periodic logs"
                             + " in a background thread or on the main thread."),
+            Flag.baseFeature(MetricsFeatures.METRICS_CLEAR_LOGS_ON_CLONED_INSTALL,
+                    "Controls whether UMA logs are cleared when a cloned "
+                            + "install is detected."),
+            Flag.baseFeature(MetricsFeatures.REPORTING_SERVICE_FLUSH_PREFS_ON_UPLOAD_IN_BACKGROUND,
+                    "Controls whether we immediately flush Local State after "
+                            + "uploading a UMA log while in background."),
             Flag.baseFeature(ContentFeatures.MAIN_THREAD_COMPOSITING_PRIORITY,
                     "When enabled runs the main thread at compositing priority."),
             Flag.baseFeature(AwFeatures.WEBVIEW_UMA_UPLOAD_QUALITY_OF_SERVICE_SET_TO_DEFAULT,
@@ -359,6 +359,8 @@ public final class ProductionSupportedFlagList {
             Flag.baseFeature("CanvasColorCache"),
             Flag.baseFeature(AwFeatures.WEBVIEW_RESTRICT_SENSITIVE_CONTENT,
                     "Controls whether access to sensitive web content should be restricted."),
+            Flag.baseFeature("NavigationRequestPreconnect"),
+            Flag.baseFeature("WebViewEnableDnsPrefetchAndPreconnect"),
             // Add new commandline switches and features above. The final entry should have a
             // trailing comma for cleaner diffs.
     };

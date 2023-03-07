@@ -1594,20 +1594,21 @@ IN_PROC_BROWSER_TEST_F(FrameTreeCredentiallessIframeBrowserTest,
 class FrameTreeSessionStorageDeprecationTrialBrowserTest
     : public ContentBrowserTest {
  public:
-  FrameTreeSessionStorageDeprecationTrialBrowserTest()
-      : https_server_(net::EmbeddedTestServer::TYPE_HTTPS) {
+  FrameTreeSessionStorageDeprecationTrialBrowserTest() {
     feature_list_.InitAndEnableFeature(
         net::features::kThirdPartyStoragePartitioning);
   }
 
  protected:
+  virtual net::EmbeddedTestServer& GetServer() = 0;
+
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    https_server_.ServeFilesFromSourceDirectory("content/test/data");
+    GetServer().ServeFilesFromSourceDirectory("content/test/data");
     // EmbeddedTestServer::InitializeAndListen() initializes its `base_url_`
     // which is required below. This cannot invoke Start() however as that kicks
     // off the "EmbeddedTestServer IO Thread" which then races with
     // initialization in ContentBrowserTest::SetUp(), http://crbug.com/674545.
-    ASSERT_TRUE(https_server_.InitializeAndListen());
+    ASSERT_TRUE(GetServer().InitializeAndListen());
 
     // Add a host resolver rule to map all outgoing requests to the test server.
     // This allows us to use "real" hostnames in URLs, which we can use to
@@ -1615,7 +1616,7 @@ class FrameTreeSessionStorageDeprecationTrialBrowserTest
     command_line->AppendSwitchASCII(
         network::switches::kHostResolverRules,
         "MAP * " +
-            net::HostPortPair::FromURL(https_server_.base_url()).ToString() +
+            net::HostPortPair::FromURL(GetServer().base_url()).ToString() +
             ",EXCLUDE localhost");
     mock_cert_verifier_.SetUpCommandLine(command_line);
   }
@@ -1625,7 +1626,7 @@ class FrameTreeSessionStorageDeprecationTrialBrowserTest
   void SetUpOnMainThread() override {
     // Complete the manual Start() after ContentBrowserTest's own
     // initialization, ref. comment on InitializeAndListen() above.
-    https_server_.StartAcceptingConnections();
+    GetServer().StartAcceptingConnections();
     mock_cert_verifier_.mock_cert_verifier()->set_default_result(net::OK);
   }
 
@@ -1640,23 +1641,31 @@ class FrameTreeSessionStorageDeprecationTrialBrowserTest
  private:
   base::test::ScopedFeatureList feature_list_;
   content::ContentMockCertVerifier mock_cert_verifier_;
-  net::EmbeddedTestServer https_server_;
 };
 
-IN_PROC_BROWSER_TEST_F(FrameTreeSessionStorageDeprecationTrialBrowserTest,
+class FrameTreeSessionStorageDeprecationTrialBrowserSecureTest
+    : public FrameTreeSessionStorageDeprecationTrialBrowserTest {
+  net::EmbeddedTestServer& GetServer() override {
+    static net::EmbeddedTestServer https_server(
+        net::EmbeddedTestServer::TYPE_HTTPS);
+    return https_server;
+  }
+};
+
+IN_PROC_BROWSER_TEST_F(FrameTreeSessionStorageDeprecationTrialBrowserSecureTest,
                        RegisterOriginForUnpartitionedSessionStorageAccess) {
   const url::Origin origin = url::Origin::Create(GURL("https://example.com"));
   const blink::StorageKey first_party = blink::StorageKey(origin);
   const blink::StorageKey third_party =
       blink::StorageKey::CreateWithOptionalNonce(
           origin, net::SchemefulSite(GURL("https://notexample.com")), nullptr,
-          blink::mojom::AncestorChainBit::kSameSite);
+          blink::mojom::AncestorChainBit::kCrossSite);
   const url::Origin opaque_origin = url::Origin();
   const blink::StorageKey opaque_first_party = blink::StorageKey(opaque_origin);
   const blink::StorageKey opaque_third_party =
       blink::StorageKey::CreateWithOptionalNonce(
           opaque_origin, net::SchemefulSite(GURL("https://notexample.com")),
-          nullptr, blink::mojom::AncestorChainBit::kSameSite);
+          nullptr, blink::mojom::AncestorChainBit::kCrossSite);
   EXPECT_NE(first_party, third_party);
   EXPECT_NE(opaque_first_party, opaque_third_party);
   FrameTree& frame_tree = static_cast<WebContentsImpl*>(shell()->web_contents())
@@ -1678,20 +1687,20 @@ IN_PROC_BROWSER_TEST_F(FrameTreeSessionStorageDeprecationTrialBrowserTest,
             frame_tree.GetSessionStorageKey(opaque_third_party));
 }
 
-IN_PROC_BROWSER_TEST_F(FrameTreeSessionStorageDeprecationTrialBrowserTest,
+IN_PROC_BROWSER_TEST_F(FrameTreeSessionStorageDeprecationTrialBrowserSecureTest,
                        GetSessionStorageKey) {
   const blink::StorageKey dt_third_party =
       blink::StorageKey::CreateWithOptionalNonce(
           url::Origin::Create(GURL("https://example.com")),
           net::SchemefulSite(GURL("https://notexample.com")), nullptr,
-          blink::mojom::AncestorChainBit::kSameSite);
+          blink::mojom::AncestorChainBit::kCrossSite);
   const blink::StorageKey dt_first_party =
       blink::StorageKey::CreateFromStringForTesting("https://example.com");
   const blink::StorageKey random_third_party =
       blink::StorageKey::CreateWithOptionalNonce(
           url::Origin::Create(GURL("https://otherexample.com")),
           net::SchemefulSite(GURL("https://notexample.com")), nullptr,
-          blink::mojom::AncestorChainBit::kSameSite);
+          blink::mojom::AncestorChainBit::kCrossSite);
   EXPECT_NE(dt_third_party, dt_first_party);
 
   // Load a page without the origin trial token.
@@ -1729,5 +1738,84 @@ IN_PROC_BROWSER_TEST_F(FrameTreeSessionStorageDeprecationTrialBrowserTest,
             static_cast<WebContentsImpl*>(shell()->web_contents())
                 ->GetPrimaryFrameTree()
                 .GetSessionStorageKey(random_third_party));
+
+  // Load a page without the origin trial token.
+  EXPECT_TRUE(NavigateToURL(shell(), GURL("https://example.com/empty.html")));
+  // We should be able to get a partitioned storage key for example.com.
+  EXPECT_EQ(dt_third_party,
+            static_cast<WebContentsImpl*>(shell()->web_contents())
+                ->GetPrimaryFrameTree()
+                .GetSessionStorageKey(dt_third_party));
+}
+
+class FrameTreeSessionStorageDeprecationTrialBrowserInsecureTest
+    : public FrameTreeSessionStorageDeprecationTrialBrowserTest {
+  net::EmbeddedTestServer& GetServer() override {
+    static net::EmbeddedTestServer https_server_(
+        net::EmbeddedTestServer::TYPE_HTTP);
+    return https_server_;
+  }
+};
+
+IN_PROC_BROWSER_TEST_F(
+    FrameTreeSessionStorageDeprecationTrialBrowserInsecureTest,
+    GetSessionStorageKeyInsecure) {
+  const blink::StorageKey dt_third_party =
+      blink::StorageKey::CreateWithOptionalNonce(
+          url::Origin::Create(GURL("http://example.com")),
+          net::SchemefulSite(GURL("http://notexample.com")), nullptr,
+          blink::mojom::AncestorChainBit::kCrossSite);
+  const blink::StorageKey dt_first_party =
+      blink::StorageKey::CreateFromStringForTesting("http://example.com");
+  const blink::StorageKey random_third_party =
+      blink::StorageKey::CreateWithOptionalNonce(
+          url::Origin::Create(GURL("http://otherexample.com")),
+          net::SchemefulSite(GURL("http://notexample.com")), nullptr,
+          blink::mojom::AncestorChainBit::kCrossSite);
+  EXPECT_NE(dt_third_party, dt_first_party);
+
+  // Load a page without the origin trial token.
+  EXPECT_TRUE(NavigateToURL(shell(), GURL("http://example.com/empty.html")));
+  // We should be able to get a partitioned storage key for example.com.
+  EXPECT_EQ(dt_third_party,
+            static_cast<WebContentsImpl*>(shell()->web_contents())
+                ->GetPrimaryFrameTree()
+                .GetSessionStorageKey(dt_third_party));
+
+  // Load a page with the origin trial token.
+  EXPECT_TRUE(NavigateToURL(shell(), GURL("http://example.com/session_storage/"
+                                          "partition_deprecation_trial.html")));
+  // We shouldn't be able to get a partitioned storage key for example.com.
+  EXPECT_EQ(dt_first_party,
+            static_cast<WebContentsImpl*>(shell()->web_contents())
+                ->GetPrimaryFrameTree()
+                .GetSessionStorageKey(dt_third_party));
+  // Other origins can still get partitioned storage keys.
+  EXPECT_EQ(random_third_party,
+            static_cast<WebContentsImpl*>(shell()->web_contents())
+                ->GetPrimaryFrameTree()
+                .GetSessionStorageKey(random_third_party));
+
+  // Load a page without the token after having loaded a page with the token.
+  EXPECT_TRUE(
+      NavigateToURL(shell(), GURL("http://otherexample.com/empty.html")));
+  // We shouldn't be able to get a partitioned storage key for example.com.
+  EXPECT_EQ(dt_first_party,
+            static_cast<WebContentsImpl*>(shell()->web_contents())
+                ->GetPrimaryFrameTree()
+                .GetSessionStorageKey(dt_third_party));
+  // Other origins can still get partitioned storage keys.
+  EXPECT_EQ(random_third_party,
+            static_cast<WebContentsImpl*>(shell()->web_contents())
+                ->GetPrimaryFrameTree()
+                .GetSessionStorageKey(random_third_party));
+
+  // Load a page without the origin trial token.
+  EXPECT_TRUE(NavigateToURL(shell(), GURL("http://example.com/empty.html")));
+  // We should be able to get a partitioned storage key for example.com.
+  EXPECT_EQ(dt_third_party,
+            static_cast<WebContentsImpl*>(shell()->web_contents())
+                ->GetPrimaryFrameTree()
+                .GetSessionStorageKey(dt_third_party));
 }
 }  // namespace content

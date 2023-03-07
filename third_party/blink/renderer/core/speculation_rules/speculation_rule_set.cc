@@ -7,6 +7,7 @@
 #include "base/containers/contains.h"
 #include "base/feature_list.h"
 #include "services/network/public/mojom/referrer_policy.mojom-shared.h"
+#include "third_party/blink/renderer/core/css/style_rule.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/speculation_rules/document_rule_predicate.h"
@@ -168,13 +169,24 @@ SpeculationRule* ParseSpeculationRule(JSONObject* input,
     }
   }
 
-  // TODO(mcnee): Populate `out_error` for document rule warnings.
   DocumentRulePredicate* document_rule_predicate = nullptr;
   if (source == "document") {
     DCHECK(document_rules_enabled);
     // If input["urls"] exists, then return null.
-    if (input->Get("urls"))
+    if (input->Get("urls")) {
+      SetParseErrorMessage(out_error,
+                           "A document rule cannot have a \"urls\" key.");
       return nullptr;
+    }
+
+    // "relative_to" outside the "href_matches" clause is not allowed for
+    // document rules.
+    if (input->Get("relative_to")) {
+      SetParseErrorMessage(out_error,
+                           "A document rule cannot have \"relative_to\" "
+                           "outside the \"where\" clause.");
+      return nullptr;
+    }
 
     // If input["where"] does not exist, then set predicate to a document rule
     // conjunction whose clauses is an empty list.
@@ -184,13 +196,9 @@ SpeculationRule* ParseSpeculationRule(JSONObject* input,
     // Otherwise, set predicate to the result of parsing a document rule
     // predicate given input["where"] and baseURL.
     else {
-      // "relative_to" outside the "href_matches" clause is not allowed for
-      // document rules.
-      if (input->Get("relative_to"))
-        return nullptr;
-      document_rule_predicate =
-          DocumentRulePredicate::Parse(input->GetJSONObject("where"), base_url,
-                                       context, IGNORE_EXCEPTION_FOR_TESTING);
+      document_rule_predicate = DocumentRulePredicate::Parse(
+          input->GetJSONObject("where"), base_url, context,
+          IGNORE_EXCEPTION_FOR_TESTING, out_error);
     }
     if (!document_rule_predicate)
       return nullptr;
@@ -427,8 +435,10 @@ SpeculationRuleSet* SpeculationRuleSet::Parse(Source* source,
             continue;
           }
 
-          if (rule->predicate())
+          if (rule->predicate()) {
             result->has_document_rule_ = true;
+            result->selectors_.AppendVector(rule->predicate()->GetStyleRules());
+          }
 
           // Append rule to result's prefetch/prerender rules.
           destination.push_back(rule);
@@ -454,6 +464,7 @@ void SpeculationRuleSet::Trace(Visitor* visitor) const {
   visitor->Trace(prefetch_with_subresources_rules_);
   visitor->Trace(prerender_rules_);
   visitor->Trace(source_);
+  visitor->Trace(selectors_);
 }
 
 }  // namespace blink

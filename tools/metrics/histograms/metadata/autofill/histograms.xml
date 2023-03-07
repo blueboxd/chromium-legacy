@@ -53,6 +53,20 @@ chromium-metrics-reviews@google.com.
       summary="OTP fallback from FIDO authentication"/>
 </variants>
 
+<variants name="Autofill.CardMetadataVisible">
+  <variant name="ArtImageShown" summary="Only art image was visible"/>
+  <variant name="MetadataNotShown" summary="No metadata was visible"/>
+  <variant name="ProductDescriptionAndArtImageShown"
+      summary="Both product description and art image were visible"/>
+  <variant name="ProductDescriptionShown"
+      summary="Only product description was visible"/>
+</variants>
+
+<variants name="Autofill.CreditCardIssuerId">
+  <variant name=".Amex" summary="American Express."/>
+  <variant name=".CapitalOne" summary="Capital One."/>
+</variants>
+
 <variants name="Autofill.DialogError">
   <variant name="WithNoTemporaryError"
       summary="No temporary error has been shown in the dialog"/>
@@ -630,7 +644,11 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Autofill.BetterAuth.CardUnmaskPreflightCalled"
-    enum="BooleanHit" expires_after="2023-07-01">
+    enum="BooleanHit" expires_after="M111">
+  <obsolete>
+    Deprecated in M111. Subsumed by
+    Autofill.BetterAuth.CardUnmaskPreflightCalledWithFidoOptInStatus.
+  </obsolete>
   <owner>jsaul@google.com</owner>
   <owner>siyua@chromium.org</owner>
   <owner>autofill-auth-team@google.com</owner>
@@ -638,6 +656,28 @@ chromium-metrics-reviews@google.com.
     Tracks the number of times Chrome made a GetDetailsForGetRealPan call. A
     preflight call is only made when card suggestions are shown, and can only
     happen when the user has server cards and is eligible for WebAuthn.
+
+    As a percentage of the number of times card suggestions are shown, which is
+    tracked under Autofill.FormEvents.CreditCard, this metric provides an
+    estimate for the potential reach for the Autofill Better Auth project.
+    Moreover, this acts as a baseline value for other metrics in this project.
+  </summary>
+</histogram>
+
+<histogram
+    name="Autofill.BetterAuth.CardUnmaskPreflightCalledWithFidoOptInStatus"
+    enum="Boolean" expires_after="2023-07-01">
+  <owner>jsaul@google.com</owner>
+  <owner>siyua@chromium.org</owner>
+  <owner>autofill-auth-team@google.com</owner>
+  <summary>
+    The total count of this histogram tracks the number of times Chrome made a
+    preflight GetDetailsForGetRealPan call. A preflight call is only made when
+    card suggestions are shown, and can only happen when the user has server
+    cards and is eligible for WebAuthn. For every log in this histogram, it also
+    tracks whether the user is opted-in to WebAuthn or opted-out of WebAuthn. A
+    log of true indicates the user is opted-in, and a log of false indicates the
+    user is opted-out.
 
     As a percentage of the number of times card suggestions are shown, which is
     tracked under Autofill.FormEvents.CreditCard, this metric provides an
@@ -656,6 +696,18 @@ chromium-metrics-reviews@google.com.
     This duration should be comparable to that of Autofill.UnmaskPrompt.Duration
     and should ideally stay under 500 ms in order for the user to autofill their
     credit card without experiencing much friction.
+  </summary>
+</histogram>
+
+<histogram name="Autofill.BetterAuth.CardUnmaskPreflightInitiated"
+    enum="Boolean" expires_after="2023-07-01">
+  <owner>vinnypersky@google.com</owner>
+  <owner>autofill-auth-team@google.com</owner>
+  <summary>
+    Logs the number of times that we initiate the card unmask preflight flow.
+    This will log both when the user is eligible for WebAuthn as well as when
+    the user is not eligible for WebAuthn, as it is logged before we check this
+    status.
   </summary>
 </histogram>
 
@@ -1033,25 +1085,59 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram
-    name="Autofill.CreditCard.SuggestionAcceptanceLatencySinceShown.{CardMetadataVisible}"
+    name="Autofill.CreditCard.SelectionLatencySinceShown.AnyCardWithMetadata.{CardMetadataVisible}"
+    units="ms" expires_after="2023-05-01">
+  <owner>siyua@chromium.org</owner>
+  <owner>payments-autofill-team@google.com</owner>
+  <summary>
+    The latency between Autofill credit card suggestion dropdown being shown,
+    and when a suggestion was selected, in milliseconds. Logged immediately when
+    a card suggestion is selected by the user, on the condition that any card
+    (not necessarily the selected card) in the suggestion list has card metadata
+    available (even if the metadata is not shown). This helps identify whether
+    showing the card metadata has potential impact on assisting card selection
+    in general.
+  </summary>
+  <token key="CardMetadataVisible" variants="Autofill.CardMetadataVisible"/>
+</histogram>
+
+<histogram
+    name="Autofill.CreditCard.SelectionLatencySinceShown.SelectedCardWithMetadata.{CardMetadataVisible}{CardIssuerId}"
     units="ms" expires_after="2023-05-01">
   <owner>siyua@chromium.org</owner>
   <owner>payments-autofill-team@google.com</owner>
   <summary>
     The latency between an Autofill credit card suggestion being shown, and when
     it was selected, in milliseconds. Logged immediately when a card is selected
-    by the user, on the condition that any card (not necessarily the selected
-    card) in the suggestion list has card metadata available (even if the
-    metadata is not shown).
+    by the user, on the condition that the selected card has card metadata
+    available (even if the metadata is not shown). This is also broken down by
+    card issuer id if it is available. This helps identify whether showing the
+    card metadata has potential impact on latency for selecting a particular
+    card.
   </summary>
-  <token key="CardMetadataVisible">
-    <variant name="ArtImageShown" summary="Only art image was visible"/>
-    <variant name="MetadataNotShown" summary="No metadata was visible"/>
-    <variant name="ProductDescriptionAndArtImageShown"
-        summary="Both product description and art image were visible"/>
-    <variant name="ProductDescriptionShown"
-        summary="Only product description was visible"/>
-  </token>
+  <token key="CardMetadataVisible" variants="Autofill.CardMetadataVisible"/>
+  <token key="CardIssuerId" variants="Autofill.CreditCardIssuerId"/>
+</histogram>
+
+<histogram
+    name="Autofill.CreditCard.SuggestionAcceptanceLatencySinceShown.{CardMetadataVisible}"
+    units="ms" expires_after="2023-05-01">
+  <obsolete>
+    Deprecated 01/23 and replaced by
+    Autofill.CreditCard.SelectionLatencySinceShown.AnyCardWithMetadata.{CardMetadataVisible}.
+  </obsolete>
+  <owner>siyua@chromium.org</owner>
+  <owner>payments-autofill-team@google.com</owner>
+  <summary>
+    The latency between Autofill credit card suggestion dropdown being shown,
+    and when a suggestion was selected, in milliseconds. Logged immediately when
+    a card suggestion is selected by the user, on the condition that any card
+    (not necessarily the selected card) in the suggestion list has card metadata
+    available (even if the metadata is not shown). This helps identify whether
+    showing the card metadata has potential impact on assisting card selection
+    in general.
+  </summary>
+  <token key="CardMetadataVisible" variants="Autofill.CardMetadataVisible"/>
 </histogram>
 
 <histogram name="Autofill.CreditCardFillingInfoBar"
@@ -1652,6 +1738,26 @@ chromium-metrics-reviews@google.com.
     Time elapsed between form load and form submission, for a non-autofilled
     form.
   </summary>
+</histogram>
+
+<histogram name="Autofill.FillingCorrectnessByMethod.{FormType}.{Method}"
+    enum="BooleanAutofillFillingCorrectness" expires_after="2023-06-01">
+  <owner>atsvirhckova@google.com</owner>
+  <owner>izuzic@google.com</owner>
+  <owner>chrome-autofill-team@google.com</owner>
+  <summary>
+    Tracks whether or not the user has edited at least one of the autofilled
+    fields before submitting the form. This metric is tracked whenever the value
+    to autofill the {FormType} is provided by the {Method}. The metric is
+    recorded on form submission.
+  </summary>
+  <token key="FormType">
+    <variant name="Address" summary="Address form"/>
+    <variant name="CreditCard" summary="Credit card form"/>
+  </token>
+  <token key="Method">
+    <variant name="TouchToFill" summary="Bottom sheet"/>
+  </token>
 </histogram>
 
 <histogram name="Autofill.FindFormControlElementByUniqueRendererIdDuration"
@@ -3022,6 +3128,19 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram
+    name="Autofill.ProfileImport.NewProfileNumberOfAutocompleteUnrecognizedFields"
+    units="fields" expires_after="2023-04-30">
+  <owner>fleimgruber@google.com</owner>
+  <owner>chrome-autofill-team@google.com</owner>
+  <summary>
+    Logs the number of fields with an unrecognized autocomplete attributed that
+    were considered for the import due to AutofillFillAndImportFromMoreFields.
+    Emitted at the end of an import process, once the user-provided import
+    decision is final.
+  </summary>
+</histogram>
+
 <histogram name="Autofill.ProfileImport.NewProfileNumberOfEditedFields"
     units="fields" expires_after="2023-06-04">
   <owner>koerber@google.com</owner>
@@ -3185,6 +3304,19 @@ chromium-metrics-reviews@google.com.
         summary="No prompt is shown and no decision is needed to proceed with
                  the process."/>
   </token>
+</histogram>
+
+<histogram
+    name="Autofill.ProfileImport.UpdateProfileNumberOfAutocompleteUnrecognizedFields"
+    units="fields" expires_after="2023-04-30">
+  <owner>fleimgruber@google.com</owner>
+  <owner>chrome-autofill-team@google.com</owner>
+  <summary>
+    Logs the number of fields with an unrecognized autocomplete attributed that
+    were considered for the update due to AutofillFillAndImportFromMoreFields.
+    Emitted at the end of an update process, once the user-provided update
+    decision is final.
+  </summary>
 </histogram>
 
 <histogram name="Autofill.ProfileImport.UpdateProfileNumberOfEditedFields"

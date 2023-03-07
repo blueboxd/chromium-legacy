@@ -214,7 +214,17 @@ WaylandCanvasSurface::PendingFrame::PendingFrame(
 
 WaylandCanvasSurface::PendingFrame::~PendingFrame() {
   if (swap_ack_callback) {
-    std::move(swap_ack_callback).Run(surface_size);
+    // Post a task for this ack callback as this frame may ack the submission
+    // immediately without actually sending a frame to the host side, which
+    // eventually calls OnSubmission before the callback is executed. This is
+    // required to avoid situations when ack'ing a frame results in
+    // submitting another frame. And if that last frame is immediately acked
+    // as well, the previous frame may not be completely processed as its ack
+    // results in a code path that submits a new frame. That is, viz::Display
+    // may then see that the ack callback has wrong submission time (it's before
+    // the draw start time).
+    base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
+        FROM_HERE, base::BindOnce(std::move(swap_ack_callback), surface_size));
   }
 }
 

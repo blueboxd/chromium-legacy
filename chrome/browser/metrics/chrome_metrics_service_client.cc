@@ -14,7 +14,6 @@
 
 #include "base/base64.h"
 #include "base/check_op.h"
-#include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/functional/bind.h"
@@ -498,7 +497,6 @@ ChromeMetricsServiceClient::ChromeMetricsServiceClient(
     metrics::MetricsStateManager* state_manager)
     : metrics_state_manager_(state_manager) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  RecordCommandLineMetrics();
   incognito_observer_ = IncognitoObserver::Create(
       base::BindRepeating(&ChromeMetricsServiceClient::UpdateRunningServices,
                           weak_ptr_factory_.GetWeakPtr()));
@@ -1038,18 +1036,6 @@ void ChromeMetricsServiceClient::OnHistogramSynchronizationDone() {
   std::move(collect_final_metrics_done_callback_).Run();
 }
 
-void ChromeMetricsServiceClient::RecordCommandLineMetrics() {
-  // Get stats on use of command line.
-  const base::CommandLine* command_line(base::CommandLine::ForCurrentProcess());
-  if (command_line->HasSwitch(switches::kUserDataDir)) {
-    UMA_HISTOGRAM_COUNTS_100("Chrome.CommandLineDatDirCount", 1);
-  }
-
-  if (command_line->HasSwitch(switches::kApp)) {
-    UMA_HISTOGRAM_COUNTS_100("Chrome.CommandLineAppModeCount", 1);
-  }
-}
-
 bool ChromeMetricsServiceClient::RegisterObservers() {
   omnibox_url_opened_subscription_ =
       OmniboxEventGlobalTracker::GetInstance()->RegisterCallback(
@@ -1330,6 +1316,13 @@ std::string ChromeMetricsServiceClient::GetUploadSigningKey() {
 
 bool ChromeMetricsServiceClient::ShouldResetClientIdsOnClonedInstall() {
   return metrics_service_->ShouldResetClientIdsOnClonedInstall();
+}
+
+base::CallbackListSubscription
+ChromeMetricsServiceClient::AddOnClonedInstallDetectedCallback(
+    base::OnceClosure callback) {
+  return metrics_state_manager_->AddOnClonedInstallDetectedCallback(
+      std::move(callback));
 }
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)

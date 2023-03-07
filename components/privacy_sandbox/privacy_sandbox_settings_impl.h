@@ -43,6 +43,7 @@ class PrivacySandboxSettingsImpl : public PrivacySandboxSettings {
   void SetTopicAllowed(const CanonicalTopic& topic, bool allowed) override;
   void ClearTopicSettings(base::Time start_time, base::Time end_time) override;
   base::Time TopicsDataAccessibleSince() const override;
+  bool IsAttributionReportingEverAllowed() const override;
   bool IsAttributionReportingAllowed(
       const url::Origin& top_frame_origin,
       const url::Origin& reporting_origin) const override;
@@ -105,7 +106,8 @@ class PrivacySandboxSettingsImpl : public PrivacySandboxSettings {
     kIncognitoProfile,
     kApisDisabled,
     kSiteDataAccessBlocked,
-    kMaxValue = kSiteDataAccessBlocked,
+    kMismatchedConsent,
+    kMaxValue = kMismatchedConsent,
   };
 
   static bool IsAllowed(Status status);

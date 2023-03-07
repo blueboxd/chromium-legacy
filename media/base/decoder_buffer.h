@@ -47,8 +47,9 @@ class MEDIA_EXPORT DecoderBuffer
     virtual ~ExternalMemory() = default;
     const base::span<const uint8_t>& span() const { return span_; }
 
-   private:
-    const base::span<const uint8_t> span_;
+   protected:
+    ExternalMemory() = default;
+    base::span<const uint8_t> span_;
   };
 
   using DiscardPadding = std::pair<base::TimeDelta, base::TimeDelta>;
@@ -132,6 +133,9 @@ class MEDIA_EXPORT DecoderBuffer
   // Calling any method other than end_of_stream() on the resulting buffer
   // is disallowed.
   static scoped_refptr<DecoderBuffer> CreateEOSBuffer();
+
+  // Method to verify if subsamples of a DecoderBuffer match.
+  static bool DoSubsamplesMatch(const DecoderBuffer& encrypted);
 
   const TimeInfo& time_info() const {
     DCHECK(!end_of_stream());

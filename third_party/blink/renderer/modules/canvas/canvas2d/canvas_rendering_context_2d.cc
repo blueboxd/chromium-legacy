@@ -443,7 +443,7 @@ cc::PaintCanvas* CanvasRenderingContext2D::GetOrCreatePaintCanvas() {
   return nullptr;
 }
 
-cc::PaintCanvas* CanvasRenderingContext2D::GetPaintCanvas() const {
+cc::PaintCanvas* CanvasRenderingContext2D::GetPaintCanvas() {
   if (UNLIKELY(isContextLost() || !canvas() ||
                !canvas()->GetCanvas2DLayerBridge() ||
                !canvas()->GetCanvas2DLayerBridge()->ResourceProvider()))
@@ -1066,6 +1066,7 @@ void CanvasRenderingContext2D::DrawTextInternal(
       break;
   }
 
+  bounds.Offset(location.x(), location.y());
   if (paint_type == CanvasRenderingContext2DState::kStrokePaintType)
     InflateStrokeRect(bounds);
 
@@ -1080,8 +1081,6 @@ void CanvasRenderingContext2D::DrawTextInternal(
     location.set_x(location.x() / ClampTo<float>(width / font_width));
   }
 
-  bounds.Offset(location.x(), location.y());
-
   Draw<OverdrawOp::kNone>(
       [this, text = std::move(text), direction, bidi_override, location](
           cc::PaintCanvas* c, const cc::PaintFlags* flags)  // draw lambda
@@ -1092,7 +1091,7 @@ void CanvasRenderingContext2D::DrawTextInternal(
         TextRunPaintInfo text_run_paint_info(text_run);
         this->AccessFont().DrawBidiText(c, text_run_paint_info, location,
                                         Font::kUseFallbackIfFontNotReady,
-                                        kCDeviceScaleFactor, *flags);
+                                        *flags);
       },
       [](const SkIRect& rect)  // overdraw test lambda
       { return false; },

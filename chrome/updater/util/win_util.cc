@@ -999,4 +999,11 @@ base::FilePath GetExecutableRelativePath() {
   return base::FilePath::FromASCII(kExecutableName);
 }
 
+bool IsGuid(const std::wstring& s) {
+  DCHECK(!s.empty());
+
+  GUID guid = {0};
+  return SUCCEEDED(::IIDFromString(&s[0], &guid));
+}
+
 }  // namespace updater

@@ -11,7 +11,6 @@ import androidx.annotation.ColorInt;
 
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
-import org.chromium.chrome.R;
 import org.chromium.chrome.browser.compositor.LayerTitleCache;
 import org.chromium.chrome.browser.compositor.layouts.components.CompositorButton;
 import org.chromium.chrome.browser.compositor.layouts.components.TintedCompositorButton;
@@ -161,31 +160,20 @@ public class TabStripSceneLayer extends SceneOverlayLayer {
                     modelSelectorButton.getOpacity(), resourceManager);
         }
 
-        boolean tabStripImprovementsEnabled = ChromeFeatureList.sTabStripImprovements.isEnabled();
-        boolean showLeftTabStripFade = ChromeFeatureList.sTabStripRedesign.isEnabled()
-                || !tabStripImprovementsEnabled || LocalizationUtils.isLayoutRtl();
-        boolean showRightTabStripFade = ChromeFeatureList.sTabStripRedesign.isEnabled()
-                || !tabStripImprovementsEnabled || !LocalizationUtils.isLayoutRtl();
-
-        int tab_strip_fade_short = tabStripImprovementsEnabled ? R.drawable.tab_strip_fade_short
-                                                               : R.drawable.tab_strip_fade;
-        int tab_strip_fade_long = tabStripImprovementsEnabled
-                ? R.drawable.tab_strip_fade_long
-                : R.drawable.tab_strip_fade_for_model_selector;
+        boolean tabStripRedesignEnabled = ChromeFeatureList.sTabStripRedesign.isEnabled();
+        boolean isLayoutRtl = LocalizationUtils.isLayoutRtl();
+        boolean showLeftTabStripFade = tabStripRedesignEnabled || isLayoutRtl;
+        boolean showRightTabStripFade = tabStripRedesignEnabled || !isLayoutRtl;
 
         if (showLeftTabStripFade) {
-            int leftFadeDrawable = modelSelectorButtonVisible && LocalizationUtils.isLayoutRtl()
-                    ? tab_strip_fade_long
-                    : tab_strip_fade_short;
+            int leftFadeDrawable = layoutHelper.getLeftFadeDrawable();
             TabStripSceneLayerJni.get().updateTabStripLeftFade(mNativePtr, TabStripSceneLayer.this,
                     leftFadeDrawable, layoutHelper.getLeftFadeOpacity(), resourceManager,
                     layoutHelper.getBackgroundColor());
         }
 
         if (showRightTabStripFade) {
-            int rightFadeDrawable = modelSelectorButtonVisible && !LocalizationUtils.isLayoutRtl()
-                    ? tab_strip_fade_long
-                    : tab_strip_fade_short;
+            int rightFadeDrawable = layoutHelper.getRightFadeDrawable();
             TabStripSceneLayerJni.get().updateTabStripRightFade(mNativePtr, TabStripSceneLayer.this,
                     rightFadeDrawable, layoutHelper.getRightFadeOpacity(), resourceManager,
                     layoutHelper.getBackgroundColor());
@@ -209,9 +197,9 @@ public class TabStripSceneLayer extends SceneOverlayLayer {
                     st.getHeight() * mDpToPx, st.getContentOffsetX() * mDpToPx,
                     st.getContentOffsetY() * mDpToPx, st.getDividerOffsetX() * mDpToPx,
                     st.getBottomMargin() * mDpToPx, st.getCloseButtonPadding() * mDpToPx,
-                    st.getCloseButton().getOpacity(), st.getDividerOpacity(), st.isLoading(),
-                    st.getLoadingSpinnerRotation(), st.getBrightness(), st.getContainerOpacity(),
-                    layerTitleCache, resourceManager);
+                    st.getCloseButton().getOpacity(), st.isStartDividerVisible(),
+                    st.isEndDividerVisible(), st.isLoading(), st.getLoadingSpinnerRotation(),
+                    st.getBrightness(), st.getContainerOpacity(), layerTitleCache, resourceManager);
         }
     }
 
@@ -255,9 +243,10 @@ public class TabStripSceneLayer extends SceneOverlayLayer {
                 int handleOutlineTint, boolean foreground, boolean closePressed, float toolbarWidth,
                 float x, float y, float width, float height, float contentOffsetX,
                 float contentOffsetY, float dividerOffsetX, float bottomOffsetY,
-                float closeButtonPadding, float closeButtonAlpha, float dividerAlpha,
-                boolean isLoading, float spinnerRotation, float brightness, float opacity,
-                LayerTitleCache layerTitleCache, ResourceManager resourceManager);
+                float closeButtonPadding, float closeButtonAlpha, boolean isStartDividerVisible,
+                boolean isEndDividerVisible, boolean isLoading, float spinnerRotation,
+                float brightness, float opacity, LayerTitleCache layerTitleCache,
+                ResourceManager resourceManager);
         void setContentTree(
                 long nativeTabStripSceneLayer, TabStripSceneLayer caller, SceneLayer contentTree);
     }

@@ -60,6 +60,7 @@
 #include "content/browser/renderer_host/pending_beacon_host.h"
 #include "content/browser/renderer_host/policy_container_host.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
+#include "content/browser/renderer_host/runtime_feature_state_controller_impl.h"
 #include "content/browser/renderer_host/transient_allow_popup.h"
 #include "content/browser/site_instance_group.h"
 #include "content/browser/site_instance_impl.h"
@@ -144,6 +145,7 @@
 #include "third_party/blink/public/mojom/portal/portal.mojom-forward.h"
 #include "third_party/blink/public/mojom/presentation/presentation.mojom-forward.h"
 #include "third_party/blink/public/mojom/render_accessibility.mojom.h"
+#include "third_party/blink/public/mojom/runtime_feature_state/runtime_feature_state_controller.mojom.h"
 #include "third_party/blink/public/mojom/security_context/insecure_request_policy.mojom-forward.h"
 #include "third_party/blink/public/mojom/sms/webotp_service.mojom-forward.h"
 #include "third_party/blink/public/mojom/speech/speech_synthesis.mojom-forward.h"
@@ -265,6 +267,7 @@ class RenderFrameProxyHost;
 class RenderProcessHost;
 class RenderViewHostImpl;
 class RenderWidgetHostView;
+class RuntimeFeatureStateControllerImpl;
 class ServiceWorkerContainerHost;
 class SiteInfo;
 class SpeechSynthesisImpl;
@@ -753,28 +756,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void RemoveChild(FrameTreeNode* child);
   void ResetChildren();
 
-  // Returns the base URL value of the associated document. This uses the
-  // base URL value sent from the renderer (if any), otherwise it defaults to
-  // the value inherited from this document's parent (for srcdoc iframes), or
-  // the last committed URL if neither of these apply.
-  // Note: this can only be called when IsolateSandboxedIframes is enabled.
-  // TODO(wjmaclean): https://crbug.com/1356658 In future this will be modified
-  // to also use the inherited value for about:blank frames, though in that case
-  // it's inherited from the initiator.
-  const GURL& GetBaseUrl() const;
-
-  // Returns the base url received from the renderer, if any.
-  // Note: this is only valid when IsolatedSandboxedIframes is enabled.
-  const GURL& base_url_from_renderer_for_testing() const {
-    return base_url_from_renderer_;
-  }
-
-  // Returns the base url inherited from the parent, if any.
-  // Note: this is only valid when IsolatedSandboxedIframes is enabled.
-  const GURL& snapshotted_base_url_from_parent_for_testing() const {
-    return snapshotted_base_url_from_parent_;
-  }
-
   // Set the URL of the document represented by this RenderFrameHost. Called
   // when the navigation commits. See also `GetLastCommittedURL`.
   void SetLastCommittedUrl(const GURL& url);
@@ -782,6 +763,13 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // The most recent non-net-error URL to commit in this frame.  In almost all
   // cases, use GetLastCommittedURL instead.
   const GURL& last_successful_url() const { return last_successful_url_; }
+
+  // For about:blank and about:srcdoc documents, this tracks the inherited base
+  // URL, snapshotted from the initiator's FrameLoadRequest. This is an empty
+  // URL for all other cases. This is currently only set if
+  // IsNewBaseUrlInheritanceBehaviorEnabled() returns true. See
+  // https://crbug.com/1356658.
+  const GURL& GetInheritedBaseUrl() const;
 
   // The current URL of the document in the renderer process. Note that this
   // includes URL updates due to document.open() (where it will be updated to
@@ -2022,6 +2010,10 @@ class CONTENT_EXPORT RenderFrameHostImpl
       mojo::PendingReceiver<blink::mojom::NonAssociatedLocalFrameHost>
           receiver);
 
+  void CreateRuntimeFeatureStateController(
+      mojo::PendingReceiver<blink::mojom::RuntimeFeatureStateController>
+          receiver);
+
   // Prerender2:
   // Tells PrerenderHostRegistry to cancel the prerendering of the page this
   // frame is in, which destroys this frame.
@@ -2073,9 +2065,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
   }
 
   bool IsCredentialless() const override;
-
-  void AddObserver(RenderFrameHostObserver* observer) override;
-  void RemoveObserver(RenderFrameHostObserver* observer) override;
 
   bool is_fenced_frame_root_originating_from_opaque_url() const {
     return is_fenced_frame_root_originating_from_opaque_url_;
@@ -2319,7 +2308,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void FrameSizeChanged(const gfx::Size& frame_size) override;
   void DidChangeSrcDoc(const blink::FrameToken& child_frame_token,
                        const std::string& srcdoc_value) override;
-  void DidChangeBaseURL(const GURL& base_url) override;
   void ReceivedDelegatedCapability(
       blink::mojom::DelegatedCapability delegated_capability) override;
   void SendFencedFrameReportingBeacon(
@@ -2788,10 +2776,18 @@ class CONTENT_EXPORT RenderFrameHostImpl
     user_activation_state_.Activate(notification_type);
   }
 
+  // Parameter for `ClosePage()` that indicates whether the request comes from
+  // the browser or the renderer. This is used to determine whether navigation
+  // should prevent the page from closing, since navigations should not prevent
+  // the page from closing if the browser is trying to close the page.
+  enum class ClosePageSource { kRenderer, kBrowser };
+
   // Tells the renderer process to run the page's unload handler.
   // A completion callback is invoked by the renderer when the handler
-  // execution completes.
-  void ClosePage();
+  // execution completes. The `source` parameter indicates whether this request
+  // comes from the browser or the renderer. If the request comes from the
+  // renderer, then it may be ignored if a different document commits first.
+  void ClosePage(ClosePageSource source);
 
   // When true, indicates that the unload handlers have already executed (e.g.,
   // after receiving a ClosePage ACK) or that they should be ignored. This is
@@ -2976,6 +2972,11 @@ class CONTENT_EXPORT RenderFrameHostImpl
   FRIEND_TEST_ALL_PREFIXES(SitePerProcessSSLBrowserTest,
                            UnloadHandlersArePowerfulGrandChild);
   FRIEND_TEST_ALL_PREFIXES(RenderFrameHostImplTest, ExpectedMainWorldOrigin);
+  FRIEND_TEST_ALL_PREFIXES(RenderFrameHostImplTest,
+                           RendererInitiatedCloseIsCancelledIfPageIsntPrimary);
+  FRIEND_TEST_ALL_PREFIXES(
+      RenderFrameHostImplTest,
+      BrowserInitiatedCloseIsNotCancelledIfPageIsntPrimary);
   FRIEND_TEST_ALL_PREFIXES(DocumentUserDataTest, CheckInPendingDeletionState);
   FRIEND_TEST_ALL_PREFIXES(WebContentsImplBrowserTest, FrozenAndUnfrozenIPC);
   FRIEND_TEST_ALL_PREFIXES(RenderFrameHostImplBrowserTest,
@@ -3355,6 +3356,15 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   // Update this frame's last committed origin.
   void SetLastCommittedOrigin(const url::Origin& origin);
+
+  // Stores a snapshot of the inherited base URL from the initiator's
+  // FrameLoadRequest, if this document inherited one (e.g., about:srcdoc).
+  // This value is currently only set when the NewBaseUrlInheritanceBehavior
+  // feature is enabled.
+  // TODO(1356658): about:blank frames will also need to inherit base URLs,
+  // from the initiator rather than the parent. See
+  // https://crbug.com/1356658#c7.
+  void SetInheritedBaseUrl(const GURL& inherited_base_url);
 
   // Called when a navigation commits successfully to |url_info->url|. This
   // will update |last_committed_site_info_| with the SiteInfo corresponding to
@@ -3736,35 +3746,20 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // used for communicating with the FrameTreeNode.
   FrameTreeNode* GetFrameTreeNodeForUnload();
 
-  // Stores an override of this document's base URL when it does not match the
-  // last committed URL or an inherited value (e.g., if a <base> element is
-  // added). This is tracked for all frames, for the purpose of GetBaseUrl. This
-  // value is currently only set when the IsolateSandboxedIframes feature is
-  // enabled.
-  void set_base_url_from_renderer(const GURL& base_url) {
-    base_url_from_renderer_ = base_url;
-  }
-
-  // Stores a snapshot of the inherited base URL from the start of the
-  // NavigationRequest, if this document inherited one (e.g., about:srcdoc).
-  // This value is currently only set when the IsolateSandboxedIframes feature
-  // is enabled.
-  // TODO(wjmaclean): about:blank frames may also need to inherit base URLs,
-  // possibly from the initiator rather than the parent. See
-  // https://crbug.com/1356658#c7.
-  void set_inherited_base_url(const GURL& inherited_base_url) {
-    snapshotted_base_url_from_parent_ = inherited_base_url;
-  }
-
   // Close the page ignoring whether it has unload events registered. This is
   // called either (1) when the unload events have already run in the renderer
   // and the ACK is received, or (2) when a timeout for running those events
-  // has expired.
-  void ClosePageIgnoringUnloadEvents();
+  // has expired. The `source` parameter indicates whether this request comes
+  // from the browser or the renderer. If the request comes from the renderer,
+  // then it may be ignored if a different document commits first.
+  void ClosePageIgnoringUnloadEvents(ClosePageSource source);
 
   // Called when this frame's page has started closing via ClosePage(), and the
-  // timer for running unload events has expired.
-  void ClosePageTimeout();
+  // timer for running unload events has expired. The `source` parameter
+  // indicates whether this request comes from the browser or the renderer. If
+  // the request comes from the renderer, then it may be ignored if a different
+  // document commits first.
+  void ClosePageTimeout(ClosePageSource source);
 
   // The RenderViewHost that this RenderFrameHost is associated with.
   //
@@ -3879,20 +3874,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // avoid separately storing the last committed URL and origin here.
   scoped_refptr<FrameNavigationEntry> last_committed_frame_entry_;
 
-  // This value stores the Document::GetBaseURL() value. It is used to determine
-  // the base URL of children about::srcdoc documents.
-  GURL base_url_from_renderer_;
-  // For documents whose current_url() is about:srcdoc, this is the GetBaseUrl()
-  // of the parent node (which is guaranteed to be non-null since about:srcdoc
-  // can't be used in a top-level frame). It is snapshotted at the time the
-  // srcdoc's NavigationRequest is created, and stored here to prevent the
-  // srcdoc from being affected by subsequent changes in the parent's value.
-  // TODO(wjmaclean): https://crbug.com/1356658 update this when we start
-  // sending base urls to about:blank as well. In the about:blank case we'll use
-  // the initiator instead of the parent (as not all about:blanks will have
-  // parents).
-  GURL snapshotted_base_url_from_parent_;
-
   // Tracks this frame's last committed navigation's URL. Note that this will be
   // empty before the first commit in this *RenderFrameHost*, even if the
   // FrameTreeNode has committed before with a different RenderFrameHost.
@@ -3912,6 +3893,13 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   // Track this frame's last committed origin.
   url::Origin last_committed_origin_;
+
+  // For about:blank and about:srcdoc documents, this tracks the inherited base
+  // URL, snapshotted from the initiator's FrameLoadRequest. This is an empty
+  // URL for all other cases. This is currently only set if
+  // IsNewBaseUrlInheritanceBehaviorEnabled() returns true. See
+  // https://crbug.com/1356658.
+  GURL inherited_base_url_;
 
   // The storage key for the last committed document in this
   // RenderFrameHostImpl.
@@ -4255,6 +4243,10 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   // Hosts blink::mojom::PushMessaging for the RenderFrame.
   std::unique_ptr<PushMessagingManager> push_messaging_manager_;
+
+  // Hosts blink::mojom::RuntimeFeatureStateController for the RenderFrame.
+  std::unique_ptr<RuntimeFeatureStateControllerImpl>
+      runtime_feature_state_controller_;
 
   // Hosts blink::mojom::SpeechSynthesis for the RenderFrame.
   std::unique_ptr<SpeechSynthesisImpl> speech_synthesis_impl_;
@@ -4804,9 +4796,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // and it's meant to generally be stable for the FTN lifetime, but is allowed
   // to change across MPArch activations like prerendering.
   const base::UnguessableToken devtools_frame_token_;
-
-  // The observers watching our state changed event.
-  base::ObserverList<RenderFrameHostObserver> observers_;
 
   // BrowserInterfaceBroker implementation through which this
   // RenderFrameHostImpl exposes document-scoped Mojo services to the currently

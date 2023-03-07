@@ -180,6 +180,14 @@ IN_PROC_BROWSER_TEST_F(DocumentPictureInPictureWindowControllerBrowserTest,
   ASSERT_TRUE(GetRenderWidgetHostView());
   EXPECT_TRUE(GetRenderWidgetHostView()->IsShowing());
   EXPECT_FALSE(GetRenderWidgetHostView()->HasFocus());
+
+  // Also verify that the window manager agrees about which WebContents is
+  // which; the opener should not be the child web contents, but the child
+  // contents should be(!).
+  EXPECT_FALSE(PictureInPictureWindowManager::IsChildWebContents(
+      window_controller()->GetWebContents()));
+  EXPECT_TRUE(PictureInPictureWindowManager::IsChildWebContents(
+      window_controller()->GetChildWebContents()));
 }
 
 // Regression test for https://crbug.com/1296780 - opening a picture-in-picture
@@ -257,6 +265,46 @@ IN_PROC_BROWSER_TEST_F(DocumentPictureInPictureWindowControllerBrowserTest,
                          "navigateInDocumentPipWindow('#top');"));
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(window_controller()->GetChildWebContents());
+}
+
+// Refreshing the pip window's document should close the pip window.
+IN_PROC_BROWSER_TEST_F(DocumentPictureInPictureWindowControllerBrowserTest,
+                       CloseOnPictureInPictureRefresh) {
+  LoadTabAndEnterPictureInPicture(browser());
+
+  content::WebContents* active_web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  ASSERT_EQ(true, EvalJs(active_web_contents, "refreshInDocumentPipWindow();"));
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(window_controller()->GetChildWebContents());
+}
+
+// Explicitly navigating to about:blank should close the pip window.
+// Regression test for https://crbug.com/1413919.
+IN_PROC_BROWSER_TEST_F(DocumentPictureInPictureWindowControllerBrowserTest,
+                       CloseOnPictureInPictureNavigatedToAboutBlank) {
+  LoadTabAndEnterPictureInPicture(browser());
+
+  content::WebContents* active_web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  ASSERT_EQ(true, EvalJs(active_web_contents,
+                         "navigateInDocumentPipWindow('about:blank');"));
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(window_controller()->GetChildWebContents());
+}
+
+// Explicitly navigating to the empty string should close the pip window.
+// Regression test for https://crbug.com/1413919.
+IN_PROC_BROWSER_TEST_F(DocumentPictureInPictureWindowControllerBrowserTest,
+                       CloseOnPictureInPictureNavigatedToEmptyString) {
+  LoadTabAndEnterPictureInPicture(browser());
+
+  content::WebContents* active_web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  ASSERT_EQ(true,
+            EvalJs(active_web_contents, "navigateInDocumentPipWindow('');"));
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(window_controller()->GetChildWebContents());
 }
 
 // Adding a script to the popup window should not crash.

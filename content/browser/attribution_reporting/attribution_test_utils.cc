@@ -37,6 +37,7 @@
 #include "content/browser/attribution_reporting/attribution_trigger.h"
 #include "content/browser/attribution_reporting/rate_limit_result.h"
 #include "content/public/browser/attribution_config.h"
+#include "content/public/browser/attribution_data_model.h"
 #include "content/public/browser/navigation_handle.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "net/base/net_errors.h"
@@ -1022,6 +1023,8 @@ std::ostream& operator<<(std::ostream& out,
       return out << "falselyAttributedSource";
     case AttributionTrigger::EventLevelResult::kReportWindowPassed:
       return out << "reportWindowPassed";
+    case AttributionTrigger::EventLevelResult::kNotRegistered:
+      return out << "notRegistered";
   }
 }
 
@@ -1278,6 +1281,11 @@ std::ostream& operator<<(std::ostream& out, StorableSource::Result status) {
     case StorableSource::Result::kSuccessNoised:
       return out << "successNoised";
   }
+}
+
+std::ostream& operator<<(std::ostream& out,
+                         const AttributionDataModel::DataKey& key) {
+  return out << "{reporting_origin=" << key.reporting_origin() << "}";
 }
 
 EventTriggerDataMatcherConfig::EventTriggerDataMatcherConfig(

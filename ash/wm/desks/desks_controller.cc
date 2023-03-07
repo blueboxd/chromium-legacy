@@ -54,6 +54,7 @@
 #include "base/containers/contains.h"
 #include "base/containers/unique_ptr_adapters.h"
 #include "base/cxx17_backports.h"
+#include "base/debug/crash_logging.h"
 #include "base/functional/bind.h"
 #include "base/guid.h"
 #include "base/i18n/number_formatting.h"
@@ -76,6 +77,7 @@
 #include "ui/aura/window_tracker.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/events/devices/haptic_touchpad_effects.h"
+#include "ui/views/widget/native_widget_private.h"
 #include "ui/wm/core/window_animations.h"
 #include "ui/wm/core/window_util.h"
 #include "ui/wm/public/activation_client.h"
@@ -115,6 +117,13 @@ constexpr int kDeskTraversalsMaxValue = 20;
 // |kNumberOfDeskTraversalsHistogramName| will be recorded after this time
 // interval.
 constexpr base::TimeDelta kDeskTraversalsTimeout = base::Seconds(5);
+
+constexpr char kCloseAllZombieWindowsFoundHistogramName[] =
+    "Ash.Desks.CloseAllZombieWindowsFound";
+
+// The amount of time we wait after `CleanUpClosedAppWindowsTask` runs before
+// we check how many of those windows are still in memory.
+constexpr base::TimeDelta kCloseAllWindowsZombieCheckTimeout = base::Minutes(1);
 
 constexpr int kDeskDefaultNameIds[] = {
     IDS_ASH_DESKS_DESK_1_MINI_VIEW_TITLE,
@@ -257,6 +266,13 @@ void ShowDeskRemovalUndoToast(const std::string& toast_id,
   undo_toast_data.dismiss_callback = std::move(dismiss_callback);
   undo_toast_data.expired_callback = std::move(expired_callback);
   ToastManager::Get()->Show(std::move(undo_toast_data));
+}
+
+// Reports the number of windows that still exist in `window_tracker`.
+void ReportNumberOfZombieWindows(
+    std::unique_ptr<aura::WindowTracker> window_tracker) {
+  base::UmaHistogramCounts100(kCloseAllZombieWindowsFoundHistogramName,
+                              window_tracker->windows().size());
 }
 
 }  // namespace
@@ -445,9 +461,21 @@ const std::u16string& DesksController::GetCombineDesksTargetName(
 }
 
 const Desk* DesksController::GetTargetActiveDesk() const {
-  if (animation_)
-    return desks_[animation_->ending_desk_index()].get();
-  return active_desk();
+  const Desk* target_desk = nullptr;
+  if (animation_) {
+    // If there is ongoing animation, return the target of the animation.
+    target_desk = desks_[animation_->ending_desk_index()].get();
+  } else if (desk_to_activate_) {
+    // Even if there is no ongoing animation, it's still possible to be in the
+    // middle of a desk switch.
+    // Please refer to b/266147233.
+    target_desk = desk_to_activate_;
+  } else {
+    target_desk = active_desk();
+  }
+
+  DCHECK(HasDesk(target_desk));
+  return target_desk;
 }
 
 base::flat_set<aura::Window*>
@@ -1539,6 +1567,8 @@ void DesksController::ActivateDeskInternal(const Desk* desk,
     return;
 
   base::AutoReset<bool> in_progress(&are_desks_being_modified_, true);
+  base::AutoReset<Desk*> activate_desk(&desk_to_activate_,
+                                       const_cast<Desk*>(desk));
 
   // Mark the new desk as active first, so that deactivating windows on the
   // `old_active` desk do not activate other windows on the same desk. See
@@ -1976,6 +2006,8 @@ void DesksController::MaybeCommitPendingDeskRemoval(
 
 void DesksController::CleanUpClosedAppWindowsTask(
     std::unique_ptr<aura::WindowTracker> closing_window_tracker) {
+  auto widgetless_windows = std::make_unique<aura::WindowTracker>();
+
   // We have waited long enough for these app windows to close cleanly.
   // If there is any app windows still around, we will close them forcefully.
   // These window's desk has already been removed. We should not let these
@@ -1983,14 +2015,27 @@ void DesksController::CleanUpClosedAppWindowsTask(
   while (!closing_window_tracker->windows().empty()) {
     aura::Window* window = closing_window_tracker->Pop();
     views::Widget* widget = views::Widget::GetWidgetForNativeView(window);
-    DCHECK(widget);
 
     // Forcefully close this app window. `CloseNow` which directly deleted the
     // associated native widget. This will skip many Window shutdown hook
     // logic. However, the desk controller has waited for the app window to
     // close cleanly before this.
-    widget->CloseNow();
+    if (widget) {
+      widget->CloseNow();
+    } else {
+      // If the window does not have a widget, we add it to the
+      // `widgetless_windows` tracker to check back on later.
+      widgetless_windows->Add(window);
+    }
   }
+
+  // We post a delayed task to check that all of the windows in
+  // `widgetless_windows` eventually end up closing.
+  base::SingleThreadTaskRunner::GetCurrentDefault()->PostDelayedTask(
+      FROM_HERE,
+      base::BindOnce(&ReportNumberOfZombieWindows,
+                     std::move(widgetless_windows)),
+      kCloseAllWindowsZombieCheckTimeout);
 }
 
 void DesksController::MoveVisibleOnAllDesksWindowsFromActiveDeskTo(

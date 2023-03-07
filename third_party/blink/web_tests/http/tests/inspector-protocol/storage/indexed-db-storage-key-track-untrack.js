@@ -18,8 +18,8 @@
   let errorForLog = new Error();
   setTimeout(() => {
     testRunner.log(protocolMessages);
-    testRunner.die('Timeout', errorForLog);
-  }, 145000);
+    testRunner.die('Took longer than 25s', errorForLog);
+  }, 25000);
 
   const frameId = (await dp.Page.getResourceTree()).result.frameTree.frame.id;
   errorForLog = new Error();

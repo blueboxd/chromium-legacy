@@ -544,7 +544,7 @@ void AppInstallControllerImpl::InstallAppOffline(
                       std::string install_args;
                       std::string install_data;
                       ReadInstallCommandFromManifest(
-                          cmd_line.GetSwitchValuePath(kOfflineDirSwitch),
+                          cmd_line.GetSwitchValueNative(kOfflineDirSwitch),
                           app_id,
                           GetInstallDataIndexFromAppArgsForCommandLine(cmd_line,
                                                                        app_id),
@@ -623,6 +623,9 @@ void AppInstallControllerImpl::DoInstallAppOffline(
     request.ap = app_args->ap;
   if (tag_args)
     request.brand_code = tag_args->brand_code;
+
+  VLOG(1) << __func__ << ": " << installer_path << ": " << install_args << ": "
+          << install_data;
 
   base::ThreadPool::PostTaskAndReply(
       FROM_HERE,

@@ -106,7 +106,8 @@ class MEDIA_GPU_EXPORT V4L2VideoEncodeAccelerator
   // Internal state of the encoder.
   enum State {
     kUninitialized,  // Initialize() not yet called.
-    kInitialized,    // Initialize() returned true; ready to start encoding.
+    kInitialized,    // Initialize() returned true. The encoding is ready after
+                     // InitializeTask() completes successfully.
     kEncoding,       // Encoding frames.
     kFlushing,       // Flushing frames.
     kError,          // Error in encoder state.
@@ -267,6 +268,8 @@ class MEDIA_GPU_EXPORT V4L2VideoEncodeAccelerator
   static constexpr int kMaxNumOfInstances = 10;
   static base::AtomicRefCount num_instances_;
   const bool can_use_encoder_;
+
+  std::string driver_name_;
 
   // Our original calling task runner for the child thread and its checker.
   const scoped_refptr<base::SingleThreadTaskRunner> child_task_runner_;

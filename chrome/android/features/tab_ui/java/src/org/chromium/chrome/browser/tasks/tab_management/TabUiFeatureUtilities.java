@@ -85,18 +85,6 @@ public class TabUiFeatureUtilities {
             new BooleanCachedFieldTrialParameter(ChromeFeatureList.GRID_TAB_SWITCHER_FOR_TABLETS,
                     DELAY_GTS_CREATION_PARAM, true);
 
-    // Field trial parameter for enabling folio for tab strip redesign.
-    private static final String TAB_STRIP_REDESIGN_ENABLE_FOLIO_PARAM = "enable_folio";
-    public static final BooleanCachedFieldTrialParameter TAB_STRIP_REDESIGN_ENABLE_FOLIO =
-            new BooleanCachedFieldTrialParameter(ChromeFeatureList.TAB_STRIP_REDESIGN,
-                    TAB_STRIP_REDESIGN_ENABLE_FOLIO_PARAM, false);
-
-    // Field trial parameter for enabling detached for tab strip redesign.
-    private static final String TAB_STRIP_REDESIGN_ENABLE_DETACHED_PARAM = "enable_detached";
-    public static final BooleanCachedFieldTrialParameter TAB_STRIP_REDESIGN_ENABLE_DETACHED =
-            new BooleanCachedFieldTrialParameter(ChromeFeatureList.TAB_STRIP_REDESIGN,
-                    TAB_STRIP_REDESIGN_ENABLE_DETACHED_PARAM, false);
-
     // Field trial parameter for defining tab width for tab strip improvements.
     private static final String TAB_STRIP_IMPROVEMENTS_TAB_WIDTH_PARAM = "min_tab_width";
     public static final DoubleCachedFieldTrialParameter TAB_STRIP_TAB_WIDTH =
@@ -108,6 +96,14 @@ public class TabUiFeatureUtilities {
     public static final BooleanCachedFieldTrialParameter ENABLE_TAB_SELECTION_EDITOR_V2_SHARE =
             new BooleanCachedFieldTrialParameter(ChromeFeatureList.TAB_SELECTION_EDITOR_V2,
                     TAB_SELECTION_EDITOR_V2_SHARE_PARAM, false);
+    // Field trial parameter for controlling longpress entry into TabSelectionEditorV2 from
+    // TabGridDialog and TabSwitcher.
+    private static final String TAB_SELECTION_EDITOR_V2_LONGPRESS_ENTRY_PARAM =
+            "enable_longpress_entrypoint";
+    public static final BooleanCachedFieldTrialParameter
+            ENABLE_TAB_SELECTION_EDITOR_V2_LONGPRESS_ENTRY =
+                    new BooleanCachedFieldTrialParameter(ChromeFeatureList.TAB_SELECTION_EDITOR_V2,
+                            TAB_SELECTION_EDITOR_V2_LONGPRESS_ENTRY_PARAM, false);
 
     // Field trial parameter for controlling bookmark tabs in TabSelectionEditorV2.
     private static final String TAB_SELECTION_EDITOR_V2_BOOKMARKS_PARAM = "enable_bookmarks";
@@ -283,42 +279,6 @@ public class TabUiFeatureUtilities {
      */
     public static boolean isLaunchPolishEnabled() {
         return ENABLE_LAUNCH_POLISH.getValue();
-    }
-
-    private static boolean sFolioEnabledForTesting;
-    private static boolean sDetachedEnabledForTesting;
-    /**
-     * Set folio disabled/enabled for testing.
-     */
-    public static void setTabStripRedesignEnableFolioForTesting(boolean enabled) {
-        sFolioEnabledForTesting = enabled;
-    }
-
-    /**
-     * Set folio disabled/enabled for testing.
-     */
-    public static void setTabStripRedesignEnableDetachedForTesting(boolean enabled) {
-        sDetachedEnabledForTesting = enabled;
-    }
-
-    /**
-     * @return Whether Folio for tab strip redesign is enabled.
-     */
-    public static boolean isTabStripFolioEnabled() {
-        if (sFolioEnabledForTesting) {
-            return sFolioEnabledForTesting;
-        }
-        return TAB_STRIP_REDESIGN_ENABLE_FOLIO.getValue();
-    }
-
-    /**
-     * @return Whether Detached for tab strip redesign is enabled.
-     */
-    public static boolean isTabStripDetachedEnabled() {
-        if (sDetachedEnabledForTesting) {
-            return sDetachedEnabledForTesting;
-        }
-        return TAB_STRIP_REDESIGN_ENABLE_DETACHED.getValue();
     }
 
     private static Float sTabMinWidthForTesting;

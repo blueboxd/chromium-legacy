@@ -454,8 +454,8 @@ const CSSValue* AnimationRangeStart::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const LayoutObject*,
     bool allow_visited_style) const {
-  return ComputedStyleUtils::ValueForAnimationRangeStartList(
-      style.Animations());
+  return ComputedStyleUtils::ValueForAnimationRangeStartList(style.Animations(),
+                                                             style);
 }
 
 const CSSValue* AnimationRangeEnd::ParseSingleValue(
@@ -471,7 +471,8 @@ const CSSValue* AnimationRangeEnd::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const LayoutObject*,
     bool allow_visited_style) const {
-  return ComputedStyleUtils::ValueForAnimationRangeEndList(style.Animations());
+  return ComputedStyleUtils::ValueForAnimationRangeEndList(style.Animations(),
+                                                           style);
 }
 
 const CSSValue* AnimationTimeline::ParseSingleValue(
@@ -2383,13 +2384,8 @@ void Content::ApplyInherit(StyleResolverState& state) const {
 
 void Content::ApplyValue(StyleResolverState& state,
                          const CSSValue& value) const {
-  NOTREACHED();
-}
-
-void Content::ApplyValue(StyleResolverState& state,
-                         const ScopedCSSValue& scoped_value) const {
+  DCHECK(value.IsScopedValue());
   ComputedStyleBuilder& builder = state.StyleBuilder();
-  const CSSValue& value = scoped_value.GetCSSValue();
   if (auto* identifier_value = DynamicTo<CSSIdentifierValue>(value)) {
     DCHECK(identifier_value->GetValueID() == CSSValueID::kNormal ||
            identifier_value->GetValueID() == CSSValueID::kNone);
@@ -2414,7 +2410,7 @@ void Content::ApplyValue(StyleResolverState& state,
       next_content = MakeGarbageCollected<CounterContentData>(
           AtomicString(counter_value->Identifier()), counter_value->ListStyle(),
           AtomicString(counter_value->Separator()),
-          scoped_value.GetTreeScope());
+          counter_value->GetTreeScope());
     } else if (auto* item_identifier_value =
                    DynamicTo<CSSIdentifierValue>(item.Get())) {
       QuoteType quote_type;
@@ -4851,24 +4847,20 @@ const CSSValue* ListStyleType::CSSValueFromComputedStyleInternal(
   if (!style.ListStyleType()) {
     return CSSIdentifierValue::Create(CSSValueID::kNone);
   }
-  if (style.ListStyleType()->IsString()) {
+  const ListStyleTypeData& list_style_type = *style.ListStyleType();
+  if (list_style_type.IsString()) {
     return MakeGarbageCollected<CSSStringValue>(
-        style.ListStyleType()->GetStringValue());
+        list_style_type.GetStringValue());
   }
   // TODO(crbug.com/687225): Return a scoped CSSValue?
   return MakeGarbageCollected<CSSCustomIdentValue>(
-      style.ListStyleType()->GetCounterStyleName());
+      list_style_type.GetCounterStyleName());
 }
 
 void ListStyleType::ApplyValue(StyleResolverState& state,
                                const CSSValue& value) const {
-  NOTREACHED();
-}
-
-void ListStyleType::ApplyValue(StyleResolverState& state,
-                               const ScopedCSSValue& scoped_value) const {
+  DCHECK(value.IsScopedValue());
   ComputedStyleBuilder& builder = state.StyleBuilder();
-  const CSSValue& value = scoped_value.GetCSSValue();
   if (const auto* identifier_value = DynamicTo<CSSIdentifierValue>(value)) {
     DCHECK_EQ(CSSValueID::kNone, identifier_value->GetValueID());
     builder.SetListStyleType(nullptr);
@@ -4884,7 +4876,7 @@ void ListStyleType::ApplyValue(StyleResolverState& state,
   DCHECK(value.IsCustomIdentValue());
   const auto& custom_ident_value = To<CSSCustomIdentValue>(value);
   builder.SetListStyleType(ListStyleTypeData::CreateCounterStyle(
-      custom_ident_value.Value(), scoped_value.GetTreeScope()));
+      custom_ident_value.Value(), custom_ident_value.GetTreeScope()));
 }
 
 bool MarginBlockEnd::IsLayoutDependent(const ComputedStyle* style,
@@ -9589,6 +9581,13 @@ const CSSValue* ToggleVisibility::CSSValueFromComputedStyleInternal(
   result_list->Append(
       *MakeGarbageCollected<CSSCustomIdentValue>(toggle_visibility));
   return result_list;
+}
+
+const CSSValue* TopLayer::CSSValueFromComputedStyleInternal(
+    const ComputedStyle& style,
+    const LayoutObject*,
+    bool allow_visited_style) const {
+  return CSSIdentifierValue::Create(style.TopLayer());
 }
 
 const CSSValue* WebkitTransformOriginY::ParseSingleValue(

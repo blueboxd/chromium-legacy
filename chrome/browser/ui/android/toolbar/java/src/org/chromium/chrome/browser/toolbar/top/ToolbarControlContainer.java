@@ -9,17 +9,22 @@ import android.graphics.Canvas;
 import android.graphics.PorterDuff;
 import android.graphics.Rect;
 import android.graphics.Region;
+import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
+import android.graphics.drawable.LayerDrawable;
 import android.os.Build;
 import android.os.Looper;
 import android.util.AttributeSet;
+import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewStub;
 
+import androidx.annotation.IntDef;
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 import androidx.appcompat.content.res.AppCompatResources;
+import androidx.core.content.res.ResourcesCompat;
 
 import org.chromium.base.Callback;
 import org.chromium.base.TraceEvent;
@@ -29,6 +34,7 @@ import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.browser.browser_controls.BrowserStateBrowserControlsVisibilityDelegate;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tasks.tab_management.TabUiThemeUtil;
 import org.chromium.chrome.browser.toolbar.ConstraintsChecker;
 import org.chromium.chrome.browser.toolbar.ControlContainer;
 import org.chromium.chrome.browser.toolbar.R;
@@ -47,6 +53,8 @@ import org.chromium.ui.resources.dynamics.ViewResourceAdapter;
 import org.chromium.ui.util.TokenHolder;
 import org.chromium.ui.widget.OptimizedFrameLayout;
 
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.util.function.BooleanSupplier;
 
 /**
@@ -147,13 +155,33 @@ public class ToolbarControlContainer extends OptimizedFrameLayout implements Con
             // On tablet, draw a fake tab strip and toolbar until the compositor is
             // ready to draw the real tab strip. (On phone, the toolbar is made entirely
             // of Android views, which are already initialized.)
-            final Drawable backgroundDrawable =
-                    AppCompatResources.getDrawable(getContext(), R.drawable.toolbar_background)
-                            .mutate();
-            backgroundDrawable.setTint(
-                    ChromeColors.getDefaultThemeColor(getContext(), isIncognito));
-            backgroundDrawable.setTintMode(PorterDuff.Mode.MULTIPLY);
-            setBackground(backgroundDrawable);
+
+            if (ChromeFeatureList.sTabStripRedesign.isEnabled()) {
+                Drawable bgdColor = new ColorDrawable(
+                        TabUiThemeUtil.getTabStripBackgroundColor(getContext(), isIncognito));
+                Drawable bdgTabImage = ResourcesCompat.getDrawable(getContext().getResources(),
+                        TabUiThemeUtil.getTSRTabResource(), getContext().getTheme());
+                bdgTabImage.setTint(
+                        TabUiThemeUtil.getTabStripContainerColor(getContext(), false, true, false));
+                LayerDrawable backgroundDrawable =
+                        new LayerDrawable(new Drawable[] {bgdColor, bdgTabImage});
+                // Set image size to match tab size.
+                backgroundDrawable.setPadding(0, 0, 0, 0);
+                backgroundDrawable.setLayerSize(1,
+                        ViewUtils.dpToPx(getContext(), TabUiThemeUtil.getMaxTabStripTabWidthDp()),
+                        mToolbar.getTabStripHeight());
+                // Tab should show up at start of layer based on layout.
+                backgroundDrawable.setLayerGravity(1, Gravity.START);
+                setBackground(backgroundDrawable);
+            } else {
+                final Drawable backgroundDrawable =
+                        AppCompatResources.getDrawable(getContext(), R.drawable.toolbar_background)
+                                .mutate();
+                backgroundDrawable.setTint(
+                        ChromeColors.getDefaultThemeColor(getContext(), isIncognito));
+                backgroundDrawable.setTintMode(PorterDuff.Mode.MULTIPLY);
+                setBackground(backgroundDrawable);
+            }
         }
     }
 
@@ -230,6 +258,21 @@ public class ToolbarControlContainer extends OptimizedFrameLayout implements Con
 
     @VisibleForTesting
     protected static class ToolbarViewResourceAdapter extends ViewResourceAdapter {
+        /**
+         * Emitted at various points during the in motion observer method. Note that it is not the
+         * toolbar that is in motion, but the toolbar's handling of the compositor being in motion.
+         * Treat this list as append only and keep it in sync with ToolbarInMotionStage in
+         * enums.xml.
+         **/
+        @IntDef({ToolbarInMotionStage.SUPPRESSION_ENABLED, ToolbarInMotionStage.READINESS_CHECKED,
+                ToolbarInMotionStage.NUM_ENTRIES})
+        @Retention(RetentionPolicy.SOURCE)
+        @interface ToolbarInMotionStage {
+            int SUPPRESSION_ENABLED = 0;
+            int READINESS_CHECKED = 1;
+            int NUM_ENTRIES = 2;
+        }
+
         private final int[] mTempPosition = new int[2];
         private final Rect mLocationBarRect = new Rect();
         private final Rect mToolbarRect = new Rect();
@@ -413,6 +456,11 @@ public class ToolbarControlContainer extends OptimizedFrameLayout implements Con
                 return;
             }
 
+            if (ToolbarFeatures.shouldRecordSuppressionMetrics()) {
+                RecordHistogram.recordEnumeratedHistogram("Android.TopToolbar.InMotionStage",
+                        ToolbarInMotionStage.SUPPRESSION_ENABLED, ToolbarInMotionStage.NUM_ENTRIES);
+            }
+
             if (!Boolean.TRUE.equals(compositorInMotion)) {
                 if (mControlsToken == TokenHolder.INVALID_TOKEN) {
                     // Only needed when the ConstraintsChecker doesn't drive the capture.
@@ -426,6 +474,12 @@ public class ToolbarControlContainer extends OptimizedFrameLayout implements Con
                 }
             } else if (super.isDirty() && mControlContainerIsVisibleSupplier.getAsBoolean()) {
                 CaptureReadinessResult captureReadinessResult = mToolbar.isReadyForTextureCapture();
+                if (ToolbarFeatures.shouldRecordSuppressionMetrics()
+                        && compositorInMotion != null) {
+                    RecordHistogram.recordEnumeratedHistogram("Android.TopToolbar.InMotionStage",
+                            ToolbarInMotionStage.READINESS_CHECKED,
+                            ToolbarInMotionStage.NUM_ENTRIES);
+                }
                 if (captureReadinessResult.blockReason
                         == TopToolbarBlockCaptureReason.SNAPSHOT_SAME) {
                     setDirtyRectEmpty();

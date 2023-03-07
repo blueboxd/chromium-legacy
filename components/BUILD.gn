@@ -608,6 +608,7 @@ test("components_unittests") {
   if (is_win) {
     deps += [
       "//components/browser_watcher:unit_tests",
+      "//components/stability_report:unit_tests",
       "//components/winhttp:unit_tests",
     ]
   }
@@ -644,6 +645,7 @@ test("components_unittests") {
     deps += [
       "//components/safe_browsing/content/renderer:throttles_unittest",
       "//components/safe_browsing/core/browser:ping_manager_unittest",
+      "//components/safe_browsing/core/browser:safe_browsing_lookup_mechanism_experimenter_unittest",
       "//components/safe_browsing/core/browser:safe_browsing_url_checker_unittest",
       "//components/safe_browsing/core/browser:user_population_unittest",
       "//components/safe_browsing/core/browser:verdict_cache_manager_unittest",

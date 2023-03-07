@@ -435,6 +435,22 @@ static CSSPropertyValueSet* ForcedColorsUserAgentDeclarations() {
   return decl;
 }
 
+// UA rule: * { top-layer: none !important }
+static CSSPropertyValueSet* UniversalTopLayerUserAgentDeclaration() {
+  DEFINE_STATIC_LOCAL(
+      Persistent<MutableCSSPropertyValueSet>, decl,
+      (MakeGarbageCollected<MutableCSSPropertyValueSet>(kHTMLStandardMode)));
+
+  DCHECK(RuntimeEnabledFeatures::CSSTopLayerForTransitionsEnabled());
+
+  if (decl->IsEmpty()) {
+    decl->SetProperty(CSSPropertyID::kTopLayer,
+                      *CSSIdentifierValue::Create(CSSValueID::kNone),
+                      true /* important */);
+  }
+  return decl;
+}
+
 static void CollectScopedResolversForHostedShadowTrees(
     const Element& element,
     HeapVector<Member<ScopedStyleResolver>, 8>& resolvers) {
@@ -1324,22 +1340,33 @@ void StyleResolver::ApplyBaseStyleNoCache(
   // rules that are relevant for the element exist in the stylesheet.
   GetDocument().GetStyleEngine().EnsureUAStyleForElement(*element);
 
-  if (!style_request.IsPseudoStyleRequest() && IsForcedColorsModeEnabled()) {
-    cascade.MutableMatchResult().AddMatchedProperties(
-        ForcedColorsUserAgentDeclarations());
-  }
+  if (!style_request.IsPseudoStyleRequest()) {
+    if (IsForcedColorsModeEnabled()) {
+      cascade.MutableMatchResult().AddMatchedProperties(
+          ForcedColorsUserAgentDeclarations());
+    }
 
-  // This adds a CSSInitialColorValue to the cascade for the document
-  // element. The CSSInitialColorValue will resolve to a color-scheme
-  // sensitive color in Color::ApplyValue. It is added at the start of the
-  // MatchResult such that subsequent declarations (even from the UA sheet)
-  // get a higher priority.
-  //
-  // TODO(crbug.com/1046753): Remove this when canvastext is supported.
-  if (!style_request.IsPseudoStyleRequest() &&
-      element == state.GetDocument().documentElement()) {
-    cascade.MutableMatchResult().AddMatchedProperties(
-        DocumentElementUserAgentDeclarations());
+    // UA rule: * { top-layer: none !important }
+    // Implemented here because DCHECKs ensures we don't add universal rules to
+    // the UA sheets. Note that this is a universal rule in any namespace.
+    // Adding this to the html.css would only do the override in the HTML
+    // namespace since the sheet has a default namespace.
+    if (RuntimeEnabledFeatures::CSSTopLayerForTransitionsEnabled()) {
+      cascade.MutableMatchResult().AddMatchedProperties(
+          UniversalTopLayerUserAgentDeclaration());
+    }
+
+    // This adds a CSSInitialColorValue to the cascade for the document
+    // element. The CSSInitialColorValue will resolve to a color-scheme
+    // sensitive color in Color::ApplyValue. It is added at the start of the
+    // MatchResult such that subsequent declarations (even from the UA sheet)
+    // get a higher priority.
+    //
+    // TODO(crbug.com/1046753): Remove this when canvastext is supported.
+    if (element == state.GetDocument().documentElement()) {
+      cascade.MutableMatchResult().AddMatchedProperties(
+          DocumentElementUserAgentDeclarations());
+    }
   }
 
   ElementRuleCollector collector(state.ElementContext(), style_recalc_context,
@@ -1432,6 +1459,12 @@ void StyleResolver::ApplyBaseStyleNoCache(
       match_result.PseudoElementStyles());
 
   ApplyCallbackSelectors(state);
+  if (element->IsLink() && (element->HasTagName(html_names::kATag) ||
+                            element->HasTagName(html_names::kAreaTag))) {
+    // TODO(crbug.com/1371522): Revisit scoping root used after
+    // https://github.com/WICG/nav-speculation/issues/240 is resolved.
+    ApplyDocumentRulesSelectors(state, &GetDocument());
+  }
 
   // Cache our original display.
   state.StyleBuilder().SetOriginalDisplay(state.StyleBuilder().Display());
@@ -1508,9 +1541,12 @@ void StyleResolver::ApplyBaseStyle(
            ++property_idx) {
         CSSPropertyValueSet::PropertyReference property =
             inline_style->PropertyAt(property_idx);
+        // TODO(crbug.com/1395026): Get rid of ScopedCSSValue when all
+        // properties are converted to use CSSValue directly.
         StyleBuilder::ApplyProperty(
             property.Name(), state,
-            ScopedCSSValue(property.Value(), &GetDocument()));
+            ScopedCSSValue(property.Value().EnsureScopedValue(&GetDocument()),
+                           &GetDocument()));
       }
     }
 
@@ -2195,8 +2231,12 @@ FilterOperations StyleResolver::ComputeFilterOperations(
 
   state.SetStyle(ComputedStyle::Clone(*parent));
 
-  StyleBuilder::ApplyProperty(GetCSSPropertyFilter(), state,
-                              ScopedCSSValue(filter_value, &GetDocument()));
+  // TODO(crbug.com/1395026): Get rid of ScopedCSSValue when all
+  // properties are converted to use CSSValue directly.
+  StyleBuilder::ApplyProperty(
+      GetCSSPropertyFilter(), state,
+      ScopedCSSValue(filter_value.EnsureScopedValue(&GetDocument()),
+                     &GetDocument()));
 
   state.LoadPendingResources();
 
@@ -2310,10 +2350,36 @@ void StyleResolver::CascadeAndApplyMatchedProperties(StyleResolverState& state,
 }
 
 void StyleResolver::ApplyCallbackSelectors(StyleResolverState& state) {
-  RuleSet* watched_selectors_rule_set =
-      GetDocument().GetStyleEngine().WatchedSelectorsRuleSet();
-  if (!watched_selectors_rule_set) {
+  StyleRuleList* rules = CollectMatchingRulesFromRuleSet(
+      state, GetDocument().GetStyleEngine().WatchedSelectorsRuleSet(),
+      /*scope=*/nullptr);
+  if (!rules) {
     return;
+  }
+  for (auto rule : *rules) {
+    state.StyleBuilder().AddCallbackSelector(rule->SelectorsText());
+  }
+}
+
+void StyleResolver::ApplyDocumentRulesSelectors(StyleResolverState& state,
+                                                ContainerNode* scope) {
+  StyleRuleList* rules = CollectMatchingRulesFromRuleSet(
+      state, GetDocument().GetStyleEngine().DocumentRulesSelectorsRuleSet(),
+      scope);
+  if (!rules) {
+    return;
+  }
+  for (auto rule : *rules) {
+    state.StyleBuilder().AddDocumentRulesSelector(rule);
+  }
+}
+
+StyleRuleList* StyleResolver::CollectMatchingRulesFromRuleSet(
+    StyleResolverState& state,
+    RuleSet* rule_set,
+    ContainerNode* scope) {
+  if (!rule_set) {
+    return nullptr;
   }
 
   MatchResult match_result;
@@ -2321,22 +2387,14 @@ void StyleResolver::ApplyCallbackSelectors(StyleResolverState& state) {
                                  selector_filter_, match_result,
                                  state.StyleBuilder().InsideLink());
   collector.SetMode(SelectorChecker::kCollectingStyleRules);
-
-  MatchRequest match_request(watched_selectors_rule_set);
+  MatchRequest match_request(rule_set, scope);
   collector.CollectMatchingRules(match_request);
   collector.SortAndTransferMatchedRules();
 
   if (tracker_) {
     AddMatchedRulesToTracker(collector);
   }
-
-  StyleRuleList* rules = collector.MatchedStyleRuleList();
-  if (!rules) {
-    return;
-  }
-  for (auto rule : *rules) {
-    state.StyleBuilder().AddCallbackSelector(rule->SelectorsText());
-  }
+  return collector.MatchedStyleRuleList();
 }
 
 // Font properties are also handled by FontStyleResolver outside the main
@@ -2364,11 +2422,13 @@ void StyleResolver::ComputeFont(Element& element,
     // TODO(futhark): If we start supporting fonts on ShadowRoot.fonts in
     // addition to Document.fonts, we need to pass the correct TreeScope instead
     // of GetDocument() in the ScopedCSSValue below.
+    // TODO(crbug.com/1395026): Get rid of ScopedCSSValue when all
+    // properties are converted to use CSSValue directly.
     StyleBuilder::ApplyProperty(
         *property, state,
-        ScopedCSSValue(
-            *property_set.GetPropertyCSSValue(property->PropertyID()),
-            &GetDocument()));
+        ScopedCSSValue(property_set.GetPropertyCSSValue(property->PropertyID())
+                           ->EnsureScopedValue(&GetDocument()),
+                       &GetDocument()));
   }
   state.UpdateFont();
 }

@@ -446,11 +446,6 @@ BASE_FEATURE(kCryptauthAttestationSyncing,
              "CryptauthAttestationSyncing",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-// If enabled, replaces the `DeskMiniView` legacy desk close button and behavior
-// with a button to close desk and windows and a button to combine desks (the
-// legacy behavior).
-BASE_FEATURE(kDesksCloseAll, "DesksCloseAll", base::FEATURE_ENABLED_BY_DEFAULT);
-
 // Enables contextual nudges for gesture education.
 BASE_FEATURE(kContextualNudges,
              "ContextualNudges",
@@ -691,7 +686,7 @@ BASE_FEATURE(kEcheSWADisableStunServer,
 // network information to provide more context on connection errors.
 BASE_FEATURE(kEcheSWACheckAndroidNetworkInfo,
              "EcheSWACheckAndroidNetworkInfo",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // If enabled, allows the creation of up to 16 desks (default is 8).
 BASE_FEATURE(kEnable16Desks,
@@ -809,6 +804,11 @@ BASE_FEATURE(kEnforceAshExtensionKeeplist,
              "EnforceAshExtensionKeeplist",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
+// Enables access to the chrome://enterprise-reporting WebUI.
+BASE_FEATURE(kEnterpriseReportingUI,
+             "EnterpriseReportingUI",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // Enables Device End Of Lifetime warning notifications.
 BASE_FEATURE(kEolWarningNotifications,
              "EolWarningNotifications",
@@ -869,7 +869,7 @@ BASE_FEATURE(kFastPair, "FastPair", base::FEATURE_DISABLED_BY_DEFAULT);
 // Enables using new Handshake retry logic for Fast Pair.
 BASE_FEATURE(kFastPairHandshakeRefactor,
              "FastPairHandshakeRefactor",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // The amount of minutes we should wait before allowing notifications for a
 // recently lost device.
@@ -970,15 +970,40 @@ BASE_FEATURE(kFloatingWorkspace,
              "FloatingWorkspace",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+// Maximum delay to wait for restoring Floating Workspace after login.
+constexpr base::FeatureParam<base::TimeDelta>
+    kFloatingWorkspaceMaxTimeAvaliableForRestoreAfterLogin{
+        &kFloatingWorkspace, "MaxTimeAvailableForRestoreAfterLogin",
+        base::Seconds(3)};
+
 // Enables or disables Floating Workspace V2 feature on ChromeOS
 BASE_FEATURE(kFloatingWorkspaceV2,
              "FloatingWorkspaceV2",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+// Maximum delay to wait for restoring Floating Workspace V2 after login.
+constexpr base::FeatureParam<base::TimeDelta>
+    kFloatingWorkspaceV2MaxTimeAvaliableForRestoreAfterLogin{
+        &kFloatingWorkspaceV2, "MaxTimeAvailableForRestoreAfterLoginV2",
+        base::Seconds(15)};
+
+// Time interval to capture current desk as desk template and upload template to
+// server.
+constexpr base::FeatureParam<base::TimeDelta>
+    kFloatingWorkspaceV2PeriodicJobIntervalInSeconds{
+        &kFloatingWorkspaceV2, "PeriodicJobIntervalInSeconds",
+        base::Seconds(30)};
+
 // If enabled, makes the Projector app use server side speech
 // recognition instead of on-device speech recognition.
 BASE_FEATURE(kForceEnableServerSideSpeechRecognitionForDev,
              "ForceEnableServerSideSpeechRecognitionForDev",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Enables Drive to forcibly resync office files. Operations such as copy,
+// move, ZIP on MS Office files call on the Drive to resync the files.
+BASE_FEATURE(kForceReSyncDrive,
+             "ForceReSyncDrive",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Controls whether to allow keeping full screen mode after unlock.
@@ -1083,12 +1108,6 @@ BASE_FEATURE(kHibernate, "Hibernate", base::FEATURE_DISABLED_BY_DEFAULT);
 BASE_FEATURE(kProductivityLauncherImageSearch,
              "ProductivityLauncherImageSearch",
              base::FEATURE_DISABLED_BY_DEFAULT);
-
-// Enables or disables the flag to synchronize launcher item colors. It is
-// in effect only when kLauncherAppSort is enabled.
-BASE_FEATURE(kLauncherItemColorSync,
-             "LauncherItemColorSync",
-             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Enables a privacy improvement that removes wrongly configured hidden
 // networks and mitigates the creation of these networks. crbug/1327803.
@@ -1297,23 +1316,6 @@ BASE_FEATURE(kLacrosProfileBackwardMigration,
              "LacrosProfileBackwardMigration",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-// Enables or disables sorting app icons shown on the launcher.
-BASE_FEATURE(kLauncherAppSort,
-             "LauncherAppSort",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
-// When enabled, app list folders will be moved so app list remains sorted when
-// they get renamed, or created.
-BASE_FEATURE(kLauncherFolderRenameKeepsSortOrder,
-             "LauncherFolderRenameKeepsSortOrder",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
-// When enabled, the app list sort nudge and toast will have additional
-// buttons for dismissal.
-BASE_FEATURE(kLauncherDismissButtonsOnSortNudgeAndToast,
-             "LauncherDismissButtonsOnSortNudgeAndToast",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 // Uses short intervals for launcher nudge for testing if enabled.
 BASE_FEATURE(kLauncherNudgeShortInterval,
              "LauncherNudgeShortInterval",
@@ -1514,6 +1516,10 @@ BASE_FEATURE(kOobeQuickStart,
 BASE_FEATURE(kOobeRemoveShutdownButton,
              "OobeRemoveShutdownButton",
              base::FEATURE_ENABLED_BY_DEFAULT);
+
+BASE_FEATURE(kOnlyShowNewShortcutsApp,
+             "OnlyShowNewShortcutsApp",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Enables or disables the feedback tool new UX on ChromeOS.
 // This tool under development will be rolled out via Finch.
@@ -1747,26 +1753,15 @@ BASE_FEATURE(kPromiseIcons, "PromiseIcons", base::FEATURE_DISABLED_BY_DEFAULT);
 // Controls whether the quick dim prototype is enabled.
 BASE_FEATURE(kQuickDim, "QuickDim", base::FEATURE_ENABLED_BY_DEFAULT);
 
-// Controls whether the vc background blur is enabled.
-BASE_FEATURE(kVCBackgroundBlur,
-             "VCBackgroundBlur",
+// Controls whether the video conference feature is enabled.
+BASE_FEATURE(kVideoConference,
+             "VideoConference",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Controls whether the vc background replace is enabled.
-BASE_FEATURE(kVCBackgroundReplace,
+BASE_FEATURE(kVcBackgroundReplace,
              "VCBackgroundReplace",
              base::FEATURE_DISABLED_BY_DEFAULT);
-
-// Controls whether the vc portrait relighting is enabled.
-BASE_FEATURE(kVCPortraitRelighting,
-             "VCPortraitRelighting",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
-// Enables or disables the Quick Settings Network revamp, which updates Network
-// Quick Settings UI and related infrastructure. See https://crbug.com/1169479.
-BASE_FEATURE(kQuickSettingsNetworkRevamp,
-             "QuickSettingsNetworkRevamp",
-             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Enables or disables fingerprint quick unlock.
 BASE_FEATURE(kQuickUnlockFingerprint,
@@ -2088,9 +2083,6 @@ BASE_FEATURE(kUserActivityPrediction,
              "UserActivityPrediction",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
-// Enable or disable the ChromeOS video conferencing controls UI.
-BASE_FEATURE(kVcControlsUi, "VcControlsUi", base::FEATURE_DISABLED_BY_DEFAULT);
-
 // Enable or disable the fake effects for ChromeOS video conferencing controls
 // UI. Only meaningful in the emulator.
 BASE_FEATURE(kVcControlsUiFakeEffects,
@@ -2201,6 +2193,18 @@ BASE_FEATURE(kDeviceActiveClient28DayActiveCheckMembership,
 BASE_FEATURE(kDeviceActiveClientDailyCheckMembership,
              "DeviceActiveClientDailyCheckMembership",
              base::FEATURE_ENABLED_BY_DEFAULT);
+
+// Enables or disables PSM CheckIn for the churn cohort device active pings
+// on ChromeOS.
+BASE_FEATURE(kDeviceActiveClientChurnCohortCheckIn,
+             "DeviceActiveClientChurnCohortCheckIn",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Enables or disables PSM CheckMembership for the churn cohort device active
+// pings on ChromeOS.
+BASE_FEATURE(kDeviceActiveClientChurnCohortCheckMembership,
+             "DeviceActiveClientChurnCohortCheckMembership",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Enables or disables forced reboots when DeviceScheduledReboot policy is set.
 BASE_FEATURE(kDeviceForceScheduledReboot,
@@ -2417,7 +2421,9 @@ bool IsCryptauthAttestationSyncingEnabled() {
 }
 
 bool IsDesksCloseAllEnabled() {
-  return base::FeatureList::IsEnabled(kDesksCloseAll);
+  // TODO(b/263166880): Remove this function and all code paths where this is
+  // false.
+  return true;
 }
 
 bool IsDnsOverHttpsWithIdentifiersReuseOldPolicyEnabled() {
@@ -2427,11 +2433,6 @@ bool IsDnsOverHttpsWithIdentifiersReuseOldPolicyEnabled() {
 
 bool IsDnsOverHttpsWithIdentifiersEnabled() {
   return base::FeatureList::IsEnabled(kDnsOverHttpsWithIdentifiers);
-}
-
-bool IsLauncherItemColorSyncEnabled() {
-  return IsLauncherAppSortEnabled() &&
-         base::FeatureList::IsEnabled(kLauncherItemColorSync);
 }
 
 bool IsConsumerAutoUpdateToggleAllowed() {
@@ -2615,6 +2616,10 @@ bool ShouldForceEnableServerSideSpeechRecognitionForDev() {
 #endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING);
 }
 
+bool IsForceReSyncDriveEnabled() {
+  return base::FeatureList::IsEnabled(kForceReSyncDrive);
+}
+
 bool IsFullscreenAfterUnlockAllowed() {
   return base::FeatureList::IsEnabled(kFullscreenAfterUnlockAllowed);
 }
@@ -2736,21 +2741,6 @@ bool IsKeyboardBacklightToggleEnabled() {
 bool IsLanguagePacksEnabled() {
   return base::FeatureList::IsEnabled(kHandwritingLegacyRecognition) ||
          base::FeatureList::IsEnabled(kHandwritingLegacyRecognitionAllLang);
-}
-
-bool IsLauncherAppSortEnabled() {
-  return base::FeatureList::IsEnabled(kLauncherAppSort);
-}
-
-bool IsLauncherFolderRenameKeepsSortOrderEnabled() {
-  return IsLauncherAppSortEnabled() &&
-         base::FeatureList::IsEnabled(kLauncherFolderRenameKeepsSortOrder);
-}
-
-bool IsLauncherDismissButtonsOnSortNudgeAndToastEnabled() {
-  return IsLauncherAppSortEnabled() &&
-         base::FeatureList::IsEnabled(
-             kLauncherDismissButtonsOnSortNudgeAndToast);
 }
 
 bool IsLauncherNudgeShortIntervalEnabled() {
@@ -3059,10 +3049,6 @@ bool IsQuickDimEnabled() {
   return base::FeatureList::IsEnabled(kQuickDim) && switches::HasHps();
 }
 
-bool IsQuickSettingsNetworkRevampEnabled() {
-  return true;
-}
-
 bool IsPerDeskZOrderEnabled() {
   return base::FeatureList::IsEnabled(kEnablePerDeskZOrder);
 }
@@ -3183,20 +3169,13 @@ bool IsUseStorkSmdsServerAddressEnabled() {
   return base::FeatureList::IsEnabled(kUseStorkSmdsServerAddress);
 }
 
-bool IsVCBackgroundBlurEnabled() {
-  return base::FeatureList::IsEnabled(kVCBackgroundBlur);
+bool IsVideoConferenceEnabled() {
+  return base::FeatureList::IsEnabled(kVideoConference);
 }
 
-bool IsVCBackgroundReplaceEnabled() {
-  return base::FeatureList::IsEnabled(kVCBackgroundReplace);
-}
-
-bool IsVCPortraitRelightingEnabled() {
-  return base::FeatureList::IsEnabled(kVCPortraitRelighting);
-}
-
-bool IsVcControlsUiEnabled() {
-  return base::FeatureList::IsEnabled(kVcControlsUi);
+bool IsVcBackgroundReplaceEnabled() {
+  return base::FeatureList::IsEnabled(kVcBackgroundReplace) &&
+         IsVideoConferenceEnabled();
 }
 
 bool IsVcControlsUiFakeEffectsEnabled() {
@@ -3241,6 +3220,10 @@ bool ShouldArcFileTasksUseAppService() {
 
 bool ShouldGuestOsFileTasksUseAppService() {
   return base::FeatureList::IsEnabled(kGuestOsFileTasksUseAppService);
+}
+
+bool ShouldOnlyShowNewShortcutApp() {
+  return base::FeatureList::IsEnabled(kOnlyShowNewShortcutsApp);
 }
 
 bool ShouldShowPlayStoreInDemoMode() {

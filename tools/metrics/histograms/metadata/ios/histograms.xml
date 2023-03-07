@@ -688,11 +688,21 @@ chromium-metrics-reviews@google.com.
     <variant name="SyncScreenWithIdentityPicker"
         summary="The screen that asks the user to turn on sync while showing
                  an account picker. Displayed when MICe is disabled and an
-                 account is detected."/>
+                 account is detected.">
+      <obsolete>
+        This metric is obsolete as of M111 as the corresponding screen was
+        removed.
+      </obsolete>
+    </variant>
     <variant name="SyncScreenWithoutIdentityPicker"
         summary="The screen that asks the user to turn on sync while no
                  account picker is present. Displayed when MICe is enabled or
-                 when no account is detected."/>
+                 when no account is detected.">
+      <obsolete>
+        This metric is obsolete as of M111 as the corresponding screen was
+        removed.
+      </obsolete>
+    </variant>
     <variant name="TangibleSyncScreen"
         summary="The tangible sync screen that asks the user to turn on sync."/>
     <variant name="WelcomeScreenWithoutUMACheckbox"
@@ -1310,6 +1320,13 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="IOS.Omnibox.SearchSuggestionNumberOfLines" units="count"
+    expires_after="2023-09-27">
+  <owner>christianxu@chromium.org</owner>
+  <owner>bling-team@google.com</owner>
+  <summary>Histogram of the number of lines of search suggestions.</summary>
+</histogram>
+
 <histogram name="IOS.OpenIn.DownloadResult" enum="IOSOpenInDownloadResult"
     expires_after="2023-07-16">
   <owner>ewannpv@chromium.org</owner>
@@ -1488,7 +1505,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="IOS.Permission.Requests" enum="IOSPermissionRequest"
-    expires_after="2023-03-05">
+    expires_after="2024-01-24">
   <owner>ewannpv@chromium.org</owner>
   <owner>gambard@chromium.org</owner>
   <owner>bling-team@google.com</owner>
@@ -1988,9 +2005,17 @@ chromium-metrics-reviews@google.com.
   <owner>gambard@chromium.org</owner>
   <owner>bling-team@google.com</owner>
   <summary>
-    Records tab drag and drop interactions on the tab switcher. An intercation
+    Records tab drag and drop interactions on the tab switcher. An interaction
     is recorded twice (one drag and one drop).
   </summary>
+</histogram>
+
+<histogram name="IOS.TabSwitcher.DragOrigin" enum="IOSTabSwitcherDragOrigin"
+    expires_after="2024-01-22">
+  <owner>ewannpv@chromium.org</owner>
+  <owner>pakzhygitov@google.com</owner>
+  <owner>bling-team@google.com</owner>
+  <summary>Records the origin of dropped items in the tab switcher.</summary>
 </histogram>
 
 <histogram name="IOS.TabSwitcher.PageChangeInteraction"
@@ -2003,6 +2028,25 @@ chromium-metrics-reviews@google.com.
     switcher. Note that drag interactions can be recorded multiple time for a
     single drag.
   </summary>
+</histogram>
+
+<histogram name="IOS.TabSwitcher.PinnedTabs.DragDropTabs"
+    enum="IOSTabSwitcherDragDropTabs" expires_after="2023-11-16">
+  <owner>ewannpv@chromium.org</owner>
+  <owner>pakzhygitov@google.com</owner>
+  <owner>bling-team@google.com</owner>
+  <summary>
+    Records tab drag and drop interactions in the pinned tab view. An
+    interaction is recorded twice (one drag and one drop).
+  </summary>
+</histogram>
+
+<histogram name="IOS.TabSwitcher.PinnedTabs.DragOrigin"
+    enum="IOSTabSwitcherDragOrigin" expires_after="2024-01-22">
+  <owner>ewannpv@chromium.org</owner>
+  <owner>pakzhygitov@google.com</owner>
+  <owner>bling-team@google.com</owner>
+  <summary>Records the origin of dropped items in the pinned tab view.</summary>
 </histogram>
 
 <histogram name="IOS.TabSwitcher.TimeSpent" units="ms"
@@ -2209,6 +2253,9 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="IOS.WindowIDInjection.ElapsedTime" units="ms"
     expires_after="2023-02-26">
+  <obsolete>
+    Removed in M111 because windowId injection was removed.
+  </obsolete>
   <owner>michaeldo@chromium.org</owner>
   <owner>rohitrao@chromium.org</owner>
   <summary>

@@ -1257,6 +1257,9 @@
         'swarming': {
           'shards': 7,
         },
+        'args': [
+          '--tast-shard-method=hash',
+        ],
       },
       'chromeos-betty-pi-arc-cfi-thin-lto-chrome': {
         'args': [
@@ -1299,32 +1302,6 @@
               'device_type': 'sailfish',
             },
           ],
-        },
-      },
-    },
-  },
-  # TODO(crbug/1239300): Remove when experiment is done.
-  'chrome_public_persistent_shell_test_apk': {
-    'remove_from': [
-      'android-pie-arm64-rel', # crbug/1239300. Experiment is done on this bot.
-    ],
-    'modifications': {
-      'android-nougat-x86-rel': {
-        'args': [
-          '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator_n.chrome_public_test_apk.filter',
-        ],
-        'swarming': {
-          'shards': 25,
-        },
-      },
-    },
-  },
-  # TODO(crbug/1239300): Remove when experiment is done.
-  'chrome_public_persistent_shell_unit_test_apk': {
-    'modifications': {
-      'android-nougat-x86-rel': {
-        'swarming': {
-          'shards': 4,
         },
       },
     },
@@ -1924,25 +1901,6 @@
       },
     },
   },
-  # TODO(crbug/1239300): Remove when experiment is done.
-  'content_browsertests_persistent_shell': {
-    'modifications': {
-      'android-nougat-x86-rel': {
-        'args': [
-          '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator_n.content_browsertests.filter',
-        ],
-        'swarming': {
-          'shards': 25,
-          'dimension_sets': [
-            {
-              # copying android-nougat-x86-rel
-              'cores': '8',
-            },
-          ],
-        },
-      },
-    },
-  },
   'content_shell_crash_test': {
     'remove_from': [
       'android-nougat-x86-rel', # crbug.com/1084353
@@ -2458,13 +2416,6 @@
           '--expected-device-id', 'c0de',
         ],
       },
-      'fuchsia-x64-workstation': {
-        'args': [
-          # Swarming does not report a GPU since tests are run in a VM, but
-          # the VM does report that a GPU is present.
-          '--expected-device-id', 'c0de',
-        ],
-      },
     },
     'replacements': {
       'ChromeOS FYI Release (amd64-generic)': {
@@ -2494,14 +2445,6 @@
         },
       },
       'fuchsia-x64-chrome-rel': {
-        'args': {
-          # The GPU information is not exposed in swarming since Fuchsia
-          # launches an emulator on the GCE machine.
-          '--expected-vendor-id': '1ae0',
-          '$$MAGIC_SUBSTITUTION_GPUExpectedDeviceId': None,
-        },
-      },
-      'fuchsia-x64-workstation': {
         'args': {
           # The GPU information is not exposed in swarming since Fuchsia
           # launches an emulator on the GCE machine.

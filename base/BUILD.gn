@@ -1277,8 +1277,8 @@ component("base") {
       "mac/dispatch_source_mach.h",
       "mac/foundation_util.h",
       "mac/foundation_util.mm",
-      "mac/launch_services_util.h",
-      "mac/launch_services_util.mm",
+      "mac/launch_application.h",
+      "mac/launch_application.mm",
       "mac/launchd.cc",
       "mac/launchd.h",
       "mac/mac_logging.h",
@@ -3698,6 +3698,7 @@ test("base_unittests") {
   if (is_ios) {
     sources += [
       "ios/device_util_unittest.mm",
+      "ios/scoped_critical_action_unittest.mm",
       "ios/weak_nsobject_unittest.mm",
     ]
 

@@ -27,7 +27,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profile_test_util.h"
-#include "chrome/browser/supervised_user/supervised_user_constants.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension_constants.h"
@@ -39,6 +38,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/session_manager/core/session_manager.h"
+#include "components/supervised_user/core/common/supervised_user_constants.h"
 #include "components/user_manager/user_names.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/browser_test.h"
@@ -968,6 +968,16 @@ class AccessibilityManagerDlcTest : public AccessibilityManagerTest {
     AccessibilityManager::Get()->OnPumpkinError("Error");
   }
 
+  void OnPumpkinInstalled(bool success) {
+    AccessibilityManager::Get()->OnPumpkinInstalled(success);
+  }
+
+  void OnPumpkinDataCreated(
+      std::unique_ptr<extensions::api::accessibility_private::PumpkinData>
+          data) {
+    AccessibilityManager::Get()->OnPumpkinDataCreated(std::move(data));
+  }
+
   speech::SodaInstaller* soda_installer() {
     return speech::SodaInstaller::GetInstance();
   }
@@ -1321,6 +1331,26 @@ IN_PROC_BROWSER_TEST_F(AccessibilityManagerDlcTest, SodaFailPumpkinFail) {
   AssertDictationNoDlcsNotifcation(en_us_display_name());
   OnPumpkinError();
   AssertDictationNoDlcsNotifcation(en_us_display_name());
+}
+
+// Ensures that AccessibilityManager can handle when OnPumpkinInstalled is
+// called multiple times, which can happen in production.
+IN_PROC_BROWSER_TEST_F(AccessibilityManagerDlcTest,
+                       OnPumpkinInstalledMultiple) {
+  SetDictationLocale("en-US");
+  SetDictationEnabled(true);
+  InstallPumpkinAndWait();
+  OnPumpkinInstalled(true);
+}
+
+// Ensures that AccessibilityManager can handle when OnPumpkinDataCreated is
+// called multiple times, which can happen in production.
+IN_PROC_BROWSER_TEST_F(AccessibilityManagerDlcTest,
+                       OnPumpkinDataCreatedMultiple) {
+  SetDictationLocale("en-US");
+  SetDictationEnabled(true);
+  InstallPumpkinAndWait();
+  OnPumpkinDataCreated(nullptr);
 }
 
 enum DictationDialogTestVariant {

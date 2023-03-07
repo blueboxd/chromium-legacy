@@ -129,7 +129,9 @@ class ASH_EXPORT WallpaperControllerImpl
   // Returns the k mean color of the current wallpaper.
   SkColor GetKMeanColor() const;
 
-  const WallpaperCalculatedColors& calculated_colors() const {
+  // Returns the set of calculated colors. If the colors have not yet been
+  // calculated yet, returns an empty object.
+  const absl::optional<WallpaperCalculatedColors>& calculated_colors() const {
     return calculated_colors_;
   }
 
@@ -626,8 +628,11 @@ class ASH_EXPORT WallpaperControllerImpl
   // If an existing calculation is in progress it is destroyed.
   void CalculateWallpaperColors();
 
-  // Callback to handle the completed color computation.
-  void OnColorCalculationComplete(const WallpaperCalculatedColors& colors);
+  // Callback to handle the completed color computation for the wallpaper
+  // matching `info`. Caches `colors` locally and saves the result to local
+  // state.
+  void OnColorCalculationComplete(const WallpaperInfo& info,
+                                  const WallpaperCalculatedColors& colors);
 
   // Returns false when the color extraction algorithm shouldn't be run based on
   // system state (e.g. wallpaper image, SessionState, etc.).
@@ -787,8 +792,8 @@ class ASH_EXPORT WallpaperControllerImpl
   std::unique_ptr<OnlineWallpaperVariantInfoFetcher> variant_info_fetcher_;
 
   // The calculated colors extracted from the current wallpaper.
-  // kInvalidWallpaperColor is used by default or if extracting colors fails.
-  WallpaperCalculatedColors calculated_colors_;
+  // Empty state is used to denote when colors have not yet been calculated.
+  absl::optional<WallpaperCalculatedColors> calculated_colors_;
 
   // Caches the color profiles that need to do wallpaper color extracting.
   const std::vector<color_utils::ColorProfile> color_profiles_;

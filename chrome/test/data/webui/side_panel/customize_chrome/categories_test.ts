@@ -6,13 +6,14 @@ import 'chrome://webui-test/mojo_webui_test_support.js';
 import 'chrome://customize-chrome-side-panel.top-chrome/categories.js';
 
 import {CategoriesElement} from 'chrome://customize-chrome-side-panel.top-chrome/categories.js';
-import {BackgroundCollection, CustomizeChromePageCallbackRouter, CustomizeChromePageHandlerRemote} from 'chrome://customize-chrome-side-panel.top-chrome/customize_chrome.mojom-webui.js';
+import {BackgroundCollection, CustomizeChromePageCallbackRouter, CustomizeChromePageHandlerRemote, CustomizeChromePageRemote} from 'chrome://customize-chrome-side-panel.top-chrome/customize_chrome.mojom-webui.js';
 import {CustomizeChromeApiProxy} from 'chrome://customize-chrome-side-panel.top-chrome/customize_chrome_api_proxy.js';
 import {assertEquals, assertTrue} from 'chrome://webui-test/chai_assert.js';
+import {waitAfterNextRender} from 'chrome://webui-test/polymer_test_util.js';
 import {TestBrowserProxy} from 'chrome://webui-test/test_browser_proxy.js';
 import {eventToPromise} from 'chrome://webui-test/test_util.js';
 
-import {installMock} from './test_support.js';
+import {createBackgroundImage, createTheme, installMock} from './test_support.js';
 
 function createTestCollections(length: number): BackgroundCollection[] {
   const testCollections: BackgroundCollection[] = [];
@@ -29,6 +30,7 @@ function createTestCollections(length: number): BackgroundCollection[] {
 suite('CategoriesTest', () => {
   let categoriesElement: CategoriesElement;
   let handler: TestBrowserProxy<CustomizeChromePageHandlerRemote>;
+  let callbackRouterRemote: CustomizeChromePageRemote;
 
   async function setInitialSettings(numCollections: number) {
     handler.setResultFor('getBackgroundCollections', Promise.resolve({
@@ -46,6 +48,8 @@ suite('CategoriesTest', () => {
         (mock: CustomizeChromePageHandlerRemote) =>
             CustomizeChromeApiProxy.setInstance(
                 mock, new CustomizeChromePageCallbackRouter()));
+    callbackRouterRemote = CustomizeChromeApiProxy.getInstance()
+                               .callbackRouter.$.bindNewPipeAndPassRemote();
   });
 
   test('hide collection elements when collections empty', async () => {
@@ -91,7 +95,8 @@ suite('CategoriesTest', () => {
   test('clicking classic chrome sets theme', async () => {
     await setInitialSettings(0);
     categoriesElement.$.classicChromeTile.click();
-    assertEquals(1, handler.getCallCount('setClassicChromeDefaultTheme'));
+    assertEquals(1, handler.getCallCount('removeBackgroundImage'));
+    assertEquals(1, handler.getCallCount('setDefaultColor'));
   });
 
   test('clicking upload image creates dialog and sends event', async () => {
@@ -106,6 +111,7 @@ suite('CategoriesTest', () => {
     const event = await eventPromise;
     assertTrue(!!event);
     assertEquals(1, handler.getCallCount('chooseLocalCustomBackground'));
+    assertEquals(1, handler.getCallCount('setDefaultColor'));
   });
 
   test('clicking Chrome Web Store tile opens Chrome Web Store', async () => {
@@ -121,5 +127,88 @@ suite('CategoriesTest', () => {
     categoriesElement.$.chromeColorsTile.click();
     const event = await eventPromise;
     assertTrue(!!event);
+  });
+
+  test('checks selected category', async () => {
+    await setInitialSettings(2);
+
+    // Set an empty theme with no color and no background.
+    const theme = createTheme();
+    callbackRouterRemote.setTheme(theme);
+    await callbackRouterRemote.$.flushForTesting();
+    await waitAfterNextRender(categoriesElement);
+
+    // Check that classic chrome is selected.
+    let checkedCategories =
+        categoriesElement.shadowRoot!.querySelectorAll('[checked]');
+    assertEquals(1, checkedCategories.length);
+    assertEquals(checkedCategories[0]!.parentElement!.id, 'classicChromeTile');
+    assertEquals(
+        checkedCategories[0]!.parentElement!.getAttribute('aria-current'),
+        'true');
+
+    // Set a theme with a color.
+    theme.foregroundColor = {value: 0xffff0000};
+    callbackRouterRemote.setTheme(theme);
+    await callbackRouterRemote.$.flushForTesting();
+    await waitAfterNextRender(categoriesElement);
+
+    // Check that chrome colors is selected.
+    checkedCategories =
+        categoriesElement.shadowRoot!.querySelectorAll('[checked]');
+    assertEquals(1, checkedCategories.length);
+    assertEquals(checkedCategories[0]!.parentElement!.id, 'chromeColorsTile');
+    assertEquals(
+        checkedCategories[0]!.parentElement!.getAttribute('aria-current'),
+        'true');
+
+    // Set a theme with local background.
+    const backgroundImage = createBackgroundImage('https://test.jpg');
+    backgroundImage.isUploadedImage = true;
+    theme.backgroundImage = backgroundImage;
+    callbackRouterRemote.setTheme(theme);
+    await callbackRouterRemote.$.flushForTesting();
+    await waitAfterNextRender(categoriesElement);
+
+    // Check that upload image is selected.
+    checkedCategories =
+        categoriesElement.shadowRoot!.querySelectorAll('[checked]');
+    assertEquals(1, checkedCategories.length);
+    assertEquals(checkedCategories[0]!.parentElement!.id, 'uploadImageTile');
+    assertEquals(
+        checkedCategories[0]!.parentElement!.getAttribute('aria-current'),
+        'true');
+
+    // Set a theme with collection background.
+    backgroundImage.isUploadedImage = false;
+    backgroundImage.collectionId = '2';
+    theme.backgroundImage = backgroundImage;
+    callbackRouterRemote.setTheme(theme);
+    await callbackRouterRemote.$.flushForTesting();
+    await waitAfterNextRender(categoriesElement);
+
+    // Check that collection is selected.
+    checkedCategories =
+        categoriesElement.shadowRoot!.querySelectorAll('[checked]');
+    assertEquals(1, checkedCategories.length);
+    assertEquals(
+        checkedCategories[0]!.parentElement!.className, 'tile collection');
+    assertEquals(
+        checkedCategories[0]!.parentElement!.getAttribute('aria-current'),
+        'true');
+
+    // Set a CWS theme.
+    theme.thirdPartyThemeInfo = {
+      id: '123',
+      name: 'test',
+    };
+    callbackRouterRemote.setTheme(theme);
+    await callbackRouterRemote.$.flushForTesting();
+    await waitAfterNextRender(categoriesElement);
+
+    // Check that no category is selected.
+    checkedCategories =
+        categoriesElement.shadowRoot!.querySelectorAll('[checked]');
+    assertEquals(0, checkedCategories.length);
   });
 });

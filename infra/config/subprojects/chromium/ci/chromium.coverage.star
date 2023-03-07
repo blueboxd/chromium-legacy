@@ -7,20 +7,31 @@ load("//lib/builder_config.star", "builder_config")
 load("//lib/builders.star", "os", "reclient", "xcode")
 load("//lib/ci.star", "ci")
 load("//lib/consoles.star", "consoles")
+load("//project.star", "settings")
+
+# crbug/1408581 - The code coverage CI builders are expected to be triggered
+# off the same ref every 12 hours. This poller is configured with a schedule
+# to ensure this - setting schedules on the builder configuration does not
+# guarantee that they are triggered off the same ref.
+luci.gitiles_poller(
+    name = "code-coverage-gitiles-trigger",
+    bucket = "ci",
+    repo = "https://chromium.googlesource.com/chromium/src",
+    refs = [settings.ref],
+    schedule = "with 12h interval",
+)
 
 ci.defaults.set(
-    # TODO - to change the builder group to chromium.coverage, there needs to be
-    # some migration work in both tools/mb/mb_config.pyl and testing/buildbot/
-    builder_group = "chromium.fyi",
     executable = ci.DEFAULT_EXECUTABLE,
-    cores = 32,
+    builder_group = "chromium.coverage",
     pool = ci.DEFAULT_POOL,
-    service_account = ci.DEFAULT_SERVICE_ACCOUNT,
+    cores = 32,
+    ssd = True,
     execution_timeout = 20 * time.hour,
     priority = ci.DEFAULT_FYI_PRIORITY,
-    ssd = True,
     reclient_instance = reclient.instance.DEFAULT_TRUSTED,
     reclient_jobs = reclient.jobs.DEFAULT,
+    service_account = ci.DEFAULT_SERVICE_ACCOUNT,
 )
 
 consoles.console_view(
@@ -28,7 +39,14 @@ consoles.console_view(
     title = "Code Coverage CI Builders",
 )
 
-ci.builder(
+def coverage_builder(**kwargs):
+    return ci.builder(
+        schedule = "triggered",
+        triggered_by = ["code-coverage-gitiles-trigger"],
+        **kwargs
+    )
+
+coverage_builder(
     name = "android-code-coverage",
     builder_spec = builder_config.builder_spec(
         gclient_config = builder_config.gclient_config(
@@ -52,14 +70,6 @@ ci.builder(
     console_view_entry = [
         consoles.console_view_entry(
             category = "android",
-            # TODO: This should be removed once these builders are moved to
-            # chromium.coverage from chromium.fyi. The chromium.fyi console
-            # view can also be removed then.
-            console_view = "chromium.coverage",
-            short_name = "and",
-        ),
-        consoles.console_view_entry(
-            category = "code_coverage",
             short_name = "and",
         ),
     ],
@@ -67,15 +77,10 @@ ci.builder(
     export_coverage_to_zoss = True,
     generate_blame_list = True,
     reclient_jobs = reclient.jobs.HIGH_JOBS_FOR_CI,
-    schedule = "triggered",
-    # TODO: This is currently triggered by an internal coordinating builder
-    # that runs every 12 hours. This should be cleaned up s.t. all coverage
-    # builders are triggered identically.
-    triggered_by = [],
     use_java_coverage = True,
 )
 
-ci.builder(
+coverage_builder(
     name = "android-code-coverage-native",
     builder_spec = builder_config.builder_spec(
         gclient_config = builder_config.gclient_config(
@@ -102,14 +107,6 @@ ci.builder(
     console_view_entry = [
         consoles.console_view_entry(
             category = "android",
-            # TODO: This should be removed once these builders are moved to
-            # chromium.coverage from chromium.fyi. The chromium.fyi console
-            # view can also be removed then.
-            console_view = "chromium.coverage",
-            short_name = "ann",
-        ),
-        consoles.console_view_entry(
-            category = "code_coverage",
             short_name = "ann",
         ),
     ],
@@ -119,7 +116,8 @@ ci.builder(
     use_clang_coverage = True,
 )
 
-ci.builder(
+# fuschia runs outside of chromium, so we do not enable zoss for it.
+coverage_builder(
     name = "fuchsia-code-coverage",
     builder_spec = builder_config.builder_spec(
         gclient_config = builder_config.gclient_config(
@@ -142,33 +140,20 @@ ci.builder(
     console_view_entry = [
         consoles.console_view_entry(
             category = "fuschia",
-            # TODO: This should be removed once these builders are moved to
-            # chromium.coverage from chromium.fyi. The chromium.fyi console
-            # view can also be removed then.
-            console_view = "chromium.coverage",
             short_name = "x64",
         ),
         consoles.console_view_entry(
-            category = "code_coverage",
-            short_name = "fx",
-        ),
-        consoles.console_view_entry(
-            branch_selector = branches.MAIN,
+            branch_selector = branches.selector.MAIN,
             console_view = "sheriff.fuchsia",
             category = "fyi|x64",
             short_name = "cov",
         ),
     ],
     coverage_test_types = ["overall", "unit"],
-    schedule = "triggered",
-    # TODO: This is currently triggered by an internal coordinating builder
-    # that runs every 12 hours. This should be cleaned up s.t. all coverage
-    # builders are triggered identically.
-    triggered_by = [],
     use_clang_coverage = True,
 )
 
-ci.builder(
+coverage_builder(
     name = "ios-simulator-code-coverage",
     builder_spec = builder_config.builder_spec(
         gclient_config = builder_config.gclient_config(
@@ -189,28 +174,20 @@ ci.builder(
     ),
     cores = None,
     os = os.MAC_DEFAULT,
-    xcode = xcode.x14main,
     console_view_entry = [
         consoles.console_view_entry(
             category = "ios",
-            # TODO: This should be removed once these builders are moved to
-            # chromium.coverage from chromium.fyi. The chromium.fyi console
-            # view can also be removed then.
-            console_view = "chromium.coverage",
             short_name = "sim",
-        ),
-        consoles.console_view_entry(
-            category = "code_coverage",
-            short_name = "ios",
         ),
     ],
     coverage_exclude_sources = "ios_test_files_and_test_utils",
     coverage_test_types = ["overall", "unit"],
     export_coverage_to_zoss = True,
     use_clang_coverage = True,
+    xcode = xcode.x14main,
 )
 
-ci.builder(
+coverage_builder(
     name = "linux-chromeos-code-coverage",
     builder_spec = builder_config.builder_spec(
         gclient_config = builder_config.gclient_config(
@@ -229,30 +206,21 @@ ci.builder(
         ),
         build_gs_bucket = "chromium-fyi-archive",
     ),
-    triggered_by = [],
     os = os.LINUX_DEFAULT,
     console_view_entry = [
         consoles.console_view_entry(
             category = "chromeos",
-            # TODO: This should be removed once these builders are moved to
-            # chromium.coverage from chromium.fyi. The chromium.fyi console
-            # view can also be removed then.
-            console_view = "chromium.coverage",
             short_name = "lnx",
-        ),
-        consoles.console_view_entry(
-            category = "code_coverage",
-            short_name = "lcr",
         ),
     ],
     coverage_test_types = ["overall", "unit"],
     export_coverage_to_zoss = True,
     reclient_jobs = reclient.jobs.HIGH_JOBS_FOR_CI,
-    schedule = "triggered",
     use_clang_coverage = True,
 )
 
-ci.builder(
+# this builder is still experimental, so we do not export_coverage_to_zoss.
+coverage_builder(
     name = "linux-js-code-coverage",
     builder_spec = builder_config.builder_spec(
         gclient_config = builder_config.gclient_config(
@@ -269,28 +237,18 @@ ci.builder(
         ),
         build_gs_bucket = "chromium-fyi-archive",
     ),
-    triggered_by = [],
     os = os.LINUX_DEFAULT,
     console_view_entry = [
         consoles.console_view_entry(
             category = "linux",
-            # TODO: This should be removed once these builders are moved to
-            # chromium.coverage from chromium.fyi. The chromium.fyi console
-            # view can also be removed then.
-            console_view = "chromium.coverage",
             short_name = "js",
-        ),
-        consoles.console_view_entry(
-            category = "code_coverage",
-            short_name = "jcr",
         ),
     ],
     reclient_jobs = reclient.jobs.HIGH_JOBS_FOR_CI,
-    schedule = "triggered",
     use_javascript_coverage = True,
 )
 
-ci.builder(
+coverage_builder(
     name = "linux-code-coverage",
     builder_spec = builder_config.builder_spec(
         gclient_config = builder_config.gclient_config(
@@ -305,19 +263,10 @@ ci.builder(
         ),
         build_gs_bucket = "chromium-fyi-archive",
     ),
-    triggered_by = [],
     os = os.LINUX_DEFAULT,
     console_view_entry = [
         consoles.console_view_entry(
             category = "linux",
-            # TODO: This should be removed once these builders are moved to
-            # chromium.coverage from chromium.fyi. The chromium.fyi console
-            # view can also be removed then.
-            console_view = "chromium.coverage",
-            short_name = "lnx",
-        ),
-        consoles.console_view_entry(
-            category = "code_coverage",
             short_name = "lnx",
         ),
     ],
@@ -326,7 +275,7 @@ ci.builder(
     use_clang_coverage = True,
 )
 
-ci.builder(
+coverage_builder(
     name = "linux-lacros-code-coverage",
     builder_spec = builder_config.builder_spec(
         gclient_config = builder_config.gclient_config(
@@ -348,15 +297,7 @@ ci.builder(
     console_view_entry = [
         consoles.console_view_entry(
             category = "lacros",
-            # TODO: This should be removed once these builders are moved to
-            # chromium.coverage from chromium.fyi. The chromium.fyi console
-            # view can also be removed then.
-            console_view = "chromium.coverage",
             short_name = "lnx",
-        ),
-        consoles.console_view_entry(
-            category = "code_coverage",
-            short_name = "lac",
         ),
     ],
     coverage_test_types = ["overall", "unit"],
@@ -364,7 +305,7 @@ ci.builder(
     use_clang_coverage = True,
 )
 
-ci.builder(
+coverage_builder(
     name = "mac-code-coverage",
     builder_spec = builder_config.builder_spec(
         gclient_config = builder_config.gclient_config(
@@ -385,14 +326,6 @@ ci.builder(
     console_view_entry = [
         consoles.console_view_entry(
             category = "mac",
-            # TODO: This should be removed once these builders are moved to
-            # chromium.coverage from chromium.fyi. The chromium.fyi console
-            # view can also be removed then.
-            console_view = "chromium.coverage",
-            short_name = "mac",
-        ),
-        consoles.console_view_entry(
-            category = "code_coverage",
             short_name = "mac",
         ),
     ],
@@ -402,7 +335,7 @@ ci.builder(
     use_clang_coverage = True,
 )
 
-ci.builder(
+coverage_builder(
     name = "win10-code-coverage",
     builder_spec = builder_config.builder_spec(
         gclient_config = builder_config.gclient_config(
@@ -422,15 +355,7 @@ ci.builder(
     console_view_entry = [
         consoles.console_view_entry(
             category = "win",
-            # TODO: This should be removed once these builders are moved to
-            # chromium.coverage from chromium.fyi. The chromium.fyi console
-            # view can also be removed then.
-            console_view = "chromium.coverage",
             short_name = "win10",
-        ),
-        consoles.console_view_entry(
-            category = "code_coverage",
-            short_name = "win",
         ),
     ],
     coverage_test_types = ["overall", "unit"],

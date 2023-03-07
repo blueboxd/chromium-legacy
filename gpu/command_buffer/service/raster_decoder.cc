@@ -1079,32 +1079,18 @@ void RasterDecoderImpl::Destroy(bool have_context) {
 
   DCHECK(!have_context || shared_context_state_->context()->IsCurrent(nullptr));
 
+  // Client can call BeginRasterChromium and then channel can be closed and
+  // decoder destroyed. Finish raster first.
+  // Note: `have_context` is always false for Vulkan, so we don't gate this code
+  // on it.
+  if (sk_surface_ || scoped_shared_image_raster_write_) {
+    DoEndRasterCHROMIUM();
+  }
+
   if (have_context) {
     if (use_gpu_raster_) {
       transfer_cache()->DeleteAllEntriesForDecoder(raster_decoder_id_);
     }
-
-    // Make sure we flush any pending skia work on this context.
-    if (sk_surface_) {
-      GrFlushInfo flush_info = {
-          .fNumSemaphores = end_semaphores_.size(),
-          .fSignalSemaphores = end_semaphores_.data(),
-      };
-      AddVulkanCleanupTaskForSkiaFlush(
-          shared_context_state_->vk_context_provider(), &flush_info);
-      auto result = sk_surface_->flush(flush_info);
-      DCHECK(result == GrSemaphoresSubmitted::kYes || end_semaphores_.empty());
-      end_semaphores_.clear();
-      sk_surface_ = nullptr;
-    }
-
-    if (gr_context())
-      gr_context()->flushAndSubmit();
-
-    scoped_shared_image_write_.reset();
-    shared_image_.reset();
-    sk_surface_for_testing_.reset();
-    paint_op_shared_image_provider_.reset();
   }
 
   if (query_manager_) {
@@ -1230,6 +1216,7 @@ Capabilities RasterDecoderImpl::GetCapabilities() {
   caps.shared_image_swap_chain = D3DImageBackingFactory::IsSwapChainSupported();
 #endif  // BUILDFLAG(IS_WIN)
   caps.disable_legacy_mailbox = disable_legacy_mailbox_;
+  caps.supports_yuv_rgb_conversion = true;
   return caps;
 }
 
@@ -2487,19 +2474,18 @@ void RasterDecoderImpl::DoReadbackARGBImagePixelsINTERNAL(
 
   auto sk_image =
       source_scoped_access->CreateSkImage(shared_context_state_->gr_context());
-  if (!sk_image) {
+  if (sk_image) {
+    bool success =
+        sk_image->readPixels(dst_info, pixel_address, row_bytes, src_x, src_y);
+    if (!success) {
+      LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glReadbackImagePixels",
+                         "Failed to read pixels from SkImage");
+    } else {
+      *result = 1;
+    }
+  } else {
     LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glReadbackImagePixels",
                        "Couldn't create SkImage for reading.");
-    return;
-  }
-
-  bool success =
-      sk_image->readPixels(dst_info, pixel_address, row_bytes, src_x, src_y);
-  if (!success) {
-    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glReadbackImagePixels",
-                       "Failed to read pixels from SkImage");
-  } else {
-    *result = 1;
   }
 
   if (auto end_state = source_scoped_access->TakeEndState()) {

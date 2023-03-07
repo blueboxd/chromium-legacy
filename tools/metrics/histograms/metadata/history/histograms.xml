@@ -762,6 +762,50 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram
+    name="History.Clusters.Backend.ContentClustering.NumClustersAfterMerge"
+    units="counts" expires_after="2023-06-04">
+  <owner>sophiechang@chromium.org</owner>
+  <owner>chrome-journeys@google.com</owner>
+  <component>UI&gt;Browser&gt;Journeys</component>
+  <summary>
+    Records the number of clusters after merging similar clusters based on
+    content. Logged when clusters have been calculated based on any request to
+    cluster visits, which could be triggered from several things, including
+    loading the journeys UI, putting a query in the journeys page, etc...
+  </summary>
+</histogram>
+
+<histogram
+    name="History.Clusters.Backend.ContentClustering.NumClustersBeforeMerge"
+    units="counts" expires_after="2023-06-04">
+  <owner>sophiechang@chromium.org</owner>
+  <owner>chrome-journeys@google.com</owner>
+  <component>UI&gt;Browser&gt;Journeys</component>
+  <summary>
+    Records the number of clusters before merging similar clusters based on
+    content. Logged when clusters have been calculated based on any request to
+    cluster visits, which could be triggered from several things, including
+    loading the journeys UI, putting a query in the journeys page, etc...
+  </summary>
+</histogram>
+
+<histogram
+    name="History.Clusters.Backend.ContentClustering.PairwiseMergeNumIterations"
+    units="counts" expires_after="2023-06-04">
+  <owner>sophiechang@chromium.org</owner>
+  <owner>chrome-journeys@google.com</owner>
+  <component>UI&gt;Browser&gt;Journeys</component>
+  <summary>
+    Records the number of iterations it took for a batch of clusters to converge
+    during a pairwise merge of similar clusters based on content, up to a
+    Finch-configured maximum. Logged when clusters have been calculated based on
+    any request to cluster visits, which could be triggered from several things,
+    including loading the journeys UI, putting a query in the journeys page,
+    etc...
+  </summary>
+</histogram>
+
 <histogram name="History.Clusters.Backend.ContextClusterer.ThreadTime"
     units="ms" expires_after="2023-06-04">
   <owner>sophiechang@chromium.org</owner>
@@ -854,7 +898,10 @@ chromium-metrics-reviews@google.com.
 
     On startup and every 1 hour afterwards, these context clusters have their
     triggability calculated. Context clusters older than 2 hours are not updated
-    are not re-updated after the initial triggability is calculated.
+    are not re-updated after the initial triggability is calculated. However, if
+    there are unclustered visits (due to visits from before the user had context
+    clustering enabled or synced visits without a cluster ID), they will also be
+    context clustered with their triggerability calculated as well.
 
     When a user visits the Journeys WebUI, persisted clusters (both those with
     and without triggerability calculated) are fetched. Clusters are then
@@ -1177,6 +1224,40 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram
+    name="History.Clusters.Backend.UpdateClusterTriggerability.HadUnclusteredVisitsToCluster"
+    enum="Boolean" expires_after="2023-10-01">
+  <owner>sophiechang@chromium.org</owner>
+  <owner>chrome-journeys@google.com</owner>
+  <component>UI&gt;Browser&gt;Journeys</component>
+  <summary>
+    On navigation, context clusters are created, grown, and persisted.
+
+    On startup and every 1 hour afterwards, these context clusters have their
+    triggability calculated. Context clusters older than 2 hours are not updated
+    are not re-updated after the initial triggability is calculated. However, if
+    there are unclustered visits (due to visits from before the user had context
+    clustering enabled or synced visits without a cluster ID), they will also be
+    context clustered with their triggerability calculated as well.
+
+    When a user visits the Journeys WebUI, persisted clusters (both those with
+    and without triggerability calculated) are fetched. Clusters are then
+    augmented with appropriate metadata needed for displaying on the Journeys
+    WebUI (e.g. ranking, deduping, labeling).
+
+    When the keyword cache used to match omnibox inputs and show journey chips
+    or suggestions in the omnibox needs updating, context clusters (both those
+    with and without triggerability calculated) are fetched.
+
+    This histogram records whether there were unclustered visits left to cluster
+    in the first run of this task. When this trends to all false, this
+    additional step can get deleted.
+
+    Recorded for every batch of visits clustered; can be recorded more than once
+    every hour.
+  </summary>
+</histogram>
+
+<histogram
     name="History.Clusters.Backend.UpdateClusterTriggerability.{Segment}"
     units="ms" expires_after="2023-10-01">
   <owner>manukh@chromium.org</owner>
@@ -1187,7 +1268,10 @@ chromium-metrics-reviews@google.com.
 
     On startup and every 1 hour afterwards, these context clusters have their
     triggability calculated. Context clusters older than 2 hours are not updated
-    are not re-updated after the initial triggability is calculated.
+    are not re-updated after the initial triggability is calculated. However, if
+    there are unclustered visits (due to visits from before the user had context
+    clustering enabled or synced visits without a cluster ID), they will also be
+    context clustered with their triggerability calculated as well.
 
     When a user visits the Journeys WebUI, persisted clusters (both those with
     and without triggerability calculated) are fetched. Clusters are then
@@ -1210,12 +1294,22 @@ chromium-metrics-reviews@google.com.
   <token key="Segment">
     <variant name="ComputeClusterTriggerabilityLatency"
         summary="receiving cluster triggerability metadata from the model"/>
+    <variant name="ComputeContextClustersLatency"
+        summary="receiving context clusters from unclustered visits from the
+                 model"/>
+    <variant name="GetAnnotatedVisitsToClusterLatency"
+        summary="receiving persisted unclustered visits to compute context
+                 clusters for for"/>
     <variant name="GetMostRecentPersistedClustersLatency"
         summary="receiving persisted clusters to compute cluster
                  triggerability metadata for"/>
     <variant name="PersistClusterTriggerabilityLatency"
         summary="receiving acknowledgement for completion of persisting the
                  cluster triggerability metadata to the history DB"/>
+    <variant name="PersistContextClustersLatency"
+        summary="receiving acknowledgement for completion of persisting the
+                 context clusters formed from unclustered visits to the
+                 history DB"/>
   </token>
 </histogram>
 
@@ -1243,12 +1337,40 @@ chromium-metrics-reviews@google.com.
     enum="Boolean" expires_after="2023-10-01">
   <owner>sophiechang@chromium.org</owner>
   <owner>chrome-journeys@google.com</owner>
+  <component>UI&gt;Browser&gt;Journeys</component>
   <summary>
     When the user visits a page, `ContextClustererHistoryServiceObserver`
     considers whether to add the visit to a new cluster or an existing cluster.
     If it decides to create a new cluster, this is logged. Therefore, logged at
     most once per page visit.
   </summary>
+</histogram>
+
+<histogram name="History.Clusters.ContextClusterer.DbLatency.{Segment}"
+    units="ms" expires_after="2023-10-01">
+  <owner>sophiechang@chromium.org</owner>
+  <owner>chrome-journeys@google.com</owner>
+  <component>UI&gt;Browser&gt;Journeys</component>
+  <summary>
+    When the user visits a page, `ContextClustererHistoryServiceObserver`
+    considers whether to add the visit to a new cluster or an existing cluster.
+
+    This histogram records the processing breakdown for persisting visits to
+    group them into context clusters. Recorded each time {Segment}. The
+    histograms here summed up with the histograms as part of
+    `History.Clusters.ContextClusterer.VisitProcessingLatency` record the total
+    latency for context clustering.
+  </summary>
+  <token key="Segment">
+    <variant name="AddVisitsToCluster"
+        summary="new visits are added to an existing cluster"/>
+    <variant name="ReserveNextClusterId"
+        summary="a cluster is determined and requires a new cluster ID"/>
+    <variant name="UpdateClusterVisit"
+        summary="additional visit metadata has been calculated for an
+                 existing visit already part of a cluster and needs to be
+                 updated"/>
+  </token>
 </histogram>
 
 <histogram name="History.Clusters.ContextClusterer.NumClusters.AtCleanUp"
@@ -1281,6 +1403,42 @@ chromium-metrics-reviews@google.com.
   <summary>
     Number of clusters that are in-progress. Recorded once an hour
     (Finch-configurable) after the clean-up pass.
+  </summary>
+</histogram>
+
+<histogram
+    name="History.Clusters.ContextClusterer.VisitProcessingLatency.{Segment}"
+    units="ms" expires_after="2023-10-01">
+  <owner>sophiechang@chromium.org</owner>
+  <owner>chrome-journeys@google.com</owner>
+  <component>UI&gt;Browser&gt;Journeys</component>
+  <summary>
+    When the user visits a page, `ContextClustererHistoryServiceObserver`
+    considers whether to add the visit to a new cluster or an existing cluster.
+
+    This histogram records the processing breakdown for processing visits to
+    group them into context clusters. Recorded each time {Segment}. The
+    histograms here summed up with the histograms as part of
+    `History.Clusters.ContextClusterer.DbLatency` record the total latency for
+    context clustering.
+  </summary>
+  <token key="Segment">
+    <variant name="CleanUpTimer"
+        summary="a clean-up pass has invoked, roughly once every ten minutes
+                 (Finch-configurable)"/>
+    <variant name="UrlsDeleted" summary="a set of URLs has beeen deleted"/>
+    <variant name="UrlVisited" summary="a URL is visited"/>
+  </token>
+</histogram>
+
+<histogram name="History.Clusters.JourneysEligibleAndEnabledAtSessionStart"
+    units="BooleanEnabled" expires_after="2023-06-18">
+  <owner>sophiechang@chromium.org</owner>
+  <owner>chrome-journeys@google.com</owner>
+  <component>UI&gt;Browser&gt;Journeys</component>
+  <summary>
+    Records whether a user that is Journeys eligible has Journeys enabled. This
+    is recorded once at the start of the session.
   </summary>
 </histogram>
 
@@ -1490,6 +1648,7 @@ chromium-metrics-reviews@google.com.
   <token key="VisitAction">
     <variant name="Clicked" summary="clicks"/>
     <variant name="Deleted" summary="deletes"/>
+    <variant name="Hidden" summary="hides"/>
   </token>
   <token key="VisitType">
     <variant name="" summary="visit"/>

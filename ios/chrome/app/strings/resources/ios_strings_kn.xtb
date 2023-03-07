@@ -18,6 +18,7 @@
 <translation id="1066060668811609597">ಸಿಂಕ್ ನಿರ್ವಹಿಸಿ</translation>
 <translation id="1076421457278169141">ಕೋಡ್‌ ಸ್ಕ್ಯಾನ್ ಮಾಡಲಾಗಿದೆ</translation>
 <translation id="1076785341346483463">ನಿರ್ವಹಿಸಲಾದ ಖಾತೆ ಬಳಸಿಕೊಂಡು ಸಿಂಕ್ ಮಾಡಿ</translation>
+<translation id="1080365971383768617">ನಿಮ್ಮ ಎಲ್ಲಾ ಸಾಧನಗಳಲ್ಲಿನ ಪಾಸ್‌ವರ್ಡ್‌ಗಳು</translation>
 <translation id="1084365883616172403">Facebook ಪೋಸ್ಟ್ ಪೂರ್ಣಗೊಂಡಿದೆ.</translation>
 <translation id="1085696779717592361">ಡಿಫಾಲ್ಟ್ ಆಗಿ Chrome ಅನ್ನು ಬಳಸಿ</translation>
 <translation id="1103523840287552314">ಯಾವಾಗಲೂ ಅನುವಾದಿಸಿ <ph name="LANGUAGE" /></translation>
@@ -74,12 +75,12 @@
 <translation id="1404330357948037222">ನೀವು ಸೈನ್ ಔಟ್ ಆಗಿದ್ದೀರಿ</translation>
 <translation id="1407135791313364759">ಎಲ್ಲವನ್ನೂ ತೆರೆಯಿರಿ</translation>
 <translation id="1430915738399379752">ಮುದ್ರಿಸು</translation>
-<translation id="1434356225517321998">ನಿಮ್ಮ ಬ್ರೌಸರ್ ಅನ್ನು ನಿರ್ವಹಿಸಲಾಗಿದೆ. <ph name="BEGIN_LINK" />ವಿವರಗಳು<ph name="END_LINK" /></translation>
 <translation id="1449835205994625556">ಪಾಸ್‌ವರ್ಡ್ ಮರೆಮಾಡಿ</translation>
 <translation id="1450170672351507823">ಪ್ರಮಾಣಿತ ಸುರಕ್ಷತೆ ಆನ್ ಆಗಿದೆ. ಇನ್ನೂ ಹೆಚ್ಚಿನ ಸುರಕ್ಷತೆಗಾಗಿ, ವರ್ಧಿತ ರಕ್ಷಣೆಯನ್ನು ಬಳಸಿ.</translation>
 <translation id="149095475893949513">ಈ ವೆಬ್‌ಸೈಟ್ ಕಾನ್ಫಿಗರೇಶನ್ ಪ್ರೊಫೈಲ್ ಅನ್ನು ಡೌನ್‌ಲೋಡ್ ಮಾಡಲು ಪ್ರಯತ್ನಿಸುತ್ತಿದೆ.</translation>
 <translation id="1491277525950327607">ಸೆಟ್ಟಿಂಗ್‌ ಟಾಗಲ್‌ ಮಾಡಲು ಡಬಲ್ ಟ್ಯಾಪ್ ಮಾಡಿ</translation>
 <translation id="1492417797159476138">ಈ ಸೈಟ್‌ಗಾಗಿ ನೀವು ಈಗಾಗಲೇ ಈ ಬಳಕೆದಾರರ ಹೆಸರನ್ನು ಉಳಿಸಿದ್ದೀರಿ</translation>
+<translation id="1498283581832036924">ನಿಮ್ಮ <ph name="WEBSITE" /> ಖಾತೆಯನ್ನು ಅಳಿಸಲಾಗುವುದಿಲ್ಲ.</translation>
 <translation id="1506063256525392513">ಇದು ಫೋಟೋಗಳನ್ನು ತೆಗೆಯಲು ಮತ್ತು ಅಪ್‌ಲೋಡ್ ಮಾಡಲು, ಹಾಗೂ QR ಕೋಡ್‌ಗಳನ್ನು ಸ್ಕ್ಯಾನ್ ಮಾಡಲು ನಿಮಗೆ ಅನುಮತಿಸುತ್ತದೆ</translation>
 <translation id="1509486075633541495">ವೆಬ್‌ಸೈಟ್‌ಗೆ ಸೈನ್ ಇನ್ ಮಾಡಿ</translation>
 <translation id="1509960214886564027">ಹಲವು ಸೈಟ್‌ಗಳಲ್ಲಿನ ಫೀಚರ್‌ಗಳು ಕಾರ್ಯನಿರ್ವಹಿಸುವುದನ್ನು ನಿಲ್ಲಿಸಬಹುದು</translation>
@@ -145,6 +146,7 @@
 <translation id="2015722694326466240">ಪಾಸ್‌ವರ್ಡ್‌ಗಳನ್ನು ವೀಕ್ಷಿಸಲು, ನೀವು ಮೊದಲು ನಿಮ್ಮ ಸಾಧನದಲ್ಲಿ ಪಾಸ್‌ವಡ್‌ ಅನ್ನು ಹೊಂದಿಸಿ.</translation>
 <translation id="2021670401941426298">ಅನ್ವಯಿಸಿದರೆ, ನಿಮ್ಮ ಹುಡುಕಾಟ ಇತಿಹಾಸವನ್ನು ಅಳಿಸಲು ನಿಮ್ಮ ಹುಡುಕಾಟ ಎಂಜಿನ್‌ನ ಸೂಚನೆಗಳನ್ನು ನೋಡಿ.</translation>
 <translation id="202292859882676807">ಮೈಕ್ರೊಫೋನ್ ಪ್ರವೇಶವನ್ನು ಅನುಮತಿಸಲಾಗಿದೆ</translation>
+<translation id="20485545164632846">ಹೊಸ ಐಟಂ</translation>
 <translation id="2050196510205866090">{count,plural, =1{{count} ಉಳಿಸಿದ ಪಾವತಿ ವಿಧಾನವು ನಿಮ್ಮ ಕೀಬೋರ್ಡ್‌ನ ಮೇಲ್ಭಾಗದಲ್ಲಿ ಲಭ್ಯವಿದೆ.}one{{count} ಉಳಿಸಿದ ಪಾವತಿ ವಿಧಾನಗಳು ನಿಮ್ಮ ಕೀಬೋರ್ಡ್‌ನ ಮೇಲ್ಭಾಗದಲ್ಲಿ ಲಭ್ಯವಿದೆ.}other{{count} ಉಳಿಸಿದ ಪಾವತಿ ವಿಧಾನಗಳು ನಿಮ್ಮ ಕೀಬೋರ್ಡ್‌ನ ಮೇಲ್ಭಾಗದಲ್ಲಿ ಲಭ್ಯವಿದೆ.}}</translation>
 <translation id="2073572773299281212"><ph name="DAYS" /> ದಿನಗಳ ಹಿಂದೆ ಸಕ್ರಿಯ</translation>
 <translation id="2074131957428911366">ನೀವು ಏನನ್ನು ಸಿಂಕ್ ಮಾಡಬೇಕು ಎಂಬುದನ್ನು <ph name="BEGIN_LINK" />ಸೆಟ್ಟಿಂಗ್‌ಗಳಲ್ಲಿ<ph name="END_LINK" /> ಯಾವಾಗ ಬೇಕಾದರೂ ಆರಿಸಿಕೊಳ್ಳಬಹುದು.</translation>
@@ -218,6 +220,7 @@
 <translation id="2664621323652615289">ನಿಲ್ಲಿಸಿ</translation>
 <translation id="2671426118752779020">ನಿಮ್ಮ iPhone ನಲ್ಲಿನ ಇತರ ಆ್ಯಪ್‌ಗಳಲ್ಲಿರುವ Google ಪಾಸ್‌ವರ್ಡ್ ನಿರ್ವಾಹಕದಲ್ಲಿ ನೀವು ಉಳಿಸಿದ ಪಾಸ್‌ವರ್ಡ್‌ಗಳನ್ನು ನೀವು ಬಳಸಬಹುದು.</translation>
 <translation id="2690858294534178585">ಕ್ಯಾಮರಾ ಬಳಕೆಯಲ್ಲಿದೆ</translation>
+<translation id="26915454213703967">Google ಬಳಸಿಕೊಂಡು ಚಿತ್ರದ ಒಳಗೆ ಹುಡುಕಿ</translation>
 <translation id="2691653761409724435">ಆಫ್‌ಲೈನ್ ಲಭ್ಯವಿಲ್ಲ</translation>
 <translation id="2695507686909505111">ಪುಟವನ್ನು ಅನುವಾದಿಸಲಾಗಿದೆ</translation>
 <translation id="2697526135132990015">ಸೈನ್ ಔಟ್ ಮಾಡಿ ಮತ್ತು ಡೇಟಾ ತೆರವುಗೊಳಿಸಿ</translation>
@@ -382,6 +385,7 @@
 <translation id="3819183753496523827">ನೀವು ಆಫ್‌ಲೈನ್‌ನಲ್ಲಿರುವಿರಿ. ನಿಮ್ಮ ಇಂಟರ್ನೆಟ್ ಸಂಪರ್ಕವನ್ನು ಪರಿಶೀಲಿಸಿ, ಪುನಃ ಪ್ರಯತ್ನಿಸಿ.</translation>
 <translation id="3835964409414434850">ಮುಂದಿನ ಟ್ಯಾಬ್‌ಗೆ ಹೋಗಿ</translation>
 <translation id="385051799172605136">ಹಿಂದೆ</translation>
+<translation id="3851938967634752633"><ph name="WEBSITE" />, <ph name="SECOND_WEBSITE" /> ಹಾಗೂ ಇತರೆ <ph name="NUMBER_OF_ACCOUNTS" /> ಪಾಸ್‌ವರ್ಡ್‌ಗಳನ್ನು ಅಳಿಸಲಾಗುತ್ತದೆ. ನಿಮ್ಮ ಖಾತೆಗಳನ್ನು ಅಳಿಸಲಾಗುವುದಿಲ್ಲ.</translation>
 <translation id="3858860766373142691">ಹೆಸರು</translation>
 <translation id="3861486700625780712">ಅನುಸರಿಸಬೇಡಿ</translation>
 <translation id="3863769054730344136">ನಿಮ್ಮ ಸಾಧನಗಳಿಗೆ ಕಳುಹಿಸಿ</translation>
@@ -397,7 +401,6 @@
 <translation id="3929457972718048006">ವಿಳಾಸಗಳು</translation>
 <translation id="3943492037546055397">ಪಾಸ್‌ವರ್ಡ್‌ಗಳು</translation>
 <translation id="3959736869653157332">ಮೆನು → ಹೊಸ ಅಜ್ಞಾತ ಟ್ಯಾಬ್‌</translation>
-<translation id="3964173450954943920">ಏನನ್ನು ಸಿಂಕ್ ಮಾಡಬೇಕು ಎಂಬುದನ್ನು <ph name="BEGIN_LINK" />ಸೆಟ್ಟಿಂಗ್‌ಗಳಲ್ಲಿ<ph name="END_LINK" /> ಯಾವಾಗ ಬೇಕಾದರೂ ನೀವು ಆಯ್ಕೆಮಾಡಬಹುದು. Search ಮತ್ತು ಇತರ Google ಸೇವೆಗಳನ್ನು ವೈಯಕ್ತೀಕರಿಸಲು ನಿಮ್ಮ ಇತಿಹಾಸವನ್ನು Google ಬಳಸಬಹುದು.</translation>
 <translation id="3967822245660637423">ಡೌನ್‌ಲೋಡ್‌‌ ಪೂರ್ಣಗೊಂಡಿದೆ</translation>
 <translation id="3968505803272650567">ಆಸಕ್ತಿಗಳನ್ನು ನಿರ್ವಹಿಸಿ</translation>
 <translation id="3989635538409502728">ಸೈನ್ ಔಟ್</translation>
@@ -518,6 +521,7 @@
 <translation id="4833786495304741580">ಬಳಕೆಯ ಅಂಕಿಅಂಶಗಳು ಮತ್ತು ಕ್ರ್ಯಾಶ್ ವರದಿಗಳನ್ನು Google ಗೆ ಸ್ವಯಂಚಾಲಿತವಾಗಿ ಕಳುಹಿಸುತ್ತದೆ.</translation>
 <translation id="4840495572919996524">ನಿಮ್ಮ ಬುಕ್‌ಮಾರ್ಕ್‌ಗಳು, ಇತಿಹಾಸ, ಪಾಸ್‌ವರ್ಡ್‌ಗಳು ಮತ್ತು ಹೆಚ್ಚಿನವುಗಳನ್ನು ಇನ್ನು ಮುಂದೆ ನಿಮ್ಮ Google ಖಾತೆಗೆ ಸಿಂಕ್ ಮಾಡುವುದಿಲ್ಲ.</translation>
 <translation id="4844899002472726590">ನೀವು ಆಸಕ್ತಿ ಹೊಂದಿರುವ ವಿಷಯಗಳನ್ನು ನೋಡಿ ಮತ್ತು ಎಡಿಟ್ ಮಾಡಿ</translation>
+<translation id="4848999860252535517"><ph name="WEBSITE" /> ನ ಪಾಸ್‌ವರ್ಡ್ ಅನ್ನು ಅಳಿಸಬೇಕೆ?</translation>
 <translation id="4854345657858711387">ಪಾಸ್‌ಕೋಡ್‌ ಅನ್ನು ಹೊಂದಿಸಿ</translation>
 <translation id="4858786880085262208">ಸಾಧ್ಯವಾದರೆ HTTPS ಗೆ ಅಪ್‌ಗ್ರೇಡ್ ಮಾಡಿ. ಸುರಕ್ಷಿತವಲ್ಲದ ಕಂಟೆಂಟ್ ಅನ್ನು ಸುರಕ್ಷಿತ ಸೈಟ್‌ಗಳು ಎಂಬೆಡ್ ಮಾಡಬಹುದು.</translation>
 <translation id="4860895144060829044">ಕರೆ</translation>
@@ -546,6 +550,7 @@
 <translation id="5056446788882570708"><ph name="TIME" /> ಸಮಯದಲ್ಲಿ ಸಮಸ್ಯೆಗಳು ಕಂಡುಬಂದಿವೆ</translation>
 <translation id="5059136629401106827">ಸರಿ</translation>
 <translation id="5062321486222145940">Google ಡ್ರೈವ್‌ ಇನ್‌ಸ್ಟಾಲ್ ಮಾಡಿ</translation>
+<translation id="50641035439563602">ಪಾಸ್‌ವರ್ಡ್‌ಗಳನ್ನು ಈಗ ನಿಮ್ಮ Google ಖಾತೆಯಲ್ಲಿ (<ph name="ACCOUNT" />) ಸಂಗ್ರಹಿಸಲಾಗಿದೆ. ನೀವು ಲಾಗ್ ಇನ್ ಮಾಡಿದಾಗ ನೀವು ಅವುಗಳನ್ನು ಬಳಸಬಹುದು. ಇದನ್ನು ಆಫ್ ಮಾಡಲು, <ph name="BEGIN_LINK" />ಸೆಟ್ಟಿಂಗ್‌ಗಳಿಗೆ<ph name="END_LINK" /> ಹೋಗಿ.</translation>
 <translation id="5083464117946352670">ಫೈಲ್‌ ಗಾತ್ರವನ್ನು ನಿರ್ಧರಿಸಲು ಸಾಧ್ಯವಿಲ್ಲ.</translation>
 <translation id="5090832849094901128">ಈ ಪಾಸ್‌ವರ್ಡ್ ಅನ್ನು ಅಳಿಸುವುದರಿಂದ <ph name="WEBSITE" /> ನಲ್ಲಿ ನಿಮ್ಮ ಖಾತೆಯನ್ನು ಅಳಿಸಲಾಗುವುದಿಲ್ಲ.</translation>
 <translation id="5094827893301452931">Tweet ಪೂರ್ಣಗೊಂಡಿದೆ.</translation>
@@ -652,7 +657,6 @@
 <translation id="5899314093904173337">ಹತ್ತಿರದ ಜನರೊಂದಿಗೆ ಹಂಚಿಕೊಳ್ಳಲು, ಅವರ ಕ್ಯಾಮರಾ ಅಥವಾ QR ಸ್ಕ್ಯಾನರ್ ಆ್ಯಪ್ ಮೂಲಕ ಈ QR ಕೋಡ್ ಅನ್ನು ಸ್ಕ್ಯಾನ್ ಮಾಡಲು ಅವರಿಗೆ ಅನುಮತಿಸಿ</translation>
 <translation id="5911030830365207728">Google Translate</translation>
 <translation id="5913600720976431809">ಪುಟವನ್ನು ಅನುವಾದಿಸಲು ಆಯ್ಕೆಗಳು</translation>
-<translation id="5933515656458364246">ನಿಮ್ಮ ಡೇಟಾವನ್ನು ಎಲ್ಲಾ ಸಾಧನಗಳಲ್ಲಿ ಸಿಂಕ್ ಮಾಡಿ.</translation>
 <translation id="5938160824633642847">ನಿಮ್ಮ ಸಾಧನ ಬಹುತೇಕ ಭರ್ತಿಯಾಗಿದೆ. ಸ್ಥಳಾವಕಾಶ ಮುಕ್ತಗೊಳಿಸಿ, ಪುನಃ ಪ್ರಯತ್ನಿಸಿ.</translation>
 <translation id="5948291296578561264">ನಿಮ್ಮ ಫೋಟೋ ಲೈಬ್ರರಿಗೆ ಫೋಟೋಗಳನ್ನು ಉಳಿಸಲು ಇದು ನಿಮ್ಮನ್ನು ಅನುಮತಿಸುತ್ತದೆ.</translation>
 <translation id="5951816930277761335">ಲಿಂಕ್ ಹಂಚಿಕೊಳ್ಳಿ</translation>
@@ -740,6 +744,7 @@
 <translation id="6434591244308415567">ಒಂದು ದೋಷ ಸಂಭವಿಸಿದೆ. ಆನಂತರ ಪುನಃ ಪ್ರಯತ್ನಿಸಿ.</translation>
 <translation id="6435236283694032571">ಓದುವ ಪಟ್ಟಿಗೆ ಸೇರಿಸಿ</translation>
 <translation id="6439338047467462846">ಎಲ್ಲವನ್ನು ಅನುಮತಿಸಿ</translation>
+<translation id="6442697326824312960">ಟ್ಯಾಬ್ ಅನ್‌ಪಿನ್ ಮಾಡಿ</translation>
 <translation id="6445051938772793705">ರಾಜ್ಯ</translation>
 <translation id="6445981559479772097">ಸಂದೇಶ ಕಳುಹಿಸಲಾಗಿದೆ.</translation>
 <translation id="6447842834002726250">ಕುಕೀಸ್</translation>
@@ -770,6 +775,7 @@
 <translation id="6598875554591387303">ಪ್ರಕಾಶಕರ ಪ್ರಕಾರ ವಿಂಗಡಿಸಿ</translation>
 <translation id="6603393121510733479">ನಿಮ್ಮ ಸಂಸ್ಥೆ ಖಾಸಗಿ ಬ್ರೌಸಿಂಗ್ ಅನ್ನು ಆಫ್ ಮಾಡಿದೆ.
 <ph name="BEGIN_LINK" />ಇನ್ನಷ್ಟು ತಿಳಿಯಿರಿ<ph name="END_LINK" /></translation>
+<translation id="6609890790934458793"><ph name="WEBSITE" />, <ph name="SECOND_WEBSITE" /> ಹಾಗೂ <ph name="THIRD_WEBSITE" /> ನ ಪಾಸ್‌ವರ್ಡ್‌ಗಳನ್ನು ಅಳಿಸಲಾಗುತ್ತದೆ. ನಿಮ್ಮ ಖಾತೆಗಳನ್ನು ಅಳಿಸಲಾಗುವುದಿಲ್ಲ.</translation>
 <translation id="6610002944194042868">ಅನುವಾದ ಆಯ್ಕೆಗಳು</translation>
 <translation id="661266467055912436">ನಿಮಗಾಗಿ ಹಾಗೂ ವೆಬ್‌ನಲ್ಲಿರುವ ಎಲ್ಲರಿಗಾಗಿ ಸುರಕ್ಷತೆಯನ್ನು ಸುಧಾರಿಸುತ್ತದೆ.</translation>
 <translation id="6620279676667515405">ರದ್ದುಗೊಳಿಸಿ</translation>
@@ -839,6 +845,7 @@
 <translation id="7053983685419859001">ನಿರ್ಬಂಧಿಸು</translation>
 <translation id="7062545763355031412">ಸಮ್ಮತಿಸಿ ಮತ್ತು ಖಾತೆಗಳನ್ನು ಬದಲಾಯಿಸಿ</translation>
 <translation id="7080806333218412752">URL ಗಳನ್ನು ಪರಿಶೀಲಿಸಲು, ಅವುಗಳನ್ನು ಸುರಕ್ಷಿತ ಬ್ರೌಸಿಂಗ್‌ಗೆ ಕಳುಹಿಸುತ್ತದೆ. ಹೊಸ ಬೆದರಿಕೆಗಳನ್ನು ಕಂಡುಹಿಡಿಯಲು ನೆರವಾಗುವುದಕ್ಕಾಗಿ, ಪುಟಗಳು, ಡೌನ್‌ಲೋಡ್‌ಗಳು, ವಿಸ್ತರಣೆಯ ಚಟುವಟಿಕೆ ಮತ್ತು ಸಿಸ್ಟಂ ಮಾಹಿತಿಯ ಸಣ್ಣ ಮಾದರಿಯನ್ನು ಸಹ ಕಳುಹಿಸುತ್ತದೆ. ನೀವು ಸೈನ್ ಇನ್ ಮಾಡಿದಾಗ, Google ಆ್ಯಪ್‌ಗಳಾದ್ಯಂತ ನಿಮ್ಮನ್ನು ಸುರಕ್ಷಿತವಾಗಿರಿಸುವುದಕ್ಕಾಗಿ, ಈ ಡೇಟಾವನ್ನು ನಿಮ್ಮ Google ಖಾತೆಯೊಂದಿಗೆ ತಾತ್ಕಾಲಿಕವಾಗಿ ಲಿಂಕ್ ಮಾಡುತ್ತದೆ.</translation>
+<translation id="7095110968493193530"><ph name="EMAIL" /> ಗಾಗಿ Google ಪಾಸ್‌ವರ್ಡ್ ನಿರ್ವಾಹಕದಲ್ಲಿ</translation>
 <translation id="7099761977003084116">ಇತ್ತೀಚಿನ ಟ್ಯಾಬ್‌ಗಳು</translation>
 <translation id="7102005569666697658">ಡೌನ್‌ಲೋಡ್‌ ಮಾಡಲಾಗುತ್ತಿದೆ… <ph name="FILE_SIZE" /></translation>
 <translation id="7108338896283013870">ಮರೆಮಾಡಿ</translation>
@@ -951,6 +958,7 @@
 <translation id="7987685713885608670">ಹೆಚ್ಚಿನ ಸುರಕ್ಷತೆಗಾಗಿ, ಪಾಸ್‌ವರ್ಡ್‌ಗಳನ್ನು Google ಪಾಸ್‌ವರ್ಡ್ ನಿರ್ವಾಹಕದಲ್ಲಿ ಉಳಿಸುವ ಮೊದಲು ಅವುಗಳನ್ನು ನಿಮ್ಮ ಸಾಧನದಲ್ಲಿ ಎನ್‌ಕ್ರಿಪ್ಟ್ ಮಾಡಿ.</translation>
 <translation id="7993619969781047893">ಕೆಲವು ಸೈಟ್‌ಗಳಲ್ಲಿನ ಫೀಚರ್‌ಗಳು ಕಾರ್ಯನಿರ್ವಹಿಸುವುದನ್ನು ನಿಲ್ಲಿಸಬಹುದು</translation>
 <translation id="800361585186029508">Google Chrome ನಲ್ಲಿ ಇನ್‌ಪುಟ್ ಮಾಡಿದ URL ಗಳನ್ನು ತೆರೆಯುತ್ತದೆ.</translation>
+<translation id="8005666035647241369">ಈ ಸಾಧನದಲ್ಲಿ Google ಪಾಸ್‌ವರ್ಡ್ ನಿರ್ವಾಹಕಕ್ಕೆ</translation>
 <translation id="8016714545083187120">ಯಾವಾಗಲೂ ಸುರಕ್ಷಿತವಾದ ಕನೆಕ್ಷನ್‌ಗಳನ್ನು ಬಳಸಿ</translation>
 <translation id="802154636333426148">ಡೌನ್‌ಲೋಡ್‌ ವಿಫಲಗೊಂಡಿದೆ</translation>
 <translation id="8023878949384262191">ವಿಭಾಗವನ್ನು ವಿಸ್ತರಿಸುತ್ತದೆ.</translation>
@@ -1032,6 +1040,7 @@
 <translation id="8680787084697685621">ಖಾತೆಯ ಸೈನ್-ಇನ್ ವಿವರಗಳು ಹಳೆಯದಾಗಿವೆ.</translation>
 <translation id="8693663554456874301">{count,plural, =1{ಟ್ಯಾಬ್ ಅನ್ನು ಮುಚ್ಚಿ}one{ಟ್ಯಾಬ್‌ಗಳನ್ನು ಮುಚ್ಚಿ}other{ಟ್ಯಾಬ್‌ಗಳನ್ನು ಮುಚ್ಚಿ}}</translation>
 <translation id="8706588385081740091">ಪಾಸ್‌ವರ್ಡ್‌ಗಳು</translation>
+<translation id="8712637175834984815">ಅರ್ಥವಾಯಿತು</translation>
 <translation id="8717864919010420084">ಲಿಂಕ್ ನಕಲಿಸಿ</translation>
 <translation id="8721297211384281569">ಪರಿಕರಗಳ ಮೆನು</translation>
 <translation id="8725066075913043281">ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ</translation>
@@ -1044,6 +1053,7 @@
 <translation id="8756969031206844760">ಪಾಸ್‌ವರ್ಡ್ ಅಪ್‌ಡೇಟ್ ಮಾಡುವುದೇ?</translation>
 <translation id="8763613688786959833">ಕೊನೆಯ ಟ್ಯಾಬ್‌ಗೆ ಹೋಗಿ</translation>
 <translation id="8764015330924122850"><ph name="DOMAIN_NAME" /> ಅನ್ನು ಅನುಸರಿಸಬೇಡಿ</translation>
+<translation id="8766790350274092814"><ph name="WEBSITE" /> ಹಾಗೂ <ph name="SECOND_WEBSITE" /> ನ ಪಾಸ್‌ವರ್ಡ್‌ಗಳನ್ನು ಅಳಿಸಲಾಗುತ್ತದೆ. ನಿಮ್ಮ ಖಾತೆಗಳನ್ನು ಅಳಿಸಲಾಗುವುದಿಲ್ಲ.</translation>
 <translation id="8775144690796719618">ಅಮಾನ್ಯ URL</translation>
 <translation id="8787968206789828143">ವೆಬ್‌ನಲ್ಲಿ ಹುಡುಕಿ</translation>
 <translation id="8792626944327216835">ಮೈಕ್ರೋಫೋನ್‌</translation>
@@ -1093,6 +1103,7 @@
 <translation id="9093271241977565440">ಸ್ಕ್ರೀನ್‌ನ ಮೇಲ್ಭಾಗದಲ್ಲಿ, ಹುಡುಕಾಟ ಐಕಾನ್ ಅನ್ನು ಟ್ಯಾಪ್ ಮಾಡಿ</translation>
 <translation id="9094033019050270033">ಪಾಸ್‌ವರ್ಡ್ ಅಪ್‌ಡೇಟ್ ಮಾಡು</translation>
 <translation id="9097506547406246598">ಅನ್‌ಫಾಲೋ ಮಾಡಲು ಸಾಧ್ಯವಾಗುತ್ತಿಲ್ಲ. ಏನೋ ತಪ್ಪಾಗಿದೆ.</translation>
+<translation id="9098541895599151034"><ph name="NUMBER_OF_ACCOUNTS" /> ಪಾಸ್‌ವರ್ಡ್‌ಗಳನ್ನು ಅಳಿಸಬೇಕೆ?</translation>
 <translation id="9100610230175265781">ಪಾಸ್‌ಫ್ರೇಸ್ ಅಗತ್ಯವಿದೆ</translation>
 <translation id="9107664647686727385">ಅಪಾಯಕ್ಕೀಡಾದ ಪಾಸ್‌ವರ್ಡ್‌ಗಳಿಗಾಗಿ ಪರಿಶೀಲಿಸುತ್ತದೆ</translation>
 <translation id="9124387962554796433">Search ಮತ್ತು ಇತರ Google ಸೇವೆಗಳನ್ನು ವೈಯಕ್ತೀಕರಿಸಲು ನಿಮ್ಮ ಇತಿಹಾಸವನ್ನು Google ಬಳಸಬಹುದು.</translation>

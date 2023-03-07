@@ -493,6 +493,8 @@ class CONTENT_EXPORT NavigationRequest
 
   void SetAssociatedRFHType(AssociatedRenderFrameHostType type);
 
+  bool HasRenderFrameHost() const { return render_frame_host_.has_value(); }
+
   void set_was_discarded() { commit_params_->was_discarded = true; }
 
   void set_net_error(net::Error net_error) { net_error_ = net_error; }
@@ -866,27 +868,6 @@ class CONTENT_EXPORT NavigationRequest
   // Returns the current url from GetURL() packaged with other state required to
   // properly determine SiteInstances and process allocation.
   UrlInfo GetUrlInfo();
-
-  // Return the parent's base url, snapshotted when this NavigationRequest was
-  // created. Used for sending to srcdoc renderers. See
-  // https://crbug.com/1356658 for further details. Note: The returned value
-  // will be empty unless (i) the navigation is to about:srcdoc, and (ii)
-  // IsolateSandboxedIframes is enabled.
-  // TODO(wjmaclean):  https://crbug.com/1356658 Make this also apply for
-  // about:blank navigations as well.
-
-  // Return the parent's base url, snapshotted when this NavigationRequest was
-  // created. Used for sending to srcdoc renderers. See
-  // https://crbug.com/1356658 for further details.
-  // Note: The returned value will be empty unless:
-  // 1. The navigation is to about:srcdoc, and
-  // 2. IsolateSandboxedIframes is enabled.
-  //
-  // TODO(https://crbug.com/1356658) Make this also apply for
-  // about:blank navigations as well.
-  const GURL& inherited_base_url() const {
-    return commit_params_->fallback_srcdoc_baseurl;
-  }
 
   bool is_overriding_user_agent() const {
     return commit_params_->is_overriding_user_agent;
@@ -1746,8 +1727,17 @@ class CONTENT_EXPORT NavigationRequest
   //  - the synchronous about:blank navigation.
   const bool is_synchronous_renderer_commit_;
 
-  // Invariant: At least one of |loader_| or |render_frame_host_| is null.
-  raw_ptr<RenderFrameHostImpl> render_frame_host_ = nullptr;
+  // The RenderFrameHost that this navigation intends to commit in. The value
+  // will be set when we know the final RenderFrameHost that the navigation will
+  // commit in (i.e. when we receive the final network response for most
+  // navigations). Note that currently this can be reset to absl::nullopt for
+  // cross-document restarts and some failed navigations.
+  // TODO(https://crbug.com/1416916): Don't reset this on failed navigations,
+  // and ensure the NavigationRequest doesn't outlive the `render_frame_host_`
+  // picked for failed Back/Forward Cache restores.
+  // Invariant: At least one of |loader_| or |render_frame_host_| is
+  // null/absl::nullopt.
+  absl::optional<base::SafeRef<RenderFrameHostImpl>> render_frame_host_;
 
   // Initialized on creation of the NavigationRequest. Sent to the renderer when
   // the navigation is ready to commit.

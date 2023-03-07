@@ -294,6 +294,12 @@ IN_PROC_BROWSER_TEST_F(LoggedInSpokenFeedbackTest, NavigateNotificationCenter) {
   sm_.Replay();
 }
 
+IN_PROC_BROWSER_TEST_F(LoggedInSpokenFeedbackTest, ChromeVoxSpeaksIntro) {
+  EnableChromeVox();
+  sm_.ExpectSpeech("ChromeVox spoken feedback is ready");
+  sm_.Replay();
+}
+
 // Test Learn Mode by pressing a few keys in Learn Mode. Only available while
 // logged in.
 IN_PROC_BROWSER_TEST_F(LoggedInSpokenFeedbackTest, LearnModeHardwareKeys) {
@@ -1615,6 +1621,29 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, ResetTtsSettings) {
   sm_.ExpectSpeech("Rate 19 percent");
   sm_.Call([this]() { SendKeyPressWithSearch(ui::VKEY_OEM_6); });
   sm_.ExpectSpeech("Pitch 50 percent");
+  sm_.Replay();
+}
+
+// Tests the keyboard shortcut to cycle the punctuation echo setting,
+// Search+A then P.
+IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, TogglePunctuationEcho) {
+  EnableChromeVox();
+  StablizeChromeVoxState();
+  sm_.Call([this]() {
+    SendKeyPressWithSearch(ui::VKEY_A);
+    SendKeyPress(ui::VKEY_P);
+  });
+  sm_.ExpectSpeech("All punctuation");
+  sm_.Call([this]() {
+    SendKeyPressWithSearch(ui::VKEY_A);
+    SendKeyPress(ui::VKEY_P);
+  });
+  sm_.ExpectSpeech("No punctuation");
+  sm_.Call([this]() {
+    SendKeyPressWithSearch(ui::VKEY_A);
+    SendKeyPress(ui::VKEY_P);
+  });
+  sm_.ExpectSpeech("Some punctuation");
   sm_.Replay();
 }
 

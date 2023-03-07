@@ -66,6 +66,20 @@ import java.util.Locale;
  */
 public class RequestDesktopUtils {
     private static final String SITE_WILDCARD = "*";
+    // Global defaults experiment constants.
+    private static final String ENABLED_GROUP_SUFFIX = "_Enabled";
+    private static final String CONTROL_GROUP_SUFFIX = "_Control";
+    private static final String DEFAULT_ON_GROUP_NAME_PREFIX = "DefaultOn_";
+    private static final String OPT_IN_GROUP_NAME_PREFIX = "OptIn_";
+    // This is used to lookup the name of a feature used to track a cohort of users who triggered
+    // the global default experiment, or would have triggered for control groups.
+    private static final String PARAM_GLOBAL_DEFAULTS_COHORT_ID = "global_setting_cohort_id";
+    private static final int DEFAULT_GLOBAL_DEFAULTS_COHORT_ID = 0;
+    private static final String GLOBAL_DEFAULTS_COHORT_NAME = "RequestDesktopSiteDefaultsCohort";
+    private static final String GLOBAL_DEFAULTS_ENABLED_COHORT_NAME =
+            "RequestDesktopSiteDefaultsEnabledCohort";
+    private static final String GLOBAL_DEFAULTS_CONTROL_COHORT_NAME =
+            "RequestDesktopSiteDefaultsControlCohort";
 
     static final String PARAM_GLOBAL_SETTING_DEFAULT_ON_DISPLAY_SIZE_THRESHOLD_INCHES =
             "default_on_display_size_threshold_inches";
@@ -96,12 +110,6 @@ public class RequestDesktopUtils {
     static final int DEFAULT_GLOBAL_SETTING_OPT_IN_SMALLEST_SCREEN_WIDTH_THRESHOLD_DP = 600;
     static final String PARAM_GLOBAL_SETTING_OPT_IN_MEMORY_LIMIT = "opt_in_memory_limit";
     static final int DEFAULT_GLOBAL_SETTING_OPT_IN_MEMORY_LIMIT_THRESHOLD_MB = 0;
-
-    // Global defaults experiment constants.
-    static final String ENABLED_GROUP_SUFFIX = "_Enabled";
-    static final String CONTROL_GROUP_SUFFIX = "_Control";
-    static final String DEFAULT_ON_GROUP_NAME_PREFIX = "DefaultOn_";
-    static final String OPT_IN_GROUP_NAME_PREFIX = "OptIn_";
 
     // Note: these values must match the UserAgentRequestType enum in enums.xml.
     @IntDef({UserAgentRequestType.REQUEST_DESKTOP, UserAgentRequestType.REQUEST_MOBILE})
@@ -360,6 +368,7 @@ public class RequestDesktopUtils {
         if (memoryLimitMB != 0
                 && SysUtils.amountOfPhysicalMemoryKB()
                         < memoryLimitMB * ConversionUtils.KILOBYTES_PER_MEGABYTE) {
+            updateNoLongerInCohort();
             return false;
         }
 
@@ -367,9 +376,12 @@ public class RequestDesktopUtils {
         if (!ChromeFeatureList.getFieldTrialParamByFeatureAsBoolean(
                     feature, PARAM_GLOBAL_SETTING_DEFAULT_ON_ON_X86_DEVICES, true)
                 && !isCpuArchitectureArm()) {
+            updateNoLongerInCohort();
             return false;
         }
 
+        // TODO(shuyng): Add downgrade path support for smallestScreenWidthDp or displaySizeInInches
+        //  change.
         // If the smallest screen size in dp is below threshold, avoid default-enabling the setting.
         if (context.getResources().getConfiguration().smallestScreenWidthDp
                 < ChromeFeatureList.getFieldTrialParamByFeatureAsInt(feature,
@@ -402,12 +414,25 @@ public class RequestDesktopUtils {
         if (inCohort
                 || sharedPreferencesManager.contains(
                         ChromePreferenceKeys.DEFAULT_ENABLE_DESKTOP_SITE_GLOBAL_SETTING_COHORT)) {
+            int cohortId = ChromeFeatureList.getFieldTrialParamByFeatureAsInt(
+                    feature, PARAM_GLOBAL_DEFAULTS_COHORT_ID, DEFAULT_GLOBAL_DEFAULTS_COHORT_ID);
             maybeRegisterSyntheticFieldTrials(
-                    isControlGroup, screenSizeThreshold, /*isOptInArm*/ false);
+                    isControlGroup, screenSizeThreshold, cohortId, /*isOptInArm*/ false);
         }
 
         // Should enable the setting only in the enabled (not control) experiment group.
         return !isControlGroup && wouldEnable;
+    }
+
+    private static void updateNoLongerInCohort() {
+        SharedPreferencesManager sharedPreferencesManager = SharedPreferencesManager.getInstance();
+        if (sharedPreferencesManager.contains(
+                    ChromePreferenceKeys.DEFAULT_ENABLE_DESKTOP_SITE_GLOBAL_SETTING_COHORT)) {
+            // The client was previous qualified for the experiment; but is no longer qualified
+            // due to finch param change.
+            sharedPreferencesManager.writeBoolean(
+                    ChromePreferenceKeys.DEFAULT_ENABLE_DESKTOP_SITE_GLOBAL_SETTING_COHORT, false);
+        }
     }
 
     /**
@@ -437,17 +462,27 @@ public class RequestDesktopUtils {
      * 1. The setting was previously default-enabled.
      * 2. The setting has not been previously updated by the user.
      * These changes are guarded behind the REQUEST_DESKTOP_SITE_DEFAULTS_DOWNGRADE flag.
+     * This should be invoked following {@link #shouldDefaultEnableGlobalSetting(double, Context)}.
      * @param profile The current {@link Profile}.
      * @return Whether the desktop site global setting was disabled.
      */
     public static boolean maybeDisableGlobalSetting(Profile profile) {
-        if (ChromeFeatureList.isEnabled(ChromeFeatureList.REQUEST_DESKTOP_SITE_DEFAULTS)
-                || !ChromeFeatureList.isEnabled(
-                        ChromeFeatureList.REQUEST_DESKTOP_SITE_DEFAULTS_DOWNGRADE)) {
+        if (!ChromeFeatureList.isEnabled(
+                    ChromeFeatureList.REQUEST_DESKTOP_SITE_DEFAULTS_DOWNGRADE)) {
+            return false;
+        }
+        SharedPreferencesManager sharedPreferencesManager = SharedPreferencesManager.getInstance();
+        if ((ChromeFeatureList.isEnabled(ChromeFeatureList.REQUEST_DESKTOP_SITE_DEFAULTS)
+                    || ChromeFeatureList.isEnabled(
+                            ChromeFeatureList.REQUEST_DESKTOP_SITE_DEFAULTS_CONTROL))
+                && sharedPreferencesManager.readBoolean(
+                        ChromePreferenceKeys.DEFAULT_ENABLE_DESKTOP_SITE_GLOBAL_SETTING_COHORT,
+                        true)) {
             return false;
         }
 
-        SharedPreferencesManager sharedPreferencesManager = SharedPreferencesManager.getInstance();
+        sharedPreferencesManager.removeKey(
+                ChromePreferenceKeys.DEFAULT_ENABLE_DESKTOP_SITE_GLOBAL_SETTING_COHORT);
         // Do not downgrade if the global setting was not default-enabled.
         if (!sharedPreferencesManager.readBoolean(
                     ChromePreferenceKeys.DEFAULT_ENABLED_DESKTOP_SITE_GLOBAL_SETTING, false)) {
@@ -457,8 +492,6 @@ public class RequestDesktopUtils {
         // Remove SharedPreferences keys that were added when the feature was supported.
         sharedPreferencesManager.removeKey(
                 ChromePreferenceKeys.DEFAULT_ENABLED_DESKTOP_SITE_GLOBAL_SETTING);
-        sharedPreferencesManager.removeKey(
-                ChromePreferenceKeys.DEFAULT_ENABLE_DESKTOP_SITE_GLOBAL_SETTING_COHORT);
 
         // Do not disable the global setting if it was previously updated by the user.
         if (sharedPreferencesManager.contains(
@@ -633,8 +666,10 @@ public class RequestDesktopUtils {
 
         if (sharedPreferencesManager.contains(
                     ChromePreferenceKeys.DESKTOP_SITE_GLOBAL_SETTING_OPT_IN_MESSAGE_COHORT)) {
+            int cohortId = ChromeFeatureList.getFieldTrialParamByFeatureAsInt(
+                    feature, PARAM_GLOBAL_DEFAULTS_COHORT_ID, DEFAULT_GLOBAL_DEFAULTS_COHORT_ID);
             maybeRegisterSyntheticFieldTrials(
-                    isControlGroup, minScreenSizeThreshold, /*isOptInArm*/ true);
+                    isControlGroup, minScreenSizeThreshold, cohortId, /*isOptInArm*/ true);
         }
 
         // Should show the opt-in message only in the enabled (not control) experiment group.
@@ -773,11 +808,39 @@ public class RequestDesktopUtils {
 
     @VisibleForTesting
     static void maybeRegisterSyntheticFieldTrials(
-            boolean isControlGroup, double screenSizeThreshold, boolean isOptInArm) {
+            boolean isControlGroup, double screenSizeThreshold, int cohortId, boolean isOptInArm) {
         if (!UmaSessionStats.isMetricsServiceAvailable()) {
             return;
         }
 
+        // For backward compatibility.
+        if (cohortId == 0) {
+            maybeRegisterSyntheticFieldTrials(isControlGroup, screenSizeThreshold, isOptInArm);
+            return;
+        }
+        assert !isOptInArm : "Opt-in arm is not supported for the new cohort tracking.";
+
+        String thresholdAsString = String.valueOf(screenSizeThreshold).replace('.', '_');
+        String baseGroupName = DEFAULT_ON_GROUP_NAME_PREFIX + thresholdAsString + "_" + cohortId;
+
+        String syntheticFeatureName = isControlGroup
+                ? GLOBAL_DEFAULTS_CONTROL_COHORT_NAME + cohortId
+                : GLOBAL_DEFAULTS_ENABLED_COHORT_NAME + cohortId;
+
+        if (!isControlGroup && !ChromeFeatureList.isEnabled(syntheticFeatureName)) {
+            UmaSessionStats.registerSyntheticFieldTrial(
+                    syntheticFeatureName, baseGroupName + ENABLED_GROUP_SUFFIX);
+        } else if (isControlGroup && !ChromeFeatureList.isEnabled(syntheticFeatureName)) {
+            UmaSessionStats.registerSyntheticFieldTrial(
+                    syntheticFeatureName, baseGroupName + CONTROL_GROUP_SUFFIX);
+        }
+
+        String syntheticFeatureNameForUma = GLOBAL_DEFAULTS_COHORT_NAME + cohortId;
+        UmaSessionStats.registerSyntheticFieldTrial(syntheticFeatureNameForUma, baseGroupName);
+    }
+
+    private static void maybeRegisterSyntheticFieldTrials(
+            boolean isControlGroup, double screenSizeThreshold, boolean isOptInArm) {
         String thresholdAsString = String.valueOf(screenSizeThreshold).replace('.', '_');
         String baseGroupName =
                 (isOptInArm ? OPT_IN_GROUP_NAME_PREFIX : DEFAULT_ON_GROUP_NAME_PREFIX)

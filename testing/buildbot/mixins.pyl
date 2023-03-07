@@ -218,6 +218,29 @@
       ]
     },
   },
+  '13-x64-emulator': {
+    '$mixin_append': {
+      'args': [
+        '--avd-config=../../tools/android/avd/proto/generic_android33.textpb',
+      ],
+    },
+    'swarming': {
+      # soft affinity so that bots with caches will be picked first
+      'optional_dimensions': {
+        '60': [
+          {
+            'caches': 'generic_android33',
+          }
+        ],
+      },
+      'named_caches': [
+        {
+          'name': 'generic_android33',
+          'path': '.android_emulator/generic_android33',
+        },
+      ]
+    },
+  },
   'android_r': {
     'swarming': {
       'dimensions': {
@@ -506,13 +529,6 @@
       ],
     },
   },
-  'fuchsia-test-workstation': {
-    '$mixin_append': {
-      'args': [
-        '--custom-image=workstation_eng.qemu-x64',
-      ],
-    }
-  },
   'fuchsia_logs': {
     '$mixin_append': {
       'args': [
@@ -658,6 +674,15 @@
           'path': '.android_emulator/generic_android19',
         },
       ]
+    },
+  },
+  # TODO(crbug.com/901197): Remove this mixin and all uses once LIFO rolls
+  # out more widely.
+  'lifo-test-pool': {
+    'swarming': {
+      'dimensions': {
+        'pool': 'chromium.tests.lifo',
+      },
     },
   },
   'limited_capacity_bot': {

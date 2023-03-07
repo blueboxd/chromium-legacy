@@ -20,7 +20,8 @@ ScopedJavaLocalRef<jobject> UnguessableTokenAndroid::Create(
                                       static_cast<jlong>(low));
 }
 
-base::UnguessableToken UnguessableTokenAndroid::FromJavaUnguessableToken(
+absl::optional<base::UnguessableToken>
+UnguessableTokenAndroid::FromJavaUnguessableToken(
     JNIEnv* env,
     const JavaRef<jobject>& token) {
   const uint64_t high = static_cast<uint64_t>(

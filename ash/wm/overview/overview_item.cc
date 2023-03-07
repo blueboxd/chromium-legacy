@@ -340,6 +340,13 @@ gfx::RectF OverviewItem::GetTransformedBounds() const {
   return transform_window_.GetTransformedBounds();
 }
 
+gfx::RectF OverviewItem::GetWindowTargetBoundsWithInsets() const {
+  gfx::RectF window_target_bounds = target_bounds_;
+  window_target_bounds.Inset(kWindowMargin);
+  window_target_bounds.Inset(gfx::InsetsF::TLBR(kHeaderHeightDp, 0, 0, 0));
+  return window_target_bounds;
+}
+
 void OverviewItem::SetBounds(const gfx::RectF& target_bounds,
                              OverviewAnimationType animation_type) {
   if (in_bounds_update_ ||
@@ -368,16 +375,18 @@ void OverviewItem::SetBounds(const gfx::RectF& target_bounds,
   base::ScopedClosureRunner at_exit_runner(base::BindOnce(
       [](base::WeakPtr<OverviewItem> item,
          OverviewAnimationType animation_type) {
-        if (!item.get())
+        if (!item.get()) {
           return;
+        }
 
         // Shadow is normally set after an animation is finished. In the case of
         // no animations, manually set the shadow. Shadow relies on both the
         // window transform and `item_widget_`'s new bounds so set it after
         // `SetItemBounds()` and `UpdateHeaderLayout()`. Do not apply the shadow
         // for drop target.
-        if (animation_type == OVERVIEW_ANIMATION_NONE)
+        if (animation_type == OVERVIEW_ANIMATION_NONE) {
           item->UpdateRoundedCornersAndShadow();
+        }
 
         if (RoundedLabelWidget* widget = item->cannot_snap_widget_.get()) {
           SetWidgetBoundsAndMaybeAnimateTransform(
@@ -480,7 +489,13 @@ void OverviewItem::SetBounds(const gfx::RectF& target_bounds,
   // launcher.
   if (new_animation_type == OVERVIEW_ANIMATION_ENTER_FROM_HOME_LAUNCHER) {
     overview_item_view_->SetHeaderVisibility(
-        OverviewItemView::HeaderVisibility::kVisible);
+        OverviewItemView::HeaderVisibility::kVisible, /*animate=*/true);
+  }
+
+  // Update the item header visibility immediately without an animation.
+  if (new_animation_type == OVERVIEW_ANIMATION_NONE) {
+    overview_item_view_->SetHeaderVisibility(
+        OverviewItemView::HeaderVisibility::kVisible, /*animate=*/false);
   }
 }
 
@@ -602,7 +617,8 @@ void OverviewItem::OnSelectorItemDragStarted(OverviewItem* item) {
   overview_item_view_->SetHeaderVisibility(
       is_being_dragged_
           ? OverviewItemView::HeaderVisibility::kInvisible
-          : OverviewItemView::HeaderVisibility::kCloseButtonInvisibleOnly);
+          : OverviewItemView::HeaderVisibility::kCloseButtonInvisibleOnly,
+      /*animate=*/true);
 }
 
 void OverviewItem::OnSelectorItemDragEnded(bool snap) {
@@ -611,7 +627,7 @@ void OverviewItem::OnSelectorItemDragEnded(bool snap) {
       overview_item_view_->HideCloseInstantlyAndThenShowItSlowly();
   } else {
     overview_item_view_->SetHeaderVisibility(
-        OverviewItemView::HeaderVisibility::kVisible);
+        OverviewItemView::HeaderVisibility::kVisible, /*animate=*/true);
   }
   is_being_dragged_ = false;
 }
@@ -812,7 +828,7 @@ void OverviewItem::OnStartingAnimationComplete() {
     // Fade the title in if minimized. The rest of |item_widget_| should
     // already be shown.
     overview_item_view_->SetHeaderVisibility(
-        OverviewItemView::HeaderVisibility::kVisible);
+        OverviewItemView::HeaderVisibility::kVisible, /*animate=*/true);
   } else {
     FadeInWidgetToOverview(item_widget_.get(),
                            OVERVIEW_ANIMATION_ENTER_OVERVIEW_MODE_FADE_IN,
@@ -1107,13 +1123,6 @@ gfx::Rect OverviewItem::GetShadowBoundsForTesting() {
   return shadow_->GetContentBounds();
 }
 
-gfx::RectF OverviewItem::GetWindowTargetBoundsWithInsets() const {
-  gfx::RectF window_target_bounds = target_bounds_;
-  window_target_bounds.Inset(kWindowMargin);
-  window_target_bounds.Inset(gfx::InsetsF::TLBR(kHeaderHeightDp, 0, 0, 0));
-  return window_target_bounds;
-}
-
 gfx::RectF OverviewItem::GetUnclippedShadowBounds() const {
   return transform_window_.IsMinimized()
              ? gfx::RectF(
@@ -1307,7 +1316,15 @@ void OverviewItem::CreateItemWidget() {
                               base::Unretained(this)),
           GetWindow(), transform_window_.IsMinimized()));
   item_widget_->Show();
-  item_widget_->SetOpacity(0.f);
+  if (overview_session_ &&
+      (overview_session_->enter_exit_overview_type() ==
+           OverviewEnterExitType::kImmediateEnter ||
+       overview_session_->enter_exit_overview_type() ==
+           OverviewEnterExitType::kImmediateEnterWithoutFocus)) {
+    item_widget_->SetOpacity(1.f);
+  } else {
+    item_widget_->SetOpacity(0.f);
+  }
   widget_layer->SetMasksToBounds(false);
 }
 

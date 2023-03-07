@@ -550,6 +550,67 @@ bool MigrateToVersion41(sql::Database* db, sql::MetaTable* meta_table) {
   return transaction.Commit();
 }
 
+bool MigrateToVersion42(sql::Database* db, sql::MetaTable* meta_table) {
+  // Wrap each migration in its own transaction. See comment in
+  // `MigrateToVersion34`.
+  sql::Transaction transaction(db);
+  if (!transaction.Begin()) {
+    return false;
+  }
+
+  static constexpr char kRenameDestinationOriginSql[] =
+      "ALTER TABLE rate_limits "
+      "RENAME COLUMN destination_origin TO context_origin";
+  if (!db->Execute(kRenameDestinationOriginSql)) {
+    return false;
+  }
+
+  static_assert(static_cast<int>(RateLimitTable::Scope::kSource) == 0);
+
+  static constexpr char kSetContextOriginSql[] =
+      "UPDATE rate_limits SET context_origin=source_origin WHERE scope=0";
+  if (!db->Execute(kSetContextOriginSql)) {
+    return false;
+  }
+
+  static constexpr char kDropSourceOriginSql[] =
+      "ALTER TABLE rate_limits DROP COLUMN source_origin";
+  if (!db->Execute(kDropSourceOriginSql)) {
+    return false;
+  }
+
+  meta_table->SetVersionNumber(42);
+  return transaction.Commit();
+}
+
+bool MigrateToVersion43(sql::Database* db, sql::MetaTable* meta_table) {
+  // Wrap each migration in its own transaction. See comment in
+  // `MigrateToVersion34`.
+  sql::Transaction transaction(db);
+  if (!transaction.Begin()) {
+    return false;
+  }
+
+  static constexpr char kRenameExpiryTimeSql[] =
+      "ALTER TABLE rate_limits "
+      "RENAME COLUMN expiry_time TO source_expiry_or_attribution_time";
+  if (!db->Execute(kRenameExpiryTimeSql)) {
+    return false;
+  }
+
+  static_assert(static_cast<int>(RateLimitTable::Scope::kAttribution) == 1);
+
+  static constexpr char kSetAttributionTimeSql[] =
+      "UPDATE rate_limits "
+      "SET source_expiry_or_attribution_time=time WHERE scope=1";
+  if (!db->Execute(kSetAttributionTimeSql)) {
+    return false;
+  }
+
+  meta_table->SetVersionNumber(43);
+  return transaction.Commit();
+}
+
 }  // namespace
 
 bool UpgradeAttributionStorageSqlSchema(sql::Database* db,
@@ -599,6 +660,16 @@ bool UpgradeAttributionStorageSqlSchema(sql::Database* db,
   }
   if (meta_table->GetVersionNumber() == 40) {
     if (!MigrateToVersion41(db, meta_table)) {
+      return false;
+    }
+  }
+  if (meta_table->GetVersionNumber() == 41) {
+    if (!MigrateToVersion42(db, meta_table)) {
+      return false;
+    }
+  }
+  if (meta_table->GetVersionNumber() == 42) {
+    if (!MigrateToVersion43(db, meta_table)) {
       return false;
     }
   }

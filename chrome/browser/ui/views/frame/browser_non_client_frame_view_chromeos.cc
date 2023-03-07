@@ -251,11 +251,6 @@ int BrowserNonClientFrameViewChromeOS::GetThemeBackgroundXInset() const {
   return BrowserFrameHeaderChromeOS::GetThemeBackgroundXInset();
 }
 
-void BrowserNonClientFrameViewChromeOS::UpdateFrameColor() {
-  OnUpdateFrameColor();
-  BrowserNonClientFrameView::UpdateFrameColor();
-}
-
 void BrowserNonClientFrameViewChromeOS::UpdateThrobber(bool running) {
   if (window_icon_)
     window_icon_->Update();
@@ -379,7 +374,6 @@ void BrowserNonClientFrameViewChromeOS::ResetWindowControls() {
 
 void BrowserNonClientFrameViewChromeOS::WindowControlsOverlayEnabledChanged() {
   bool enabled = browser_view()->IsWindowControlsOverlayEnabled();
-  web_app_frame_toolbar()->OnWindowControlsOverlayEnabledChanged();
   caption_button_container_->OnWindowControlsOverlayEnabledChanged(
       enabled, GetFrameHeaderColor(browser_view()->IsActive()));
   browser_view()->InvalidateLayout();
@@ -693,6 +687,11 @@ void BrowserNonClientFrameViewChromeOS::OnWindowPropertyChanged(
   }
 
   if (key == chromeos::kWindowStateTypeKey) {
+    // Update window controls when window state changes as whether or not these
+    // are shown can depend on the window state (e.g. hiding the caption buttons
+    // in non-immersive full screen mode, see crbug.com/1336470).
+    ResetWindowControls();
+
     // Update the window controls if we are entering or exiting float state.
     const bool enter_floated = IsFloated();
     const bool exit_floated = static_cast<chromeos::WindowStateType>(old) ==
@@ -702,7 +701,6 @@ void BrowserNonClientFrameViewChromeOS::OnWindowPropertyChanged(
 
     if (frame_header_)
       frame_header_->OnFloatStateChanged();
-    ResetWindowControls();
 
     if (!chromeos::TabletState::Get()->InTabletMode())
       return;
@@ -819,17 +817,31 @@ void BrowserNonClientFrameViewChromeOS::AddedToWidget() {
 }
 
 bool BrowserNonClientFrameViewChromeOS::GetShowCaptionButtons() const {
-  return GetShowCaptionButtonsWhenNotInOverview() && !GetOverviewMode() &&
-         !GetHideCaptionButtonsForFullscreen() && !UseWebUITabStrip();
+  if (GetOverviewMode()) {
+    return false;
+  }
+
+  return GetShowCaptionButtonsWhenNotInOverview();
 }
 
 bool BrowserNonClientFrameViewChromeOS::GetShowCaptionButtonsWhenNotInOverview()
     const {
-  if (UsePackagedAppHeaderStyle(browser_view()->browser()))
+  if (GetHideCaptionButtonsForFullscreen()) {
+    return false;
+  }
+
+  // Show the caption buttons for packaged apps which support immersive mode.
+  if (UsePackagedAppHeaderStyle(browser_view()->browser())) {
     return true;
-  if (!chromeos::TabletState::Get()->InTabletMode())
-    return true;
-  return IsFloated();
+  }
+
+  // Browsers in tablet mode still show their caption buttons in float state,
+  // even with the webUI tab strip.
+  if (chromeos::TabletState::Get()->InTabletMode()) {
+    return IsFloated();
+  }
+
+  return !UseWebUITabStrip();
 }
 
 int BrowserNonClientFrameViewChromeOS::GetToolbarLeftInset() const {

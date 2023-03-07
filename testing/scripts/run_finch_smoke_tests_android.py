@@ -605,6 +605,7 @@ class FinchTestCase(common.BaseIsolatedScriptArgsAdapter):
 
   def browser_command_line_args(self):
     return (['--vmodule=variations_field_trial_creator.cc=1', '--v=1',
+             '--disable-field-trial-config',
              '--fake-variations-channel=%s' %
              self.options.fake_variations_channel] +
             self.test_specific_browser_args)
@@ -906,8 +907,10 @@ class WebViewFinchTestCase(FinchTestCase):
       # because it is the first version of WebView that contains
       # crrev.com/c/4076271.
       webview_update = self._device.GetWebViewUpdateServiceDump()
-      check_for_vlog = _is_version_greater_than_or_equal(
-          webview_update['CurrentWebViewVersion'], '110.0.5463.0')
+      check_for_vlog = ('CurrentWebViewVersion' in webview_update and
+                        _is_version_greater_than_or_equal(
+                            webview_update['CurrentWebViewVersion'],
+                            '110.0.5463.0'))
       field_trial_check_name = 'check_for_logged_field_trials'
 
       if check_for_vlog:
@@ -1233,7 +1236,6 @@ def main(args):
       # line, e.g. for Android.
       if installed_seed:
         extra_args = [f'--variations-test-seed-path={installed_seed}']
-        extra_args += ['--disable-field-trial-config']
         ret = test_case.run_tests('with_finch_seed', test_results_dict,
             extra_browser_args=extra_args)
       else:

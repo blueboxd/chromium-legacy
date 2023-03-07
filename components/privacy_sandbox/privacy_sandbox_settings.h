@@ -55,6 +55,11 @@ class PrivacySandboxSettings : public KeyedService {
     // Whether the current profile is Incognito or not. For Incognito, the
     // privacy sandbox APIs are restricted.
     virtual bool IsIncognitoProfile() const = 0;
+
+    // Whether there is an appropriate level of consent for the Topics API.
+    // When this returns false, access control functions for Topics will
+    // return as not allowed.
+    virtual bool HasAppropriateTopicsConsent() const = 0;
   };
 
   // Returns whether the Topics API is allowed at all. If false, Topics API
@@ -90,6 +95,12 @@ class PrivacySandboxSettings : public KeyedService {
   // returned time will have been fuzzed for local privacy, and so may be in the
   // future, in which case no history is eligible.
   virtual base::Time TopicsDataAccessibleSince() const = 0;
+
+  // Returns whether any Attribution Rerpoting operation would ever be allowed.
+  // If false, no attribution reporting operation is allowed (e.g. because the
+  // user has disabled the setting). If true, the appropriate context specific
+  // check must also be made.
+  virtual bool IsAttributionReportingEverAllowed() const = 0;
 
   // Determines whether Attribution Reporting is allowable in a particular
   // context. Should be called at both source and trigger registration. At each

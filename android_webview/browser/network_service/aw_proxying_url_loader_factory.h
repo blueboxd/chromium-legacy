@@ -15,6 +15,7 @@
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "services/network/public/mojom/url_response_head.mojom.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
+#include "url/origin.h"
 
 namespace net {
 struct MutableNetworkTrafficAnnotationTag;

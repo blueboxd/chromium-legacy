@@ -11,12 +11,11 @@ load("//lib/consoles.star", "consoles")
 load("//project.star", "settings")
 
 try_.defaults.set(
-    builder_group = "tryserver.chromium.chromiumos",
     executable = try_.DEFAULT_EXECUTABLE,
+    builder_group = "tryserver.chromium.chromiumos",
+    pool = try_.DEFAULT_POOL,
     cores = 8,
     os = os.LINUX_DEFAULT,
-    pool = try_.DEFAULT_POOL,
-    service_account = try_.DEFAULT_SERVICE_ACCOUNT,
     compilator_cores = 16,
     compilator_reclient_jobs = reclient.jobs.HIGH_JOBS_FOR_CQ,
     execution_timeout = try_.DEFAULT_EXECUTION_TIMEOUT,
@@ -24,11 +23,12 @@ try_.defaults.set(
     orchestrator_cores = 2,
     reclient_instance = reclient.instance.DEFAULT_UNTRUSTED,
     reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
+    service_account = try_.DEFAULT_SERVICE_ACCOUNT,
 )
 
 consoles.list_view(
     name = "tryserver.chromium.chromiumos",
-    branch_selector = branches.CROS_LTS_MILESTONE,
+    branch_selector = branches.selector.CROS_LTS_BRANCHES,
 )
 
 try_.builder(
@@ -41,12 +41,12 @@ try_.builder(
 
 try_.builder(
     name = "chromeos-amd64-generic-dbg",
-    branch_selector = branches.STANDARD_MILESTONE,
+    branch_selector = branches.selector.CROS_BRANCHES,
     mirrors = [
         "ci/chromeos-amd64-generic-dbg",
     ],
-    main_list_view = "try",
     goma_backend = None,
+    main_list_view = "try",
     tryjob = try_.job(
         location_filters = [
             "content/gpu/.+",
@@ -57,9 +57,9 @@ try_.builder(
 
 try_.orchestrator_builder(
     name = "chromeos-amd64-generic-rel",
-    branch_selector = branches.CROS_LTS_MILESTONE,
-    compilator = "chromeos-amd64-generic-rel-compilator",
+    branch_selector = branches.selector.CROS_LTS_BRANCHES,
     mirrors = ["ci/chromeos-amd64-generic-rel"],
+    compilator = "chromeos-amd64-generic-rel-compilator",
     main_list_view = "try",
     tryjob = try_.job(),
     # TODO(crbug.com/1372179): Use orchestrator pool once overloaded test pools
@@ -69,10 +69,10 @@ try_.orchestrator_builder(
 
 try_.compilator_builder(
     name = "chromeos-amd64-generic-rel-compilator",
-    branch_selector = branches.CROS_LTS_MILESTONE,
+    branch_selector = branches.selector.CROS_LTS_BRANCHES,
     cores = 8,
-    main_list_view = "try",
     goma_backend = None,
+    main_list_view = "try",
 )
 
 try_.builder(
@@ -85,47 +85,47 @@ try_.builder(
 
 try_.builder(
     name = "chromeos-arm-generic-rel",
-    branch_selector = branches.CROS_LTS_MILESTONE,
+    branch_selector = branches.selector.CROS_LTS_BRANCHES,
     mirrors = ["ci/chromeos-arm-generic-rel"],
     builderless = not settings.is_main,
-    main_list_view = "try",
     goma_backend = None,
+    main_list_view = "try",
     tryjob = try_.job(),
 )
 
 try_.builder(
     name = "chromeos-arm64-generic-rel",
-    branch_selector = branches.CROS_LTS_MILESTONE,
+    branch_selector = branches.selector.CROS_LTS_BRANCHES,
     mirrors = ["ci/chromeos-arm64-generic-rel"],
     goma_backend = None,
 )
 
 try_.builder(
     name = "lacros-amd64-generic-rel",
-    branch_selector = branches.STANDARD_MILESTONE,
+    branch_selector = branches.selector.CROS_BRANCHES,
     mirrors = [
         "ci/lacros-amd64-generic-rel",
     ],
     builderless = not settings.is_main,
-    main_list_view = "try",
     goma_backend = None,
+    main_list_view = "try",
     tryjob = try_.job(),
 )
 
 try_.orchestrator_builder(
     name = "lacros-amd64-generic-rel-orchestrator",
-    branch_selector = branches.STANDARD_MILESTONE,
-    compilator = "lacros-amd64-generic-rel-compilator",
+    branch_selector = branches.selector.CROS_BRANCHES,
     mirrors = [
         "ci/lacros-amd64-generic-rel",
     ],
+    compilator = "lacros-amd64-generic-rel-compilator",
     main_list_view = "try",
     use_orchestrator_pool = True,
 )
 
 try_.builder(
     name = "lacros-amd64-generic-rel-skylab",
-    branch_selector = branches.STANDARD_MILESTONE,
+    branch_selector = branches.selector.CROS_BRANCHES,
     builder_spec = builder_config.builder_spec(
         gclient_config = builder_config.gclient_config(
             config = "chromium",
@@ -159,7 +159,7 @@ try_.builder(
 
 try_.compilator_builder(
     name = "lacros-amd64-generic-rel-compilator",
-    branch_selector = branches.STANDARD_MILESTONE,
+    branch_selector = branches.selector.CROS_BRANCHES,
     cores = None,
     # TODO (crbug.com/1287228): Set correct values once bots are set up
     ssd = None,
@@ -168,7 +168,7 @@ try_.compilator_builder(
 
 try_.builder(
     name = "lacros-amd64-generic-rel-skylab-fyi",
-    branch_selector = branches.STANDARD_MILESTONE,
+    branch_selector = branches.selector.CROS_BRANCHES,
     builder_spec = builder_config.builder_spec(
         gclient_config = builder_config.gclient_config(
             config = "chromium",
@@ -196,7 +196,7 @@ try_.builder(
 
 try_.builder(
     name = "chromeos-amd64-generic-lacros-dbg",
-    branch_selector = branches.STANDARD_MILESTONE,
+    branch_selector = branches.selector.CROS_BRANCHES,
     mirrors = [
         "ci/chromeos-amd64-generic-lacros-dbg",
     ],
@@ -204,19 +204,19 @@ try_.builder(
 
 try_.builder(
     name = "lacros-arm-generic-rel",
-    branch_selector = branches.STANDARD_MILESTONE,
+    branch_selector = branches.selector.CROS_BRANCHES,
     mirrors = [
         "ci/lacros-arm-generic-rel",
     ],
     builderless = not settings.is_main,
-    main_list_view = "try",
     goma_backend = None,
+    main_list_view = "try",
     tryjob = try_.job(),
 )
 
 try_.builder(
     name = "lacros-arm64-generic-rel",
-    branch_selector = branches.STANDARD_MILESTONE,
+    branch_selector = branches.selector.CROS_BRANCHES,
     mirrors = [
         "ci/lacros-arm64-generic-rel",
     ],
@@ -225,7 +225,7 @@ try_.builder(
 
 try_.builder(
     name = "linux-chromeos-compile-dbg",
-    branch_selector = branches.STANDARD_MILESTONE,
+    branch_selector = branches.selector.CROS_BRANCHES,
     mirrors = [
         "ci/linux-chromeos-dbg",
     ],
@@ -234,15 +234,15 @@ try_.builder(
         is_compile_only = True,
     ),
     builderless = not settings.is_main,
-    main_list_view = "try",
     goma_backend = None,
+    main_list_view = "try",
     reclient_jobs = reclient.jobs.HIGH_JOBS_FOR_CQ,
     tryjob = try_.job(),
 )
 
 try_.builder(
     name = "chromeos-jacuzzi-rel",
-    branch_selector = branches.CROS_LTS_MILESTONE,
+    branch_selector = branches.selector.CROS_LTS_BRANCHES,
     mirrors = [
         "ci/chromeos-jacuzzi-rel",
     ],
@@ -251,7 +251,7 @@ try_.builder(
 
 try_.builder(
     name = "chromeos-octopus-rel",
-    branch_selector = branches.CROS_LTS_MILESTONE,
+    branch_selector = branches.selector.CROS_LTS_BRANCHES,
     mirrors = [
         "ci/chromeos-octopus-rel",
     ],
@@ -266,13 +266,13 @@ try_.builder(
 
 try_.orchestrator_builder(
     name = "linux-chromeos-rel",
-    branch_selector = branches.CROS_LTS_MILESTONE,
-    compilator = "linux-chromeos-rel-compilator",
+    branch_selector = branches.selector.CROS_LTS_BRANCHES,
     mirrors = [
         "ci/linux-chromeos-rel",
     ],
-    main_list_view = "try",
+    compilator = "linux-chromeos-rel-compilator",
     coverage_test_types = ["unit", "overall"],
+    main_list_view = "try",
     tryjob = try_.job(),
     use_clang_coverage = True,
     # TODO(crbug.com/1372179): Use orchestrator pool once overloaded test pools
@@ -282,9 +282,9 @@ try_.orchestrator_builder(
 
 try_.compilator_builder(
     name = "linux-chromeos-rel-compilator",
-    branch_selector = branches.CROS_LTS_MILESTONE,
-    main_list_view = "try",
+    branch_selector = branches.selector.CROS_LTS_BRANCHES,
     goma_backend = None,
+    main_list_view = "try",
 )
 
 try_.builder(
@@ -298,14 +298,14 @@ try_.builder(
 
 try_.orchestrator_builder(
     name = "linux-lacros-rel",
-    branch_selector = branches.STANDARD_MILESTONE,
-    compilator = "linux-lacros-rel-compilator",
+    branch_selector = branches.selector.CROS_BRANCHES,
     mirrors = [
         "ci/linux-lacros-builder-rel",
         "ci/linux-lacros-tester-rel",
     ],
-    main_list_view = "try",
     check_for_flakiness = True,
+    compilator = "linux-lacros-rel-compilator",
+    main_list_view = "try",
     tryjob = try_.job(),
     # TODO(crbug.com/1372179): Use orchestrator pool once overloaded test pools
     # are addressed
@@ -314,17 +314,17 @@ try_.orchestrator_builder(
 
 try_.compilator_builder(
     name = "linux-lacros-rel-compilator",
-    branch_selector = branches.STANDARD_MILESTONE,
+    branch_selector = branches.selector.CROS_BRANCHES,
     cores = 32,
-    main_list_view = "try",
     goma_backend = None,
+    main_list_view = "try",
 )
 
 try_.builder(
     name = "linux-chromeos-dbg",
     # The CI builder that this mirrors is enabled on branches, so this will
     # allow testing changes that would break it before submitting
-    branch_selector = branches.STANDARD_MILESTONE,
+    branch_selector = branches.selector.CROS_BRANCHES,
     mirrors = [
         "ci/linux-chromeos-dbg",
     ],

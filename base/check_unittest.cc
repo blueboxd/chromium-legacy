@@ -458,10 +458,8 @@ TEST(CheckDeathTest, NotReached) {
   EXPECT_LOG_ERROR(__LINE__, NOTREACHED() << "foo",
                    "Check failed: false. foo\n");
 #else
-  // Expect LOG(ERROR) that looks like CHECK(false) without file, line or
-  // streamed params.
-  EXPECT_LOG_ERROR_WITH_FILENAME("", -1, NOTREACHED() << "foo",
-                                 "Check failed: false. \n");
+  // Expect nothing.
+  EXPECT_NO_LOG(NOTREACHED() << "foo");
 #endif
 }
 

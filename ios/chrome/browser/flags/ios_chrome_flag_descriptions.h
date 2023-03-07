@@ -41,14 +41,14 @@ extern const char kAutofillEnableNewCardUnmaskPromptViewName[];
 extern const char kAutofillEnableNewCardUnmaskPromptViewDescription[];
 
 // Title and description for the flag to control the new autofill suggestion
-// ranking formula.
-extern const char kAutofillEnableRankingFormulaName[];
-extern const char kAutofillEnableRankingFormulaDescription[];
-
-// Title and description for the flag to control the new autofill suggestion
 // ranking formula for address profiles.
 extern const char kAutofillEnableRankingFormulaAddressProfilesName[];
 extern const char kAutofillEnableRankingFormulaAddressProfilesDescription[];
+
+// Title and description for the flag to control the new autofill suggestion
+// ranking formula for credit cards.
+extern const char kAutofillEnableRankingFormulaCreditCardsName[];
+extern const char kAutofillEnableRankingFormulaCreditCardsDescription[];
 
 // Title and description for the flag that controls whether the remade Autofill
 // Downstream metrics are enabled.
@@ -227,6 +227,10 @@ extern const char kEnableCompromisedPasswordsMutingDescription[];
 extern const char kEnableDiscoverFeedTopSyncPromoName[];
 extern const char kEnableDiscoverFeedTopSyncPromoDescription[];
 
+// Title and description for the flag to modify the feed header settings.
+extern const char kEnableFeedHeaderSettingsName[];
+extern const char kEnableFeedHeaderSettingsDescription[];
+
 // Title and description for the flag to enable the sign-in promotion at the
 // bottom of the discover feed.
 extern const char kEnableFeedBottomSignInPromoName[];
@@ -236,6 +240,14 @@ extern const char kEnableFeedBottomSignInPromoDescription[];
 // by the discover feed card menu.
 extern const char kEnableFeedCardMenuSignInPromoName[];
 extern const char kEnableFeedCardMenuSignInPromoDescription[];
+
+// Title and description for the flag to enable the Feed image caching.
+extern const char kEnableFeedImageCachingName[];
+extern const char kEnableFeedImageCachingDescription[];
+
+// Title and description for the flag to enable Feed synthetic capabilities.
+extern const char kEnableFeedSyntheticCapabilitiesName[];
+extern const char kEnableFeedSyntheticCapabilitiesDescription[];
 
 // Title and description for the flag to enable DMToken deletion.
 extern const char kDmTokenDeletionName[];
@@ -271,6 +283,11 @@ extern const char kEnableCBDSignOutDescription[];
 extern const char kEnableDiscoverFeedDiscoFeedEndpointName[];
 extern const char kEnableDiscoverFeedDiscoFeedEndpointDescription[];
 
+// Title and description for the flag to enable the hiding the Most Visited
+// Tiles and Shortcuts for new users.
+extern const char kHideMVTAndShortcutsForNewUsersName[];
+extern const char kHideMVTAndShortcutsForNewUsersDescription[];
+
 // Title and description for the flag to remove the Feed from the NTP.
 extern const char kEnableFeedAblationName[];
 extern const char kEnableFeedAblationDescription[];
@@ -278,10 +295,6 @@ extern const char kEnableFeedAblationDescription[];
 // Title and description for the flag to enable the Fullscreen API.
 extern const char kEnableFullscreenAPIName[];
 extern const char kEnableFullscreenAPIDescription[];
-
-// Title and description for the new bookmarks implementation.
-extern const char kEnableNewBookmarksImplementationName[];
-extern const char kEnableNewBookmarksImplementationDescription[];
 
 // Title and description for the flag to enable password grouping for the
 // Password Manager.
@@ -755,6 +768,11 @@ extern const char kEnableLensInKeyboardDescription[];
 extern const char kEnableLensInNTPName[];
 extern const char kEnableLensInNTPDescription[];
 
+// Title and description for the flag to enable using alternate Lens context
+// menu string.
+extern const char kEnableLensContextMenuAltTextName[];
+extern const char kEnableLensContextMenuAltTextDescription[];
+
 // Title and description for the flag to enable using Lens to search using
 // copied images in the omnibox.
 extern const char kEnableLensInOmniboxCopiedImageName[];
@@ -763,6 +781,15 @@ extern const char kEnableLensInOmniboxCopiedImageDescription[];
 // Title and description for the flag to sort the tab by recency in the TabGrid.
 extern const char kTabGridRecencySortName[];
 extern const char kTabGridRecencySortDescription[];
+
+// Title and description for the flag that enable tab strip context menu.
+extern const char kTabStripContextMenuName[];
+extern const char kTabStripContextMenuDescription[];
+
+// Title and description for the flag to determine tab inactivity in the
+// TabGrid.
+extern const char kTabInactivityThresholdName[];
+extern const char kTabInactivityThresholdDescription[];
 
 // Title and description for the flag to enable using the
 // loadSimulatedRequest:responseHTMLString: API for displaying error pages in

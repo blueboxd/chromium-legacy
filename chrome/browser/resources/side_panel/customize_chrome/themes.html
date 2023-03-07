@@ -2,7 +2,9 @@
   #headerContainer {
     align-items: center;
     display: flex;
-    margin: 16px;
+    height: 20px;
+    margin: 0 16px 16px;
+    padding-top: 16px;
   }
 
   cr-icon-button {
@@ -10,13 +12,13 @@
     --cr-icon-button-margin-start: -8px;
   }
 
-  h1 {
+  h2 {
     color: var(--cr-primary-text-color);
     font-size: 14px;
     font-weight: 500;
     line-height: 20px;
     margin: 0;
-    margin-inline-start: 6px;
+    margin-inline-start: 10px;
   }
 
   cr-grid {
@@ -38,6 +40,7 @@
   }
 
   .image-container {
+    border-radius: 12px;
     overflow: hidden;
     padding-top: 100%;
     position: relative;
@@ -62,26 +65,41 @@
     transform: translateX(-50%);
   }
 
-  .image-container {
-    border-radius: 12px;
-  }
-
   #refreshDailyToggleContainer {
     display: flex;
     justify-content: space-between;
-    margin: 8px 16px 16px;
+    margin: 24px 16px 16px;
   }
 
   #refreshDailyToggleTitle {
     font-size: 13px;
     line-height: 20px;
   }
+
+  customize-chrome-check-mark-wrapper {
+    --customize-chrome-check-mark-wrapper-end: -4px;
+    --customize-chrome-check-mark-wrapper-size: 20px;
+    --customize-chrome-check-mark-wrapper-top: -6px;
+  }
+
+  customize-chrome-check-mark-wrapper[checked] .image-container {
+    padding-top: calc(100% - 4px);
+    width: calc(100% - 4px);
+  }
+
+  /* Set styles for high contrast mode in Windows. */
+  @media (forced-colors: active) {
+    :host-context(.focus-outline-visible) .tile:focus {
+      /* Set outline to hcm (high contrast mode) value. */
+      outline: var(--cr-focus-outline-hcm);
+    }
+  }
 </style>
 <div id="headerContainer">
   <cr-icon-button on-click="onBackClick_" id="backButton"
       class="icon-arrow-back" title="$i18n{backButton}">
   </cr-icon-button>
-  <h1 id="header">[[header_]]</h1>
+  <h2 id="header">[[header_]]</h2>
 </div>
 <div id="refreshDailyToggleContainer">
   <div id="refreshDailyToggleTitle">$i18n{refreshDaily}</div>
@@ -90,16 +108,20 @@
       on-change="onRefreshDailyToggleChange_">
   </cr-toggle>
 </div>
-<cr-grid columns="3">
+<cr-grid columns="3" disable-arrow-navigation>
   <template is="dom-repeat" id="themesRepeat" items="[[themes_]]">
     <div class="tile theme" tabindex="0" role="button"
-        on-click="onSelectTheme_" title="[[item.attribution1]]">
-      <div class="image-container">
-        <img is="cr-auto-img"
-            auto-src="[[item.previewImageUrl.url]]"
-            draggable="false">
-        </img>
-      </div>
+        on-click="onSelectTheme_" title$="[[item.attribution1]]"
+        aria-current$="[[getThemeCheckedStatus_(item.imageUrl.url, theme_)]]">
+      <customize-chrome-check-mark-wrapper
+          checked="[[isThemeSelected_(item.imageUrl.url, theme_)]]">
+        <div class="image-container">
+          <img is="cr-auto-img"
+              auto-src="[[item.previewImageUrl.url]]"
+              draggable="false">
+          </img>
+        </div>
+      </customize-chrome-check-mark-wrapper>
     </div>
   </template>
-</cr-grid>
+<cr-grid>

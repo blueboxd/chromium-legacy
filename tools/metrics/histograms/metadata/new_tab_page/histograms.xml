@@ -55,6 +55,17 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="NewTabPage.BackgroundImageSource"
+    enum="NTPBackgroundImageSource" expires_after="2023-07-30">
+  <owner>danpeng@google.com</owner>
+  <owner>pauladedeji@chromium.org</owner>
+  <owner>chrome-desktop-ntp@google.com</owner>
+  <summary>
+    Records the type of background image that is set. Only recorded once per
+    NTP.
+  </summary>
+</histogram>
+
 <histogram name="NewTabPage.BackgroundService.Collections.RequestLatency"
     units="ms" expires_after="2023-06-04">
   <owner>danpeng@google.com</owner>
@@ -1073,6 +1084,26 @@ chromium-metrics-reviews@google.com.
   <summary>
     Record the network status when a new tab page is opened. True if user is
     online and false for offline.
+  </summary>
+</histogram>
+
+<histogram name="NewTabPage.Module.Click" enum="ModuleTypeOnStartAndNTP"
+    expires_after="2023-07-09">
+  <owner>hanxi@chromium.org</owner>
+  <owner>xinyiji@chromium.org</owner>
+  <summary>
+    Record the total count of clicks on different modules of the New tab page.
+    For most visited tiles: is recorded when 1) user clicks on most visited
+    tiles; 2) long press on most visited tiles to open in a new tab or open in a
+    new tab in group or a new incognito tab or to download the link. This is
+    consistent with MobileNTPMostVisited. For feeds: is recorded when 1) user
+    clicks on feeds; 2) long press on feeds to open in a new tab or open in a
+    new incognito tab or check about this source and topic; 3) click the learn
+    more button on the top of the feeds section. For omnibox: is recorded every
+    time when user uses Omnibox or voice search on Omnibox to navigate. This is
+    consistent with MobileOmniboxUse. For tab switcher button: is recorded every
+    time when user clicks on the tab switcher button. The histogram is logged on
+    New tab page and is Android-only.
   </summary>
 </histogram>
 

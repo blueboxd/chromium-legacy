@@ -40,6 +40,7 @@
 #include "chrome/browser/ui/autofill/payments/card_unmask_otp_input_dialog_controller_impl.h"
 #include "chrome/browser/ui/autofill/payments/create_card_unmask_prompt_view.h"
 #include "chrome/browser/ui/autofill/payments/credit_card_scanner_controller.h"
+#include "chrome/browser/ui/autofill/payments/save_iban_bubble_controller_impl.h"
 #include "chrome/browser/ui/autofill/payments/virtual_card_enroll_bubble_controller_impl.h"
 #include "chrome/browser/ui/autofill/risk_util.h"
 #include "chrome/browser/ui/autofill/save_update_address_profile_bubble_controller_impl.h"
@@ -92,7 +93,6 @@
 #include "content/public/browser/ssl_status.h"
 #include "content/public/browser/storage_partition.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/gfx/geometry/rect.h"
 #include "url/origin.h"
 
@@ -227,10 +227,23 @@ signin::IdentityManager* ChromeAutofillClient::GetIdentityManager() {
 }
 
 FormDataImporter* ChromeAutofillClient::GetFormDataImporter() {
+  if (!form_data_importer_) {
+    form_data_importer_ = std::make_unique<FormDataImporter>(
+        this, GetPaymentsClient(), GetPersonalDataManager(),
+        GetPersonalDataManager()->app_locale());
+  }
   return form_data_importer_.get();
 }
 
 payments::PaymentsClient* ChromeAutofillClient::GetPaymentsClient() {
+  if (!payments_client_) {
+    payments_client_ = std::make_unique<payments::PaymentsClient>(
+        Profile::FromBrowserContext(web_contents()->GetBrowserContext())
+            ->GetURLLoaderFactory(),
+        GetIdentityManager(), GetPersonalDataManager(),
+        Profile::FromBrowserContext(web_contents()->GetBrowserContext())
+            ->IsOffTheRecord());
+  }
   return payments_client_.get();
 }
 
@@ -524,9 +537,10 @@ void ChromeAutofillClient::ConfirmSaveIBANLocally(
     const IBAN& iban,
     bool should_show_prompt,
     LocalSaveIBANPromptCallback callback) {
-  NOTIMPLEMENTED();
-  // TODO(crbug.com/1349109): Implement SaveIBANBubbleController to show
-  // prompt bubble for local save.
+  // Do lazy initialization of SaveIbanBubbleControllerImpl.
+  SaveIbanBubbleControllerImpl::CreateForWebContents(web_contents());
+  SaveIbanBubbleControllerImpl::FromWebContents(web_contents())
+      ->OfferLocalSave(iban, should_show_prompt, std::move(callback));
 }
 
 void ChromeAutofillClient::ShowWebauthnOfferDialog(
@@ -612,11 +626,8 @@ void ChromeAutofillClient::ConfirmSaveCreditCardLocally(
   DCHECK(options.show_prompt);
   infobars::ContentInfoBarManager::FromWebContents(web_contents())
       ->AddInfoBar(CreateSaveCardInfoBarMobile(
-          std::make_unique<AutofillSaveCardInfoBarDelegateMobile>(
-              /*upload=*/false, options, card, LegalMessageLines(),
-              AutofillClient::UploadSaveCardPromptCallback(),
-              /*local_save_card_callback=*/std::move(callback),
-              AccountInfo())));
+          AutofillSaveCardInfoBarDelegateMobile::CreateForLocalSave(
+              options, card, std::move(callback))));
 #else
   // Do lazy initialization of SaveCardBubbleControllerImpl.
   SaveCardBubbleControllerImpl::CreateForWebContents(web_contents());
@@ -640,10 +651,9 @@ void ChromeAutofillClient::ConfirmSaveCreditCardToCloud(
       identity_manager->GetPrimaryAccountInfo(signin::ConsentLevel::kSignin));
   infobars::ContentInfoBarManager::FromWebContents(web_contents())
       ->AddInfoBar(CreateSaveCardInfoBarMobile(
-          std::make_unique<AutofillSaveCardInfoBarDelegateMobile>(
-              /*upload=*/true, options, card, legal_message_lines,
-              /*upload_save_card_callback=*/std::move(callback),
-              AutofillClient::LocalSaveCardPromptCallback(), account_info)));
+          AutofillSaveCardInfoBarDelegateMobile::CreateForUploadSave(
+              options, card, std::move(callback), legal_message_lines,
+              account_info)));
 #else
   // Do lazy initialization of SaveCardBubbleControllerImpl.
   SaveCardBubbleControllerImpl::CreateForWebContents(web_contents());
@@ -1086,6 +1096,10 @@ void ChromeAutofillClient::OnWebContentsFocused(
 }
 
 #if !BUILDFLAG(IS_ANDROID)
+void ChromeAutofillClient::OnZoomControllerDestroyed() {
+  zoom_observation_.Reset();
+}
+
 void ChromeAutofillClient::OnZoomChanged(
     const zoom::ZoomController::ZoomChangedEventData& data) {
   HideAutofillPopup(PopupHidingReason::kContentAreaMoved);
@@ -1096,18 +1110,6 @@ void ChromeAutofillClient::OnZoomChanged(
 ChromeAutofillClient::ChromeAutofillClient(content::WebContents* web_contents)
     : content::WebContentsUserData<ChromeAutofillClient>(*web_contents),
       content::WebContentsObserver(web_contents),
-      payments_client_(std::make_unique<payments::PaymentsClient>(
-          Profile::FromBrowserContext(web_contents->GetBrowserContext())
-              ->GetURLLoaderFactory(),
-          GetIdentityManager(),
-          GetPersonalDataManager(),
-          Profile::FromBrowserContext(web_contents->GetBrowserContext())
-              ->IsOffTheRecord())),
-      form_data_importer_(std::make_unique<FormDataImporter>(
-          this,
-          payments_client_.get(),
-          GetPersonalDataManager(),
-          GetPersonalDataManager()->app_locale())),
       log_manager_(
           // TODO(crbug.com/928595): Replace the closure with a callback to the
           // renderer that indicates if log messages should be sent from the
@@ -1126,16 +1128,11 @@ ChromeAutofillClient::ChromeAutofillClient(content::WebContents* web_contents)
   GetStrikeDatabase();
 
 #if !BUILDFLAG(IS_ANDROID)
-  // Since ZoomController is also a WebContentsObserver, we need to be careful
-  // about disconnecting from it since the relative order of destruction of
-  // WebContentsObservers is not guaranteed. ZoomController silently clears
-  // its ZoomObserver list during WebContentsDestroyed() so there's no need
-  // to explicitly remove ourselves on destruction.
-  zoom::ZoomController* zoom_controller =
-      zoom::ZoomController::FromWebContents(web_contents);
   // There may not always be a ZoomController, e.g. in tests.
-  if (zoom_controller)
-    zoom_controller->AddObserver(this);
+  if (auto* zoom_controller =
+          zoom::ZoomController::FromWebContents(web_contents)) {
+    zoom_observation_.Observe(zoom_controller);
+  }
 #endif
 }
 

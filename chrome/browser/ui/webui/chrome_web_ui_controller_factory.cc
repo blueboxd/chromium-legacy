@@ -989,8 +989,7 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
     return &NewWebUI<ash::printing::printing_manager::PrintManagementUI>;
   if (url.host_piece() == ash::kChromeUIScanningAppHost)
     return &NewWebUI<ash::ScanningUI>;
-  if ((ash::shimless_rma::HasLaunchRmaSwitchAndIsAllowed() ||
-       ash::features::IsShimlessRMAFlowEnabled()) &&
+  if (ash::shimless_rma::HasLaunchRmaSwitchAndIsAllowed() &&
       url.host_piece() == ash::kChromeUIShimlessRMAHost) {
     return &NewWebUI<ash::ShimlessRMADialogUI>;
   }
@@ -1471,7 +1470,7 @@ std::vector<GURL> ChromeWebUIControllerFactory::GetListOfAcceptableURLs() {
         GURL(chrome::kChromeUIBluetoothPairingURL),
         GURL(ash::kChromeUICameraAppURL), GURL(chrome::kOsUIComponentsURL),
         GURL(chrome::kChromeUICrashesUrl), GURL(chrome::kOsUICrashesURL),
-        GURL(chrome::kOsUICreditsURL),
+        GURL(chrome::kChromeUICreditsURL), GURL(chrome::kOsUICreditsURL),
         GURL(chrome::kChromeUIBorealisCreditsURL),
         GURL(chrome::kChromeUICloudUploadURL),
         GURL(chrome::kChromeUICrostiniCreditsURL),
@@ -1515,7 +1514,8 @@ std::vector<GURL> ChromeWebUIControllerFactory::GetListOfAcceptableURLs() {
         GURL(chrome::kOsUISettingsURL), GURL(chrome::kOsUISignInInternalsURL),
         GURL(chrome::kChromeUISlowURL), GURL(chrome::kChromeUISmbShareURL),
         GURL(chrome::kOsUISyncInternalsURL), GURL(chrome::kOsUISysInternalsUrl),
-        GURL(chrome::kOsUITermsURL), GURL(chrome::kChromeUIUserImageURL),
+        GURL(chrome::kChromeUITermsURL), GURL(chrome::kOsUITermsURL),
+        GURL(chrome::kChromeUIUserImageURL), GURL(chrome::kChromeUIVersionURL),
         GURL(chrome::kOsUIVersionURL), GURL(chrome::kChromeUIVmUrl),
         GURL(chrome::kOsUISystemURL), GURL(chrome::kOsUIHelpAppURL),
         GURL(chrome::kOsUINetExportURL),

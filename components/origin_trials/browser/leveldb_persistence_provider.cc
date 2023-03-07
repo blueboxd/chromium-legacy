@@ -9,12 +9,15 @@
 #include <vector>
 
 #include "base/containers/flat_map.h"
+#include "base/containers/flat_set.h"
 #include "base/files/file_path.h"
 #include "base/functional/bind.h"
 #include "base/functional/callback_helpers.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_functions.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/ranges/algorithm.h"
+#include "base/strings/string_util.h"
 #include "base/synchronization/lock.h"
 #include "base/task/sequenced_task_runner.h"
 #include "base/task/task_traits.h"
@@ -27,12 +30,27 @@
 #include "components/origin_trials/proto/db_trial_token.pb.h"
 #include "components/origin_trials/proto/proto_util.h"
 #include "content/public/browser/browser_thread.h"
+#include "net/base/schemeful_site.h"
 #include "third_party/blink/public/common/origin_trials/trial_token_validator.h"
 #include "url/origin.h"
 
 namespace origin_trials {
 
 namespace {
+
+// Check to see if |token_origin_host| has any of the strings in
+// |partition_sites| as a suffix.
+bool HasFirstPartyPartition(
+    const url::Origin token_origin_host,
+    const google::protobuf::RepeatedPtrField<std::string>& partition_sites) {
+  std::string host_key = net::SchemefulSite(token_origin_host).Serialize();
+  for (const std::string& site : partition_sites) {
+    if (site == host_key) {
+      return true;
+    }
+  }
+  return false;
+}
 
 const base::FilePath::StringPieceType kPersistentTrialTokenDbPath =
     FILE_PATH_LITERAL("PersistentOriginTrials");
@@ -71,9 +89,21 @@ std::unique_ptr<LevelDbPersistenceProvider::DbLoadResult> BuildMapFromDb(
           it->token_signature(), current_time);
 
       if (valid) {
+        UMA_HISTOGRAM_COUNTS_100(
+            "OriginTrials.PersistentOriginTrial.PartitionSetSize",
+            it->partition_sites().size());
+        UMA_HISTOGRAM_BOOLEAN(
+            "OriginTrials.PersistentOriginTrial.TokenHasFirstPartyPartition",
+            HasFirstPartyPartition(key, it->partition_sites()));
+        // Move the strings out of the protobuffer to avoid allocations
+        base::flat_set<std::string> partition_sites;
+        for (std::string& site : *it->mutable_partition_sites()) {
+          partition_sites.insert(std::move(site));
+        }
         new_tokens.emplace(std::move(*it->mutable_trial_name()), token_expiry,
                            usage_restriction,
-                           std::move(*it->mutable_token_signature()));
+                           std::move(*it->mutable_token_signature()),
+                           std::move(partition_sites));
       }
     }
 
@@ -173,16 +203,14 @@ void LevelDbPersistenceProvider::OnMapBuild(
       "OriginTrials.PersistentOriginTrial.OriginsAddedBeforeDbLoad",
       trial_status_cache_->size());
 
-  // Add/update any keys that were inserted after the data load was triggered,
-  // and persist them to the database.
-  for (const auto& pair : *trial_status_cache_) {
-    result->result_map->insert_or_assign(pair.first, pair.second);
-    result->updated_entries->insert_or_assign(pair.first, pair.second);
-  }
+  // Add/update any keys that were inserted after the data load was triggered.
+  MergeCacheIntoLoadResult(*result);
+
+  // Activate the new cache.
   trial_status_cache_.swap(result->result_map);
 
   // Update the database with any changes or deletions caused by expired
-  // tokens.
+  // tokens or pre-load writes.
   if (!result->updated_entries->empty() || !result->expired_keys->empty()) {
     std::unique_ptr<ProtoKeyEntryVector> update_vector =
         std::make_unique<ProtoKeyEntryVector>();
@@ -202,6 +230,41 @@ void LevelDbPersistenceProvider::OnMapBuild(
       "OriginTrials.PersistentOriginTrial.OriginLookupsBeforeDbLoad",
       lookups_before_db_loaded_);
   db_loaded_ = true;  // Stop counting
+}
+
+void LevelDbPersistenceProvider::MergeCacheIntoLoadResult(
+    DbLoadResult& result) {
+  // Merge the |trial_status_cache_| into the |result.result_map| to update the
+  // entries loaded from the database.
+  for (const auto& [cache_origin, cache_tokens] : *trial_status_cache_) {
+    auto find_iter = result.result_map->find(cache_origin);
+    if (find_iter == result.result_map->end()) {
+      // This is a completely new origin, add it directly.
+      (*result.result_map)[cache_origin] = cache_tokens;
+    } else {
+      // The |result.result_map| already has a set of tokens for the
+      // |cache_origin|, merge the |cache_tokens| into the |result.result_map|.
+      base::flat_set<PersistedTrialToken>& destination_set = find_iter->second;
+      for (const PersistedTrialToken& token : cache_tokens) {
+        auto token_iter = destination_set.find(token);
+        if (token_iter == destination_set.end()) {
+          // No comparable token exists in the set, insert the new one
+          destination_set.insert(token);
+        } else {
+          // The token already exists, insert the cached partition sites.
+          token_iter->partition_sites.insert(token.partition_sites.begin(),
+                                             token.partition_sites.end());
+        }
+      }
+    }
+  }
+
+  // Ensure changes are written back to the database as well by updating
+  // modified entries in |result.updated_entries|.
+  for (const auto& [cache_origin, ignored] : *trial_status_cache_) {
+    (*result.updated_entries)[cache_origin] =
+        (*result.result_map)[cache_origin];
+  }
 }
 
 base::flat_set<PersistedTrialToken>

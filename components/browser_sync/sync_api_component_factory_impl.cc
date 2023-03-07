@@ -23,6 +23,7 @@
 #include "components/autofill/core/browser/webdata/autofill_wallet_sync_bridge.h"
 #include "components/autofill/core/browser/webdata/autofill_wallet_usage_data_sync_bridge.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
+#include "components/autofill/core/browser/webdata/contact_info_model_type_controller.h"
 #include "components/autofill/core/browser/webdata/contact_info_sync_bridge.h"
 #include "components/browser_sync/active_devices_provider_impl.h"
 #include "components/browser_sync/browser_sync_client.h"
@@ -31,6 +32,8 @@
 #include "components/history/core/common/pref_names.h"
 #include "components/password_manager/core/browser/password_store_interface.h"
 #include "components/password_manager/core/browser/sync/password_model_type_controller.h"
+#include "components/power_bookmarks/core/power_bookmark_features.h"
+#include "components/power_bookmarks/core/power_bookmark_service.h"
 #include "components/prefs/pref_service.h"
 #include "components/reading_list/core/reading_list_model.h"
 #include "components/reading_list/features/reading_list_switches.h"
@@ -155,7 +158,8 @@ SyncApiComponentFactoryImpl::SyncApiComponentFactoryImpl(
         profile_password_store,
     const scoped_refptr<password_manager::PasswordStoreInterface>&
         account_password_store,
-    sync_bookmarks::BookmarkSyncService* bookmark_sync_service)
+    sync_bookmarks::BookmarkSyncService* bookmark_sync_service,
+    power_bookmarks::PowerBookmarkService* power_bookmark_service)
     : sync_client_(sync_client),
       channel_(channel),
       ui_thread_(ui_thread),
@@ -168,7 +172,8 @@ SyncApiComponentFactoryImpl::SyncApiComponentFactoryImpl(
       web_data_service_in_memory_(web_data_service_in_memory),
       profile_password_store_(profile_password_store),
       account_password_store_(account_password_store),
-      bookmark_sync_service_(bookmark_sync_service) {
+      bookmark_sync_service_(bookmark_sync_service),
+      power_bookmark_service_(power_bookmark_service) {
   DCHECK(sync_client_);
 }
 
@@ -226,12 +231,21 @@ SyncApiComponentFactoryImpl::CreateCommonDataTypeControllers(
     // disabled.
     if (base::FeatureList::IsEnabled(syncer::kSyncEnableContactInfoDataType) &&
         !disabled_types.Has(syncer::CONTACT_INFO)) {
-      controllers.push_back(std::make_unique<syncer::ModelTypeController>(
-          syncer::CONTACT_INFO,
-          std::make_unique<syncer::ProxyModelTypeControllerDelegate>(
-              db_thread_, base::BindRepeating(
-                              &ContactInfoDelegateFromDataService,
-                              base::RetainedRef(web_data_service_on_disk_)))));
+      // The same delegate is used for full sync and transport mode.
+      controllers.push_back(
+          std::make_unique<autofill::ContactInfoModelTypeController>(
+              /*delegate_for_full_sync_mode=*/
+              std::make_unique<syncer::ProxyModelTypeControllerDelegate>(
+                  db_thread_,
+                  base::BindRepeating(
+                      &ContactInfoDelegateFromDataService,
+                      base::RetainedRef(web_data_service_on_disk_))),
+              /*delegate_for_transport_mode=*/
+              std::make_unique<syncer::ProxyModelTypeControllerDelegate>(
+                  db_thread_,
+                  base::BindRepeating(
+                      &ContactInfoDelegateFromDataService,
+                      base::RetainedRef(web_data_service_on_disk_)))));
     }
 
     // Wallet data sync is enabled by default. Register unless explicitly
@@ -288,6 +302,14 @@ SyncApiComponentFactoryImpl::CreateCommonDataTypeControllers(
               bookmark_sync_service_
                   ->GetBookmarkSyncControllerDelegate(favicon_service)
                   .get())));
+    }
+
+    if (!disabled_types.Has(syncer::POWER_BOOKMARK) &&
+        power_bookmark_service_ &&
+        base::FeatureList::IsEnabled(power_bookmarks::kPowerBookmarkBackend)) {
+      controllers.push_back(std::make_unique<ModelTypeController>(
+          syncer::POWER_BOOKMARK,
+          power_bookmark_service_->CreateSyncControllerDelegate()));
     }
   }
 

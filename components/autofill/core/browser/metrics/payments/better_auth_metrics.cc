@@ -5,7 +5,6 @@
 #include "components/autofill/core/browser/metrics/payments/better_auth_metrics.h"
 
 #include "base/metrics/histogram_functions.h"
-#include "base/metrics/histogram_macros.h"
 #include "components/autofill/core/browser/metrics/autofill_metrics.h"
 
 namespace autofill::autofill_metrics {
@@ -23,8 +22,15 @@ void LogCardUnmaskDurationAfterWebauthn(
       duration);
 }
 
-void LogCardUnmaskPreflightCalled() {
-  UMA_HISTOGRAM_BOOLEAN("Autofill.BetterAuth.CardUnmaskPreflightCalled", true);
+void LogCardUnmaskPreflightInitiated() {
+  base::UmaHistogramBoolean("Autofill.BetterAuth.CardUnmaskPreflightInitiated",
+                            true);
+}
+
+void LogCardUnmaskPreflightCalled(bool is_user_opted_in) {
+  base::UmaHistogramBoolean(
+      "Autofill.BetterAuth.CardUnmaskPreflightCalledWithFidoOptInStatus",
+      is_user_opted_in);
 }
 
 void LogCardUnmaskPreflightDuration(const base::TimeDelta& duration) {

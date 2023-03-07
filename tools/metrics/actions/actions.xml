@@ -9058,17 +9058,17 @@ should be able to be added at any place in this file.
 
 <action name="Find">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of this user action.</description>
+  <description>For iOS: see IOS.FindInPage.SearchStarted</description>
 </action>
 
 <action name="FindNext">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of this user action.</description>
+  <description>For iOS: see IOS.FindInPage.FindNext</description>
 </action>
 
 <action name="FindPrevious">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of this user action.</description>
+  <description>For iOS: see IOS.FindInPage.FindPrevious</description>
 </action>
 
 <action name="FindString">
@@ -11462,6 +11462,38 @@ should be able to be added at any place in this file.
   <description>
     The number of times the user triggered the &quot;view-location&quot; context
     after a long press on an address.
+  </description>
+</action>
+
+<action name="IOS.FindInPage.FindNext">
+  <owner>qpubert@google.com</owner>
+  <owner>djean@chromium.org</owner>
+  <description>
+    The number of times the user navigated to the next match in Find in Page on
+    iOS. For instance, the user pressed the Next button in the system Find panel
+    or Chrome Find bar, or used the associated keybinding.
+  </description>
+</action>
+
+<action name="IOS.FindInPage.FindPrevious">
+  <owner>qpubert@google.com</owner>
+  <owner>djean@chromium.org</owner>
+  <description>
+    The number of times the user navigated to the previous match in Find in Page
+    on iOS. For instance, the user pressed the Previous button in the system
+    Find panel or Chrome Find bar, or used the associated keybinding.
+  </description>
+</action>
+
+<action name="IOS.FindInPage.SearchStarted">
+  <owner>qpubert@google.com</owner>
+  <owner>djean@chromium.org</owner>
+  <description>
+    The number of times the user started a new Find in Page search on iOS. This
+    is recorded every time the Chrome Find bar is presented and every time the
+    user edits the query. This is not recorded if the Find in Page variant uses
+    the system Find panel (bottom of the screen, right above the keyboard) as
+    opposed to the Chrome Find bar (top of the screen).
   </description>
 </action>
 
@@ -28730,6 +28762,14 @@ should be able to be added at any place in this file.
   <description>User clicks the extensions row in safety check.</description>
 </action>
 
+<action name="Settings.SafetyCheck.ReviewUnusedSitePermissions">
+  <owner>sideyilmaz@chromium.org</owner>
+  <owner>msramek@chromium.org</owner>
+  <description>
+    User clicks the button in the unused site permissions row in safety check.
+  </description>
+</action>
+
 <action name="Settings.SafetyCheck.Start">
   <owner>rainhard@chromium.org</owner>
   <owner>andzaytsev@google.com</owner>
@@ -30614,6 +30654,15 @@ should be able to be added at any place in this file.
   <description>
     Recorded when a user signs in again from the force sign in auth error
     warning modal dialog.
+  </description>
+</action>
+
+<action name="Signin_Signin_FromForYouFre">
+  <owner>dgn@chromium.org</owner>
+  <owner>chrome-signin-team@chromium.org</owner>
+  <description>
+    Recorded when a user taps in the sign-in promo in the Desktop First Run
+    Experience
   </description>
 </action>
 
@@ -33273,12 +33322,27 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
-<action name="Suggestions.Tile.Tapped.StartSurface">
+<action name="Suggestions.Tile.Tapped.NewTabPage">
   <owner>hanxi@chromium.org</owner>
+  <owner>xinyiji@chromium.org</owner>
   <owner>clank-start@google.com</owner>
   <description>
-    User tapped on a suggestions tile while viewing the start surface.
-    Android-only.
+    User tapped on a suggestions tile while viewing the new tab page. This is
+    recorded when 1) user clicks on most visited tiles; 2) long press on most
+    visited tiles to open in a new incognito tab. This is consistent with
+    Suggestions.Tile.Tapped.StartSurface on Start Surface. Android-only.
+  </description>
+</action>
+
+<action name="Suggestions.Tile.Tapped.StartSurface">
+  <owner>hanxi@chromium.org</owner>
+  <owner>xinyiji@chromium.org</owner>
+  <owner>clank-start@google.com</owner>
+  <description>
+    User tapped on a suggestions tile while viewing the start surface. This is
+    recorded when 1) user clicks on most visited tiles; 2) long press on most
+    visited tiles to open in a new incognito tab. This is consistent with
+    Suggestions.Tile.Tapped.NewTabPage on NTP. Android-only.
   </description>
 </action>
 
@@ -36125,6 +36189,12 @@ should be able to be added at any place in this file.
   <suffix name="IntentChip"
       label="In product help for opening a webpage in an app using the intent
              chip."/>
+  <suffix name="iOSDefaultBrowserBadgeEligibility"
+      label="For iOSDefaultBrowserBadgeEligibility feature"/>
+  <suffix name="iOSDefaultBrowserOverflowMenuBadge"
+      label="For iOSDefaultBrowserOverflowMenuBadge feature"/>
+  <suffix name="iOSDefaultBrowserSettingsBadge"
+      label="For iOSDefaultBrowserSettingsBadge feature"/>
   <suffix name="KeyboardAccessoryAddressFilling"
       label="For KeyboardAccessoryAddressFilling feature."/>
   <suffix name="KeyboardAccessoryBarSwiping"
@@ -36151,6 +36221,7 @@ should be able to be added at any place in this file.
       label="For the overflow menu help tip on iOS."/>
   <suffix name="PageInfo" label="In product help for opening PageInfo."/>
   <suffix name="PageInfoStoreInfo" label="For PageInfoStoreInfo feature."/>
+  <suffix name="PageZoom" label="For Page Zoom feature."/>
   <suffix name="PasswordsAccountStorage"
       label="For PasswordsAccountStorage feature."/>
   <suffix name="PasswordSuggestions" label="For PasswordSuggestions feature."/>
@@ -36189,6 +36260,10 @@ should be able to be added at any place in this file.
       label="For the RequestDesktopSiteAppMenu feature."/>
   <suffix name="RequestDesktopSiteDefaultOn"
       label="For the RequestDesktopSiteDefaultOn feature."/>
+  <suffix name="RequestDesktopSiteExceptionsGeneric"
+      label="For the RequestDesktopSiteExceptionsGeneric feature."/>
+  <suffix name="RequestDesktopSiteExceptionsSpecific"
+      label="For the RequestDesktopSiteExceptionsSpecific feature."/>
   <suffix name="RequestDesktopSiteOptIn"
       label="For the RequestDesktopSiteOptIn feature."/>
   <suffix name="SharedHighlightingBuilder"
@@ -36521,6 +36596,12 @@ should be able to be added at any place in this file.
       label="Users opened TabSelectionEditorV2 from the Tab Dialog."/>
   <suffix name="OpenFromGrid"
       label="Users opened TabSelectionEditorV2 from the Tab Switcher."/>
+  <suffix name="OpenLongPressInDialog"
+      label="Users enacted a longpress action from the Tab Dialog to enter
+             TabSelectionEditorV2."/>
+  <suffix name="OpenLongPressInGrid"
+      label="Users enacted a longpress action from the Tab Switcher to enter
+             TabSelectionEditorV2."/>
   <suffix name="SelectAll"
       label="Users tapped on the select all button in TabSelectionEditorV2."/>
   <suffix name="SharedTabAsTextList"

@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "ash/constants/ash_features.h"
 #include "ash/constants/ash_pref_names.h"
 #include "ash/public/cpp/wallpaper/wallpaper_controller.h"
 #include "ash/rgb_keyboard/rgb_keyboard_manager.h"
@@ -86,6 +87,10 @@ void KeyboardBacklightColorController::RegisterPrefs(
   registry->RegisterIntegerPref(
       prefs::kPersonalizationKeyboardBacklightColor,
       static_cast<int>(personalization_app::mojom::BacklightColor::kWallpaper));
+  if (features::IsMultiZoneRgbKeyboardEnabled()) {
+    registry->RegisterDictionaryPref(
+        prefs::kPersonalizationKeyboardBacklightZoneColors);
+  }
 }
 
 void KeyboardBacklightColorController::SetBacklightColor(
@@ -135,11 +140,8 @@ void KeyboardBacklightColorController::OnRgbKeyboardSupportedChanged(
 
       // Since |wallpaper_controller_observation_| does not start observering
       // until after Chrome is initially started, the rgb keyboard needs to be
-      // initialized to match the wallpaper if the colors have been calculated
-      // before.
-      if (wallpaper_controller->GetKMeanColor() != kInvalidWallpaperColor) {
-        OnWallpaperColorsChanged();
-      }
+      // initialized to match the wallpaper.
+      OnWallpaperColorsChanged();
     }
     if (Shell::Get()->session_controller()->GetSessionState() ==
         session_manager::SessionState::LOGIN_PRIMARY) {
@@ -191,6 +193,12 @@ void KeyboardBacklightColorController::DisplayBacklightColor(
   DVLOG(3) << __func__ << " backlight_color=" << backlight_color;
   switch (backlight_color) {
     case personalization_app::mojom::BacklightColor::kWallpaper: {
+      // If colors have not been calculated yet, do nothing.
+      const auto* wallpaper_controller = Shell::Get()->wallpaper_controller();
+      DCHECK(wallpaper_controller);
+      if (!wallpaper_controller->calculated_colors().has_value()) {
+        return;
+      }
       SkColor color = ConvertBacklightColorToSkColor(backlight_color);
       bool valid_color = color != kInvalidWallpaperColor;
       base::UmaHistogramBoolean(
@@ -221,6 +229,9 @@ void KeyboardBacklightColorController::DisplayBacklightColor(
     }
     case personalization_app::mojom::BacklightColor::kRainbow:
       rgb_keyboard_manager->SetRainbowMode();
+      break;
+    case personalization_app::mojom::BacklightColor::kMultiZone:
+      // TODO(b/266588717): Handle displaying multi-zone colors.
       break;
   }
 }

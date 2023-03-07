@@ -36,6 +36,7 @@ import org.junit.Test;
 import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
 import org.mockito.quality.Strictness;
@@ -72,12 +73,11 @@ import java.util.regex.Pattern;
  * Instrumentation tests for {@link ExternalNavigationHandler}.
  */
 @RunWith(BaseJUnit4ClassRunner.class)
-// clang-format off
 @Batch(Batch.UNIT_TESTS)
 @Features.DisableFeatures(ExternalIntentsFeatures.EXTERNAL_NAVIGATION_DEBUG_LOGS_NAME)
-@Features.EnableFeatures(ExternalIntentsFeatures.BLOCK_EXTERNAL_FORM_SUBMIT_WITHOUT_GESTURE_NAME)
+@Features.EnableFeatures({ExternalIntentsFeatures.BLOCK_EXTERNAL_FORM_SUBMIT_WITHOUT_GESTURE_NAME,
+        ExternalIntentsFeatures.BLOCK_SUBFRAME_INTENT_TO_SELF_NAME})
 public class ExternalNavigationHandlerTest {
-    // clang-format on
     // Expectations
     private static final int IGNORE = 0x0;
     private static final int START_INCOGNITO = 0x1;
@@ -1222,7 +1222,7 @@ public class ExternalNavigationHandlerTest {
 
                 // Inform the handler that the user decided not to launch the intent and verify that
                 // the appropriate URL is navigated to in the browser.
-                mDelegate.incognitoDialogUserDecisionCallback.onResult(new Boolean(false));
+                mDelegate.incognitoDialogUserDecisionCallback.onResult(Boolean.valueOf(false));
                 Assert.assertEquals(playUrl, mUrlHandler.mNewUrlAfterClobbering);
                 mUrlHandler.mNewUrlAfterClobbering = null;
                 mDelegate.incognitoDialogUserDecisionCallback = null;
@@ -1240,7 +1240,7 @@ public class ExternalNavigationHandlerTest {
 
                 // Inform the handler that the user decided to launch the intent and verify that
                 // the intent was launched.
-                mDelegate.incognitoDialogUserDecisionCallback.onResult(new Boolean(true));
+                mDelegate.incognitoDialogUserDecisionCallback.onResult(Boolean.valueOf(true));
                 Assert.assertNull(mUrlHandler.mNewUrlAfterClobbering);
                 Assert.assertEquals(1, monitor.getHits());
                 Assert.assertEquals("market://details?id=com.imdb.mobile&referrer=mypage",
@@ -1284,7 +1284,7 @@ public class ExternalNavigationHandlerTest {
 
                 // Inform the handler that the user decided not to launch the intent and verify that
                 // the appropriate URL is navigated to in the browser.
-                mDelegate.incognitoDialogUserDecisionCallback.onResult(new Boolean(false));
+                mDelegate.incognitoDialogUserDecisionCallback.onResult(Boolean.valueOf(false));
                 Assert.assertEquals("https://example.com/", mUrlHandler.mNewUrlAfterClobbering);
 
                 mUrlHandler.mNewUrlAfterClobbering = null;
@@ -1304,12 +1304,41 @@ public class ExternalNavigationHandlerTest {
 
                 // Inform the handler that the user decided not to launch the intent and verify that
                 // the appropriate URL is navigated to in the browser.
-                mDelegate.incognitoDialogUserDecisionCallback.onResult(new Boolean(false));
+                mDelegate.incognitoDialogUserDecisionCallback.onResult(Boolean.valueOf(false));
                 Assert.assertEquals("http://google.com/", mUrlHandler.mNewUrlAfterClobbering);
             });
         } finally {
             activity.finish();
         }
+    }
+
+    @Test
+    @MediumTest
+    public void testIncognitoAlertDialogDismissedOnNavigation() {
+        // IMDB app is installed.
+        mDelegate.add(new IntentActivity("imdb:", INTENT_APP_PACKAGE_NAME));
+
+        mUrlHandler.mCanShowIncognitoDialog = true;
+        RedirectHandler redirectHandler = RedirectHandler.create();
+        redirectHandler.updateNewUrlLoading(PageTransition.LINK, false, true, 0, 0, false, true);
+        checkUrl(INTENT_URL_WITH_FALLBACK_URL)
+                .withHasUserGesture(true)
+                .withIsIncognito(true)
+                .withRedirectHandler(redirectHandler)
+                .expecting(OverrideUrlLoadingResultType.OVERRIDE_WITH_ASYNC_ACTION,
+                        OverrideUrlLoadingAsyncActionType.UI_GATING_INTENT_LAUNCH, START_INCOGNITO);
+        Assert.assertTrue(mUrlHandler.mStartIncognitoIntentCalled);
+
+        // Callback won't have been run with the mocked AlertDialog.
+        mUrlHandler.mAsyncActionCallback.onResult(AsyncActionTakenParams.forNoAction());
+
+        Mockito.doReturn(true).when(mAlertDialog).isShowing();
+        redirectHandler.updateNewUrlLoading(PageTransition.LINK, false, false, 0, 0, false, true);
+        checkUrl(YOUTUBE_URL)
+                .withIsIncognito(true)
+                .withRedirectHandler(redirectHandler)
+                .expecting(OverrideUrlLoadingResultType.NO_OVERRIDE, IGNORE);
+        Mockito.verify(mAlertDialog).cancel();
     }
 
     @Test
@@ -2561,6 +2590,40 @@ public class ExternalNavigationHandlerTest {
                 2, redirectHandler.getLastCommittedEntryIndexBeforeStartingNavigation());
     }
 
+    private void doTestSubframeIntentTargetsSelf(boolean targetsPackage) {
+        mUrlHandler.mResolveInfoContainsSelf = true;
+        if (!targetsPackage) {
+            mDelegate.setWillResolveToDisambiguationDialog(true);
+        }
+        String url = "intent://www.example.com/#Intent;scheme=https;"
+                + "action=android.intent.action.VIEW;package=" + SELF_PACKAGE_NAME
+                + ";S.browser_fallback_url=https://bad.com;end";
+
+        RedirectHandler redirectHandler = RedirectHandler.create();
+        redirectHandler.updateNewUrlLoading(
+                PageTransition.AUTO_SUBFRAME, false, true, 0, 0, false, true);
+
+        checkUrl(url)
+                .withIsMainFrame(false)
+                .withHasUserGesture(true)
+                .withRedirectHandler(redirectHandler)
+                .withPageTransition(PageTransition.AUTO_SUBFRAME)
+                .expecting(OverrideUrlLoadingResultType.OVERRIDE_WITH_NAVIGATE_TAB, IGNORE);
+        Assert.assertEquals("https://www.example.com/", mUrlHandler.mNewUrlAfterClobbering);
+    }
+
+    @Test
+    @SmallTest
+    public void testSubframeIntentTargetsSelf_Package() {
+        doTestSubframeIntentTargetsSelf(true);
+    }
+
+    @Test
+    @SmallTest
+    public void testSubframeIntentTargetsSelf_Chooser() {
+        doTestSubframeIntentTargetsSelf(false);
+    }
+
     private static List<ResolveInfo> makeResolveInfos(ResolveInfo... infos) {
         return Arrays.asList(infos);
     }
@@ -2718,6 +2781,7 @@ public class ExternalNavigationHandlerTest {
 
         public void reset() {
             mStartActivityIntent = null;
+            mStartIncognitoIntentCalled = false;
         }
 
         @Override
@@ -2741,7 +2805,7 @@ public class ExternalNavigationHandlerTest {
             String dataString = intent.getDataString();
             if (intent.getScheme() != null) {
                 if (dataString.startsWith("http://") || dataString.startsWith("https://")) {
-                    list.add(newResolveInfo("chrome"));
+                    list.add(newResolveInfo(SELF_PACKAGE_NAME));
                 }
                 for (IntentActivity intentActivity : mIntentActivities) {
                     if (dataString.startsWith(intentActivity.urlPrefix())) {
@@ -2895,7 +2959,7 @@ public class ExternalNavigationHandlerTest {
         }
 
         @Override
-        public boolean shouldAvoidDisambiguationDialog(Intent intent) {
+        public boolean shouldAvoidDisambiguationDialog(GURL intentDataUrl) {
             return mShouldAvoidDisambiguationDialog;
         }
 

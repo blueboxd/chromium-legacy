@@ -71,6 +71,7 @@ using blink::WebOptionElement;
 using blink::WebSelectElement;
 using blink::WebString;
 using blink::WebVector;
+using blink::mojom::GenericIssueErrorType;
 
 namespace autofill {
 
@@ -1441,7 +1442,7 @@ void MatchLabelsAndFields(
       // be used.
       // TODO(crbug.com/1339277): Use `root` once the feature is launched.
       label.GetDocument().GetFrame()->AddGenericIssue(
-          blink::mojom::GenericIssueErrorType::kFormLabelForNameError,
+          GenericIssueErrorType::kFormLabelForNameError,
           label.GetDevToolsNodeId());
     }
   }
@@ -1463,7 +1464,7 @@ void MaybeEmitDuplicateIdForInputIssue(
     if (IsAutofillableElement(element) &&
         id_count[element.GetIdAttribute()] > 1) {
       element.GetDocument().GetFrame()->AddGenericIssue(
-          blink::mojom::GenericIssueErrorType::kFormDuplicateIdForInputError,
+          GenericIssueErrorType::kFormDuplicateIdForInputError,
           element.GetDevToolsNodeId());
     }
   }
@@ -1490,8 +1491,20 @@ void MaybeEmitInputWithNoLabelIssue(
     const WebFormControlElement& control_element =
         control_elements[element_index];
     control_element.GetDocument().GetFrame()->AddGenericIssue(
-        blink::mojom::GenericIssueErrorType::kFormInputWithNoLabelError,
+        GenericIssueErrorType::kFormInputWithNoLabelError,
         control_element.GetDevToolsNodeId());
+  }
+}
+
+void MaybeEmitInputWithEmptyIdAndNameIssue(
+    const WebFormControlElement& element) {
+  static base::NoDestructor<WebString> kName("name");
+
+  if (element.GetAttribute(*kName).IsEmpty() &&
+      element.GetIdAttribute().IsEmpty()) {
+    element.GetDocument().GetFrame()->AddGenericIssue(
+        GenericIssueErrorType::kFormEmptyIdAndNameAttributesForInputError,
+        element.GetDevToolsNodeId());
   }
 }
 
@@ -1564,6 +1577,10 @@ bool FormOrFieldsetsToFormData(
         form->unique_renderer_id, control_element, field_data_manager,
         extract_mask, &form->fields.back(), &shadow_fields.back());
     fields_extracted[i] = true;
+
+    if (base::FeatureList::IsEnabled(features::kAutofillEnableDevtoolsIssues)) {
+      MaybeEmitInputWithEmptyIdAndNameIssue(control_element);
+    }
 
     if (base::FeatureList::IsEnabled(features::kAutofillAcrossIframes)) {
       const blink::WebFormElement& ancestor_hint =
@@ -2151,7 +2168,9 @@ void WebFormControlElementToFormField(
       field->name = field->name_attribute.empty() ? field->id_attribute
                                                   : field->name_attribute;
     }
-    ValidateAutocompleteAttributeForElement(element);
+    if (base::FeatureList::IsEnabled(features::kAutofillEnableDevtoolsIssues)) {
+      ValidateAutocompleteAttributeForElement(element);
+    }
     if (field->autocomplete_attribute.empty()) {
       field->autocomplete_attribute = GetAutocompleteAttribute(host);
       field->parsed_autocomplete = ParseAutocompleteAttribute(

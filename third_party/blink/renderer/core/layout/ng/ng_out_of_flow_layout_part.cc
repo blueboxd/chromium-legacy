@@ -8,6 +8,7 @@
 
 #include "third_party/blink/renderer/core/layout/anchor_scroll_data.h"
 #include "third_party/blink/renderer/core/layout/deferred_shaping.h"
+#include "third_party/blink/renderer/core/layout/geometry/writing_mode_converter.h"
 #include "third_party/blink/renderer/core/layout/layout_block.h"
 #include "third_party/blink/renderer/core/layout/layout_box.h"
 #include "third_party/blink/renderer/core/layout/layout_flexible_box.h"
@@ -33,6 +34,7 @@
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
+#include "third_party/blink/renderer/core/view_transition/view_transition_utils.h"
 #include "third_party/blink/renderer/platform/heap/collection_support/clear_collection_scope.h"
 
 namespace blink {
@@ -502,6 +504,34 @@ NGOutOfFlowLayoutPart::GetContainingBlockInfo(
         container_builder_->GridLayoutData(), container_builder_->Borders(),
         {container_builder_->InlineSize(),
          container_builder_->FragmentBlockSize()});
+  }
+
+  // The ::view-transition element is special in that its containing block is
+  // the "snapshot root" rect, rather than a viewport or parent box:
+  // https://drafts.csswg.org/css-view-transitions-1/#selectordef-view-transition.
+  DCHECK(candidate.box);
+  if (ViewTransitionUtils::IsViewTransitionRoot(*candidate.box)) {
+    DCHECK(container_object->IsLayoutView());
+    const ViewTransition* transition =
+        ViewTransitionUtils::GetActiveTransition(candidate.box->GetDocument());
+    DCHECK(transition);
+
+    PhysicalRect physical_snapshot_root_in_frame(
+        PhysicalOffset(transition->GetFrameToSnapshotRootOffset()),
+        PhysicalSize(transition->GetSnapshotRootSize()));
+
+    WritingDirectionMode writing_direction =
+        ConstraintSpace().GetWritingDirection();
+    LogicalSize outer_size = container_builder_->Size();
+    WritingModeConverter converter(writing_direction, outer_size);
+
+    NGOutOfFlowLayoutPart::ContainingBlockInfo containing_block_for_snapshot;
+    containing_block_for_snapshot.rect =
+        converter.ToLogical(physical_snapshot_root_in_frame);
+
+    containing_block_for_snapshot.writing_direction = writing_direction;
+
+    return containing_block_for_snapshot;
   }
 
   return node_style.GetPosition() == EPosition::kAbsolute
@@ -1874,11 +1904,14 @@ const NGLayoutResult* NGOutOfFlowLayoutPart::Layout(
   const NodeInfo& node_info = oof_node_to_layout.node_info;
   const OffsetInfo& offset_info = oof_node_to_layout.offset_info;
 
-  // Reset the |layout_result| computed earlier to allow fragmentation in the
-  // next layout pass, if needed.
-  const NGLayoutResult* layout_result = !fragmentainer_constraint_space
-                                            ? offset_info.initial_layout_result
-                                            : nullptr;
+  const NGLayoutResult* layout_result = offset_info.initial_layout_result;
+  // Reset the layout result computed earlier to allow fragmentation in the next
+  // layout pass, if needed. Also do this if we're inside repeatable content, as
+  // the pre-computed layout result is unusable then.
+  if (fragmentainer_constraint_space ||
+      ConstraintSpace().IsInsideRepeatableContent()) {
+    layout_result = nullptr;
+  }
 
   // Skip this step if we produced a fragment that can be reused when
   // estimating the block-size.

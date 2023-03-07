@@ -66,7 +66,6 @@ class OpaqueBrowserFrameView : public BrowserNonClientFrameView,
   void WindowControlsOverlayEnabledChanged() override;
   gfx::Size GetMinimumSize() const override;
   void PaintAsActiveChanged() override;
-  void UpdateFrameColor() override;
   void OnThemeChanged() override;
 
   // views::NonClientFrameView:
@@ -101,6 +100,7 @@ class OpaqueBrowserFrameView : public BrowserNonClientFrameView,
   bool IsMinimized() const override;
   bool IsFullscreen() const override;
   bool IsTabStripVisible() const override;
+  bool GetBorderlessModeEnabled() const override;
   int GetTabStripHeight() const override;
   bool IsToolbarVisible() const override;
   gfx::Size GetTabstripMinimumSize() const override;

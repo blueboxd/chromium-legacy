@@ -159,8 +159,8 @@ if (is_win) {
     deps = [
       "//base",
       "//build:chromeos_buildflags",
-      "//components/browser_watcher:activity_report",
       "//components/gwp_asan/buildflags",
+      "//components/stability_report",
       "//third_party/crashpad/crashpad/client",
       "//third_party/crashpad/crashpad/handler",
       "//third_party/crashpad/crashpad/minidump",

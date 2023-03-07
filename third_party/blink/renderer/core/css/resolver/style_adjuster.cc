@@ -90,13 +90,13 @@ TouchAction AdjustTouchActionForElement(TouchAction touch_action,
                                         const ComputedStyle& parent_style,
                                         Element* element) {
   Element* document_element = element->GetDocument().documentElement();
-  bool scrolls_overflow = builder.InternalStyle()->ScrollsOverflow();
+  bool scrolls_overflow = builder.ScrollsOverflow();
   if (element && element == element->GetDocument().FirstBodyElement()) {
     // Body scrolls overflow if html root overflow is not visible or the
     // propagation of overflow is stopped by containment.
     if (parent_style.IsOverflowVisibleAlongBothAxes()) {
       if (!parent_style.ShouldApplyAnyContainment(*document_element) &&
-          !builder.InternalStyle()->ShouldApplyAnyContainment(*element)) {
+          !builder.ShouldApplyAnyContainment(*element)) {
         scrolls_overflow = false;
       }
     }
@@ -685,7 +685,7 @@ void StyleAdjuster::AdjustEffectiveTouchAction(
         IsA<HTMLImageElement>(element) || is_replaced_canvas);
   bool is_table_row_or_column = builder.IsDisplayTableRowOrColumnType();
   bool is_layout_object_needed =
-      element && element->LayoutObjectIsNeeded(*builder.InternalStyle());
+      element && element->LayoutObjectIsNeeded(builder.GetDisplayStyle());
 
   TouchAction element_touch_action = TouchAction::kAuto;
   // Touch actions are only supported by elements that support both the CSS
@@ -846,7 +846,7 @@ void StyleAdjuster::AdjustComputedStyle(StyleResolverState& state,
   auto* html_element = DynamicTo<HTMLElement>(element);
   if (html_element &&
       (builder.Display() != EDisplay::kNone ||
-       element->LayoutObjectIsNeeded(*builder.InternalStyle()))) {
+       element->LayoutObjectIsNeeded(builder.GetDisplayStyle()))) {
     AdjustStyleForHTMLElement(builder, *html_element);
   }
 
@@ -1103,7 +1103,7 @@ void StyleAdjuster::AdjustComputedStyle(StyleResolverState& state,
     // needs to be legacy objects, in order to be fragmentable). Set a flag, so
     // that we can quickly determine whether we need to check that an element is
     // compatible with the block fragmentation implementation being used.
-    if (builder.InternalStyle()->SpecifiesColumns() ||
+    if (builder.SpecifiesColumns() ||
         (element && element->GetDocument().Printing())) {
       builder.SetInsideFragmentationContextWithNondeterministicEngine(true);
     }

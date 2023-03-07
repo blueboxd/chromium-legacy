@@ -47,6 +47,12 @@ BASE_DECLARE_FEATURE(kFeedHeaderSettings);
 // its own does nothing; relies on feature parameters.
 BASE_DECLARE_FEATURE(kOverrideFeedSettings);
 
+// Feature flag to enable image caching when loading the Feed.
+BASE_DECLARE_FEATURE(kEnableFeedImageCaching);
+
+// Feature flag to enable synthentic capabilities.
+BASE_DECLARE_FEATURE(kEnableFeedSyntheticCapabilities);
+
 #pragma mark - Feature parameters
 
 // A parameter to indicate whether Reconstructed Templates is enabled for static
@@ -64,6 +70,10 @@ extern const char kDiscoverFeedTopSyncPromoStyleFullWithTitle[];
 
 // A parameter value used for displaying the compact promo style.
 extern const char kDiscoverFeedTopSyncPromoStyleCompact[];
+
+// Feature parameters for the feed header settings.
+extern const char kDisableStickyHeaderForFollowingFeed[];
+extern const char kOverrideFeedHeaderHeight[];
 
 // A parameter value for the default Following sort type to be Sort by Latest.
 extern const char kFollowingFeedDefaultSortTypeSortByLatest[];
@@ -123,6 +133,13 @@ bool IsStickyHeaderDisabledForFollowingFeed();
 // YES if a dot should appear to indicate that there is new content in the
 // Following feed.
 bool IsDotEnabledForNewFollowedContent();
+
+// YES if images in the Feed will be cached.
+bool IsFeedImageCachingEnabled();
+
+// YES if synthetic capabilities will be used to inform the server of client
+// capabilities.
+bool IsFeedSyntheticCapabilitiesEnabled();
 
 // Returns a custom height for the Following feed header if it is overridden
 // from the server, or returns the default value.

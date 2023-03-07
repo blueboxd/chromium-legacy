@@ -1083,11 +1083,6 @@ class CONTENT_EXPORT ContentBrowserClient {
   // else we should do with the file.
   virtual std::string GetDefaultDownloadName();
 
-  // Returns the path to the font lookup table cache directory in which - on
-  // Windows 7 & 8 - we cache font name meta information to perform @font-face {
-  // src: local() } lookups.
-  virtual base::FilePath GetFontLookupTableCacheDir();
-
   // Returns the path to the browser shader disk cache root.
   virtual base::FilePath GetShaderDiskCacheDirectory();
 
@@ -2023,6 +2018,10 @@ class CONTENT_EXPORT ContentBrowserClient {
   // Returns true if the network service should be sandboxed. false otherwise.
   // This is called on the UI thread.
   virtual bool ShouldSandboxNetworkService();
+
+  // Returns true if system DNS resolution should be run outside of the network
+  // service.
+  virtual bool ShouldRunOutOfProcessSystemDnsResolution();
 
   // Browser-side API to log blink UseCounters for events that don't occur in
   // the renderer.

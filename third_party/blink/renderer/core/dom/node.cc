@@ -125,6 +125,7 @@
 #include "third_party/blink/renderer/core/svg/graphics/svg_image.h"
 #include "third_party/blink/renderer/core/svg/svg_element.h"
 #include "third_party/blink/renderer/core/trustedtypes/trusted_script.h"
+#include "third_party/blink/renderer/core/view_transition/view_transition_supplement.h"
 #include "third_party/blink/renderer/core/view_transition/view_transition_utils.h"
 #include "third_party/blink/renderer/platform/bindings/dom_data_store.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
@@ -2228,8 +2229,8 @@ Node::InsertionNotificationRequest Node::InsertedInto(
   }
   if (ParentOrShadowHostNode()->IsInShadowTree())
     SetFlag(kIsInShadowTreeFlag);
-  if (GetDocument().HasAXObjectCache()) {
-    GetDocument().ExistingAXObjectCache()->ChildrenChanged(&insertion_point);
+  if (auto* cache = GetDocument().ExistingAXObjectCache()) {
+    cache->ChildrenChanged(&insertion_point);
   }
   return kInsertionDone;
 }
@@ -2247,8 +2248,8 @@ void Node::RemovedFrom(ContainerNode& insertion_point) {
   }
   if (IsInShadowTree() && !ContainingTreeScope().RootNode().IsShadowRoot())
     ClearFlag(kIsInShadowTreeFlag);
-  if (GetDocument().HasAXObjectCache()) {
-    GetDocument().ExistingAXObjectCache()->Remove(this);
+  if (auto* cache = GetDocument().ExistingAXObjectCache()) {
+    cache->Remove(this);
   }
 }
 
@@ -3383,8 +3384,9 @@ void Node::RemovedFromFlatTree() {
   GetDocument().GetStyleEngine().RemovedFromFlatTree(*this);
 
   // Ensure removal from accessibility cache even if it doesn't have layout.
-  if (GetDocument().HasAXObjectCache())
-    GetDocument().ExistingAXObjectCache()->Remove(this);
+  if (auto* cache = GetDocument().ExistingAXObjectCache()) {
+    cache->Remove(this);
+  }
 }
 
 void Node::RegisterScrollTimeline(ScrollTimeline* timeline) {

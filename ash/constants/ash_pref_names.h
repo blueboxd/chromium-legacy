@@ -102,6 +102,8 @@ extern const char kAccessibilityStickyKeysEnabled[];
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const char kAccessibilitySpokenFeedbackEnabled[];
 COMPONENT_EXPORT(ASH_CONSTANTS)
+extern const char kAccessibilityChromeVoxAutoRead[];
+COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const char kAccessibilityHighContrastEnabled[];
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const char kAccessibilityScreenMagnifierCenterFocus[];
@@ -530,6 +532,9 @@ extern const char kUsbDetectorNotificationEnabled[];
 
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const char kPersonalizationKeyboardBacklightColor[];
+
+COMPONENT_EXPORT(ASH_CONSTANTS)
+extern const char kPersonalizationKeyboardBacklightZoneColors[];
 
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kAutozoomState[];
 

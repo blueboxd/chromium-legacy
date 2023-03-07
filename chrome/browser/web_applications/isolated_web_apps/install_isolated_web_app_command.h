@@ -17,6 +17,7 @@
 #include "base/types/expected.h"
 #include "base/values.h"
 #include "chrome/browser/web_applications/commands/web_app_command.h"
+#include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_response_reader_factory.h"
 #include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_url_info.h"
 #include "chrome/browser/web_applications/os_integration/os_integration_manager.h"
 #include "chrome/browser/web_applications/web_app_id.h"
@@ -83,6 +84,20 @@ class InstallIsolatedWebAppCommand : public WebAppCommandTemplate<AppLock> {
           void(base::expected<InstallIsolatedWebAppCommandSuccess,
                               InstallIsolatedWebAppCommandError>)> callback);
 
+  // Same constructor as above, but additionally exposes the
+  // `response_reader_factory` for providing a mock factory in testing.
+  explicit InstallIsolatedWebAppCommand(
+      const IsolatedWebAppUrlInfo& isolation_info,
+      const IsolationData& isolation_data,
+      std::unique_ptr<content::WebContents> web_contents,
+      std::unique_ptr<WebAppUrlLoader> url_loader,
+      content::BrowserContext& browser_context,
+      base::OnceCallback<
+          void(base::expected<InstallIsolatedWebAppCommandSuccess,
+                              InstallIsolatedWebAppCommandError>)> callback,
+      std::unique_ptr<IsolatedWebAppResponseReaderFactory>
+          response_reader_factory);
+
   InstallIsolatedWebAppCommand(const InstallIsolatedWebAppCommand&) = delete;
   InstallIsolatedWebAppCommand& operator=(const InstallIsolatedWebAppCommand&) =
       delete;
@@ -93,10 +108,9 @@ class InstallIsolatedWebAppCommand : public WebAppCommandTemplate<AppLock> {
 
   ~InstallIsolatedWebAppCommand() override;
 
+  // WebAppCommandTemplate<AppLock>:
   const LockDescription& lock_description() const override;
-
   base::Value ToDebugValue() const override;
-
   void StartWithLock(std::unique_ptr<AppLock> lock) override;
   void OnSyncSourceRemoved() override;
   void OnShutdown() override;
@@ -113,6 +127,11 @@ class InstallIsolatedWebAppCommand : public WebAppCommandTemplate<AppLock> {
                   IconsDownloadedResult result,
                   std::map<GURL, std::vector<SkBitmap>> icons_map,
                   std::map<GURL, int /*http_status_code*/> icons_http_results);
+
+  void CheckTrustAndSignatures();
+  void CheckTrustAndSignaturesOfBundle(const base::FilePath& path);
+  void OnTrustAndSignaturesChecked(
+      absl::optional<IsolatedWebAppResponseReaderFactory::Error> error);
 
   void CreateStoragePartition();
 
@@ -140,6 +159,8 @@ class InstallIsolatedWebAppCommand : public WebAppCommandTemplate<AppLock> {
 
   IsolatedWebAppUrlInfo isolation_info_;
   IsolationData isolation_data_;
+
+  std::unique_ptr<IsolatedWebAppResponseReaderFactory> response_reader_factory_;
 
   std::unique_ptr<content::WebContents> web_contents_;
 

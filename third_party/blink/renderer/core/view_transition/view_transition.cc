@@ -116,23 +116,27 @@ void ViewTransition::ScriptBoundState::HandlePromise(
       break;
     case Response::kRejectAbort: {
       ScriptState::Scope scope(script_state);
-      property->Reject(V8ThrowDOMException::CreateOrEmpty(
-          script_state->GetIsolate(), DOMExceptionCode::kAbortError,
-          kAbortedMessage));
+      auto value = ScriptValue::From(
+          script_state, MakeGarbageCollected<DOMException>(
+                            DOMExceptionCode::kAbortError, kAbortedMessage));
+      property->Reject(value);
       break;
     }
     case Response::kRejectInvalidState: {
       ScriptState::Scope scope(script_state);
-      property->Reject(V8ThrowDOMException::CreateOrEmpty(
-          script_state->GetIsolate(), DOMExceptionCode::kInvalidStateError,
-          kInvalidStateMessage));
+      auto value = ScriptValue::From(
+          script_state,
+          MakeGarbageCollected<DOMException>(
+              DOMExceptionCode::kInvalidStateError, kInvalidStateMessage));
+      property->Reject(value);
       break;
     }
     case Response::kRejectTimeout: {
       ScriptState::Scope scope(script_state);
-      property->Reject(V8ThrowDOMException::CreateOrEmpty(
-          script_state->GetIsolate(), DOMExceptionCode::kTimeoutError,
-          kTimeoutMessage));
+      auto value = ScriptValue::From(
+          script_state, MakeGarbageCollected<DOMException>(
+                            DOMExceptionCode::kTimeoutError, kTimeoutMessage));
+      property->Reject(value);
       break;
     }
   }
@@ -495,6 +499,13 @@ void ViewTransition::ProcessCurrentState() {
     switch (state_) {
       // Initial state: nothing to do, just advance the state
       case State::kInitial:
+        // We require a new effect node to be generated for the LayoutView when
+        // a transition is not in terminal state. Dirty paint to ensure
+        // generation of this effect node.
+        if (auto* layout_view = document_->GetLayoutView()) {
+          layout_view->SetNeedsPaintPropertyUpdate();
+        }
+
         process_next_state = AdvanceTo(State::kCaptureTagDiscovery);
         DCHECK(!process_next_state);
         break;
@@ -526,6 +537,9 @@ void ViewTransition::ProcessCurrentState() {
                                     MakeUnwrappingCrossThreadHandle(this)))));
 
         if (document_->GetFrame()->IsLocalRoot()) {
+          // We need to ensure commits aren't deferred since we rely on commits
+          // to send directives to the compositor and initiate pause of
+          // rendering after one frame.
           document_->GetPage()->GetChromeClient().StopDeferringCommits(
               *document_->GetFrame(),
               cc::PaintHoldingCommitTrigger::kViewTransition);
@@ -682,7 +696,7 @@ void ViewTransition::Trace(Visitor* visitor) const {
 
 bool ViewTransition::MatchForOnlyChild(
     PseudoId pseudo_id,
-    AtomicString view_transition_name) const {
+    const AtomicString& view_transition_name) const {
   if (!style_tracker_)
     return false;
   return style_tracker_->MatchForOnlyChild(pseudo_id, view_transition_name);
@@ -763,16 +777,16 @@ void ViewTransition::NotifyDOMCallbackFinished(bool success,
     if (IsDone())
       script_bound_state_->finished_promise_property->ResolveWithUndefined();
   } else {
-    script_bound_state_->dom_updated_promise_property->Reject(value.V8Value());
+    script_bound_state_->dom_updated_promise_property->Reject(value);
 
     // The ready promise rejects with the value of updateCallbackDone callback
     // if it's skipped because of an error in the callback.
     if (!IsDone())
-      script_bound_state_->ready_promise_property->Reject(value.V8Value());
+      script_bound_state_->ready_promise_property->Reject(value);
 
     // If the domUpdate callback fails the transition is skipped. The finish
     // promise should mirror the result of updateCallbackDone.
-    script_bound_state_->finished_promise_property->Reject(value.V8Value());
+    script_bound_state_->finished_promise_property->Reject(value);
   }
 
   dom_callback_succeeded_ = success;
@@ -915,18 +929,18 @@ void ViewTransition::WillCommitCompositorFrame() {
     PauseRendering();
 }
 
-gfx::Rect ViewTransition::GetSnapshotViewportRect() const {
+gfx::Size ViewTransition::GetSnapshotRootSize() const {
   if (!style_tracker_)
-    return gfx::Rect();
+    return gfx::Size();
 
-  return style_tracker_->GetSnapshotViewportRect();
+  return style_tracker_->GetSnapshotRootSize();
 }
 
-gfx::Vector2d ViewTransition::GetRootSnapshotPaintOffset() const {
+gfx::Vector2d ViewTransition::GetFrameToSnapshotRootOffset() const {
   if (!style_tracker_)
     return gfx::Vector2d();
 
-  return style_tracker_->GetRootSnapshotPaintOffset();
+  return style_tracker_->GetFrameToSnapshotRootOffset();
 }
 
 void ViewTransition::PauseRendering() {

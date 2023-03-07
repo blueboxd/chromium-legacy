@@ -189,10 +189,10 @@ public abstract class ChromeFeatureList {
             "AutofillAllowNonHttpActivation";
     public static final String AUTOFILL_CREDIT_CARD_AUTHENTICATION =
             "AutofillCreditCardAuthentication";
+    public static final String AUTOFILL_ENABLE_CARD_ART_IMAGE = "AutofillEnableCardArtImage";
     public static final String AUTOFILL_ENABLE_CARD_PRODUCT_NAME = "AutofillEnableCardProductName";
     public static final String AUTOFILL_ENABLE_MANUAL_FALLBACK_FOR_VIRTUAL_CARDS =
             "AutofillEnableManualFallbackForVirtualCards";
-    public static final String AUTOFILL_ENABLE_RANKING_FORMULA = "AutofillEnableRankingFormula";
     public static final String AUTOFILL_ENABLE_SUPPORT_FOR_HONORIFIC_PREFIXES =
             "AutofillEnableSupportForHonorificPrefixes";
     public static final String AUTOFILL_ENABLE_SUPPORT_FOR_MORE_STRUCTURE_IN_ADDRESSES =
@@ -203,8 +203,6 @@ public abstract class ChromeFeatureList {
             "AutofillEnableVirtualCardMetadata";
     public static final String AUTOFILL_KEYBOARD_ACCESSORY = "AutofillKeyboardAccessory";
     public static final String AUTOFILL_MANUAL_FALLBACK_ANDROID = "AutofillManualFallbackAndroid";
-    public static final String AUTOFILL_RANKING_FORMULA_USAGE_HALF_LIFE =
-            "AutofillRankingFormulaUsageHalfLife";
     public static final String AUTOFILL_REFRESH_STYLE_ANDROID = "AutofillRefreshStyleAndroid";
     public static final String AUTOFILL_TOUCH_TO_FILL_FOR_CREDIT_CARDS_ANDROID =
             "AutofillTouchToFillForCreditCardsAndroid";
@@ -244,6 +242,8 @@ public abstract class ChromeFeatureList {
             "CCTResizableAllowResizeByUserGesture";
     public static final String CCT_RESIZABLE_FOR_THIRD_PARTIES = "CCTResizableForThirdParties";
     public static final String CCT_RESIZABLE_SIDE_SHEET = "CCTResizableSideSheet";
+    public static final String CCT_RESIZABLE_SIDE_SHEET_FOR_THIRD_PARTIES =
+            "CCTResizableSideSheetForThirdParties";
     public static final String CCT_RESOURCE_PREFETCH = "CCTResourcePrefetch";
     public static final String CCT_RETAINING_STATE_IN_MEMORY = "CCTRetainingStateInMemory";
     public static final String CCT_TOOLBAR_CUSTOMIZATIONS = "CCTToolbarCustomizations";
@@ -280,6 +280,8 @@ public abstract class ChromeFeatureList {
             "ContextMenuPopupForAllScreenSizes";
     public static final String CONTEXT_MENU_SEARCH_WITH_GOOGLE_LENS =
             "ContextMenuSearchWithGoogleLens";
+    public static final String CONTEXT_MENU_GOOGLE_LENS_SEARCH_OPTIMIZATIONS =
+            "ContextMenuGoogleLensSearchOptimizations";
     public static final String CONTEXT_MENU_TRANSLATE_WITH_GOOGLE_LENS =
             "ContextMenuTranslateWithGoogleLens";
     public static final String CORMORANT = "Cormorant";
@@ -310,6 +312,7 @@ public abstract class ChromeFeatureList {
     public static final String FEED_LOADING_PLACEHOLDER = "FeedLoadingPlaceholder";
     public static final String FEED_MULTI_COLUMN = "DiscoverFeedMultiColumn";
     public static final String FEED_NO_VIEW_CACHE = "FeedNoViewCache";
+    public static final String FEED_INTERACTIVE_REFRESH = "FeedInteractiveRefresh";
     public static final String FEED_PERFORMANCE_STUDY = "FeedPerformanceStudy";
     public static final String FEED_POSITION_ANDROID = "FeedPositionAndroid";
     public static final String FEED_SHOW_SIGN_IN_COMMAND = "FeedShowSignInCommand";
@@ -433,6 +436,7 @@ public abstract class ChromeFeatureList {
     public static final String REACHED_CODE_PROFILER = "ReachedCodeProfiler";
     public static final String READER_MODE_IN_CCT = "ReaderModeInCCT";
     public static final String READ_LATER = "ReadLater";
+    public static final String RECORD_SUPPRESSION_METRICS = "RecordSuppressionMetrics";
     public static final String RECOVER_FROM_NEVER_SAVE_ANDROID = "RecoverFromNeverSaveAndroid";
     public static final String REENGAGEMENT_NOTIFICATION = "ReengagementNotification";
     public static final String RELATED_SEARCHES = "RelatedSearches";
@@ -576,6 +580,8 @@ public abstract class ChromeFeatureList {
             new CachedFlag(CCT_RESIZABLE_FOR_THIRD_PARTIES, true);
     public static final CachedFlag sCctResizableSideSheet =
             new CachedFlag(CCT_RESIZABLE_SIDE_SHEET, false);
+    public static final CachedFlag sCctResizableSideSheetForThirdParties =
+            new CachedFlag(CCT_RESIZABLE_SIDE_SHEET_FOR_THIRD_PARTIES, false);
     public static final CachedFlag sCctRetainableStateInMemory =
             new CachedFlag(CCT_RETAINING_STATE_IN_MEMORY, false);
     public static final CachedFlag sCctToolbarCustomizations =

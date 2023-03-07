@@ -195,13 +195,13 @@ enum class COMPONENT_EXPORT(QUICK_PAIR_COMMON) FastPairProtocolPairingSteps {
   kPairingStarted = 0,
   kExhaustedRetries = 1,
   kAlreadyPaired = 2,
-  kBondSuccessful = 3,
+  kPairingComplete = 3,
   kPasskeyNegotiated = 4,
   kRecievedPasskeyResponse = 5,
   kPasskeyValidated = 6,
   kPasskeyConfirmed = 7,
-  kPairingComplete = 8,
-  kMaxValue = kPairingComplete,
+  kDeviceConnected = 8,
+  kMaxValue = kDeviceConnected,
 };
 
 COMPONENT_EXPORT(QUICK_PAIR_COMMON)
@@ -436,6 +436,27 @@ COMPONENT_EXPORT(QUICK_PAIR_COMMON)
 void RecordConfirmPasskeyAskTime(base::TimeDelta total_ask_time);
 
 COMPONENT_EXPORT(QUICK_PAIR_COMMON)
+void RecordGattServiceDiscoveryTime(
+    base::TimeDelta total_gatt_service_discovery_time);
+
+COMPONENT_EXPORT(QUICK_PAIR_COMMON)
+void RecordCreateBondTime(base::TimeDelta total_create_bond_time);
+
+COMPONENT_EXPORT(QUICK_PAIR_COMMON)
+void RecordPasskeyNotifyTime(base::TimeDelta total_passkey_notify_time);
+
+COMPONENT_EXPORT(QUICK_PAIR_COMMON)
+void RecordKeyBasedNotifyTime(base::TimeDelta total_key_based_notify_time);
+
+COMPONENT_EXPORT(QUICK_PAIR_COMMON)
+void RecordPasskeyWriteRequestTime(
+    base::TimeDelta total_passkey_write_request_time);
+
+COMPONENT_EXPORT(QUICK_PAIR_COMMON)
+void RecordKeyBasedWriteRequestTime(
+    base::TimeDelta total_key_based_write_request_time);
+
+COMPONENT_EXPORT(QUICK_PAIR_COMMON)
 void RecordPairFailureRetry(int num_retries);
 
 COMPONENT_EXPORT(QUICK_PAIR_COMMON)
@@ -453,6 +474,15 @@ void RecordSavedDevicesTotalUxLoadTime(base::TimeDelta total_load_time);
 
 COMPONENT_EXPORT(QUICK_PAIR_COMMON)
 void RecordSavedDevicesCount(int num_devices);
+
+COMPONENT_EXPORT(QUICK_PAIR_COMMON)
+void RecordStructuredPairingStarted(const Device& device);
+
+COMPONENT_EXPORT(QUICK_PAIR_COMMON)
+void RecordStructuredPairingComplete(const Device& device);
+
+COMPONENT_EXPORT(QUICK_PAIR_COMMON)
+void RecordStructuredPairFailure(const Device& device, PairFailure failure);
 
 }  // namespace quick_pair
 }  // namespace ash

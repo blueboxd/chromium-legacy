@@ -1475,7 +1475,6 @@ test("content_browsertests") {
     "../browser/web_contents/web_contents_impl_browsertest.cc",
     "../browser/web_contents/web_contents_observer_browsertest.cc",
     "../browser/web_contents/web_contents_view_aura_browsertest.cc",
-    "../browser/web_package/save_page_as_web_bundle_browsertest.cc",
     "../browser/web_package/signed_exchange_request_handler_browsertest.cc",
     "../browser/web_package/signed_exchange_subresource_prefetch_browsertest.cc",
     "../browser/web_package/web_bundle_browsertest_base.cc",
@@ -1860,7 +1859,6 @@ test("content_browsertests") {
       "../shell/android/browsertests_apk/content_browser_tests_jni_onload.cc",
     ]
     sources -= [
-      "../browser/keyboard_lock_browsertest.cc",
       "../browser/media/session/audio_focus_delegate_default_browsertest.cc",
       "../browser/pointer_lock_browsertest.cc",
       "../browser/pointer_lock_browsertest.h",
@@ -1893,6 +1891,7 @@ test("content_browsertests") {
       "../browser/direct_sockets/direct_sockets_udp_browsertest.cc",
       "../browser/file_system_access/file_system_access_clipboard_browsertest.cc",
       "../browser/file_system_access/file_system_access_drag_drop_browsertest.cc",
+      "../browser/file_system_access/file_system_access_file_handle_move_browsertest.cc",
       "../browser/file_system_access/file_system_access_file_writer_impl_browsertest.cc",
       "../browser/file_system_access/file_system_chooser_browsertest.cc",
       "../browser/font_preferences_browsertest.cc",
@@ -2050,6 +2049,14 @@ test("content_browsertests") {
       "../browser/snapshot_browsertest.cc",
     ]
   }
+
+  # KeyboardLock is currently not supported in Android, Fuchsia and
+  # Chromecast builds. TODO(crbug.com/1414160): Re-enable on Fuchsia
+  # once its platform support is available.
+  if (is_android || is_fuchsia || is_castos) {
+    sources -= [ "../browser/keyboard_lock_browsertest.cc" ]
+  }
+
 
   if (use_ozone) {
     deps += [ "//ui/ozone" ]
@@ -2213,6 +2220,7 @@ test("content_unittests") {
     "../browser/dom_storage/dom_storage_context_wrapper_unittest.cc",
     "../browser/download/download_manager_impl_unittest.cc",
     "../browser/download/save_package_unittest.cc",
+    "../browser/fenced_frame/fenced_frame_reporter_unittest.cc",
     "../browser/fenced_frame/fenced_frame_unittest.cc",
     "../browser/fenced_frame/fenced_frame_url_mapping_unittest.cc",
     "../browser/fenced_frame/redacted_fenced_frame_config_mojom_traits_unittest.cc",
@@ -2278,6 +2286,7 @@ test("content_unittests") {
     "../browser/interest_group/auction_url_loader_factory_proxy_unittest.cc",
     "../browser/interest_group/auction_worklet_manager_unittest.cc",
     "../browser/interest_group/interest_group_k_anonymity_manager_unittest.cc",
+    "../browser/interest_group/interest_group_pa_report_util_unittest.cc",
     "../browser/interest_group/interest_group_permissions_cache_unittest.cc",
     "../browser/interest_group/interest_group_permissions_checker_unittest.cc",
     "../browser/interest_group/interest_group_priority_util_unittest.cc",
@@ -3048,7 +3057,6 @@ test("content_unittests") {
     # Non-Android.
     sources += [
       "../browser/devtools/protocol/webauthn_handler_unittest.cc",
-      "../browser/direct_sockets/direct_sockets_unittest.cc",
       "../browser/host_zoom_map_impl_unittest.cc",
       "../browser/serial/serial_unittest.cc",
       "../browser/speech/endpointer/endpointer_unittest.cc",

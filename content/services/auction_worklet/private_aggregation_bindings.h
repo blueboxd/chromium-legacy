@@ -18,6 +18,11 @@ namespace auction_worklet {
 
 class AuctionV8Helper;
 
+// Reserved event types for aggregatable report's for-event contribution.
+CONTENT_EXPORT extern const char kReservedAlways[];
+CONTENT_EXPORT extern const char kReservedWin[];
+CONTENT_EXPORT extern const char kReservedLoss[];
+
 // Class to manage bindings for the Private Aggregation API. Expected to be used
 // for a context managed by `ContextRecycler`. Throws exceptions when invalid
 // arguments are detected.
@@ -40,23 +45,12 @@ class CONTENT_EXPORT PrivateAggregationBindings : public Bindings {
   std::vector<auction_worklet::mojom::PrivateAggregationRequestPtr>
   TakePrivateAggregationRequests();
 
-  std::vector<auction_worklet::mojom::PrivateAggregationForEventRequestPtr>
-  TakePrivateAggregationForEventRequests(const std::string& event_type);
-
  private:
   static void SendHistogramReport(
       const v8::FunctionCallbackInfo<v8::Value>& args);
   static void ReportContributionForEvent(
       const v8::FunctionCallbackInfo<v8::Value>& args);
   static void EnableDebugMode(const v8::FunctionCallbackInfo<v8::Value>& args);
-
-  // Creates private aggregation for event requests from given `contributions`,
-  // and returns the requests.
-  std::vector<auction_worklet::mojom::PrivateAggregationForEventRequestPtr>
-  PrivateAggregationRequestsFromContribution(
-      std::vector<
-          auction_worklet::mojom::AggregatableReportForEventContributionPtr>
-          contributions);
 
   const raw_ptr<AuctionV8Helper> v8_helper_;
 
@@ -65,19 +59,9 @@ class CONTENT_EXPORT PrivateAggregationBindings : public Bindings {
   // Defaults to debug mode being disabled.
   content::mojom::DebugModeDetails debug_mode_details_;
 
-  // Contributions from `sendHistogramReport()`.
-  std::vector<content::mojom::AggregatableReportHistogramContributionPtr>
+  // Contributions from calling Private Aggregation APIs.
+  std::vector<auction_worklet::mojom::AggregatableReportContributionPtr>
       private_aggregation_contributions_;
-
-  // Contributions of event type "reserved.win" from
-  // `reportContributionsForEvent()`.
-  std::vector<auction_worklet::mojom::AggregatableReportForEventContributionPtr>
-      private_aggregation_for_event_win_contributions_;
-
-  // Contributions of event type "reserved.loss" from
-  // `reportContributionsForEvent()`.
-  std::vector<auction_worklet::mojom::AggregatableReportForEventContributionPtr>
-      private_aggregation_for_event_loss_contributions_;
 };
 
 }  // namespace auction_worklet

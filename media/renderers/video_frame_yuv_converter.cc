@@ -127,7 +127,10 @@ bool VideoFrameYUVConverter::ConvertYUVVideoFrame(
   if (!holder_)
     holder_ = std::make_unique<VideoFrameYUVMailboxesHolder>();
 
-  if (raster_context_provider->GrContext()) {
+  if (raster_context_provider->GrContext() &&
+      !(raster_context_provider->ContextCapabilities()
+            .supports_yuv_rgb_conversion &&
+        dest_mailbox_holder.mailbox.IsSharedImage())) {
     return ConvertFromVideoFrameYUVWithGrContext(
         video_frame, raster_context_provider, dest_mailbox_holder,
         gr_params.value_or(GrParams()));

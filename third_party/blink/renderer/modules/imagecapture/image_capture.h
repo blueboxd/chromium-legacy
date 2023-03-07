@@ -68,13 +68,7 @@ class MODULES_EXPORT ImageCapture final
 
   ScriptPromise getPhotoCapabilities(ScriptState*);
   ScriptPromise getPhotoSettings(ScriptState*);
-
-  ScriptPromise setOptions(ScriptState*,
-                           const PhotoSettings*,
-                           bool trigger_take_photo = false);
-
   ScriptPromise takePhoto(ScriptState*, const PhotoSettings*);
-
   ScriptPromise grabFrame(ScriptState*);
 
   void GetMediaTrackCapabilities(MediaTrackCapabilities*) const;
@@ -105,9 +99,9 @@ class MODULES_EXPORT ImageCapture final
                            PromiseResolverFunction,
                            bool trigger_take_photo,
                            media::mojom::blink::PhotoStatePtr);
-  void OnMojoSetOptions(ScriptPromiseResolver*,
-                        bool trigger_take_photo,
-                        bool result);
+  void OnMojoSetPhotoOptions(ScriptPromiseResolver*,
+                             bool trigger_take_photo,
+                             bool result);
   void OnMojoTakePhoto(ScriptPromiseResolver*, media::mojom::blink::BlobPtr);
 
   // If getUserMedia contains either pan, tilt, or zoom constraints, the
@@ -123,7 +117,7 @@ class MODULES_EXPORT ImageCapture final
   // Update local track settings and capabilities and call
   // |initialized_callback| to indicate settings and capabilities have been
   // retrieved.
-  void UpdateMediaTrackCapabilities(
+  void UpdateMediaTrackSettingsAndCapabilities(
       base::OnceClosure initialized_callback,
       media::mojom::blink::PhotoStatePtr photo_state);
 

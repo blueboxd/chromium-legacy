@@ -50,7 +50,6 @@
 <translation id="3984746313391923992">Kuruluşunuz, Chrome'da oturum kapatmış olarak kalmanızı zorunlu tutuyor.</translation>
 <translation id="3988789688219830639">Google Chrome, fotoğraflarınıza veya videolarınıza erişemiyor. iOS Ayarlar &gt; Gizlilik &gt; Fotoğraflar'dan erişimi etkinleştirin.</translation>
 <translation id="417201473131094001">Chrome Canary'de desteklenmiyor</translation>
-<translation id="4192781968753717021">Bu şifrenin, veri ihlaline karıştığı belirlendi. Google Şifre Yöneticisi şifrenizi hemen değiştirmenizi öneriyor.</translation>
 <translation id="4233521129555661685"><ph name="USER_EMAIL1" />, Chrome'u kullanıyordu, ardından yer işaretlerini, şifrelerini ve diğer ayarlarını bu cihazda bıraktı.</translation>
 <translation id="424864128008805179">Chrome oturumu kapatılsın mı?</translation>
 <translation id="4249068189593983585">Chrome için ipucu. Sekmelerle ilgili daha fazla seçenek görmek için ekranınızın altında veya üstünde görünen araç çubuğunda Sekmeleri Göster düğmesine dokunup basılı tutun.</translation>
@@ -74,7 +73,7 @@
 <translation id="5716154293141027663">Diğer uygulamalarda bağlantılara dokunduğunuzda Chrome açılır</translation>
 <translation id="5854621639439811139">Chrome için ipucu: Geri, İleri ve Ara gibi bazı düğmeler artık ekranınızın alt bölümünde bulunuyor.</translation>
 <translation id="5998675059699164418">Kuruluşunuz, Chrome'u kullanmak için oturum açmanızı zorunlu tutuyor.</translation>
-<translation id="6054613632208573261">Varsayılan olarak Chrome kullanın</translation>
+<translation id="6054613632208573261">Chrome'u varsayılan olarak kullanın</translation>
 <translation id="6063091872902370735">Chrome'da oturum açmaya izin ver</translation>
 <translation id="6110625574506755980">Bazı Chrome özellikleri artık kullanılamayacak.</translation>
 <translation id="6181930887571472871">Chrome'a Geçin</translation>
@@ -82,10 +81,10 @@
 <translation id="6412673304250309937">URL'leri, Chrome'da kayıtlı güvenli olmayan siteler listesine göre kontrol eder. Chrome, bir sitenin şifrenizi çalmaya çalışması veya zararlı bir dosya indirmeniz halinde de Güvenli Tarama'ya sayfa içeriğinden parçalarla birlikte URL'ler gönderebilir.</translation>
 <translation id="6427126399757991875">Kuruluşunuz, Chrome'u kuruyor...</translation>
 <translation id="6600954340915313787">Chrome'a kopyalandı</translation>
-<translation id="6632661856876686289">Chrome ile Daha Fazla Şey Yapın</translation>
 <translation id="6634107063912726160">Oturumu kapattığınızda Chrome, hiçbir yeni veriyi Google Hesabınızla senkronize etmez. Önceden senkronize edilmiş veriler hesapta kalır.</translation>
 <translation id="6648150602980899529"><ph name="DOMAIN" /> tarafından yönetilen bir hesapla oturum açıyorsunuz ve yöneticiye tüm Chrome verileriniz üzerinde denetim olanağı veriyorsunuz. Verileriniz kalıcı olarak bu hesaba bağlanacaktır. Chrome'da oturumu kapattığınızda verileriniz bu cihazdan silinir ancak Google Hesabınızda kalmaya devam eder.</translation>
 <translation id="6676840375528380067">Chrome verileriniz bu cihazdan temizlensin mi?</translation>
+<translation id="6709398533399187136">Şifreniz bir veri ihlali nedeniyle açığa çıktı. Google Şifre Yöneticisi bu şifreyi hemen değiştirmenizi öneriyor.</translation>
 <translation id="6822673484890854830">Chrome, şifrelerin tümünü kontrol edemedi. Daha sonra tekrar deneyin.</translation>
 <translation id="6964931465519938134">Artık mesajlardaki, dokümanlardaki ve diğer uygulamalardaki bağlantıları tıkladığınızda Chrome'u kullanabilirsiniz.</translation>
 <translation id="701356708427365932">Yeni Chrome menüsünü öğrenin</translation>
@@ -102,7 +101,6 @@
 <translation id="7400722733683201933">Google Chrome hakkında</translation>
 <translation id="7501046334262221972">Chrome'u varsayılan tarayıcınız yapmak için Ayarlar'ı açın. Varsayılan Tarayıcı Uygulaması'na dokunup Chrome'u seçin.</translation>
 <translation id="756809126120519699">Chrome verileri temizlendi</translation>
-<translation id="7626032353295482388">Chrome'a Hoş Geldiniz</translation>
 <translation id="7662994914830945754">Chrome kullandığınız her yerde sekmelerinizi görmek için oturum açın ve senkronizasyonu etkinleştirin</translation>
 <translation id="7693590760643069321">Artık mesajlardaki, dokümanlardaki ve diğer uygulamalardaki bağlantılara dokunduğunuzda Chrome'u kullanabilirsiniz.</translation>
 <translation id="7698568245838009292">Chrome, Kameraya Erişmek İstiyor</translation>

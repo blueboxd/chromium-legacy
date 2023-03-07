@@ -90,6 +90,8 @@ static_library("browser") {
     "autofill_experiments.h",
     "autofill_external_delegate.cc",
     "autofill_external_delegate.h",
+    "autofill_feedback_data.cc",
+    "autofill_feedback_data.h",
     "autofill_field.cc",
     "autofill_field.h",
     "autofill_manager.cc",
@@ -98,6 +100,8 @@ static_library("browser") {
     "autofill_observer.h",
     "autofill_profile_import_process.cc",
     "autofill_profile_import_process.h",
+    "autofill_profile_migration_strike_database.cc",
+    "autofill_profile_migration_strike_database.h",
     "autofill_profile_save_strike_database.cc",
     "autofill_profile_save_strike_database.h",
     "autofill_profile_sync_util.cc",
@@ -462,6 +466,8 @@ static_library("browser") {
     "webdata/autofill_webdata_service.cc",
     "webdata/autofill_webdata_service.h",
     "webdata/autofill_webdata_service_observer.h",
+    "webdata/contact_info_model_type_controller.cc",
+    "webdata/contact_info_model_type_controller.h",
     "webdata/contact_info_sync_bridge.cc",
     "webdata/contact_info_sync_bridge.h",
     "webdata/system_encryptor.cc",
@@ -827,9 +833,11 @@ source_set("unit_tests") {
     "autofill_download_manager_unittest.cc",
     "autofill_experiments_unittest.cc",
     "autofill_external_delegate_unittest.cc",
+    "autofill_feedback_data_unittest.cc",
     "autofill_manager_unittest.cc",
     "autofill_merge_unittest.cc",
     "autofill_profile_import_process_unittest.cc",
+    "autofill_profile_migration_strike_database_unittest.cc",
     "autofill_profile_save_strike_database_unittest.cc",
     "autofill_profile_sync_util_unittest.cc",
     "autofill_profile_update_strike_database_unittest.cc",
@@ -959,6 +967,7 @@ source_set("unit_tests") {
   if (!is_ios) {
     sources += [
       "autofill_policy_handler_unittest.cc",
+      "metrics/payments/better_auth_metrics_unittest.cc",
       "payments/credit_card_fido_authenticator_unittest.cc",
     ]
   }

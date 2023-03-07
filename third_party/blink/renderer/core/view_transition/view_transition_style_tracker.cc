@@ -33,6 +33,7 @@
 #include "third_party/blink/renderer/core/view_transition/view_transition_content_element.h"
 #include "third_party/blink/renderer/core/view_transition/view_transition_pseudo_element_base.h"
 #include "third_party/blink/renderer/core/view_transition/view_transition_style_builder.h"
+#include "third_party/blink/renderer/core/view_transition/view_transition_supplement.h"
 #include "third_party/blink/renderer/core/view_transition/view_transition_utils.h"
 #include "third_party/blink/renderer/platform/data_resource_helper.h"
 #include "third_party/blink/renderer/platform/geometry/layout_size.h"
@@ -178,6 +179,7 @@ ViewTransitionStyleTracker::ViewTransitionStyleTracker(
 
       // TODO(khushalsagar): We should keep track of the snapshot viewport rect
       // size to handle changes in its bounds.
+      // https://crbug.com/1404957.
       continue;
     }
 
@@ -236,11 +238,13 @@ void ViewTransitionStyleTracker::AddTransitionElement(
 
 bool ViewTransitionStyleTracker::MatchForOnlyChild(
     PseudoId pseudo_id,
-    AtomicString view_transition_name) const {
-  DCHECK(view_transition_name);
-
+    const AtomicString& view_transition_name) const {
   switch (pseudo_id) {
+    case kPseudoIdViewTransition:
+      DCHECK(!view_transition_name);
+      return false;
     case kPseudoIdViewTransitionGroup: {
+      DCHECK(view_transition_name);
       const bool has_root = old_root_data_ || new_root_data_;
       if (has_root) {
         return element_data_map_.empty();
@@ -250,8 +254,10 @@ bool ViewTransitionStyleTracker::MatchForOnlyChild(
       }
     }
     case kPseudoIdViewTransitionImagePair:
+      DCHECK(view_transition_name);
       return true;
     case kPseudoIdViewTransitionOld: {
+      DCHECK(view_transition_name);
       if (new_root_data_ &&
           new_root_data_->names.Contains(view_transition_name)) {
         return false;
@@ -268,6 +274,7 @@ bool ViewTransitionStyleTracker::MatchForOnlyChild(
       return !element_data->new_snapshot_id.IsValid();
     }
     case kPseudoIdViewTransitionNew: {
+      DCHECK(view_transition_name);
       if (old_root_data_ &&
           old_root_data_->names.Contains(view_transition_name)) {
         return false;
@@ -338,6 +345,13 @@ bool ViewTransitionStyleTracker::FlattenAndVerifyElements(
     VectorOf<Element>& elements,
     VectorOf<AtomicString>& transition_names,
     absl::optional<RootData>& root_data) {
+  // If the root element doesn't generate a layout object then there can't be
+  // any elements participating in the transition since no element can generate
+  // a box. This is a valid state for things like entry or exit animations.
+  if (!document_->documentElement()->GetLayoutObject()) {
+    return true;
+  }
+
   // We need to flatten the data first, and sort it by ordering which reflects
   // the setElement ordering.
   struct FlatData : public GarbageCollected<FlatData> {
@@ -463,6 +477,9 @@ bool ViewTransitionStyleTracker::Capture() {
 
   set_element_sequence_id_ = 0;
   pending_transition_element_names_.clear();
+
+  DCHECK(!snapshot_root_size_at_capture_.has_value());
+  snapshot_root_size_at_capture_ = GetSnapshotRootSize();
 
   return true;
 }
@@ -707,7 +724,7 @@ PseudoElement* ViewTransitionStyleTracker::CreatePseudoElement(
       viz::ViewTransitionElementResourceId snapshot_id;
       if (old_root_data_ &&
           old_root_data_->names.Contains(view_transition_name)) {
-        size = LayoutSize(GetSnapshotViewportRect().size());
+        size = LayoutSize(GetSnapshotRootSize());
         snapshot_id = old_root_data_->snapshot_id;
       } else {
         DCHECK(view_transition_name);
@@ -739,7 +756,7 @@ PseudoElement* ViewTransitionStyleTracker::CreatePseudoElement(
       viz::ViewTransitionElementResourceId snapshot_id;
       if (new_root_data_ &&
           new_root_data_->names.Contains(view_transition_name)) {
-        size = LayoutSize(GetSnapshotViewportRect().size());
+        size = LayoutSize(GetSnapshotRootSize());
         snapshot_id = new_root_data_->snapshot_id;
       } else {
         DCHECK(view_transition_name);
@@ -765,6 +782,25 @@ PseudoElement* ViewTransitionStyleTracker::CreatePseudoElement(
 bool ViewTransitionStyleTracker::RunPostPrePaintSteps() {
   DCHECK_GE(document_->Lifecycle().GetState(),
             DocumentLifecycle::kPrePaintClean);
+
+  if (!document_->documentElement()->GetLayoutObject()) {
+    // If we have any view transition elements, while having no
+    // documentElement->GetLayoutObject(), we should abort. Target elements are
+    // only set on the current phase of the animation, so it means that the
+    // documentElement's layout object disappeared in this phase.
+    if (new_root_data_) {
+      return false;
+    }
+
+    for (auto& entry : element_data_map_) {
+      auto& element_data = entry.value;
+      if (element_data->target_element) {
+        return false;
+      }
+    }
+    return true;
+  }
+
   bool needs_style_invalidation = false;
 
   // Use the document element's effective zoom, since that's what the parent
@@ -776,6 +812,10 @@ bool ViewTransitionStyleTracker::RunPostPrePaintSteps() {
   if (device_pixel_ratio_ != device_pixel_ratio) {
     device_pixel_ratio_ = device_pixel_ratio;
     needs_style_invalidation = true;
+  }
+
+  if (SnapshotRootDidChangeSize()) {
+    return false;
   }
 
   for (auto& entry : element_data_map_) {
@@ -805,8 +845,7 @@ bool ViewTransitionStyleTracker::RunPostPrePaintSteps() {
       snapshot_matrix.PostTranslate(-viewport.VerticalScrollbarWidth(), 0);
     }
 
-    gfx::Vector2d snapshot_to_fixed_offset =
-        -GetSnapshotViewportRect().OffsetFromOrigin();
+    gfx::Vector2d snapshot_to_fixed_offset = -GetFixedToSnapshotRootOffset();
     snapshot_matrix.PostTranslate(snapshot_to_fixed_offset.x(),
                                   snapshot_to_fixed_offset.y());
 
@@ -1061,7 +1100,7 @@ gfx::Outsets GetFixedToSnapshotViewportOutsets(Document& document) {
 }
 }  // namespace
 
-gfx::Rect ViewTransitionStyleTracker::GetSnapshotViewportRect() const {
+gfx::Rect ViewTransitionStyleTracker::GetSnapshotRootInFixedViewport() const {
   DCHECK(document_->GetLayoutView());
   DCHECK(document_->View());
   DCHECK(document_->GetFrame());
@@ -1078,7 +1117,15 @@ gfx::Rect ViewTransitionStyleTracker::GetSnapshotViewportRect() const {
   return snapshot_viewport_rect;
 }
 
-gfx::Vector2d ViewTransitionStyleTracker::GetRootSnapshotPaintOffset() const {
+gfx::Size ViewTransitionStyleTracker::GetSnapshotRootSize() const {
+  return GetSnapshotRootInFixedViewport().size();
+}
+
+gfx::Vector2d ViewTransitionStyleTracker::GetFixedToSnapshotRootOffset() const {
+  return GetSnapshotRootInFixedViewport().OffsetFromOrigin();
+}
+
+gfx::Vector2d ViewTransitionStyleTracker::GetFrameToSnapshotRootOffset() const {
   DCHECK(document_->GetLayoutView());
   DCHECK(document_->View());
 
@@ -1086,14 +1133,15 @@ gfx::Vector2d ViewTransitionStyleTracker::GetRootSnapshotPaintOffset() const {
   int left = outsets.left();
   int top = outsets.top();
 
-  // Paint already applies an offset for a left-side vertical scrollbar so
-  // don't offset by it here again.
+  // Left-side vertical scrollbars are placed within the frame but offset the
+  // fixed viewport so remove its width from the fixed-to-snapshot offset to
+  // get the frame-to-snapshot offset.
   if (document_->GetLayoutView()
           ->ShouldPlaceBlockDirectionScrollbarOnLogicalLeft()) {
     left -= document_->View()->LayoutViewport()->VerticalScrollbarWidth();
   }
 
-  return gfx::Vector2d(left, top);
+  return gfx::Vector2d(-left, -top);
 }
 
 ViewTransitionState ViewTransitionStyleTracker::GetViewTransitionState() const {
@@ -1130,8 +1178,7 @@ ViewTransitionState ViewTransitionStyleTracker::GetViewTransitionState() const {
     auto& element = transition_state.elements.emplace_back();
     // TODO(khushalsagar): What about non utf8 strings?
     element.tag_name = old_root_data_->names[0].Utf8();
-    element.border_box_size_in_css_space =
-        gfx::SizeF(GetSnapshotViewportRect().size());
+    element.border_box_size_in_css_space = gfx::SizeF(GetSnapshotRootSize());
     element.snapshot_id = old_root_data_->snapshot_id;
     element.paint_order = 0;
     element.is_root = true;
@@ -1236,20 +1283,6 @@ const String& ViewTransitionStyleTracker::UAStyleSheet() {
   // transition element only -- no roots involved. Everything is done in the
   // `element_data_map_` loop.
 
-  // Size and position the root container behind any viewport insetting widgets
-  // (such as the URL bar) so that it's stable across a transition. This rect
-  // is called the "snapshot viewport".  Since this is applied in style,
-  // convert from physical pixels to CSS pixels.
-  gfx::RectF snapshot_viewport_css_pixels = gfx::ScaleRect(
-      gfx::RectF(GetSnapshotViewportRect()), 1.f / device_pixel_ratio_);
-
-  // If adjusted, the root is always translated up and left underneath any UI
-  // so the direction must always be negative.
-  DCHECK_LE(snapshot_viewport_css_pixels.x(), 0.f);
-  DCHECK_LE(snapshot_viewport_css_pixels.y(), 0.f);
-
-  builder.AddRootStyles(snapshot_viewport_css_pixels);
-
   for (auto& root_name : AllRootTags()) {
     // This is case 3 above.
     bool name_is_old_root =
@@ -1347,7 +1380,7 @@ const String& ViewTransitionStyleTracker::UAStyleSheet() {
         builder.AddAnimationAndBlending(
             view_transition_name, element_data->cached_container_properties);
       } else if (element_data->new_snapshot_id.IsValid() && name_is_old_root) {
-        auto layout_view_size = LayoutSize(GetSnapshotViewportRect().size());
+        auto layout_view_size = LayoutSize(GetSnapshotRootSize());
         // Note that we want the size in css space, which means we need to undo
         // the effective zoom.
         layout_view_size.Scale(
@@ -1470,6 +1503,27 @@ PhysicalRect ViewTransitionStyleTracker::ComputeVisualOverflowRect(
     result.Unite(box.PhysicalVisualOverflowRectIncludingFilters());
   }
   return result;
+}
+
+bool ViewTransitionStyleTracker::SnapshotRootDidChangeSize() const {
+  if (!snapshot_root_size_at_capture_.has_value()) {
+    return false;
+  }
+
+  gfx::Size current_size = GetSnapshotRootSize();
+
+  // Allow 1px of diff since the snapshot root can be adjusted by
+  // viewport-resizing UI (e.g. the virtual keyboard insets the viewport but
+  // then outsets the viewport rect to get the snapshot root). These
+  // adjustments can be off by a pixel due to different pixel snapping.
+  if (std::abs(snapshot_root_size_at_capture_->width() -
+               current_size.width()) <= 1 &&
+      std::abs(snapshot_root_size_at_capture_->height() -
+               current_size.height()) <= 1) {
+    return false;
+  }
+
+  return true;
 }
 
 }  // namespace blink

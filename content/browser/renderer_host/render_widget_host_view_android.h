@@ -454,7 +454,8 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
 
     // Reviews the states of `pending_screen_state_` to handle rotations,
     // fullscreen, and Picture-in-Picture mode.
-    bool HandleScreenStateChanges(const cc::DeadlinePolicy& deadline_policy);
+    bool HandleScreenStateChanges(const cc::DeadlinePolicy& deadline_policy,
+                                  bool force_fullscreen_sync = false);
 
     // Clears flags used to throttle SurfaceSync.
     void Unthrottle();
@@ -673,8 +674,6 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   SurfaceIdChangedCallbackList surface_id_changed_callbacks_;
 
   base::android::ScopedJavaGlobalRef<jobject> obj_;
-
-  bool is_surface_sync_throttling_ = false;
 
   ScreenStateChangeHandler screen_state_change_handler_;
 

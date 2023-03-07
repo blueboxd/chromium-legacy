@@ -52,10 +52,6 @@ namespace ash {
 
 namespace {
 
-// The size of app info dialog in fullscreen app list.
-constexpr int kAppInfoDialogWidth = 512;
-constexpr int kAppInfoDialogHeight = 384;
-
 // The number of minutes that must pass for the current app list page to reset
 // to the first page.
 constexpr int kAppListPageResetTimeLimitMinutes = 20;
@@ -883,8 +879,7 @@ void AppListView::ApplyBoundsAnimation(AppListViewState target_state,
 
   // When closing the view should animate to the shelf bounds. The workspace
   // area will not reflect an autohidden shelf so ask for the proper bounds.
-  const int y_for_closed_state = delegate_->GetTargetYForAppListHide(
-      GetWidget()->GetNativeView()->GetRootWindow());
+  const int y_for_closed_state = 0;
   if (target_state == AppListViewState::kClosed) {
     target_bounds.set_y(y_for_closed_state);
   }
@@ -981,13 +976,6 @@ void AppListView::OffsetYPositionOfAppList(int offset) {
 
 PaginationModel* AppListView::GetAppsPaginationModel() {
   return GetRootAppsGridView()->pagination_model();
-}
-
-gfx::Rect AppListView::GetAppInfoDialogBounds() const {
-  gfx::Rect app_info_bounds(GetDisplayNearestView().work_area());
-  app_info_bounds.ClampToCenteredSize(
-      gfx::Size(kAppInfoDialogWidth, kAppInfoDialogHeight));
-  return app_info_bounds;
 }
 
 void AppListView::OnHomeLauncherGainingFocusWithoutAnimation() {

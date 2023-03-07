@@ -487,22 +487,8 @@ void PasswordsPrivateDelegateImpl::OsReauthCall(
   AuthenticateUser(password_manager_util_win::GetMessageForLoginPrompt(purpose),
                    std::move(callback));
 #elif BUILDFLAG(IS_MAC)
-  // TODO(crbug.com/1358442): Remove this check.
-  if (__builtin_available(macOS 10.13, *) &&
-      GetDeviceAuthenticator(web_contents_)
-          ->CanAuthenticate(
-              device_reauth::DeviceAuthRequester::kPasswordsInSettings) &&
-      base::FeatureList::IsEnabled(
-          password_manager::features::kBiometricAuthenticationInSettings)) {
-    AuthenticateWithBiometrics(
-        password_manager_util_mac::GetMessageForBiometricLoginPrompt(purpose),
-        std::move(callback));
-  } else {
-    bool result = password_manager_util_mac::AuthenticateUser(
-        password_manager_util_mac::GetMessageForNonBiometricLoginPrompt(
-            purpose));
-    std::move(callback).Run(result);
-  }
+  AuthenticateUser(password_manager_util_mac::GetMessageForLoginPrompt(purpose),
+                   std::move(callback));
 #elif BUILDFLAG(IS_CHROMEOS_ASH)
   if (chromeos::features::IsPasswordManagerSystemAuthenticationEnabled()) {
     password_manager_util_chromeos::AuthenticateUser(purpose,

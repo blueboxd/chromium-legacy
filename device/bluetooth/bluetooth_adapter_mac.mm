@@ -98,8 +98,7 @@ scoped_refptr<BluetoothAdapterMac> BluetoothAdapterMac::CreateAdapterForTest(
 }
 
 BluetoothAdapterMac::BluetoothAdapterMac()
-    : BluetoothAdapter(),
-      controller_state_function_(
+      : controller_state_function_(
           base::BindRepeating(&BluetoothAdapterMac::GetHostControllerState,
                               base::Unretained(this))),
       power_state_function_(

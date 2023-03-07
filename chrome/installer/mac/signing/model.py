@@ -168,7 +168,7 @@ class CodeSignOptions(enum.Flag):
     # Specify the components of HARDENED_RUNTIME that are also available on
     # older macOS versions.
     FULL_HARDENED_RUNTIME_OPTIONS = (
-        RESTRICT | HARDENED_RUNTIME | KILL)
+        RESTRICT | LIBRARY_VALIDATION | HARDENED_RUNTIME | KILL)
 
     def to_comma_delimited_string(self):
         result = []

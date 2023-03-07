@@ -148,6 +148,11 @@ bool IsLiveCaptionFeatureSupported() {
     return false;
 #endif
 
+#if BUILDFLAG(IS_MAC)
+  if(!__builtin_available(macOS 10.13, *))
+    return false;
+#endif
+
 #if BUILDFLAG(IS_WIN) && defined(ARCH_CPU_ARM64)
   // The Speech On-Device API (SODA) component does not support Windows on
   // arm64.

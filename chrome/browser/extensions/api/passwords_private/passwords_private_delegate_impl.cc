@@ -484,9 +484,8 @@ void PasswordsPrivateDelegateImpl::OsReauthCall(
     password_manager::PasswordAccessAuthenticator::AuthResultCallback
         callback) {
 #if BUILDFLAG(IS_WIN)
-  AuthenticateWithBiometrics(
-      password_manager_util_win::GetMessageForLoginPrompt(purpose),
-      std::move(callback));
+  AuthenticateUser(password_manager_util_win::GetMessageForLoginPrompt(purpose),
+                   std::move(callback));
 #elif BUILDFLAG(IS_MAC)
   // TODO(crbug.com/1358442): Remove this check.
   if (__builtin_available(macOS 10.13, *) &&
@@ -745,10 +744,9 @@ void PasswordsPrivateDelegateImpl::SwitchBiometricAuthBeforeFillingState(
       base::BindOnce(&ChangeBiometricAuthenticationBeforeFillingSetting,
                      profile_->GetPrefs());
   web_contents_ = web_contents;
-  AuthenticateWithBiometrics(
-      GetMessageForBiometricAuthenticationBeforeFillingSetting(
-          profile_->GetPrefs()),
-      std::move(callback));
+  AuthenticateUser(GetMessageForBiometricAuthenticationBeforeFillingSetting(
+                       profile_->GetPrefs()),
+                   std::move(callback));
 #endif
 }
 
@@ -881,7 +879,7 @@ void PasswordsPrivateDelegateImpl::OnAccountStorageOptInStateChanged() {
 }
 
 void PasswordsPrivateDelegateImpl::OnReauthCompleted() {
-  biometric_authenticator_.reset();
+  device_authenticator_.reset();
 }
 
 void PasswordsPrivateDelegateImpl::ExecuteFunction(base::OnceClosure callback) {
@@ -928,7 +926,7 @@ void PasswordsPrivateDelegateImpl::EmitHistogramsForCredentialAccess(
       password_manager::metrics_util::ACCESS_PASSWORD_COUNT);
 }
 
-void PasswordsPrivateDelegateImpl::AuthenticateWithBiometrics(
+void PasswordsPrivateDelegateImpl::AuthenticateUser(
     const std::u16string& message,
     password_manager::PasswordAccessAuthenticator::AuthResultCallback
         callback) {
@@ -936,19 +934,19 @@ void PasswordsPrivateDelegateImpl::AuthenticateWithBiometrics(
   NOTIMPLEMENTED();
 #else
   // Cancel any ongoing authentication attempt.
-  if (biometric_authenticator_) {
+  if (device_authenticator_) {
     // TODO(crbug.com/1371026): Remove Cancel and instead simply destroy
-    // |biometric_authenticator_|.
-    biometric_authenticator_->Cancel(
+    // |device_authenticator_|.
+    device_authenticator_->Cancel(
         device_reauth::DeviceAuthRequester::kPasswordsInSettings);
   }
-  biometric_authenticator_ = GetDeviceAuthenticator(web_contents_);
+  device_authenticator_ = GetDeviceAuthenticator(web_contents_);
 
   base::OnceClosure on_reauth_completed =
       base::BindOnce(&PasswordsPrivateDelegateImpl::OnReauthCompleted,
                      weak_ptr_factory_.GetWeakPtr());
 
-  biometric_authenticator_->AuthenticateWithMessage(
+  device_authenticator_->AuthenticateWithMessage(
       message, std::move(callback).Then(std::move(on_reauth_completed)));
 #endif
 }

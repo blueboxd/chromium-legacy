@@ -193,8 +193,8 @@ void PPAPIDownloadRequest::SendRequest() {
   request.set_download_type(ClientDownloadRequest::PPAPI_SAVE_REQUEST);
   ClientDownloadRequest::Resource* resource = request.add_resources();
   resource->set_type(ClientDownloadRequest::PPAPI_DOCUMENT);
-  resource->set_url(requestor_url_.spec());
-  request.set_url(requestor_url_.spec());
+  resource->set_url(ShortURLForReporting(requestor_url_));
+  request.set_url(ShortURLForReporting(requestor_url_));
   request.set_file_basename(supported_path_.BaseName().AsUTF8Unsafe());
   request.set_length(0);
   request.mutable_digests()->set_md5(std::string());
@@ -258,11 +258,25 @@ void PPAPIDownloadRequest::SendRequest() {
           "from dangerous sites' under Privacy. This feature is enabled by "
           "default."
         chrome_policy {
+          subProto1 {
+            RealTimeDownloadProtectionRequestAllowed {
+              RealTimeDownloadProtectionRequestAllowed: false
+            }
+          }
+        }
+        chrome_policy {
+          SafeBrowsingProtectionLevel {
+            policy_options {mode: MANDATORY}
+            SafeBrowsingProtectionLevel: 0
+          }
+        }
+        chrome_policy {
           SafeBrowsingEnabled {
             policy_options {mode: MANDATORY}
             SafeBrowsingEnabled: false
           }
         }
+        deprecated_policies: "SafeBrowsingEnabled"
       })");
   auto resource_request = std::make_unique<network::ResourceRequest>();
   resource_request->url = GetDownloadRequestUrl();

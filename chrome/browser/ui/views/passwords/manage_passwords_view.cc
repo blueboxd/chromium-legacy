@@ -20,10 +20,13 @@
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/password_manager/core/browser/password_manager_client.h"
+#include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "ui/gfx/favicon_size.h"
 #include "ui/views/controls/styled_label.h"
 #include "ui/views/view_class_properties.h"
+
+using password_manager::metrics_util::PasswordManagementBubbleInteractions;
 
 ManagePasswordsView::ManagePasswordsView(content::WebContents* web_contents,
                                          views::View* anchor_view)
@@ -64,6 +67,12 @@ ManagePasswordsView::ManagePasswordsView(content::WebContents* web_contents,
 
 ManagePasswordsView::~ManagePasswordsView() = default;
 
+void ManagePasswordsView::DisplayDetailsOfPasswordForTesting(
+    password_manager::PasswordForm password_form) {
+  controller_.set_currently_selected_password(std::move(password_form));
+  RecreateLayout();
+}
+
 PasswordBubbleControllerBase* ManagePasswordsView::GetController() {
   return &controller_;
 }
@@ -82,16 +91,16 @@ void ManagePasswordsView::AddedToWidget() {
   // BubbleDialogDelegateView::CreateBubble() *after* the construction of the
   // ManagePasswordsView, the title view cannot be set in the constructor.
   GetBubbleFrameView()->SetTitleView(
-      ManagePasswordsListView::CreateTitleView());
+      ManagePasswordsListView::CreateTitleView(controller_.GetTitle()));
 }
 
 bool ManagePasswordsView::Accept() {
   // Accept button is only visible in the details page where a password is
   // selected.
   DCHECK(password_details_view_);
-  DCHECK(currently_selected_password_.has_value());
+  DCHECK(controller_.get_currently_selected_password().has_value());
   password_manager::PasswordForm updated_form =
-      currently_selected_password_.value();
+      controller_.get_currently_selected_password().value();
   absl::optional<std::u16string> updated_username =
       password_details_view_->GetUserEnteredUsernameValue();
   if (updated_username.has_value()) {
@@ -102,9 +111,7 @@ bool ManagePasswordsView::Accept() {
   if (updated_note.has_value()) {
     updated_form.SetNoteWithEmptyUniqueDisplayName(updated_note.value());
   }
-  controller_.UpdateStoredCredential(currently_selected_password_.value(),
-                                     updated_form);
-  currently_selected_password_ = std::move(updated_form);
+  controller_.UpdateSelectedCredentialInPasswordStore(std::move(updated_form));
   SwitchToReadingMode();
   // Return false such that the bubble doesn't get closed upon clicking the
   // button.
@@ -114,7 +121,7 @@ bool ManagePasswordsView::Accept() {
 bool ManagePasswordsView::Cancel() {
   // Cancel button is only visible in the details page where a password is
   // selected.
-  DCHECK(currently_selected_password_.has_value());
+  DCHECK(controller_.get_currently_selected_password().has_value());
   SwitchToReadingMode();
   // Return false such that the bubble doesn't get closed upon clicking the
   // button.
@@ -126,11 +133,7 @@ ManagePasswordsView::CreatePasswordListView() {
   return std::make_unique<ManagePasswordsListView>(
       controller_.GetCredentials(), GetFaviconImageModel(),
       base::BindRepeating(
-          [](ManagePasswordsView* view,
-             password_manager::PasswordForm password_form) {
-            view->currently_selected_password_ = password_form;
-            view->RecreateLayout();
-          },
+          &ManagePasswordsView::AuthenticateUserAndDisplayDetailsOf,
           base::Unretained(this)),
       base::BindRepeating(
           [](ManagePasswordsView* view) {
@@ -138,15 +141,19 @@ ManagePasswordsView::CreatePasswordListView() {
                 password_manager::ManagePasswordsReferrer::
                     kManagePasswordsBubble);
             view->CloseBubble();
+            password_manager::metrics_util::
+                LogUserInteractionsInPasswordManagementBubble(
+                    PasswordManagementBubbleInteractions::
+                        kManagePasswordsButtonClicked);
           },
           base::Unretained(this)));
 }
 
 std::unique_ptr<ManagePasswordsDetailsView>
 ManagePasswordsView::CreatePasswordDetailsView() {
-  DCHECK(currently_selected_password_.has_value());
+  DCHECK(controller_.get_currently_selected_password().has_value());
   return std::make_unique<ManagePasswordsDetailsView>(
-      currently_selected_password_.value(),
+      controller_.get_currently_selected_password().value(),
       base::BindRepeating(
           [](ManagePasswordsView* view) {
             view->SetButtons(ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL);
@@ -162,6 +169,10 @@ std::unique_ptr<views::View> ManagePasswordsView::CreateFooterView() {
   base::RepeatingClosure open_password_manager_closure = base::BindRepeating(
       [](ManagePasswordsView* dialog) {
         dialog->controller_.OnGooglePasswordManagerLinkClicked();
+        password_manager::metrics_util::
+            LogUserInteractionsInPasswordManagementBubble(
+                PasswordManagementBubbleInteractions::
+                    kGooglePasswordManagerLinkClicked);
       },
       base::Unretained(this));
 
@@ -197,15 +208,15 @@ void ManagePasswordsView::RecreateLayout() {
   views::BubbleFrameView* frame_view = GetBubbleFrameView();
   DCHECK(frame_view);
 
-  if (currently_selected_password_.has_value()) {
+  if (controller_.get_currently_selected_password().has_value()) {
     // TODO(crbug.com/1382017): implement authentication before navigating to
     // the details page.
     frame_view->SetTitleView(ManagePasswordsDetailsView::CreateTitleView(
-        currently_selected_password_.value(),
+        controller_.get_currently_selected_password().value(),
         base::BindRepeating(
             [](ManagePasswordsView* view) {
               view->SetButtons(ui::DIALOG_BUTTON_NONE);
-              view->currently_selected_password_ = absl::nullopt;
+              view->controller_.set_currently_selected_password(absl::nullopt);
               view->RecreateLayout();
             },
             base::Unretained(this))));
@@ -220,7 +231,8 @@ void ManagePasswordsView::RecreateLayout() {
                                      ->GetInsetsMetric(views::INSETS_DIALOG)
                                      .bottom()));
   } else {
-    frame_view->SetTitleView(ManagePasswordsListView::CreateTitleView());
+    frame_view->SetTitleView(
+        ManagePasswordsListView::CreateTitleView(controller_.GetTitle()));
     frame_view->SetFootnoteView(CreateFooterView());
     page_container_->SwitchToPage(CreatePasswordListView());
     page_container_->SetProperty(views::kMarginsKey, gfx::Insets());
@@ -248,4 +260,37 @@ ui::ImageModel ManagePasswordsView::GetFaviconImageModel() const {
   return favicon_.IsEmpty() ? ui::ImageModel::FromVectorIcon(
                                   kGlobeIcon, ui::kColorIcon, gfx::kFaviconSize)
                             : ui::ImageModel::FromImage(favicon_);
+}
+
+void ManagePasswordsView::AuthenticateUserAndDisplayDetailsOf(
+    password_manager::PasswordForm password_form) {
+  // Prevent the bubble from closing for the duration of the lifetime of the
+  // `pin`. This is to keep it open while the user authentication is in action.
+  std::unique_ptr<CloseOnDeactivatePin> pin = PreventCloseOnDeactivate();
+  // Pass `pin` to the callback to keep it alive till the completion of the
+  // authentication process.
+  controller_.AuthenticateUserAndDisplayDetailsOf(
+      std::move(password_form),
+      base::BindOnce(
+          [](ManagePasswordsView* view,
+             std::unique_ptr<CloseOnDeactivatePin> pin,
+             bool authentication_result) {
+            // If the authentication is successful, navigate to the details page
+            // by recreating the layout.
+            if (authentication_result) {
+              view->RecreateLayout();
+            }
+            // This is necessary on Windows since the bubble isn't activated
+            // again after the conlusion of the auth flow.
+            view->GetWidget()->Activate();
+            // Delay the destruction of `pin` for 1 sec to make sure the bubble
+            // remains open till the OS closes the authentication dialog and
+            // reactivates the bubble.
+            base::SequencedTaskRunner::GetCurrentDefault()->PostDelayedTask(
+                FROM_HERE,
+                base::BindOnce([](std::unique_ptr<CloseOnDeactivatePin> pin) {},
+                               std::move(pin)),
+                base::Seconds(1));
+          },
+          base::Unretained(this), std::move(pin)));
 }

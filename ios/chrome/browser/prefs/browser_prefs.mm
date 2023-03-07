@@ -70,7 +70,6 @@
 #import "ios/chrome/browser/ui/authentication/signin_promo_view_mediator.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_mediator.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_path_cache.h"
-#import "ios/chrome/browser/ui/bookmarks/bookmark_utils_ios.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_mediator.h"
 #import "ios/chrome/browser/ui/content_suggestions/tile_ablation_field_trial.h"
 #import "ios/chrome/browser/ui/first_run/trending_queries_field_trial.h"
@@ -272,6 +271,9 @@ void RegisterLocalStatePrefs(PrefRegistrySimple* registry) {
 
   registry->RegisterBooleanPref(
       prefs::kIosCredentialProviderPromoHasRegisteredWithPromoManager, false);
+
+  registry->RegisterBooleanPref(prefs::kIosCredentialProviderPromoPolicyEnabled,
+                                true);
 }
 
 void RegisterBrowserStatePrefs(user_prefs::PrefRegistrySyncable* registry) {
@@ -409,6 +411,9 @@ void RegisterBrowserStatePrefs(user_prefs::PrefRegistrySyncable* registry) {
       base::to_underlying(
           prerender_prefs::NetworkPredictionSetting::kEnabledWifiOnly),
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
+
+  // Register pref used to determine if the Price Tracking UI has been shown.
+  registry->RegisterBooleanPref(prefs::kPriceNotificationsHasBeenShown, false);
 }
 
 // This method should be periodically pruned of year+ old migrations.

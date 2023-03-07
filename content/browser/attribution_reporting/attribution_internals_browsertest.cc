@@ -28,13 +28,15 @@
 #include "components/attribution_reporting/trigger_registration.h"
 #include "content/browser/attribution_reporting/attribution_debug_report.h"
 #include "content/browser/attribution_reporting/attribution_manager.h"
-#include "content/browser/attribution_reporting/attribution_observer_types.h"
 #include "content/browser/attribution_reporting/attribution_report.h"
 #include "content/browser/attribution_reporting/attribution_test_utils.h"
 #include "content/browser/attribution_reporting/attribution_trigger.h"
+#include "content/browser/attribution_reporting/create_report_result.h"
 #include "content/browser/attribution_reporting/send_result.h"
 #include "content/browser/attribution_reporting/storable_source.h"
 #include "content/browser/attribution_reporting/stored_source.h"
+#include "content/browser/attribution_reporting/test/mock_attribution_manager.h"
+#include "content/browser/attribution_reporting/test/mock_content_browser_client.h"
 #include "content/browser/storage_partition_impl.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browsing_data_filter_builder.h"
@@ -1001,52 +1003,46 @@ IN_PROC_BROWSER_TEST_F(AttributionInternalsWebUiBrowserTest,
                        TriggersDisplayed) {
   ASSERT_TRUE(NavigateToURL(shell(), GURL(kAttributionInternalsUrl)));
 
-  const auto create_trigger =
-      [](absl::optional<network::TriggerAttestation> attestation) {
-        return AttributionTrigger(
-            /*reporting_origin=*/*SuitableOrigin::Deserialize("https://r.test"),
-            attribution_reporting::TriggerRegistration(
-                FilterPair{
-                    .positive = *AttributionFilters::Create({{{"a", {"b"}}}}),
-                    .negative = *AttributionFilters::Create({{{"g", {"h"}}}})},
-                /*debug_key=*/1,
-                *attribution_reporting::AggregatableDedupKeyList::Create(
-                    {attribution_reporting::AggregatableDedupKey(
-                        /*dedup_key=*/18, FilterPair())}),
-                *attribution_reporting::EventTriggerDataList::Create({
-                    attribution_reporting::EventTriggerData(
-                        /*data=*/2,
-                        /*priority=*/3,
-                        /*dedup_key=*/absl::nullopt,
-                        FilterPair{.positive = *AttributionFilters::Create(
-                                       {{{"c", {"d"}}}})}),
-                    attribution_reporting::EventTriggerData(
-                        /*data=*/4,
-                        /*priority=*/5,
-                        /*dedup_key=*/6,
-                        FilterPair{.negative = *AttributionFilters::Create(
-                                       {{{"e", {"f"}}}})}),
-                }),
-                *attribution_reporting::AggregatableTriggerDataList::Create(
-                    {*attribution_reporting::AggregatableTriggerData::Create(
-                         /*key_piece=*/345,
-                         /*source_keys=*/{"a"},
-                         FilterPair{.positive = *AttributionFilters::Create(
-                                        {{{"c", {"d"}}}})}),
-                     *attribution_reporting::AggregatableTriggerData::Create(
-                         /*key_piece=*/678,
-                         /*source_keys=*/{"b"},
-                         FilterPair{.negative = *AttributionFilters::Create(
-                                        {{{"e", {"f"}}}})})}),
-                /*aggregatable_values=*/
-                *attribution_reporting::AggregatableValues::Create(
-                    {{"a", 123}, {"b", 456}}),
-                /*debug_reporting=*/false,
-                ::aggregation_service::mojom::AggregationCoordinator::kDefault),
-            *SuitableOrigin::Deserialize("https://d.test"),
-            std::move(attestation),
-            /*is_within_fenced_frame=*/false);
-      };
+  const auto create_trigger = [](absl::optional<network::TriggerAttestation>
+                                     attestation) {
+    return AttributionTrigger(
+        /*reporting_origin=*/*SuitableOrigin::Deserialize("https://r.test"),
+        attribution_reporting::TriggerRegistration(
+            FilterPair{.positive = AttributionFilters({{{"a", {"b"}}}}),
+                       .negative = AttributionFilters({{{"g", {"h"}}}})},
+            /*debug_key=*/1,
+            {attribution_reporting::AggregatableDedupKey(
+                /*dedup_key=*/18, FilterPair())},
+            {
+                attribution_reporting::EventTriggerData(
+                    /*data=*/2,
+                    /*priority=*/3,
+                    /*dedup_key=*/absl::nullopt,
+                    FilterPair{.positive =
+                                   AttributionFilters({{{"c", {"d"}}}})}),
+                attribution_reporting::EventTriggerData(
+                    /*data=*/4,
+                    /*priority=*/5,
+                    /*dedup_key=*/6,
+                    FilterPair{.negative =
+                                   AttributionFilters({{{"e", {"f"}}}})}),
+            },
+            {*attribution_reporting::AggregatableTriggerData::Create(
+                 /*key_piece=*/345,
+                 /*source_keys=*/{"a"},
+                 FilterPair{.positive = AttributionFilters({{{"c", {"d"}}}})}),
+             *attribution_reporting::AggregatableTriggerData::Create(
+                 /*key_piece=*/678,
+                 /*source_keys=*/{"b"},
+                 FilterPair{.negative = AttributionFilters({{{"e", {"f"}}}})})},
+            /*aggregatable_values=*/
+            *attribution_reporting::AggregatableValues::Create(
+                {{"a", 123}, {"b", 456}}),
+            /*debug_reporting=*/false,
+            ::aggregation_service::mojom::AggregationCoordinator::kDefault),
+        *SuitableOrigin::Deserialize("https://d.test"), std::move(attestation),
+        /*is_within_fenced_frame=*/false);
+  };
 
   static constexpr char kScript[] = R"(
     const expectedAttestation =

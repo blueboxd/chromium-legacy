@@ -65,7 +65,7 @@ BASE_FEATURE(kEnablePasswordManagerWithinFencedFrame,
 // affiliated website.
 BASE_FEATURE(kFillingAcrossAffiliatedWebsites,
              "FillingAcrossAffiliatedWebsites",
-#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)  // Desktop
+#if !BUILDFLAG(IS_ANDROID) // Desktop and iOS
              base::FEATURE_ENABLED_BY_DEFAULT);
 #else
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -206,6 +206,11 @@ BASE_FEATURE(kSkipUndecryptablePasswords,
 #endif
 
 #if BUILDFLAG(IS_ANDROID)
+// Use GMS AccountSettings to manage passkeys when UPM is not available.
+BASE_FEATURE(kPasskeyManagementUsingAccountSettingsAndroid,
+             "PasskeyManagementUsingAccountSettingsAndroid",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
 BASE_FEATURE(kPasswordEditDialogWithDetails,
              "PasswordEditDialogWithDetails",
              base::FEATURE_DISABLED_BY_DEFAULT);

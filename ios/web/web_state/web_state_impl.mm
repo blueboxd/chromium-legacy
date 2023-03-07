@@ -183,8 +183,14 @@ int WebStateImpl::GetNavigationItemCount() const {
                         : saved_->GetNavigationItemCount();
 }
 
-WebFramesManagerImpl& WebStateImpl::GetWebFramesManagerImpl() {
-  return RealizedState()->GetPageWorldWebFramesManager();
+WebFramesManagerImpl& WebStateImpl::GetWebFramesManagerImpl(
+    ContentWorld world) {
+  DCHECK_NE(world, ContentWorld::kAllContentWorlds);
+
+  if (!managers_[world]) {
+    managers_[world] = base::WrapUnique(new WebFramesManagerImpl());
+  }
+  return *managers_[world].get();
 }
 
 SessionCertificatePolicyCacheImpl&
@@ -314,20 +320,14 @@ id<CRWWebViewNavigationProxy> WebStateImpl::GetWebViewNavigationProxy() const {
 
 #pragma mark - WebFrame management
 
-void WebStateImpl::WebFrameBecameAvailable(std::unique_ptr<WebFrame> frame) {
-  RealizedState()->WebFrameBecameAvailable(std::move(frame));
-}
-
-void WebStateImpl::WebFrameBecameUnavailable(const std::string& frame_id) {
-  RealizedState()->WebFrameBecameUnavailable(frame_id);
-}
-
 void WebStateImpl::RetrieveExistingFrames() {
   RealizedState()->RetrieveExistingFrames();
 }
 
 void WebStateImpl::RemoveAllWebFrames() {
-  RealizedState()->RemoveAllWebFrames();
+  for (const auto& iterator : managers_) {
+    iterator.second->RemoveAllWebFrames();
+  }
 }
 
 void WebStateImpl::RequestPermissionsWithDecisionHandler(
@@ -471,12 +471,12 @@ NavigationManager* WebStateImpl::GetNavigationManager() {
   return &RealizedState()->GetNavigationManager();
 }
 
-const WebFramesManager* WebStateImpl::GetPageWorldWebFramesManager() const {
-  return LIKELY(pimpl_) ? &pimpl_->GetPageWorldWebFramesManager() : nullptr;
+WebFramesManager* WebStateImpl::GetPageWorldWebFramesManager() {
+  return &GetWebFramesManagerImpl(ContentWorld::kPageContentWorld);
 }
 
-WebFramesManager* WebStateImpl::GetPageWorldWebFramesManager() {
-  return &RealizedState()->GetPageWorldWebFramesManager();
+WebFramesManager* WebStateImpl::GetWebFramesManager(ContentWorld world) {
+  return &GetWebFramesManagerImpl(world);
 }
 
 const SessionCertificatePolicyCache*
@@ -634,6 +634,11 @@ bool WebStateImpl::SetSessionStateData(NSData* data) {
 
 NSData* WebStateImpl::SessionStateData() {
   return LIKELY(pimpl_) ? pimpl_->SessionStateData() : nil;
+}
+
+void WebStateImpl::SetSwipeRecognizerProvider(
+    id<CRWSwipeRecognizerProvider> delegate) {
+  RealizedState()->SetSwipeRecognizerProvider(delegate);
 }
 
 PermissionState WebStateImpl::GetStateForPermission(

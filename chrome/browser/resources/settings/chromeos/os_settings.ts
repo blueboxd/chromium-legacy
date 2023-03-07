@@ -10,7 +10,8 @@
 /** Necessary imports to load the app */
 import '../strings.m.js';
 import './os_settings_ui/os_settings_ui.js';
-/** Other imports */
+// TODO(b/263414034) Determine if these imports are needed here at all,
+// or should be moved to lazy_load.ts
 import '../prefs/prefs.js';
 import './device_page/audio.js';
 import './device_page/cros_audio_config.js';
@@ -44,7 +45,6 @@ import './internet_page/apn_subpage.js';
 import './internet_page/cellular_roaming_toggle_button.js';
 import './internet_page/cellular_setup_dialog.js';
 import './internet_page/esim_remove_profile_dialog.js';
-import './internet_page/hotspot_subpage.js';
 import './internet_page/hotspot_summary_item.js';
 import './internet_page/internet_config.js';
 import './internet_page/internet_detail_page.js';
@@ -129,9 +129,9 @@ import * as appNotificationHandlerMojom from '../mojom-webui/app_notification_ha
 import * as crosAudioConfigMojom from '../mojom-webui/cros_audio_config.mojom-webui.js';
 import * as routesMojom from '../mojom-webui/routes.mojom-webui.js';
 import * as personalizationSearchMojom from '../mojom-webui/search/personalization_search.mojom-webui.js';
-import * as searchMojomWebui from '../mojom-webui/search/search.mojom-webui.js';
-import * as searchResultIconMojomWebui from '../mojom-webui/search/search_result_icon.mojom-webui.js';
-import * as userActionRecorderMojomWebui from '../mojom-webui/search/user_action_recorder.mojom-webui.js';
+import * as searchMojom from '../mojom-webui/search/search.mojom-webui.js';
+import * as searchResultIconMojom from '../mojom-webui/search/search_result_icon.mojom-webui.js';
+import * as userActionRecorderMojom from '../mojom-webui/search/user_action_recorder.mojom-webui.js';
 import * as settingMojom from '../mojom-webui/setting.mojom-webui.js';
 
 import * as fakeCrosAudioConfig from './device_page/fake_cros_audio_config.js';
@@ -145,9 +145,11 @@ export {getContactManager, observeContactManager, setContactManagerForTesting} f
 export {getNearbyShareSettings, observeNearbyShareSettings, setNearbyShareSettingsForTesting} from '/shared/nearby_share_settings.js';
 export {NearbySettings, NearbyShareSettingsMixin} from '/shared/nearby_share_settings_mixin.js';
 export {OpenWindowProxyImpl} from 'chrome://resources/js/open_window_proxy.js';
+export {SettingsToggleButtonElement} from '../controls/settings_toggle_button.js';
 export {LifetimeBrowserProxyImpl} from '../lifetime_browser_proxy.js';
 export {ProfileInfoBrowserProxyImpl} from '../people_page/profile_info_browser_proxy.js';
 export {PageStatus, StatusAction, SyncBrowserProxyImpl} from '../people_page/sync_browser_proxy.js';
+export {SettingsPrefsElement} from '../prefs/prefs.js';
 export {CrSettingsPrefs} from '../prefs/prefs_types.js';
 export {PrivacyPageBrowserProxyImpl, SecureDnsMode, SecureDnsUiManagementMode} from '../privacy_page/privacy_page_browser_proxy.js';
 export {setCrosAudioConfigForTesting} from './device_page/cros_audio_config.js';
@@ -208,6 +210,7 @@ export {SearchEngine, SearchEnginesBrowserProxy, SearchEnginesBrowserProxyImpl, 
 export {routes} from './os_settings_routes.js';
 export {OsSettingsSearchBoxBrowserProxyImpl} from './os_settings_search_box/os_settings_search_box_browser_proxy.js';
 export {ParentalControlsBrowserProxy, ParentalControlsBrowserProxyImpl} from './parental_controls_page/parental_controls_browser_proxy.js';
+export {SettingsParentalControlsPageElement} from './parental_controls_page/parental_controls_page.js';
 export {PersonalizationHubBrowserProxy, PersonalizationHubBrowserProxyImpl} from './personalization_page/personalization_hub_browser_proxy.js';
 export {Route, Router} from './router.js';
 export {getPersonalizationSearchHandler, setPersonalizationSearchHandlerForTesting} from './search/personalization_search_handler.js';
@@ -219,10 +222,10 @@ export {
   nearbyShareMojom,
   personalizationSearchMojom,
   routesMojom,
-  searchMojomWebui,
-  searchResultIconMojomWebui,
+  searchMojom,
+  searchResultIconMojom,
   settingMojom,
-  userActionRecorderMojomWebui,
+  userActionRecorderMojom,
 };
 
 // TODO(b/257329722) After the Jelly experiment is launched, add the CSS link

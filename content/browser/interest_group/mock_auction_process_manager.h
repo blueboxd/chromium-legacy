@@ -116,10 +116,11 @@ class MockBidderWorklet : public auction_worklet::mojom::BidderWorklet,
   // should be offered. Waits for the GenerateBid() call first, if needed.
   void InvokeGenerateBidCallback(
       absl::optional<double> bid,
-      const GURL& render_url = GURL(),
+      const blink::AdDescriptor& ad_descriptor = blink::AdDescriptor(),
       auction_worklet::mojom::BidderWorkletKAnonEnforcedBidPtr mojo_kanon_bid =
           auction_worklet::mojom::BidderWorkletKAnonEnforcedBidPtr(),
-      absl::optional<std::vector<GURL>> ad_component_urls = absl::nullopt,
+      absl::optional<std::vector<blink::AdDescriptor>>
+          ad_component_descriptors = absl::nullopt,
       base::TimeDelta duration = base::TimeDelta(),
       const absl::optional<uint32_t>& bidding_signals_data_version =
           absl::nullopt,
@@ -397,7 +398,7 @@ class MockAuctionProcessManager
   // that those only include cumulative worklets not claimed by
   // TakeBidderWorklet() and TakeSellerWorklet()
   // - once a worklet has been claimed by the consumer, it no longer counts
-  // towads these totals.
+  // towards these totals.
   size_t waiting_for_num_bidders_ = 0;
   size_t waiting_for_num_sellers_ = 0;
 

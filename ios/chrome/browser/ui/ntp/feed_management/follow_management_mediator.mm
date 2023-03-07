@@ -112,8 +112,8 @@ FollowedWebChannel* FollowedWebSiteToFollowedWebChannel(
 
 #pragma mark - TableViewFaviconDataSource
 
-- (void)faviconForURL:(CrURL*)URL
-           completion:(void (^)(FaviconAttributes*))completion {
+- (void)faviconForPageURL:(CrURL*)URL
+               completion:(void (^)(FaviconAttributes*))completion {
   _faviconLoader->FaviconForPageUrl(
       URL.gurl, kDesiredSmallFaviconSizePt, kMinFaviconSizePt,
       /*fallback_to_google_server=*/true, ^(FaviconAttributes* attributes) {
@@ -138,6 +138,12 @@ FollowedWebChannel* FollowedWebSiteToFollowedWebChannel(
 
   for (id<FollowManagementUIUpdater> updater in _updaters) {
     [updater removeFollowedWebChannel:followedWebChannel];
+  }
+}
+
+- (void)followedWebSitesLoaded {
+  for (id<FollowManagementUIUpdater> updater in _updaters) {
+    [updater updateFollowedWebSites];
   }
 }
 

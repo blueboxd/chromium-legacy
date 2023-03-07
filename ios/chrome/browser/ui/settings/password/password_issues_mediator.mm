@@ -35,6 +35,8 @@
 
 namespace {
 
+using password_manager::WarningType;
+
 // Returns true if the Password Checkup feature flag is enabled.
 bool IsPasswordCheckupEnabled() {
   return base::FeatureList::IsEnabled(
@@ -248,8 +250,8 @@ bool IsPasswordCheckupEnabled() {
 
 #pragma mark - TableViewFaviconDataSource
 
-- (void)faviconForURL:(CrURL*)URL
-           completion:(void (^)(FaviconAttributes*))completion {
+- (void)faviconForPageURL:(CrURL*)URL
+               completion:(void (^)(FaviconAttributes*))completion {
   BOOL isPasswordSyncEnabled =
       password_manager_util::IsPasswordSyncNormalEncryptionEnabled(
           _syncService);

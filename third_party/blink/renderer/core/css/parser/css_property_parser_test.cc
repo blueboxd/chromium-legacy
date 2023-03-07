@@ -47,7 +47,7 @@ static bool IsValidPropertyValueForStyleRule(CSSPropertyID property_id,
   const CSSParserTokenRange range(tokens);
   HeapVector<CSSPropertyValue, 64> parsed_properties;
   return CSSPropertyParser::ParseValue(
-      property_id, false, range,
+      property_id, false, {range, value},
       StrictCSSParserContext(SecureContextMode::kSecureContext),
       parsed_properties, StyleRule::RuleType::kStyle);
 }
@@ -686,7 +686,7 @@ void TestImageSetParsing(const String& testValue,
 
   const CSSImageSetValue& image_set_value =
       To<CSSImageSetValue>(val_list->First());
-  EXPECT_EQ(expectedCssText, image_set_value.CustomCSSText());
+  EXPECT_EQ(expectedCssText, image_set_value.CssText());
 }
 
 TEST(CSSPropertyParserTest, ImageSetDefaultResolution) {
@@ -760,6 +760,11 @@ TEST(CSSPropertyParserTest, ImageSetConicGradient) {
 TEST(CSSPropertyParserTest, ImageSetRepeatingConicGradient) {
   TestImageSetParsing("image-set(repeating-conic-gradient(red, blue 25%) 1x)",
                       "image-set(repeating-conic-gradient(red, blue 25%) 1x)");
+}
+
+TEST(CSSPropertyParserTest, ImageSetType) {
+  TestImageSetParsing("image-set(url('foo') 1x type('image/png'))",
+                      "image-set(url(\"foo\") 1x type(\"image/png\"))");
 }
 
 void TestImageSetParsingFailure(const String& testValue) {
@@ -868,8 +873,8 @@ bool ParseCSSValue(CSSPropertyID property_id,
   const auto tokens = tokenizer.TokenizeToEOF();
   const CSSParserTokenRange range(tokens);
   HeapVector<CSSPropertyValue, 64> parsed_properties;
-  return CSSPropertyParser::ParseValue(property_id, false, range, context,
-                                       parsed_properties,
+  return CSSPropertyParser::ParseValue(property_id, false, {range, value},
+                                       context, parsed_properties,
                                        StyleRule::RuleType::kStyle);
 }
 

@@ -66,16 +66,13 @@ public final class BaseSuggestionViewBinder<T extends View>
     @Override
     public void bind(PropertyModel model, BaseSuggestionView<T> view, PropertyKey propertyKey) {
         mContentBinder.bind(model, view.getContentView(), propertyKey);
+        ActionChipsBinder.bind(model, view.getActionChipsView(), propertyKey);
 
         if (BaseSuggestionViewProperties.ICON == propertyKey) {
             updateSuggestionIcon(model, view);
-            updateContentViewPadding(model, view.getDecoratedSuggestionView());
-        } else if (BaseSuggestionViewProperties.DENSITY == propertyKey) {
-            updateContentViewPadding(model, view.getDecoratedSuggestionView());
         } else if (SuggestionCommonProperties.LAYOUT_DIRECTION == propertyKey) {
             ViewCompat.setLayoutDirection(
                     view, model.get(SuggestionCommonProperties.LAYOUT_DIRECTION));
-            updateContentViewPadding(model, view.getDecoratedSuggestionView());
         } else if (SuggestionCommonProperties.COLOR_SCHEME == propertyKey) {
             updateColorScheme(model, view);
         } else if (DropdownCommonProperties.BG_BOTTOM_CORNER_ROUNDED == propertyKey) {
@@ -84,24 +81,24 @@ public final class BaseSuggestionViewBinder<T extends View>
             roundSuggestionViewCorners(model, view);
         } else if (DropdownCommonProperties.TOP_MARGIN == propertyKey) {
             updateMargin(model, view);
-        } else if (BaseSuggestionViewProperties.ACTIONS == propertyKey) {
-            bindActionButtons(model, view, model.get(BaseSuggestionViewProperties.ACTIONS));
+        } else if (BaseSuggestionViewProperties.ACTION_BUTTONS == propertyKey) {
+            bindActionButtons(model, view, model.get(BaseSuggestionViewProperties.ACTION_BUTTONS));
         } else if (BaseSuggestionViewProperties.ON_FOCUS_VIA_SELECTION == propertyKey) {
             view.setOnFocusViaSelectionListener(
                     model.get(BaseSuggestionViewProperties.ON_FOCUS_VIA_SELECTION));
         } else if (BaseSuggestionViewProperties.ON_CLICK == propertyKey) {
             Runnable listener = model.get(BaseSuggestionViewProperties.ON_CLICK);
             if (listener == null) {
-                view.getDecoratedSuggestionView().setOnClickListener(null);
+                view.setOnClickListener(null);
             } else {
-                view.getDecoratedSuggestionView().setOnClickListener(v -> listener.run());
+                view.setOnClickListener(v -> listener.run());
             }
         } else if (BaseSuggestionViewProperties.ON_LONG_CLICK == propertyKey) {
             Runnable listener = model.get(BaseSuggestionViewProperties.ON_LONG_CLICK);
             if (listener == null) {
-                view.getDecoratedSuggestionView().setOnLongClickListener(null);
+                view.setOnLongClickListener(null);
             } else {
-                view.getDecoratedSuggestionView().setOnLongClickListener(v -> {
+                view.setOnLongClickListener(v -> {
                     listener.run();
                     return true;
                 });
@@ -152,11 +149,11 @@ public final class BaseSuggestionViewBinder<T extends View>
             PropertyModel model, BaseSuggestionView<T> view) {
         maybeResetCachedFocusableDrawableState(model, view);
         updateSuggestionIcon(model, view);
-        applySelectableBackground(model, view.getDecoratedSuggestionView());
+        applySelectableBackground(model, view);
 
-        final List<Action> actions = model.get(BaseSuggestionViewProperties.ACTIONS);
-        // Setting ACTIONS and updating actionViews can happen later. Appropriate color scheme will
-        // be applied then.
+        final List<Action> actions = model.get(BaseSuggestionViewProperties.ACTION_BUTTONS);
+        // Setting ACTION_BUTTONS and updating actionViews can happen later. Appropriate color
+        // scheme will be applied then.
         if (actions == null) return;
 
         final List<ImageView> actionViews = view.getActionButtons();
@@ -187,8 +184,9 @@ public final class BaseSuggestionViewBinder<T extends View>
                             ? R.dimen.omnibox_suggestion_icon_area_size_modern
                             : R.dimen.omnibox_suggestion_icon_area_size);
 
-            rciv.setLayoutParams(new SimpleHorizontalLayoutView.LayoutParams(
-                    iconWidthPx, ViewGroup.LayoutParams.WRAP_CONTENT));
+            rciv.setLayoutParams(new SuggestionLayout.LayoutParams(iconWidthPx,
+                    ViewGroup.LayoutParams.WRAP_CONTENT,
+                    SuggestionLayout.LayoutParams.SuggestionViewType.DECORATION));
 
             final int paddingStart = res.getDimensionPixelSize(sds.isLarge
                             ? R.dimen.omnibox_suggestion_36dp_icon_margin_start
@@ -208,48 +206,6 @@ public final class BaseSuggestionViewBinder<T extends View>
         }
 
         updateIcon(rciv, sds, ChromeColors.getSecondaryIconTintRes(isIncognito(model)));
-    }
-
-    /**
-     * Update content view padding.
-     * This is required only to adjust the leading padding for undecorated suggestions.
-     * TODO(crbug.com/1019937): remove after suggestion favicons are launched.
-     */
-    private static <T extends View> void updateContentViewPadding(
-            PropertyModel model, DecoratedSuggestionView<T> view) {
-        final SuggestionDrawableState sds = model.get(BaseSuggestionViewProperties.ICON);
-        final int startSpace = sds == null ? view.getResources().getDimensionPixelSize(
-                                       R.dimen.omnibox_suggestion_start_offset_without_icon)
-                                           : 0;
-
-        // TODO(ender): Drop this view and expand the last icon size by 8dp to ensure it remains
-        // centered with the omnibox "Clear" button.
-        final int endSpace = view.getResources().getDimensionPixelSize(
-                R.dimen.omnibox_suggestion_refine_view_modern_end_padding);
-        view.setPaddingRelative(startSpace, 0, endSpace, 0);
-
-        // Compact suggestion handling: apply additional padding to the suggestion content.
-        final @BaseSuggestionViewProperties.Density int density =
-                model.get(BaseSuggestionViewProperties.DENSITY);
-
-        int minimumHeightRes;
-        int verticalPadRes;
-        switch (density) {
-            case BaseSuggestionViewProperties.Density.COMPACT:
-                verticalPadRes = R.dimen.omnibox_suggestion_compact_padding;
-                minimumHeightRes = R.dimen.omnibox_suggestion_compact_height;
-                break;
-            case BaseSuggestionViewProperties.Density.DEFAULT:
-            default:
-                verticalPadRes = R.dimen.omnibox_suggestion_semicompact_padding;
-                minimumHeightRes = R.dimen.omnibox_suggestion_semicompact_height;
-                break;
-        }
-        final int verticalPad = view.getResources().getDimensionPixelSize(verticalPadRes);
-        view.getContentView().setPaddingRelative(0, verticalPad, 0, verticalPad);
-
-        final int minimumHeight = view.getResources().getDimensionPixelSize(minimumHeightRes);
-        view.getContentView().setMinimumHeight(minimumHeight);
     }
 
     /**

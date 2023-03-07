@@ -4,8 +4,7 @@
 
 #include "components/cast_streaming/browser/receiver_config_conversions.h"
 
-#include <algorithm>
-
+#include "base/ranges/algorithm.h"
 #include "base/time/time.h"
 #include "components/cast_streaming/browser/public/receiver_config.h"
 #include "components/cast_streaming/common/config_conversions.h"
@@ -134,27 +133,30 @@ openscreen::cast::RemotingConstraints ToOpenscreenRemotingConstraintsType(
 
 openscreen::cast::ReceiverConstraints ToOpenscreenConstraints(
     const ReceiverConfig& config) {
-  openscreen::cast::ReceiverConstraints constraints;
+  std::vector<openscreen::cast::AudioCodec> audio_codecs;
+  audio_codecs.reserve(config.audio_codecs.size());
+  base::ranges::transform(
+      config.audio_codecs.begin(), config.audio_codecs.end(),
+      std::back_inserter(audio_codecs), ToAudioCaptureConfigCodec);
 
-  constraints.audio_codecs.reserve(config.audio_codecs.size());
-  std::transform(config.audio_codecs.begin(), config.audio_codecs.end(),
-                 std::back_inserter(constraints.audio_codecs),
-                 ToAudioCaptureConfigCodec);
+  std::vector<openscreen::cast::VideoCodec> video_codecs;
+  video_codecs.reserve(config.video_codecs.size());
+  base::ranges::transform(
+      config.video_codecs.begin(), config.video_codecs.end(),
+      std::back_inserter(video_codecs), ToVideoCaptureConfigCodec);
 
-  constraints.video_codecs.reserve(config.video_codecs.size());
-  std::transform(config.video_codecs.begin(), config.video_codecs.end(),
-                 std::back_inserter(constraints.video_codecs),
-                 ToVideoCaptureConfigCodec);
+  openscreen::cast::ReceiverConstraints constraints(std::move(video_codecs),
+                                                    std::move(audio_codecs));
 
   constraints.audio_limits.reserve(config.audio_limits.size());
-  std::transform(config.audio_limits.begin(), config.audio_limits.end(),
-                 std::back_inserter(constraints.audio_limits),
-                 ToOpenscreenAudioLimitsType);
+  base::ranges::transform(config.audio_limits,
+                          std::back_inserter(constraints.audio_limits),
+                          ToOpenscreenAudioLimitsType);
 
   constraints.video_limits.reserve(config.video_limits.size());
-  std::transform(config.video_limits.begin(), config.video_limits.end(),
-                 std::back_inserter(constraints.video_limits),
-                 ToOpenscreenVideoLimitsType);
+  base::ranges::transform(config.video_limits,
+                          std::back_inserter(constraints.video_limits),
+                          ToOpenscreenVideoLimitsType);
 
   if (config.display_description) {
     constraints.display_description =

@@ -26,7 +26,7 @@ using read_anything::mojom::LetterSpacing;
 using read_anything::mojom::LineSpacing;
 
 ReadAnythingModel::ReadAnythingModel()
-    : font_name_(kReadAnythingDefaultFontName),
+    : font_name_(string_constants::kReadAnythingDefaultFontName),
       font_scale_(kReadAnythingDefaultFontScale),
       font_model_(std::make_unique<ReadAnythingFontModel>()),
       colors_model_(std::make_unique<ReadAnythingColorsModel>()),
@@ -253,7 +253,8 @@ std::string ReadAnythingFontModel::GetFontNameAt(size_t index) {
 // E.g. User chooses 'Serif', this method returns 'Serif, Arial, 18px'.
 std::string ReadAnythingFontModel::GetLabelFontListAt(size_t index) {
   std::string font_label = base::UTF16ToUTF8(GetDropDownTextAt(index));
-  base::StringAppendF(&font_label, "%s", kReadAnythingDefaultFontSyle);
+  base::StringAppendF(&font_label, "%s",
+                      string_constants::kReadAnythingDefaultFontSyle);
   return font_label;
 }
 
@@ -267,28 +268,43 @@ ReadAnythingColorsModel::ReadAnythingColorsModel() {
   // Define the possible sets of colors available to the user.
   ColorInfo kDefaultColors = {
       l10n_util::GetStringUTF16(IDS_READING_MODE_DEFAULT_COLOR_LABEL),
-      IDS_READING_MODE_DEFAULT_PNG, kColorReadAnythingForeground,
-      kColorReadAnythingBackground, kColorReadAnythingSeparator};
+      IDS_READING_MODE_DEFAULT_PNG,
+      kColorReadAnythingForeground,
+      kColorReadAnythingBackground,
+      kColorReadAnythingSeparator,
+      ReadAnythingColor::kDefault};
 
   ColorInfo kLightColors = {
       l10n_util::GetStringUTF16(IDS_READING_MODE_LIGHT_COLOR_LABEL),
-      IDS_READING_MODE_LIGHT_PNG, kColorReadAnythingForegroundLight,
-      kColorReadAnythingBackgroundLight, kColorReadAnythingSeparatorLight};
+      IDS_READING_MODE_LIGHT_PNG,
+      kColorReadAnythingForegroundLight,
+      kColorReadAnythingBackgroundLight,
+      kColorReadAnythingSeparatorLight,
+      ReadAnythingColor::kLight};
 
   ColorInfo kDarkColors = {
       l10n_util::GetStringUTF16(IDS_READING_MODE_DARK_COLOR_LABEL),
-      IDS_READING_MODE_DARK_PNG, kColorReadAnythingForegroundDark,
-      kColorReadAnythingBackgroundDark, kColorReadAnythingSeparatorDark};
+      IDS_READING_MODE_DARK_PNG,
+      kColorReadAnythingForegroundDark,
+      kColorReadAnythingBackgroundDark,
+      kColorReadAnythingSeparatorDark,
+      ReadAnythingColor::kDark};
 
   ColorInfo kYellowColors = {
       l10n_util::GetStringUTF16(IDS_READING_MODE_YELLOW_COLOR_LABEL),
-      IDS_READING_MODE_YELLOW_PNG, kColorReadAnythingForegroundYellow,
-      kColorReadAnythingBackgroundYellow, kColorReadAnythingSeparatorYellow};
+      IDS_READING_MODE_YELLOW_PNG,
+      kColorReadAnythingForegroundYellow,
+      kColorReadAnythingBackgroundYellow,
+      kColorReadAnythingSeparatorYellow,
+      ReadAnythingColor::kYellow};
 
   ColorInfo kBlueColors = {
       l10n_util::GetStringUTF16(IDS_READING_MODE_BLUE_COLOR_LABEL),
-      IDS_READING_MODE_BLUE_PNG, kColorReadAnythingForegroundBlue,
-      kColorReadAnythingBackgroundBlue, kColorReadAnythingSeparatorBlue};
+      IDS_READING_MODE_BLUE_PNG,
+      kColorReadAnythingForegroundBlue,
+      kColorReadAnythingBackgroundBlue,
+      kColorReadAnythingSeparatorBlue,
+      ReadAnythingColor::kBlue};
 
   colors_choices_.emplace_back(kDefaultColors);
   colors_choices_.emplace_back(kLightColors);

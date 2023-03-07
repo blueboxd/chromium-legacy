@@ -11,7 +11,7 @@ try_.defaults.set(
     executable = try_.DEFAULT_EXECUTABLE,
     builder_group = "tryserver.chromium.rust",
     pool = try_.DEFAULT_POOL,
-    builderless = False,
+    builderless = True,
     cores = 8,
     os = os.LINUX_DEFAULT,
     execution_timeout = try_.DEFAULT_EXECUTION_TIMEOUT,
@@ -52,16 +52,20 @@ try_.builder(
 try_.builder(
     name = "win-rust-x64-rel",
     mirrors = ["ci/win-rust-x64-rel"],
+    os = os.WINDOWS_DEFAULT,
 )
 
 try_.builder(
     name = "win-rust-x64-dbg",
     mirrors = ["ci/win-rust-x64-dbg"],
+    os = os.WINDOWS_DEFAULT,
 )
 
 try_.builder(
     name = "mac-rust-x64-rel",
     mirrors = ["ci/mac-rust-x64-rel"],
+    cores = None,
+    os = os.MAC_ANY,
 )
 
 try_.builder(

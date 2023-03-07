@@ -5,10 +5,12 @@
 import 'chrome://webui-test/mojo_webui_test_support.js';
 import 'chrome://bookmarks-side-panel.top-chrome/power_bookmarks_list.js';
 
+import {SortOrder, ViewType} from 'chrome://bookmarks-side-panel.top-chrome/bookmarks.mojom-webui.js';
 import {BookmarksApiProxyImpl} from 'chrome://bookmarks-side-panel.top-chrome/bookmarks_api_proxy.js';
 import {ShoppingListApiProxyImpl} from 'chrome://bookmarks-side-panel.top-chrome/commerce/shopping_list_api_proxy.js';
 import {PowerBookmarkRowElement} from 'chrome://bookmarks-side-panel.top-chrome/power_bookmark_row.js';
 import {PowerBookmarksListElement} from 'chrome://bookmarks-side-panel.top-chrome/power_bookmarks_list.js';
+import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
 import {PluralStringProxyImpl} from 'chrome://resources/js/plural_string_proxy.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 import {assertEquals, assertNotEquals} from 'chrome://webui-test/chai_assert.js';
@@ -79,6 +81,11 @@ suite('SidePanelPowerBookmarksListTest', () => {
     const pluralString = new TestPluralStringProxy();
     PluralStringProxyImpl.setInstance(pluralString);
 
+    loadTimeData.overrideValues({
+      sortOrder: SortOrder.kNewest,
+      viewType: ViewType.kCompact,
+    });
+
     powerBookmarksList = document.createElement('power-bookmarks-list');
     document.body.appendChild(powerBookmarksList);
 
@@ -120,9 +127,10 @@ suite('SidePanelPowerBookmarksListTest', () => {
         (bookmarkElement as PowerBookmarkRowElement).bookmark.url);
     assertNotEquals(
         undefined,
-        Array.from(bookmarkElement.shadowRoot!.querySelectorAll('button'))
-            .find(
-                el => el.textContent && el.textContent.trim() === 'New title'));
+        Array
+            .from(bookmarkElement.shadowRoot!.querySelectorAll(
+                'cr-url-list-item'))
+            .find(el => el.title === 'New title'));
   });
 
   test('AddsCreatedBookmark', async () => {
@@ -212,11 +220,11 @@ suite('SidePanelPowerBookmarksListTest', () => {
     const folderElement = bookmarkElements[0]!;
     assertEquals(folderElement.id, 'bookmark-5');
 
-    const descriptionElement =
-        folderElement.shadowRoot!.getElementById('description');
+    const urlListItemElement =
+        folderElement.shadowRoot!.querySelector('cr-url-list-item');
     const pluralString =
         await PluralStringProxyImpl.getInstance().getPluralString('foo', 1);
-    assertEquals(descriptionElement!.textContent!.includes(pluralString), true);
+    assertEquals(urlListItemElement!.description!.includes(pluralString), true);
   });
 
   test('SetsExpandedDescription', () => {
@@ -230,11 +238,11 @@ suite('SidePanelPowerBookmarksListTest', () => {
     const folderElement = bookmarkElements[1]!;
     assertEquals(folderElement.id, 'bookmark-4');
 
-    const descriptionElement =
-        folderElement.shadowRoot!.getElementById('description');
+    const urlListItemElement =
+        folderElement.shadowRoot!.querySelector('cr-url-list-item');
     const expandedDescription = 'child';
     assertEquals(
-        descriptionElement!.textContent!.includes(expandedDescription), true);
+        urlListItemElement!.description!.includes(expandedDescription), true);
   });
 
   test('SetsExpandedSearchResultDescription', () => {
@@ -256,10 +264,10 @@ suite('SidePanelPowerBookmarksListTest', () => {
     const folderElement = bookmarkElements[0]!;
     assertEquals(folderElement.id, 'bookmark-4');
 
-    const descriptionElement =
-        folderElement.shadowRoot!.getElementById('description');
+    const urlListItemElement =
+        folderElement.shadowRoot!.querySelector('cr-url-list-item');
     const expandedDescription = 'child - All Bookmarks';
     assertEquals(
-        descriptionElement!.textContent!.includes(expandedDescription), true);
+        urlListItemElement!.description!.includes(expandedDescription), true);
   });
 });

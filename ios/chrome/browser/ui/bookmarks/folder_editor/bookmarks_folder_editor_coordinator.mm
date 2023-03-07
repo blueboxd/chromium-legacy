@@ -12,6 +12,8 @@
 #import "components/bookmarks/browser/bookmark_model.h"
 #import "ios/chrome/browser/bookmarks/bookmark_model_factory.h"
 #import "ios/chrome/browser/main/browser.h"
+#import "ios/chrome/browser/sync/sync_service_factory.h"
+#import "ios/chrome/browser/sync/sync_setup_service_factory.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_navigation_controller.h"
 #import "ios/chrome/browser/ui/bookmarks/folder_chooser/bookmarks_folder_chooser_coordinator.h"
 #import "ios/chrome/browser/ui/bookmarks/folder_chooser/bookmarks_folder_chooser_coordinator_delegate.h"
@@ -80,15 +82,21 @@
 - (void)start {
   [super start];
   // TODO(crbug.com/1402758): Create a mediator.
+  ChromeBrowserState* browserState = self.browser->GetBrowserState();
   bookmarks::BookmarkModel* model =
-      ios::BookmarkModelFactory::GetForBrowserState(
-          self.browser->GetBrowserState());
+      ios::BookmarkModelFactory::GetForBrowserState(browserState);
+  SyncSetupService* syncSetupService =
+      SyncSetupServiceFactory::GetForBrowserState(browserState);
+  syncer::SyncService* syncService =
+      SyncServiceFactory::GetForBrowserState(browserState);
   if (_baseNavigationController) {
     DCHECK(!_folderNode);
     _viewController = [BookmarksFolderEditorViewController
         folderCreatorWithBookmarkModel:model
                           parentFolder:_parentFolderNode
-                               browser:self.browser];
+                               browser:self.browser
+                      syncSetupService:syncSetupService
+                           syncService:syncService];
     _viewController.delegate = self;
     _viewController.snackbarCommandsHandler = HandlerForProtocol(
         self.browser->GetCommandDispatcher(), SnackbarCommands);
@@ -100,14 +108,16 @@
     _viewController = [BookmarksFolderEditorViewController
         folderEditorWithBookmarkModel:model
                                folder:_folderNode
-                              browser:self.browser];
+                              browser:self.browser
+                     syncSetupService:syncSetupService
+                          syncService:syncService];
     _viewController.delegate = self;
     _viewController.snackbarCommandsHandler = HandlerForProtocol(
         self.browser->GetCommandDispatcher(), SnackbarCommands);
     _navigationController = [[BookmarkNavigationController alloc]
         initWithRootViewController:_viewController];
-    _navigationController.presentationController.delegate = self;
     _navigationController.modalPresentationStyle = UIModalPresentationFormSheet;
+    _navigationController.presentationController.delegate = self;
 
     [self.baseViewController presentViewController:_navigationController
                                           animated:YES
@@ -130,14 +140,13 @@
   } else {
     // If there is no `_baseNavigationController` and `_navigationController`,
     // the view controller has been already dismissed. See
-    // `presentationControllerDidDismiss:`.
+    // `presentationControllerDidDismiss:` and
+    // `bookmarksFolderEditorDidDismiss:`.
     // Therefore `self.baseViewController.presentedViewController` must be
-    // `nullptr`. This should only happend when the user is editing an existing
-    // folder node.
+    // `nullptr`.
     DCHECK(!self.baseViewController.presentedViewController);
-    DCHECK(_folderNode);
-    DCHECK(!_parentFolderNode);
   }
+  [_viewController disconnect];
   _viewController = nil;
 }
 
@@ -161,7 +170,8 @@
                                             : _navigationController)
                                browser:self.browser
                            hiddenNodes:hiddenNodes];
-  _folderChooserCoordinator.selectedFolder = parent;
+  _folderChooserCoordinator.allowsNewFolders = NO;
+  [_folderChooserCoordinator setSelectedFolder:parent];
   _folderChooserCoordinator.delegate = self;
   [_folderChooserCoordinator start];
 }
@@ -183,6 +193,13 @@
 
 - (void)bookmarksFolderEditorDidCancel:
     (BookmarksFolderEditorViewController*)folderEditor {
+  [_delegate bookmarksFolderEditorCoordinatorShouldStop:self];
+}
+
+- (void)bookmarksFolderEditorDidDismiss:
+    (BookmarksFolderEditorViewController*)folderEditor {
+  DCHECK(_baseNavigationController);
+  _baseNavigationController = nil;
   [_delegate bookmarksFolderEditorCoordinatorShouldStop:self];
 }
 

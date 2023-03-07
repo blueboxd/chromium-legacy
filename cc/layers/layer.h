@@ -657,7 +657,7 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
     return GetBitFlag(kMayContainVideoFlagMask);
   }
 
-  // Stable identifier for clients. See comment in cc/trees/element_id.h.
+  // Stable identifier for clients. See comment in cc/paint/element_id.h.
   void SetElementId(ElementId id);
   ElementId element_id() const { return inputs_.Read(*this).element_id; }
 
@@ -691,6 +691,8 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
   // which case the layer won't be shown with any content in the tracing
   // display.
   virtual sk_sp<const SkPicture> GetPicture() const;
+
+  virtual bool IsSolidColorLayerForTesting() const;
 
   const LayerDebugInfo* debug_info() const { return debug_info_.Read(*this); }
   LayerDebugInfo& EnsureDebugInfo();

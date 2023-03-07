@@ -14,11 +14,9 @@
 #include "base/files/file_util.h"
 #include "base/functional/bind.h"
 #include "base/logging.h"
-#include "base/memory/scoped_refptr.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/user_metrics.h"
 #include "base/path_service.h"
-#include "base/strings/strcat.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/thread_pool.h"
@@ -26,7 +24,6 @@
 #include "base/version.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
-#include "chrome/browser/profiles/profile_key.h"
 #include "chrome/browser/supervised_user/kids_chrome_management/kids_chrome_management_client_factory.h"
 #include "chrome/browser/supervised_user/supervised_user_service_observer.h"
 #include "chrome/browser/sync/sync_service_factory.h"
@@ -48,18 +45,11 @@
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "ui/base/l10n/l10n_util.h"
 
-#if !BUILDFLAG(IS_ANDROID)
+#if BUILDFLAG(IS_CHROMEOS)
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
-#endif
-
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-#include "chrome/browser/ash/login/users/chrome_user_manager.h"
-#include "chrome/browser/ash/login/users/supervised_user_manager.h"
-#include "chromeos/ash/components/settings/cros_settings_names.h"
-#include "components/user_manager/user_manager.h"
 #endif
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
@@ -225,20 +215,22 @@ std::string SupervisedUserService::GetEduCoexistenceLoginUrl() {
   return chrome::kChromeUIEDUCoexistenceLoginURLV2;
 }
 
-bool SupervisedUserService::IsChild() const {
-  return profile_->IsChild();
-}
-
 bool SupervisedUserService::IsURLFilteringEnabled() const {
-#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_CHROMEOS)
+// TODO(b/271413641): Use capabilities to verify if filtering is enabled on iOS.
+#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_LINUX)
   return profile_->IsChild();
 #else
-  AccountInfo account_info = identity_manager_->FindExtendedAccountInfo(
-      identity_manager_->GetPrimaryAccountInfo(signin::ConsentLevel::kSignin));
-  return account_info.capabilities.is_subject_to_parental_controls() ==
-             signin::Tribool::kTrue &&
+  return profile_->IsChild() &&
          base::FeatureList::IsEnabled(
              supervised_user::kFilterWebsitesForSupervisedUsersOnThirdParty);
+#endif
+}
+
+bool SupervisedUserService::AreExtensionsPermissionsEnabled() const {
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+  return profile_->IsChild();
+#else
+  return false;
 #endif
 }
 
@@ -376,7 +368,7 @@ void SupervisedUserService::SetActive(bool active) {
     delegate_->SetActive(active_);
 
     // Now activate/deactivate anything not handled by the delegate yet.
-#if !BUILDFLAG(IS_ANDROID)
+#if BUILDFLAG(IS_CHROMEOS)
   // Re-set the default theme to turn the SU theme on/off.
   ThemeService* theme_service = ThemeServiceFactory::GetForProfile(profile_);
   if (theme_service->UsingDefaultTheme() || theme_service->UsingSystemTheme())
@@ -446,9 +438,8 @@ void SupervisedUserService::SetActive(bool active) {
     RefreshApprovedExtensionsFromPrefs();
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 
-#if !BUILDFLAG(IS_ANDROID)
-    // TODO(bauerb): Get rid of the platform-specific #ifdef here.
-    // http://crbug.com/313377
+#if BUILDFLAG(IS_CHROMEOS)
+    // TODO(b/270535171): Remove platform-specific #ifdef.
     BrowserList::AddObserver(this);
 #endif
   } else {
@@ -469,12 +460,15 @@ void SupervisedUserService::SetActive(bool active) {
     for (SupervisedUserServiceObserver& observer : observer_list_)
       observer.OnURLFilterChanged();
 
-#if !BUILDFLAG(IS_ANDROID)
-    // TODO(bauerb): Get rid of the platform-specific #ifdef here.
-    // http://crbug.com/313377
+#if BUILDFLAG(IS_CHROMEOS)
+    // TODO(b/270535171): Remove platform-specific #ifdef.
     BrowserList::RemoveObserver(this);
 #endif
   }
+}
+
+bool SupervisedUserService::IsChild() const {
+  return profile_->IsChild();
 }
 
 void SupervisedUserService::OnCustodianInfoChanged() {
@@ -945,7 +939,7 @@ bool SupervisedUserService::IsCustomPassphraseAllowed() const {
   return !active_;
 }
 
-#if !BUILDFLAG(IS_ANDROID)
+#if BUILDFLAG(IS_CHROMEOS)
 void SupervisedUserService::OnBrowserSetLastActive(Browser* browser) {
   bool profile_became_active = profile_->IsSameOrParent(browser->profile());
   if (!is_profile_active_ && profile_became_active)
@@ -955,7 +949,7 @@ void SupervisedUserService::OnBrowserSetLastActive(Browser* browser) {
 
   is_profile_active_ = profile_became_active;
 }
-#endif  // !BUILDFLAG(IS_ANDROID)
+#endif  // BUILDFLAG(IS_CHROMEOS)
 
 void SupervisedUserService::OnSiteListUpdated() {
   for (SupervisedUserServiceObserver& observer : observer_list_)

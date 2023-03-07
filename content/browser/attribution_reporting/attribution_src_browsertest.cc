@@ -4,6 +4,7 @@
 
 #include <memory>
 #include <utility>
+#include <vector>
 
 #include "base/containers/contains.h"
 #include "base/location.h"
@@ -17,6 +18,8 @@
 #include "build/buildflag.h"
 #include "components/aggregation_service/aggregation_service.mojom.h"
 #include "components/attribution_reporting/aggregatable_dedup_key.h"
+#include "components/attribution_reporting/aggregatable_trigger_data.h"
+#include "components/attribution_reporting/event_trigger_data.h"
 #include "components/attribution_reporting/os_support.mojom.h"
 #include "components/attribution_reporting/registration_type.mojom.h"
 #include "components/attribution_reporting/source_registration.h"
@@ -25,6 +28,9 @@
 #include "content/browser/attribution_reporting/attribution_constants.h"
 #include "content/browser/attribution_reporting/attribution_manager_impl.h"
 #include "content/browser/attribution_reporting/attribution_test_utils.h"
+#include "content/browser/attribution_reporting/test/mock_attribution_host.h"
+#include "content/browser/attribution_reporting/test/mock_data_host.h"
+#include "content/browser/attribution_reporting/test/source_observer.h"
 #include "content/browser/storage_partition_impl.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/navigation_handle.h"
@@ -852,13 +858,11 @@ IN_PROC_BROWSER_TEST_P(AttributionSrcBasicTriggerBrowserTest,
       ElementsAre(TriggerRegistrationMatches(TriggerRegistrationMatcherConfig(
           FilterPair(),
           /*debug_key=*/Eq(absl::nullopt),
-          EventTriggerDataListMatches(EventTriggerDataListMatcherConfig(
-              ElementsAre(EventTriggerDataMatches(EventTriggerDataMatcherConfig(
-                  /*data=*/7))))),
-          attribution_reporting::AggregatableDedupKeyList(),
+          ElementsAre(EventTriggerDataMatches(EventTriggerDataMatcherConfig(
+              /*data=*/7))),
+          std::vector<attribution_reporting::AggregatableDedupKey>(),
           /*debug_reporting=*/false,
-          /*aggregatable_trigger_data=*/
-          attribution_reporting::AggregatableTriggerDataList(),
+          std::vector<attribution_reporting::AggregatableTriggerData>(),
           /*aggregatable_values=*/
           attribution_reporting::AggregatableValues(),
           ::aggregation_service::mojom::AggregationCoordinator::kDefault))));
@@ -912,36 +916,31 @@ IN_PROC_BROWSER_TEST_F(AttributionSrcBrowserTest,
   EXPECT_THAT(
       data_host->trigger_data(),
       ElementsAre(TriggerRegistrationMatches(TriggerRegistrationMatcherConfig(
-          FilterPair{.positive = *attribution_reporting::Filters::Create(
-                         {{{"w", {}}, {"x", {"y", "z"}}}}),
-                     .negative = *attribution_reporting::Filters::Create(
-                         {{{"a", {"b"}}}})},
+          FilterPair{
+              .positive = attribution_reporting::Filters(
+                  {{{"w", {}}, {"x", {"y", "z"}}}}),
+              .negative = attribution_reporting::Filters({{{"a", {"b"}}}})},
           /*debug_key=*/Optional(789),
-          EventTriggerDataListMatches(
-              EventTriggerDataListMatcherConfig(ElementsAre(
-                  attribution_reporting::EventTriggerData(
-                      /*data=*/1,
-                      /*priority=*/5, /*dedup_key=*/1024,
-                      FilterPair{
-                          .positive = *attribution_reporting::Filters::Create(
-                              {{{"a", {"b"}}}}),
-                          .negative = *attribution_reporting::Filters::Create(
-                              {{{"c", {}}}})}),
-                  attribution_reporting::EventTriggerData(
-                      /*data=*/2, /*priority=*/10,
-                      /*dedup_key=*/absl::nullopt,
-                      FilterPair{.negative =
-                                     *attribution_reporting::Filters::Create(
-                                         {{{"d", {"e", "f"}}, {"g", {}}}})})))),
-          *attribution_reporting::AggregatableDedupKeyList::Create(
-              {attribution_reporting::AggregatableDedupKey(
-                  /*dedup_key=*/123, FilterPair())}),
+          ElementsAre(attribution_reporting::EventTriggerData(
+                          /*data=*/1,
+                          /*priority=*/5, /*dedup_key=*/1024,
+                          FilterPair{.positive = attribution_reporting::Filters(
+                                         {{{"a", {"b"}}}}),
+                                     .negative = attribution_reporting::Filters(
+                                         {{{"c", {}}}})}),
+                      attribution_reporting::EventTriggerData(
+                          /*data=*/2, /*priority=*/10,
+                          /*dedup_key=*/absl::nullopt,
+                          FilterPair{.negative = attribution_reporting::Filters(
+                                         {{{"d", {"e", "f"}}, {"g", {}}}})})),
+          std::vector<attribution_reporting::AggregatableDedupKey>{
+              attribution_reporting::AggregatableDedupKey(
+                  /*dedup_key=*/123, FilterPair())},
           /*debug_reporting=*/true,
-          /*aggregatable_trigger_data=*/
-          *attribution_reporting::AggregatableTriggerDataList::Create(
-              {*attribution_reporting::AggregatableTriggerData::Create(
+          std::vector<attribution_reporting::AggregatableTriggerData>{
+              *attribution_reporting::AggregatableTriggerData::Create(
                   /*key_piece=*/absl::MakeUint128(/*high=*/0, /*low=*/1),
-                  /*source_keys=*/{"key"}, FilterPair())}),
+                  /*source_keys=*/{"key"}, FilterPair())},
           /*aggregatable_values=*/
           *attribution_reporting::AggregatableValues::Create({{"key", 123}}),
           ::aggregation_service::mojom::AggregationCoordinator::kAwsCloud))));
@@ -975,8 +974,8 @@ IN_PROC_BROWSER_TEST_F(AttributionSrcBrowserTest,
   const auto& trigger_data = data_host->trigger_data();
 
   EXPECT_EQ(trigger_data.size(), 1u);
-  EXPECT_EQ(trigger_data.front().event_triggers.vec().size(), 1u);
-  EXPECT_EQ(trigger_data.front().event_triggers.vec().front().data, 7u);
+  EXPECT_EQ(trigger_data.front().event_triggers.size(), 1u);
+  EXPECT_EQ(trigger_data.front().event_triggers.front().data, 7u);
 }
 
 IN_PROC_BROWSER_TEST_F(AttributionSrcBrowserTest,
@@ -1009,8 +1008,8 @@ IN_PROC_BROWSER_TEST_F(AttributionSrcBrowserTest,
   EXPECT_EQ(trigger_data.size(), 2u);
 
   // Both triggers should be processed.
-  EXPECT_EQ(trigger_data.front().event_triggers.vec().front().data, 5u);
-  EXPECT_EQ(trigger_data.back().event_triggers.vec().front().data, 7u);
+  EXPECT_EQ(trigger_data.front().event_triggers.front().data, 5u);
+  EXPECT_EQ(trigger_data.back().event_triggers.front().data, 7u);
 
   // Middle redirect source should be ignored.
   EXPECT_EQ(data_host->source_data().size(), 0u);
@@ -1178,8 +1177,8 @@ IN_PROC_BROWSER_TEST_F(AttributionSrcPrerenderBrowserTest,
   const auto& trigger_data = data_host->trigger_data();
 
   ASSERT_EQ(trigger_data.size(), 1u);
-  ASSERT_EQ(trigger_data.front().event_triggers.vec().size(), 1u);
-  EXPECT_EQ(trigger_data.front().event_triggers.vec().front().data, 7u);
+  ASSERT_EQ(trigger_data.front().event_triggers.size(), 1u);
+  EXPECT_EQ(trigger_data.front().event_triggers.front().data, 7u);
 }
 
 class AttributionSrcFencedFrameBrowserTest : public AttributionSrcBrowserTest {

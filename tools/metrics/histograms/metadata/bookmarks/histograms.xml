@@ -303,29 +303,6 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Bookmarks.Count.OpenInIncognito" units="bookmarks"
-    expires_after="M82">
-  <owner>twellington@google.com</owner>
-  <owner>clank-app-team@google.com</owner>
-  <component>UI&gt;Browser&gt;Bookmarks</component>
-  <summary>
-    Records the number of bookmarks which are opened using the &quot;Open in
-    incognito tab&quot; button from selection mode in the Android bookmark
-    manager.
-  </summary>
-</histogram>
-
-<histogram name="Bookmarks.Count.OpenInNewTab" units="bookmarks"
-    expires_after="M82">
-  <owner>twellington@google.com</owner>
-  <owner>clank-app-team@google.com</owner>
-  <component>UI&gt;Browser&gt;Bookmarks</component>
-  <summary>
-    Records the number of bookmarks which are opened using the &quot;Open in new
-    tab&quot; button from selection mode in the Android bookmark manager.
-  </summary>
-</histogram>
-
 <histogram name="Bookmarks.EditLocation" enum="BookmarkLaunchLocation"
     expires_after="2023-08-08">
   <owner>dfried@chromium.org</owner>
@@ -783,20 +760,6 @@ chromium-metrics-reviews@google.com.
 
     Recorded when multi-selection is opened from the bookmark manager. Possible
     that the selection is only 1 bookmark.
-  </summary>
-</histogram>
-
-<histogram name="Bookmarks.OnFaviconsChangedIconURL" enum="BooleanHit"
-    expires_after="M77">
-  <owner>pkotwicz@chromium.org</owner>
-  <component>UI&gt;Browser&gt;Bookmarks</component>
-  <summary>
-    Logs how frequently BookmarkModel::OnFaviconsChanged() is called with a
-    non-empty |icon_url| to determine whether BookmarkNodes should be cached
-    based on their favicon URLs (e.g. http://www.google.com/favicon.ico) in
-    addition to their page URLs (e.g. http://www.google.com). OnFaviconChanged()
-    is expected to be called less than 10 times per user per day with a
-    non-empty |icon_url|.
   </summary>
 </histogram>
 

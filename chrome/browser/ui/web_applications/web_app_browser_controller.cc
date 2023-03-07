@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/web_applications/web_app_browser_controller.h"
 
+#include "base/check_is_test.h"
 #include "base/containers/flat_set.h"
 #include "base/functional/callback.h"
 #include "base/functional/callback_helpers.h"
@@ -56,6 +57,7 @@
 #include "chrome/browser/ash/apps/apk_web_app_service.h"
 #include "chrome/browser/ash/system_web_apps/color_helpers.h"
 #include "chrome/browser/ash/system_web_apps/types/system_web_app_delegate.h"
+#include "chromeos/constants/chromeos_features.h"
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
@@ -185,7 +187,8 @@ void WebAppBrowserController::ToggleWindowControlsOverlayEnabled(
 }
 
 bool WebAppBrowserController::AppUsesBorderlessMode() const {
-  return effective_display_mode_ == DisplayMode::kBorderless;
+  return IsIsolatedWebApp() &&
+         effective_display_mode_ == DisplayMode::kBorderless;
 }
 
 bool WebAppBrowserController::AppUsesTabbed() const {
@@ -196,7 +199,11 @@ bool WebAppBrowserController::AppUsesTabbed() const {
 }
 
 bool WebAppBrowserController::IsIsolatedWebApp() const {
-  return registrar().IsIsolated(app_id());
+  return is_isolated_web_app_for_testing_ || registrar().IsIsolated(app_id());
+}
+
+void WebAppBrowserController::SetIsolatedWebAppTrueForTesting() {
+  is_isolated_web_app_for_testing_ = true;
 }
 
 gfx::Rect WebAppBrowserController::GetDefaultBounds() const {
@@ -416,7 +423,7 @@ absl::optional<SkColor> WebAppBrowserController::GetThemeColor() const {
   // System Apps with dynamic color ignore manifest and pull theme color from
   // the OS.
   if (system_app() && system_app()->UseSystemThemeColor() &&
-      ash::features::IsJellyEnabled()) {
+      chromeos::features::IsJellyEnabled()) {
     return ash::GetSystemThemeColor();
   }
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
@@ -444,7 +451,7 @@ absl::optional<SkColor> WebAppBrowserController::GetBackgroundColor() const {
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   if (system_app()) {
-    if (ash::features::IsJellyEnabled()) {
+    if (chromeos::features::IsJellyEnabled()) {
       // System Apps with dynamic color ignore the manifest and pull background
       // color from the OS in situations where a background color can not be
       // extracted from the web contents.

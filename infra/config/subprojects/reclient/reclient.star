@@ -113,12 +113,17 @@ def fyi_reclient_test_builder(
         name,
         console_view_category,
         **kwargs):
+    reclient_bootstrap_env = kwargs.pop("reclient_bootstrap_env", {})
+    reclient_bootstrap_env.update({
+        "RBE_compression_threshold": "4000000",
+    })
     return fyi_reclient_staging_builder(
         name = name,
         console_view_category = console_view_category,
         reclient_instance = "rbe-chromium-%s-test",
         reclient_version = "test",
         untrusted_service_account = ci.DEFAULT_SERVICE_ACCOUNT,
+        reclient_bootstrap_env = reclient_bootstrap_env,
         **kwargs
     )
 
@@ -515,6 +520,7 @@ ci.builder(
         "RBE_use_unified_uploads": "false",
         "RBE_experimental_sysroot_do_not_upload": "true",
         "GOMA_DEPS_CACHE_TABLE_THRESHOLD": "40000",
+        "RBE_compression_threshold": "4000000",
     },
     reclient_cache_silo = "Comparison Linux remote links - cache siloed",
     reclient_instance = reclient.instance.TEST_TRUSTED,

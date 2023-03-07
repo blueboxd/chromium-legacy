@@ -9,6 +9,7 @@
 
 #import "base/ios/block_types.h"
 
+#import "ios/chrome/browser/metrics/tab_usage_recorder_browser_agent.h"
 #import "ios/chrome/browser/ui/authentication/signin_presenter.h"
 #import "ios/chrome/browser/ui/browser_view/key_commands_provider.h"
 #import "ios/chrome/browser/ui/browser_view/tab_consumer.h"
@@ -21,6 +22,8 @@
 #import "ios/chrome/browser/ui/page_info/requirements/page_info_presentation.h"
 #import "ios/chrome/browser/ui/settings/sync/utils/sync_presenter.h"
 #import "ios/chrome/browser/ui/thumb_strip/thumb_strip_supporting.h"
+#import "ios/chrome/browser/url_loading/url_loading_browser_agent.h"
+#import "ios/chrome/browser/url_loading/url_loading_notifier_browser_agent.h"
 #import "ios/chrome/browser/web/web_navigation_ntp_delegate.h"
 #import "ios/chrome/browser/web/web_state_container_view_provider.h"
 
@@ -51,11 +54,14 @@ class PrerenderService;
 @protocol SnackbarCommands;
 @class TabStripCoordinator;
 @class TabStripLegacyCoordinator;
+class TabUsageRecorderBrowserAgent;
 @protocol TextZoomCommands;
 @class ToolbarAccessoryPresenter;
 @protocol ToolbarCommands;
 @protocol IncognitoReauthCommands;
 @protocol LoadQueryCommands;
+class UrlLoadingBrowserAgent;
+class UrlLoadingNotifierBrowserAgent;
 
 // TODO(crbug.com/1328039): Remove all use of the prerender service from BVC
 typedef struct {
@@ -83,6 +89,9 @@ typedef struct {
   id<LoadQueryCommands> loadQueryCommandsHandler;
   id<OmniboxCommands> omniboxCommandsHandler;
   BOOL isOffTheRecord;
+  UrlLoadingBrowserAgent* urlLoadingBrowserAgent;
+  UrlLoadingNotifierBrowserAgent* urlLoadingNotifierBrowserAgent;
+  TabUsageRecorderBrowserAgent* tabUsageRecorderBrowserAgent;
 } BrowserViewControllerDependencies;
 
 // The top-level view controller for the browser UI. Manages other controllers

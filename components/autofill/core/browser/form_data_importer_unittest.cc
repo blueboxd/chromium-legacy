@@ -118,6 +118,7 @@ constexpr char kDefaultCreditCardExpYear[] = "2999";
 #if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
 // Define default value for Iban.
 constexpr char kIbanValue[] = "IE12 BOFI 9000 0112 3456 78";
+constexpr char kIbanValueWithoutWhitespaces[] = "IE12BOFI90000112345678";
 #endif  // !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
 
 // For a given ServerFieldType |type| returns a pair of field name and label
@@ -600,13 +601,6 @@ class FormDataImporterTestBase {
     }
   }
 
-  void AddIBANForm(FormData* form, const char* value) {
-    FormFieldData field;
-    test::CreateTestFormField("IBAN Value:", "iban_value", value, "text",
-                              &field);
-    form->fields.push_back(field);
-  }
-
   // Helper methods that simply forward the call to the private member (to avoid
   // having to friend every test that needs to access the private
   // PersonalDataManager::ImportAddressProfile or ExtractCreditCard).
@@ -821,16 +815,6 @@ TEST_P(FormDataImporterTest, ComplementCountry) {
   // Country part of the form:
   // If a valid country was entered, use that.
   ImportWithCountry("Germany", {kDefaultGermanProfile});
-  // Depending on AutofillIgnoreInvalidCountryOnImport, profiles with an
-  // invalid observed country are (not) rejected.
-  if (base::FeatureList::IsEnabled(
-          features::kAutofillIgnoreInvalidCountryOnImport)) {
-    // In this case, `FormDataImporter::GetPredictedCountryCode()` defaults to
-    // the locale.
-    ImportWithCountry("Somewhere", {kDefaultUSProfile});
-  } else {
-    ImportWithCountry("Somewhere", {});
-  }
   // Country not part of the form: Complement using
   // `FormDataImporter::GetPredictedCountryCode()`. Since no variation config
   // country code is available, it defaults to the locale (US).
@@ -877,29 +861,15 @@ TEST_P(FormDataImporterTest, ComplementCountry_PhoneNumberParsing) {
   histogram_tester.ExpectUniqueSample(kHistogramName, true, 1);
 }
 
-// Tests how invalid countries in submitted forms are treated depending on
-// `kAutofillIgnoreInvalidCountryOnImport`.
+// Tests that invalid countries in submitted forms are ignored, and that the
+// complement country logic overwrites it. In this case, expect the country to
+// default to the locale's country "US".
 TEST_P(FormDataImporterTest, InvalidCountry) {
   // Due to the extra 'A', the country of this `form_structure` is invalid.
   std::unique_ptr<FormStructure> form_structure =
       ConstructFormStructureFromTypeValuePairs(
           GetDefaultProfileTypeValuePairsWithOverriddenCountry("USAA"));
-  // With `kAutofillIgnoreInvalidCountryOnImport` disabled, profiles with
-  // invalid country information are rejected.
-  {
-    base::test::ScopedFeatureList ignore_invalid_country_feature;
-    ignore_invalid_country_feature.InitAndDisableFeature(
-        features::kAutofillIgnoreInvalidCountryOnImport);
-    ImportAddressProfileAndVerifyImportOfNoProfile(*form_structure);
-  }
-  // With the feature enabled, the invalid country is ignored and country
-  // complemention overwrites it. It becomes US due to the locale.
-  {
-    base::test::ScopedFeatureList ignore_invalid_country_feature;
-    ignore_invalid_country_feature.InitAndEnableFeature(
-        features::kAutofillIgnoreInvalidCountryOnImport);
-    ExtractAddressProfileAndVerifyExtractionOfDefaultProfile(*form_structure);
-  }
+  ExtractAddressProfileAndVerifyExtractionOfDefaultProfile(*form_structure);
 }
 
 // Tests that invalid phone numbers are removed and importing continues.
@@ -1933,18 +1903,12 @@ TEST_P(FormDataImporterTest, ImportAddressProfiles_LocalizedCountryName) {
   // Set up language state mock.
   autofill_client_->GetLanguageState()->SetSourceLanguage("");
   // Verify that the country code is not determined from the country value if
-  // the page language is not set. Depending on
-  // AutofillIgnoreInvalidCountryOnImport, a profile with an incorrect country
-  // might still be imported.
-  if (base::FeatureList::IsEnabled(
-          features::kAutofillIgnoreInvalidCountryOnImport)) {
-    ExtractAddressProfileAndVerifyExtractionOfDefaultProfile(*form_structure);
-    // Remove the imported profile again, so it doesn't affect the expectation
-    // below.
-    personal_data_manager_->ClearAllLocalData();
-  } else {
-    ImportAddressProfileAndVerifyImportOfNoProfile(*form_structure);
-  }
+  // the page language is not set. This results in an import of the default
+  // profile.
+  ExtractAddressProfileAndVerifyExtractionOfDefaultProfile(*form_structure);
+  // Remove the imported profile again, so it doesn't affect the expectation
+  // below.
+  personal_data_manager_->ClearAllLocalData();
 
   // Set the page language to match the localized country value and try again.
   autofill_client_->GetLanguageState()->SetSourceLanguage("de");
@@ -1993,22 +1957,15 @@ TEST_P(FormDataImporterTest,
 }
 
 // TODO(crbug.com/634131): Create profiles if part of a standalone part of a
-// composed country name is present. Currently this results in either no import
-// or an import with an incorrect country, depending on
-// AutofillIgnoreInvalidCountryOnImport.
+// composed country name is present. Currently this is treated as an invalid
+// country, which is ignored on import.
 TEST_P(FormDataImporterTest,
        ImportAddressProfiles_IncompleteComposedCountryName) {
   std::unique_ptr<FormStructure> form_structure =
       ConstructFormStructureFromTypeValuePairs(
           GetDefaultProfileTypeValuePairsWithOverriddenCountry(
               "Myanmar"));  // Missing the [Burma] part
-
-  if (base::FeatureList::IsEnabled(
-          features::kAutofillIgnoreInvalidCountryOnImport)) {
-    ExtractAddressProfileAndVerifyExtractionOfDefaultProfile(*form_structure);
-  } else {
-    ImportAddressProfileAndVerifyImportOfNoProfile(*form_structure);
-  }
+  ExtractAddressProfileAndVerifyExtractionOfDefaultProfile(*form_structure);
 }
 
 // ExtractCreditCard tests.
@@ -3201,7 +3158,7 @@ TEST_P(FormDataImporterTest, ExtractFormData_SubmittingIbanFormUpdatesPref) {
   // The pref should always start disabled.
   ASSERT_FALSE(personal_data_manager_->IsAutofillHasSeenIbanPrefEnabled());
 
-  AddIBANForm(&form, kIbanValue);
+  test::CreateTestIbanFormData(&form);
 
   FormStructure form_structure(form);
   form_structure.DetermineHeuristicTypes(nullptr, nullptr);
@@ -3238,7 +3195,7 @@ TEST_P(FormDataImporterTest,
   FormData form;
   form.url = GURL("https://www.foo.com");
 
-  AddIBANForm(&form, kIbanValue);
+  test::CreateTestIbanFormData(&form);
 
   FormStructure form_structure(form);
   form_structure.DetermineHeuristicTypes(nullptr, nullptr);
@@ -3267,7 +3224,7 @@ TEST_P(FormDataImporterTest, ExtractFormData_ImportIbanRecordType_LocalIban) {
   FormData form;
   form.url = GURL("https://www.foo.com");
 
-  AddIBANForm(&form, kIbanValue);
+  test::CreateTestIbanFormData(&form);
 
   FormStructure form_structure(form);
   form_structure.DetermineHeuristicTypes(nullptr, nullptr);
@@ -4399,7 +4356,7 @@ TEST_P(FormDataImporterTest,
   FormData form;
   form.url = GURL("https://www.foo.com");
 
-  AddIBANForm(&form, "");
+  test::CreateTestIbanFormData(&form, "");
 
   FormStructure form_structure(form);
   form_structure.DetermineHeuristicTypes(nullptr, nullptr);
@@ -4416,7 +4373,7 @@ TEST_P(
   FormData form;
   form.url = GURL("https://www.foo.com");
 
-  AddIBANForm(&form, kIbanValue);
+  test::CreateTestIbanFormData(&form);
 
   FormStructure form_structure(form);
   form_structure.DetermineHeuristicTypes(nullptr, nullptr);
@@ -4432,7 +4389,7 @@ TEST_P(FormDataImporterTest,
   FormData form;
   form.url = GURL("https://www.foo.com");
 
-  AddIBANForm(&form, kIbanValue);
+  test::CreateTestIbanFormData(&form);
 
   FormStructure form_structure(form);
   form_structure.DetermineHeuristicTypes(nullptr, nullptr);
@@ -4454,7 +4411,7 @@ TEST_P(FormDataImporterTest,
   FormData form;
   form.url = GURL("https://www.foo.com");
 
-  AddIBANForm(&form, kIbanValue);
+  test::CreateTestIbanFormData(&form);
 
   FormStructure form_structure(form);
   form_structure.DetermineHeuristicTypes(nullptr, nullptr);
@@ -4470,13 +4427,14 @@ TEST_P(FormDataImporterTest,
       IBANSaveStrikeDatabase(autofill_client_->GetStrikeDatabase());
 
   iban_save_strike_database.AddStrikes(
-      iban_save_strike_database.GetMaxStrikesLimit(), kIbanValue);
+      iban_save_strike_database.GetMaxStrikesLimit(),
+      kIbanValueWithoutWhitespaces);
 
   // Simulate a form submission with a new IBAN.
   FormData form;
   form.url = GURL("https://www.foo.com");
 
-  AddIBANForm(&form, kIbanValue);
+  test::CreateTestIbanFormData(&form);
 
   FormStructure form_structure(form);
   form_structure.DetermineHeuristicTypes(nullptr, nullptr);

@@ -41,16 +41,17 @@ using ::base::test::ios::WaitUntilConditionOrTimeout;
 
 // Matcher for banner shown when camera permission is enabled.
 id<GREYMatcher> InfobarBannerCameraOnly() {
-  return grey_allOf(grey_accessibilityID(kInfobarBannerViewIdentifier),
-                    grey_accessibilityLabel(l10n_util::GetNSString(
-                        IDS_IOS_PERMISSIONS_INFOBAR_BANNER_CAMERA_ACCESSIBLE)),
-                    nil);
+  return grey_allOf(
+      grey_accessibilityID(kInfobarBannerLabelsStackViewIdentifier),
+      grey_accessibilityLabel(l10n_util::GetNSString(
+          IDS_IOS_PERMISSIONS_INFOBAR_BANNER_CAMERA_ACCESSIBLE)),
+      nil);
 }
 
 // Matcher for banner shown when microphone permission is enabled.
 id<GREYMatcher> InfobarBannerMicrophoneOnly() {
   return grey_allOf(
-      grey_accessibilityID(kInfobarBannerViewIdentifier),
+      grey_accessibilityID(kInfobarBannerLabelsStackViewIdentifier),
       grey_accessibilityLabel(l10n_util::GetNSString(
           IDS_IOS_PERMISSIONS_INFOBAR_BANNER_MICROPHONE_ACCESSIBLE)),
       nil);
@@ -60,7 +61,7 @@ id<GREYMatcher> InfobarBannerMicrophoneOnly() {
 // enabled.
 id<GREYMatcher> InfobarBannerCameraAndMicrophone() {
   return grey_allOf(
-      grey_accessibilityID(kInfobarBannerViewIdentifier),
+      grey_accessibilityID(kInfobarBannerLabelsStackViewIdentifier),
       grey_accessibilityLabel(l10n_util::GetNSString(
           IDS_IOS_PERMISSIONS_INFOBAR_BANNER_CAMERA_AND_MICROPHONE_ACCESSIBLE)),
       nil);
@@ -164,8 +165,19 @@ void TapDoneButtonOnInfobarModal() {
   NSString* buttonText = l10n_util::GetNSString(
       allow ? IDS_IOS_PERMISSIONS_ALERT_DIALOG_BUTTON_TEXT_GRANT
             : IDS_IOS_PERMISSIONS_ALERT_DIALOG_BUTTON_TEXT_DENY);
-  id<GREYMatcher> buttonMatcher = grey_allOf(
-      grey_ancestor(dialogMatcher), grey_accessibilityLabel(buttonText), nil);
+
+  // TODO(crbug.com/1418068): Simplify after minimum version required is >=
+  // iOS 15.
+  id<GREYMatcher> buttonMatcher = nil;
+  if (@available(iOS 15.0, *)) {
+    buttonMatcher = grey_allOf(grey_ancestor(dialogMatcher),
+                               grey_accessibilityLabel(buttonText),
+                               grey_kindOfClassName(@"UILabel"), nil);
+  } else {
+    buttonMatcher = grey_allOf(grey_ancestor(dialogMatcher),
+                               grey_accessibilityLabel(buttonText), nil);
+  }
+
   [[[EarlGrey selectElementWithMatcher:buttonMatcher]
       assertWithMatcher:grey_sufficientlyVisible()] performAction:grey_tap()];
 }

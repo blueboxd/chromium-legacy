@@ -387,16 +387,28 @@ void AuthenticatorRequestDialogModel::StartPlatformAuthenticatorFlow() {
       return;
     }
 
-    // For empty allow list requests, let the user select one of the silently
-    // enumerated credentials before dispatching to the platform authenticator.
-    if (transport_availability_.has_empty_allow_list &&
-        !transport_availability_.recognized_platform_authenticator_credentials
+    // If the platform authenticator reports known credentials, show them in the
+    // UI.
+    if (!transport_availability_.recognized_platform_authenticator_credentials
              .empty()) {
-      ephemeral_state_.creds_ =
-          transport_availability_.recognized_platform_authenticator_credentials;
-      SetCurrentStep(ephemeral_state_.creds_.size() == 1
-                         ? Step::kPreSelectSingleAccount
-                         : Step::kPreSelectAccount);
+      if (transport_availability_.has_empty_allow_list) {
+        // For discoverable credential requests, show an account picker.
+        ephemeral_state_.creds_ =
+            transport_availability_
+                .recognized_platform_authenticator_credentials;
+        SetCurrentStep(ephemeral_state_.creds_.size() == 1
+                           ? Step::kPreSelectSingleAccount
+                           : Step::kPreSelectAccount);
+      } else {
+        // For requests with an allow list, pre-select a random credential and
+        // show that one to the user. For platform authenticators with optional
+        // UV (e.g. Touch ID), this step essentially acts as the user presence
+        // check.
+        ephemeral_state_.creds_ = {
+            transport_availability_
+                .recognized_platform_authenticator_credentials.front()};
+        SetCurrentStep(Step::kPreSelectSingleAccount);
+      }
       return;
     }
   }
@@ -946,6 +958,13 @@ void AuthenticatorRequestDialogModel::StartWinNativeApi(
     size_t mechanism_index) {
   DCHECK(transport_availability_.has_win_native_api_authenticator);
   current_mechanism_ = mechanism_index;
+
+  if (transport_availability_.request_is_internal_only &&
+      !transport_availability_.win_is_uvpaa) {
+    offer_try_again_in_ui_ = false;
+    SetCurrentStep(Step::kErrorWindowsHelloNotEnabled);
+    return;
+  }
 
   if (resident_key_requirement() !=
           device::ResidentKeyRequirement::kDiscouraged &&

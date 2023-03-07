@@ -12,6 +12,7 @@
 #import "base/containers/cxx20_erase.h"
 #import "base/containers/flat_set.h"
 #import "base/memory/raw_ptr.h"
+#import "base/metrics/histogram_functions.h"
 #import "base/ranges/algorithm.h"
 #import "base/strings/sys_string_conversions.h"
 #import "components/password_manager/core/browser/move_password_to_account_store_helper.h"
@@ -44,17 +45,27 @@ using base::SysNSStringToUTF16;
 @interface PasswordDetailsMediator () <
     PasswordCheckObserver,
     PasswordDetailsTableViewControllerDelegate> {
+  // The credentials to be displayed in the page.
+  std::vector<password_manager::CredentialUIEntry> _credentials;
+
   // Password Check manager.
   raw_ptr<IOSChromePasswordCheckManager> _manager;
 
   // Listens to compromised passwords changes.
   std::unique_ptr<PasswordCheckObserverBridge> _passwordCheckObserver;
 
-  // Pref Service.
-  raw_ptr<PrefService> _prefService;
+  // YES when move to account option is supported in password details page, NO
+  // otherwise.
+  BOOL _supportMoveToAccount;
 
-  // Sync Service.
-  raw_ptr<syncer::SyncService> _syncService;
+  // Password manager client.
+  raw_ptr<password_manager::PasswordManagerClient> _passwordManagerClient;
+
+  // The signed in user account, or the empty string if there's none.
+  __strong NSString* _signedInAccount;
+
+  // YES when user is opted in for account storage, NO otherwise.
+  BOOL _isOptedInForAccountStorage;
 }
 
 // Dictionary of usernames of a same domain. Key: domain and value: NSSet of
@@ -70,14 +81,18 @@ using base::SysNSStringToUTF16;
 
 @implementation PasswordDetailsMediator
 
-- (instancetype)initWithPasswords:
-                    (const std::vector<password_manager::CredentialUIEntry>&)
-                        credentials
-                      displayName:(NSString*)displayName
-             passwordCheckManager:(IOSChromePasswordCheckManager*)manager
-                      prefService:(PrefService*)prefService
-                      syncService:(syncer::SyncService*)syncService {
+- (instancetype)
+        initWithPasswords:
+            (const std::vector<password_manager::CredentialUIEntry>&)credentials
+              displayName:(NSString*)displayName
+     passwordCheckManager:(IOSChromePasswordCheckManager*)manager
+              prefService:(PrefService*)prefService
+              syncService:(syncer::SyncService*)syncService
+     supportMoveToAccount:(BOOL)supportMoveToAccount
+    passwordManagerClient:
+        (password_manager::PasswordManagerClient*)passwordManagerClient {
   DCHECK(manager);
+  DCHECK(passwordManagerClient);
   DCHECK(!credentials.empty());
 
   self = [super init];
@@ -90,8 +105,13 @@ using base::SysNSStringToUTF16;
   _displayName = displayName;
   _passwordCheckObserver =
       std::make_unique<PasswordCheckObserverBridge>(self, manager);
-  _prefService = prefService;
-  _syncService = syncService;
+  _supportMoveToAccount = supportMoveToAccount;
+  _passwordManagerClient = passwordManagerClient;
+  _signedInAccount =
+      base::SysUTF8ToNSString(syncService->GetAccountInfo().email);
+  _isOptedInForAccountStorage =
+      password_manager::features_util::IsOptedInForAccountStorage(prefService,
+                                                                  syncService);
 
   // TODO(crbug.com/1400692): Improve saved passwords logic when helper is
   // available in SavedPasswordsPresenter.
@@ -132,8 +152,7 @@ using base::SysNSStringToUTF16;
     return;
   _consumer = consumer;
 
-  [_consumer setUserEmail:base::SysUTF8ToNSString(
-                              _syncService->GetAccountInfo().email)];
+  [_consumer setUserEmail:_signedInAccount];
 
   [self providePasswordsToConsumer];
 
@@ -148,8 +167,32 @@ using base::SysNSStringToUTF16;
   _manager = nullptr;
 }
 
-- (void)removeCredential:
-    (const password_manager::CredentialUIEntry&)credential {
+- (void)removeCredential:(PasswordDetails*)password {
+  if (password.compromised) {
+    base::UmaHistogramEnumeration(
+        "PasswordManager.BulkCheck.UserAction",
+        password_manager::metrics_util::PasswordCheckInteraction::
+            kRemovePassword);
+  }
+
+  // Map from PasswordDetails to CredentialUIEntry. Should support blocklists.
+  auto it = base::ranges::find_if(
+      _credentials,
+      [password](const password_manager::CredentialUIEntry& credential) {
+        return base::SysNSStringToUTF8(password.signonRealm) ==
+                   credential.GetFirstSignonRealm() &&
+               base::SysNSStringToUTF16(password.username) ==
+                   credential.username &&
+               base::SysNSStringToUTF16(password.password) ==
+                   credential.password;
+      });
+  if (it == _credentials.end()) {
+    // TODO(crbug.com/1359392): Convert into DCHECK.
+    return;
+  }
+
+  // Use the iterator before base::Erase() makes it invalid.
+  _manager->GetSavedPasswordsPresenter()->RemoveCredential(*it);
   // TODO(crbug.com/1359392). Once kPasswordsGrouping launches, the mediator
   // should update the passwords model and receive the updates via
   // SavedPasswordsPresenterObserver, instead of replicating the updates to its
@@ -157,21 +200,32 @@ using base::SysNSStringToUTF16;
   // flag is disabled and the password is edited, it's impossible to identify
   // the new object to show (sign-on realm can't be used as an id, there might
   // be multiple credentials; nor username/password since the values changed).
-  base::Erase(_credentials, credential);
-  _manager->GetSavedPasswordsPresenter()->RemoveCredential(credential);
+  base::Erase(_credentials, *it);
   [self providePasswordsToConsumer];
 }
 
-- (void)moveCredentialToAccountStore:
-            (const password_manager::CredentialUIEntry&)credential
-                              client:(password_manager::PasswordManagerClient*)
-                                         client {
-  auto it = base::ranges::find(_credentials, credential);
+- (void)moveCredentialToAccountStore:(PasswordDetails*)password {
+  // Map from PasswordDetails to CredentialUIEntry.
+  auto it = base::ranges::find_if(
+      _credentials,
+      [password](const password_manager::CredentialUIEntry& credential) {
+        return base::SysNSStringToUTF8(password.signonRealm) ==
+                   credential.GetFirstSignonRealm() &&
+               base::SysNSStringToUTF16(password.username) ==
+                   credential.username &&
+               base::SysNSStringToUTF16(password.password) ==
+                   credential.password;
+      });
+
+  if (it == _credentials.end()) {
+    return;
+  }
+
   it->stored_in = {password_manager::PasswordForm::Store::kAccountStore};
   MovePasswordsToAccountStore(
       _manager->GetSavedPasswordsPresenter()->GetCorrespondingPasswordForms(
-          credential),
-      client,
+          *it),
+      _passwordManagerClient,
       password_manager::metrics_util::MoveToAccountStoreTrigger::
           kExplicitlyTriggeredInSettings);
   [self providePasswordsToConsumer];
@@ -296,9 +350,6 @@ using base::SysNSStringToUTF16;
   NSMutableArray<PasswordDetails*>* passwords = [NSMutableArray array];
   std::vector<password_manager::CredentialUIEntry> insecureCredentials =
       _manager->GetInsecureCredentials();
-  bool isOptedInForAccountStorage =
-      password_manager::features_util::IsOptedInForAccountStorage(_prefService,
-                                                                  _syncService);
   for (password_manager::CredentialUIEntry credential : _credentials) {
     PasswordDetails* password =
         [[PasswordDetails alloc] initWithCredential:credential];
@@ -307,9 +358,10 @@ using base::SysNSStringToUTF16;
     // store. If the exact credential is stored in both profile and account
     // it will not be offered, no need to bother the user.
     password.shouldOfferToMoveToAccount =
+        _supportMoveToAccount && _isOptedInForAccountStorage &&
         !credential.stored_in.contains(
             password_manager::PasswordForm::Store::kAccountStore) &&
-        isOptedInForAccountStorage && !credential.blocked_by_user;
+        !credential.blocked_by_user;
     [passwords addObject:password];
   }
   [self.consumer setPasswords:passwords andTitle:_displayName];

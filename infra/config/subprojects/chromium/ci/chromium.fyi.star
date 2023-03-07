@@ -494,6 +494,28 @@ ci.thin_tester(
     ),
 )
 
+ci.thin_tester(
+    name = "win-network-sandbox-tester",
+    triggered_by = ["ci/Win x64 Builder"],
+    builder_spec = builder_config.builder_spec(
+        execution_mode = builder_config.execution_mode.TEST,
+        gclient_config = builder_config.gclient_config(
+            config = "chromium",
+        ),
+        chromium_config = builder_config.chromium_config(
+            config = "chromium",
+            apply_configs = ["mb"],
+            build_config = builder_config.build_config.RELEASE,
+            target_bits = 64,
+        ),
+    ),
+    cores = None,
+    console_view_entry = consoles.console_view_entry(
+        category = "network|sandbox",
+        short_name = "win",
+    ),
+)
+
 ci.builder(
     name = "android-fieldtrial-rel",
     builder_spec = builder_config.builder_spec(
@@ -1633,6 +1655,7 @@ ci.builder(
     reclient_jobs = None,
     reclient_rewrapper_env = {
         "RBE_compare": "true",
+        "RBE_compression_threshold": "4000000",
     },
 )
 
@@ -1662,6 +1685,9 @@ ci.builder(
         short_name = "re",
     ),
     reclient_jobs = None,
+    reclient_rewrapper_env = {
+        "RBE_compression_threshold": "4000000",
+    },
 )
 
 ci.builder(
@@ -1688,7 +1714,10 @@ ci.builder(
     ),
     reclient_ensure_verified = True,
     reclient_jobs = None,
-    reclient_rewrapper_env = {"RBE_compare": "true"},
+    reclient_rewrapper_env = {
+        "RBE_compare": "true",
+        "RBE_compression_threshold": "4000000",
+    },
 )
 
 fyi_mac_builder(
@@ -1717,6 +1746,9 @@ fyi_mac_builder(
         short_name = "re",
     ),
     reclient_jobs = None,
+    reclient_rewrapper_env = {
+        "RBE_compression_threshold": "4000000",
+    },
 )
 
 fyi_mac_builder(
@@ -1747,7 +1779,10 @@ fyi_mac_builder(
     execution_timeout = 14 * time.hour,
     reclient_ensure_verified = True,
     reclient_jobs = None,
-    reclient_rewrapper_env = {"RBE_compare": "true"},
+    reclient_rewrapper_env = {
+        "RBE_compare": "true",
+        "RBE_compression_threshold": "4000000",
+    },
 )
 
 fyi_mac_builder(

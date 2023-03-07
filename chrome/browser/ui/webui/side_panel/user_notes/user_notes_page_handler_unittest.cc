@@ -17,6 +17,7 @@
 #include "components/bookmarks/browser/bookmark_node.h"
 #include "components/bookmarks/test/bookmark_test_helpers.h"
 #include "components/power_bookmarks/core/power_bookmark_features.h"
+#include "components/user_notes/user_notes_features.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace {
@@ -61,7 +62,8 @@ struct Note {
 class UserNotesPageHandlerTest : public BrowserWithTestWindowTest {
  public:
   void SetUp() override {
-    features_.InitAndEnableFeature(power_bookmarks::kPowerBookmarkBackend);
+    features_.InitWithFeatures(
+        {user_notes::kUserNotes, power_bookmarks::kPowerBookmarkBackend}, {});
     BrowserWithTestWindowTest::SetUp();
     BookmarkModelFactory::GetInstance()->SetTestingFactory(
         profile(), BookmarkModelFactory::GetDefaultFactory());
@@ -146,6 +148,54 @@ TEST_F(UserNotesPageHandlerTest, GetNoteOverviewWithBookmarkTitle) {
   auto note_overviews = waiter.GetNoteOverviews("");
   ASSERT_EQ(1u, note_overviews.size());
   ASSERT_EQ("title", note_overviews[0]->title);
+}
+
+TEST_F(UserNotesPageHandlerTest, GetNoteOverviewsReturnMatchedText) {
+  // Searching notes should match case insensitive.
+  side_panel::mojom::UserNotesPageHandlerAsyncWaiter waiter(handler());
+  handler()->SetCurrentTabUrlForTesting(GURL(u"https://url1"));
+  ASSERT_TRUE(waiter.NewNoteFinished("Note1"));
+  auto note_overviews = waiter.GetNoteOverviews("");
+  ASSERT_EQ(1u, note_overviews.size());
+  ASSERT_EQ("Note1", note_overviews[0]->text);
+}
+
+TEST_F(UserNotesPageHandlerTest, FindNoteOverviewsSearchOnlyText) {
+  // Searching notes should only match texts, not URL.
+  side_panel::mojom::UserNotesPageHandlerAsyncWaiter waiter(handler());
+  handler()->SetCurrentTabUrlForTesting(GURL(u"https://new_url1"));
+  ASSERT_TRUE(waiter.NewNoteFinished("note1"));
+  handler()->SetCurrentTabUrlForTesting(GURL(u"https://new_url2"));
+  ASSERT_TRUE(waiter.NewNoteFinished("note2"));
+  handler()->SetCurrentTabUrlForTesting(GURL(u"https://new_url3"));
+  ASSERT_TRUE(waiter.NewNoteFinished("3"));
+  auto note_overviews = waiter.GetNoteOverviews("n");
+  ASSERT_EQ(2u, note_overviews.size());
+}
+
+TEST_F(UserNotesPageHandlerTest, FindNoteOverviewsCaseInsensitive) {
+  // Searching notes should match case insensitive.
+  side_panel::mojom::UserNotesPageHandlerAsyncWaiter waiter(handler());
+  handler()->SetCurrentTabUrlForTesting(GURL(u"https://url1"));
+  ASSERT_TRUE(waiter.NewNoteFinished("Note1"));
+  handler()->SetCurrentTabUrlForTesting(GURL(u"https://url2"));
+  ASSERT_TRUE(waiter.NewNoteFinished("Note2"));
+  handler()->SetCurrentTabUrlForTesting(GURL(u"https://url3"));
+  ASSERT_TRUE(waiter.NewNoteFinished("3"));
+  auto note_overviews = waiter.GetNoteOverviews("n");
+  ASSERT_EQ(2u, note_overviews.size());
+}
+
+TEST_F(UserNotesPageHandlerTest, FindNoteOverviewsReturnMatchedText) {
+  // Searching notes should match case insensitive.
+  side_panel::mojom::UserNotesPageHandlerAsyncWaiter waiter(handler());
+  handler()->SetCurrentTabUrlForTesting(GURL(u"https://url1"));
+  ASSERT_TRUE(waiter.NewNoteFinished("Note1"));
+  handler()->SetCurrentTabUrlForTesting(GURL(u"https://url2"));
+  ASSERT_TRUE(waiter.NewNoteFinished("foo"));
+  auto note_overviews = waiter.GetNoteOverviews("Note");
+  ASSERT_EQ(1u, note_overviews.size());
+  ASSERT_EQ("Note1", note_overviews[0]->text);
 }
 
 TEST_F(UserNotesPageHandlerTest, CreateAndDeleteNote) {

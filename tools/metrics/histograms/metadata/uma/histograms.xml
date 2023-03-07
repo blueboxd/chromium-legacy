@@ -299,7 +299,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="UMA.IsClonedInstall" enum="BooleanCloned"
-    expires_after="2023-07-02">
+    expires_after="2023-09-03">
   <owner>asvitkine@chromium.org</owner>
   <owner>src/base/metrics/OWNERS</owner>
   <summary>
@@ -310,7 +310,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="UMA.JavaCachingRecorder.DroppedHistogramSampleCount"
-    units="samples" expires_after="2023-07-02">
+    units="samples" expires_after="2023-09-03">
   <owner>bttk@chromium.org</owner>
   <owner>src/base/metrics/OWNERS</owner>
   <summary>
@@ -356,26 +356,6 @@ chromium-metrics-reviews@google.com.
   <summary>
     Number of user actions seen by the time the in-memory cache was flushed.
     This includes actions counted in DroppedUserActionCount.
-  </summary>
-</histogram>
-
-<histogram name="UMA.LocalPersistentMemoryAllocator.Failures.Posix"
-    enum="PopularOSErrno" expires_after="M85">
-  <owner>asvitkine@chromium.org</owner>
-  <owner>src/base/metrics/OWNERS</owner>
-  <summary>
-    Failures, as reported in errno, encountered while allocating local
-    persistent memory under Posix.
-  </summary>
-</histogram>
-
-<histogram name="UMA.LocalPersistentMemoryAllocator.Failures.Win"
-    enum="WinGetLastError" expires_after="M85">
-  <owner>asvitkine@chromium.org</owner>
-  <owner>src/base/metrics/OWNERS</owner>
-  <summary>
-    Failures, as reported by GetLastError(), encountered while allocating local
-    persistent memory under Windows.
   </summary>
 </histogram>
 
@@ -453,7 +433,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="UMA.MetricsReporting.Toggle" enum="MetricsReportingChange"
-    expires_after="2023-07-02">
+    expires_after="2023-09-03">
   <owner>asvitkine@chromium.org</owner>
   <owner>src/base/metrics/OWNERS</owner>
   <summary>
@@ -894,7 +874,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="UMA.TruncatedEvents.UserAction" units="events"
-    expires_after="2023-08-27">
+    expires_after="2023-09-03">
   <owner>rkaplow@chromium.org</owner>
   <owner>src/base/metrics/OWNERS</owner>
   <summary>
@@ -1015,7 +995,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="UMA.UserDemographics.Status" enum="UserDemographicsStatus"
-    expires_after="2023-04-16">
+    expires_after="2024-04-16">
   <owner>rogerm@google.com</owner>
   <owner>src/base/metrics/OWNERS</owner>
   <summary>

@@ -275,12 +275,14 @@ std::string JsRequestTestNavigateAndWaitForTitle(Browser* browser,
 
 class FakeSafeBrowsingUIManager : public TestSafeBrowsingUIManager {
  public:
-  void MaybeReportSafeBrowsingHit(const safe_browsing::HitReport& hit_report,
-                                  content::WebContents* web_contents) override {
+  void MaybeReportSafeBrowsingHit(
+      std::unique_ptr<safe_browsing::HitReport> hit_report,
+      content::WebContents* web_contents) override {
     EXPECT_FALSE(got_hit_report_);
     got_hit_report_ = true;
-    hit_report_ = hit_report;
-    SafeBrowsingUIManager::MaybeReportSafeBrowsingHit(hit_report, web_contents);
+    hit_report_ = *(hit_report.get());
+    SafeBrowsingUIManager::MaybeReportSafeBrowsingHit(std::move(hit_report),
+                                                      web_contents);
   }
 
   bool got_hit_report_ = false;
@@ -588,11 +590,12 @@ class V4SafeBrowsingServiceTest : public InProcessBrowserTest {
  private:
   std::unique_ptr<TestSafeBrowsingServiceFactory> sb_factory_;
   // Owned by the V4Database.
-  raw_ptr<TestV4DatabaseFactory> v4_db_factory_;
+  raw_ptr<TestV4DatabaseFactory, DanglingUntriaged> v4_db_factory_;
   // Owned by the V4GetHashProtocolManager.
-  raw_ptr<TestV4GetHashProtocolManagerFactory> v4_get_hash_factory_;
+  raw_ptr<TestV4GetHashProtocolManagerFactory, DanglingUntriaged>
+      v4_get_hash_factory_;
   // Owned by the V4Database.
-  raw_ptr<TestV4StoreFactory> store_factory_;
+  raw_ptr<TestV4StoreFactory, DanglingUntriaged> store_factory_;
 
 #if defined(ADDRESS_SANITIZER)
   // TODO(lukasza): https://crbug.com/971820: Disallow renderer crashes once the

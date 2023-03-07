@@ -23,7 +23,7 @@
 #include "ash/style/style_viewer/system_ui_components_style_viewer_view.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/system/toast/toast_manager_impl.h"
-#include "ash/system/video_conference/video_conference_media_state.h"
+#include "ash/system/video_conference/video_conference_common.h"
 #include "ash/system/video_conference/video_conference_tray.h"
 #include "ash/system/video_conference/video_conference_tray_controller.h"
 #include "ash/touch/touch_devices_controller.h"
@@ -36,6 +36,7 @@
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "ui/accessibility/ax_tree_id.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/display/manager/display_manager.h"
@@ -132,7 +133,7 @@ void HandleToggleDarkMode() {
 }
 
 void HandleToggleDynamicColor() {
-  if (!ash::features::IsJellyEnabled()) {
+  if (!chromeos::features::IsJellyEnabled()) {
     // Only toggle colors when Dynamic Colors are enabled.
     return;
   }

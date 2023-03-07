@@ -1147,6 +1147,8 @@ void AddAutofillStrings(content::WebUIDataSource* html_source,
     {"importPasswordsTitle", IDS_SETTINGS_PASSWORDS_IMPORT_TITLE},
     {"importPasswordsChooseFile", IDS_SETTINGS_PASSWORDS_IMPORT_CHOOSE_FILE},
     {"importPasswordsSuccessTip", IDS_SETTINGS_PASSWORDS_IMPORT_SUCCESS_TIP},
+    {"importPasswordsDeleteFileOption",
+     IDS_SETTINGS_PASSWORDS_IMPORT_DELETE_FILE_OPTION},
     {"importPasswordsMissingPassword",
      IDS_SETTINGS_PASSWORDS_IMPORT_MISSING_PASSWORD},
     {"importPasswordsMissingURL", IDS_SETTINGS_PASSWORDS_IMPORT_MISSING_URL},
@@ -1322,8 +1324,9 @@ void AddAutofillStrings(content::WebUIDataSource* html_source,
                             /*log_manager=*/nullptr));
 
   html_source->AddBoolean("showIbansSettings",
-                          base::FeatureList::IsEnabled(
-                              autofill::features::kAutofillFillIbanFields));
+                          autofill::ShouldShowIbanOnSettingsPage(
+                              personal_data->GetCountryCodeForExperimentGroup(),
+                              profile->GetPrefs()));
 
   html_source->AddBoolean(
       "fidoAuthenticationAvailableForAutofill",
@@ -1666,6 +1669,8 @@ void AddPrivacyStrings(content::WebUIDataSource* html_source,
      IDS_SETTINGS_ADVANCED_PROTECTION_PROGRAM_DESC},
     {"httpsOnlyModeTitle", IDS_SETTINGS_HTTPS_ONLY_MODE},
     {"httpsOnlyModeDescription", IDS_SETTINGS_HTTPS_ONLY_MODE_DESCRIPTION},
+    {"httpsOnlyModeDescriptionAdvancedProtection",
+     IDS_SETTINGS_HTTPS_ONLY_MODE_DESCRIPTION_ADVANCED_PROTECTION},
     {"manageCertificates", IDS_SETTINGS_MANAGE_CERTIFICATES},
     {"manageCertificatesDescription",
      IDS_SETTINGS_MANAGE_CERTIFICATES_DESCRIPTION},
@@ -1831,8 +1836,13 @@ void AddPrivacyStrings(content::WebUIDataSource* html_source,
 #if BUILDFLAG(CHROME_ROOT_STORE_SUPPORTED)
   html_source->AddBoolean(
       "showChromeRootStoreCertificates",
-      GetChromeCertVerifierServiceParams(/*localstate=*/nullptr)
-          ->use_chrome_root_store);
+#if BUILDFLAG(CHROME_ROOT_STORE_OPTIONAL)
+      GetChromeCertVerifierServiceParams(/*local_state=*/nullptr)
+          ->use_chrome_root_store
+#else
+      true
+#endif
+  );
 
   html_source->AddString("chromeRootStoreHelpCenterURL",
                          chrome::kChromeRootStoreSettingsHelpCenterURL);

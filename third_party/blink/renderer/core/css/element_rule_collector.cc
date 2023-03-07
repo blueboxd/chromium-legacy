@@ -353,7 +353,7 @@ bool SlowMatchWithNoResultFlags(
     unsigned expected_proximity = std::numeric_limits<unsigned>::max()) {
   SelectorChecker::MatchResult result;
   context.selector = &selector;
-  context.is_inside_visited_link =
+  context.match_visited =
       rule_data.LinkMatchType() == CSSSelector::kMatchVisited;
   bool match = checker.Match(context, result);
   DCHECK_EQ(0, result.flags);
@@ -409,7 +409,9 @@ void ElementRuleCollector::CollectMatchingRulesForListInternal(
       selector_statistics_collector.EndCollectionForCurrentRule();
       selector_statistics_collector.BeginCollectionForRule(&rule_data);
     }
-
+    if (!context.is_initial && rule_data.IsInitial()) {
+      continue;
+    }
     if (can_use_fast_reject_ &&
         selector_filter_.FastRejectSelector<RuleData::kMaximumIdentifierCount>(
             rule_data.DescendantSelectorIdentifierHashes())) {
@@ -476,9 +478,9 @@ void ElementRuleCollector::CollectMatchingRulesForListInternal(
       }
     } else {
       context.selector = &selector;
-      context.is_inside_visited_link =
+      context.match_visited =
           rule_data.LinkMatchType() == CSSSelector::kMatchVisited;
-      DCHECK(!context.is_inside_visited_link ||
+      DCHECK(!context.match_visited ||
              inside_link_ != EInsideLink::kNotInsideLink);
       bool match = checker.Match(context, result);
       result_.AddFlags(result.flags);
@@ -937,6 +939,9 @@ void ElementRuleCollector::SortAndTransferMatchedRules(
   for (unsigned i = 0; i < matched_rules_.size(); i++) {
     const MatchedRule& matched_rule = matched_rules_[i];
     const RuleData* rule_data = matched_rule.GetRuleData();
+    if (rule_data->IsInitial()) {
+      result_.AddFlags(static_cast<MatchFlags>(MatchFlag::kAffectedByInitial));
+    }
     result_.AddMatchedProperties(
         &rule_data->Rule()->Properties(),
         AddMatchedPropertiesOptions::Builder()

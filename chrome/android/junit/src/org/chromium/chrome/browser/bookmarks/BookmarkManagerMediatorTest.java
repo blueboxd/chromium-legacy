@@ -4,6 +4,12 @@
 
 package org.chromium.chrome.browser.bookmarks;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.verify;
+
+import static org.chromium.ui.test.util.MockitoHelper.doRunnable;
+
 import android.content.Context;
 import android.view.accessibility.AccessibilityManager;
 
@@ -15,7 +21,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
 import org.robolectric.annotation.Config;
@@ -23,7 +28,6 @@ import org.robolectric.annotation.Config;
 import org.chromium.base.supplier.ObservableSupplierImpl;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.Batch;
-import org.chromium.chrome.browser.bookmarks.BookmarkItemsAdapter.ViewFactory;
 import org.chromium.components.bookmarks.BookmarkId;
 import org.chromium.components.bookmarks.BookmarkType;
 import org.chromium.components.browser_ui.widget.selectable_list.SelectableListLayout;
@@ -55,20 +59,15 @@ public class BookmarkManagerMediatorTest {
     @Mock
     BookmarkItemsAdapter mBookmarkItemsAdapter;
     @Mock
-    BookmarkToolbar mBookmarkToolbar;
-    @Mock
     LargeIconBridge mLargeIconBridge;
-    @Mock
-    ViewFactory mViewFactory;
     @Mock
     AccessibilityManager mAccessibilityManager;
     @Mock
-    BookmarkUIObserver mBookmarkUIObserver;
+    BookmarkUiObserver mBookmarkUiObserver;
 
-    final ObservableSupplierImpl<Boolean> mBackPressStateSupplier =
-            new ObservableSupplierImpl<Boolean>();
+    final ObservableSupplierImpl<Boolean> mBackPressStateSupplier = new ObservableSupplierImpl<>();
     final ObservableSupplierImpl<Boolean> mSelectableListLayoutHandleBackPressChangedSupplier =
-            new ObservableSupplierImpl<Boolean>();
+            new ObservableSupplierImpl<>();
     final BookmarkId mFolderId = new BookmarkId(/*id=*/1, BookmarkType.NORMAL);
     final BookmarkId mFolder2Id = new BookmarkId(/*id=*/2, BookmarkType.NORMAL);
 
@@ -76,34 +75,31 @@ public class BookmarkManagerMediatorTest {
 
     @Before
     public void setUp() {
-        // Setup Context
-        Mockito.doReturn(mAccessibilityManager)
+        // Setup Context.
+        doReturn(mAccessibilityManager)
                 .when(mContext)
                 .getSystemService(Context.ACCESSIBILITY_SERVICE);
 
-        // Setup BookmarkModel
-        Mockito.doReturn(true).when(mBookmarkModel).doesBookmarkExist(Mockito.any());
-        Mockito.doReturn(Arrays.asList(mFolder2Id)).when(mBookmarkModel).getChildIDs(mFolderId);
+        // Setup BookmarkModel.
+        doReturn(true).when(mBookmarkModel).doesBookmarkExist(any());
+        doReturn(Arrays.asList(mFolder2Id)).when(mBookmarkModel).getChildIDs(mFolderId);
 
-        // Setup SelectableListLayout
-        Mockito.doReturn(mContext).when(mSelectableListLayout).getContext();
-        Mockito.doReturn(mSelectableListLayoutHandleBackPressChangedSupplier)
+        // Setup SelectableListLayout.
+        doReturn(mContext).when(mSelectableListLayout).getContext();
+        doReturn(mSelectableListLayoutHandleBackPressChangedSupplier)
                 .when(mSelectableListLayout)
                 .getHandleBackPressChangedSupplier();
 
-        // Setup BookmarkUIObserver
-        Mockito.doAnswer((invocation) -> {
-                   mMediator.removeUIObserver(mBookmarkUIObserver);
-                   return null;
-               })
-                .when(mBookmarkUIObserver)
+        // Setup BookmarkUIObserver.
+        doRunnable(() -> mMediator.removeUiObserver(mBookmarkUiObserver))
+                .when(mBookmarkUiObserver)
                 .onDestroy();
 
         mMediator = new BookmarkManagerMediator(mContext, mBookmarkModel, mBookmarkOpener,
                 mSelectableListLayout, mSelectionDelegate, mRecyclerView, mBookmarkItemsAdapter,
                 mLargeIconBridge, /*isDialogUi=*/true, /*isIncognito=*/false,
-                mBackPressStateSupplier, mViewFactory);
-        mMediator.addUIObserver(mBookmarkUIObserver);
+                mBackPressStateSupplier);
+        mMediator.addUiObserver(mBookmarkUiObserver);
     }
 
     void finishLoading() {
@@ -113,7 +109,7 @@ public class BookmarkManagerMediatorTest {
     @Test
     public void initAndLoadBookmarkModel() {
         finishLoading();
-        Assert.assertEquals(BookmarkUIState.STATE_LOADING, mMediator.getCurrentState());
+        Assert.assertEquals(BookmarkUiState.STATE_LOADING, mMediator.getCurrentState());
     }
 
     @Test
@@ -122,7 +118,7 @@ public class BookmarkManagerMediatorTest {
         mMediator.updateForUrl("chrome-native://bookmarks/folder/" + mFolderId.getId());
 
         finishLoading();
-        Assert.assertEquals(BookmarkUIState.STATE_FOLDER, mMediator.getCurrentState());
+        Assert.assertEquals(BookmarkUiState.STATE_FOLDER, mMediator.getCurrentState());
     }
 
     @Test
@@ -130,14 +126,14 @@ public class BookmarkManagerMediatorTest {
         finishLoading();
 
         mMediator.onDestroy();
-        Mockito.verify(mBookmarkUIObserver).onDestroy();
+        verify(mBookmarkUiObserver).onDestroy();
     }
 
     @Test
     public void onBackPressed_SelectableListLayoutIntercepts() {
         finishLoading();
 
-        Mockito.doReturn(true).when(mSelectableListLayout).onBackPressed();
+        doReturn(true).when(mSelectableListLayout).onBackPressed();
 
         Assert.assertTrue(mMediator.onBackPressed());
     }

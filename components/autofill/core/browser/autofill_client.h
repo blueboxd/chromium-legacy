@@ -69,6 +69,7 @@ struct AutofillErrorDialogContext;
 class AutofillManager;
 class AutofillOfferData;
 class AutofillOfferManager;
+class AutofillOptimizationGuide;
 class AutofillPopupDelegate;
 class AutofillProfile;
 enum class AutofillProgressDialogType;
@@ -355,6 +356,9 @@ class AutofillClient : public RiskDataLoader {
 
   // Gets the PersonalDataManager instance associated with the client.
   virtual PersonalDataManager* GetPersonalDataManager() = 0;
+
+  // Gets the AutofillOptimizationGuide instance associated with the client.
+  virtual AutofillOptimizationGuide* GetAutofillOptimizationGuide() const;
 
   // Gets the AutocompleteHistoryManager instance associated with the client.
   virtual AutocompleteHistoryManager* GetAutocompleteHistoryManager() = 0;
@@ -674,7 +678,7 @@ class AutofillClient : public RiskDataLoader {
   // returns true.
   virtual bool ShowTouchToFillCreditCard(
       base::WeakPtr<TouchToFillDelegate> delegate,
-      base::span<const autofill::CreditCard* const> cards_to_suggest) = 0;
+      base::span<const autofill::CreditCard> cards_to_suggest) = 0;
 
   // Hides the Touch To Fill surface for filling credit card information
   // if one is currently shown. Should be called only if

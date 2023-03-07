@@ -317,7 +317,7 @@ TEST_F(ContextRecyclerTest, SetBidBindings) {
     ASSERT_TRUE(context_recycler.set_bid_bindings()->has_bid());
     mojom::BidderWorkletBidPtr bid =
         context_recycler.set_bid_bindings()->TakeBid();
-    EXPECT_EQ("https://example.com/ad1", bid->render_url);
+    EXPECT_EQ("https://example.com/ad1", bid->ad_descriptor.url);
     EXPECT_EQ(10.0, bid->bid);
     EXPECT_EQ(base::Milliseconds(500), bid->bid_duration);
   }
@@ -436,13 +436,14 @@ TEST_F(ContextRecyclerTest, SetBidBindings) {
     ASSERT_TRUE(context_recycler.set_bid_bindings()->has_bid());
     mojom::BidderWorkletBidPtr bid =
         context_recycler.set_bid_bindings()->TakeBid();
-    EXPECT_EQ("https://example.com/ad5", bid->render_url);
+    EXPECT_EQ("https://example.com/ad5", bid->ad_descriptor.url);
     EXPECT_EQ(15.0, bid->bid);
     EXPECT_EQ(base::Milliseconds(200), bid->bid_duration);
-    ASSERT_TRUE(bid->ad_components.has_value());
-    EXPECT_THAT(bid->ad_components.value(),
-                ElementsAre(GURL("https://example.com/portion3"),
-                            GURL("https://example.com/portion5")));
+    ASSERT_TRUE(bid->ad_component_descriptors.has_value());
+    EXPECT_THAT(
+        bid->ad_component_descriptors.value(),
+        ElementsAre(blink::AdDescriptor(GURL("https://example.com/portion3")),
+                    blink::AdDescriptor(GURL("https://example.com/portion5"))));
   }
 
   {
@@ -554,7 +555,7 @@ TEST_F(ContextRecyclerTest, SetBidBindings) {
     ASSERT_TRUE(context_recycler.set_bid_bindings()->has_bid());
     mojom::BidderWorkletBidPtr bid =
         context_recycler.set_bid_bindings()->TakeBid();
-    EXPECT_EQ("https://example.com/ad2", bid->render_url);
+    EXPECT_EQ("https://example.com/ad2", bid->ad_descriptor.url);
     EXPECT_EQ(10.0, bid->bid);
     EXPECT_EQ(base::Milliseconds(500), bid->bid_duration);
   }
@@ -2192,7 +2193,7 @@ TEST_F(ContextRecyclerPrivateAggregationExtensionsEnabledTest,
 
     gin::Dictionary bucket_dict =
         gin::Dictionary::CreateEmpty(helper_->isolate());
-    bucket_dict.Set("baseValue", std::string("bidRejectReason"));
+    bucket_dict.Set("baseValue", std::string("bid-reject-reason"));
     bucket_dict.Set("scale", 2);
     bucket_dict.Set("offset", std::string("-255"));
 
@@ -2232,7 +2233,7 @@ TEST_F(ContextRecyclerPrivateAggregationExtensionsEnabledTest,
 
     gin::Dictionary bucket_dict =
         gin::Dictionary::CreateEmpty(helper_->isolate());
-    bucket_dict.Set("baseValue", std::string("bidRejectReason"));
+    bucket_dict.Set("baseValue", std::string("bid-reject-reason"));
 
     gin::Dictionary dict = gin::Dictionary::CreateEmpty(helper_->isolate());
     dict.Set("bucket", bucket_dict);
@@ -2316,7 +2317,7 @@ TEST_F(ContextRecyclerPrivateAggregationExtensionsEnabledTest,
 
     gin::Dictionary bucket_dict =
         gin::Dictionary::CreateEmpty(helper_->isolate());
-    bucket_dict.Set("baseValue", std::string("winningBid"));
+    bucket_dict.Set("baseValue", std::string("winning-bid"));
     bucket_dict.Set("scale", std::string("255"));
 
     gin::Dictionary dict = gin::Dictionary::CreateEmpty(helper_->isolate());
@@ -2341,7 +2342,7 @@ TEST_F(ContextRecyclerPrivateAggregationExtensionsEnabledTest,
 
     gin::Dictionary bucket_dict =
         gin::Dictionary::CreateEmpty(helper_->isolate());
-    bucket_dict.Set("baseValue", std::string("winningBid"));
+    bucket_dict.Set("baseValue", std::string("winning-bid"));
     bucket_dict.Set("offset", 255);
 
     gin::Dictionary dict = gin::Dictionary::CreateEmpty(helper_->isolate());
@@ -2366,7 +2367,7 @@ TEST_F(ContextRecyclerPrivateAggregationExtensionsEnabledTest,
 
     gin::Dictionary value_dict =
         gin::Dictionary::CreateEmpty(helper_->isolate());
-    value_dict.Set("baseValue", std::string("winningBid"));
+    value_dict.Set("baseValue", std::string("winning-bid"));
     value_dict.Set("scale", 2);
     value_dict.Set("offset", -5);
 

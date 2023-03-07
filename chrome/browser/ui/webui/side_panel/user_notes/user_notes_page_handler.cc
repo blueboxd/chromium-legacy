@@ -14,14 +14,19 @@
 #include "chrome/browser/power_bookmarks/power_bookmark_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/browser_navigator.h"
+#include "chrome/browser/ui/user_notes/user_notes_controller.h"
 #include "chrome/browser/ui/webui/side_panel/user_notes/user_notes_side_panel_ui.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/power_bookmarks/common/power.h"
 #include "components/power_bookmarks/common/power_overview.h"
+#include "components/power_bookmarks/common/search_params.h"
 #include "components/power_bookmarks/core/power_bookmark_service.h"
 #include "components/prefs/pref_service.h"
 #include "components/sync/protocol/power_bookmark_specifics.pb.h"
 #include "components/user_notes/user_notes_prefs.h"
+#include "content/public/browser/navigation_handle.h"
 #include "ui/base/l10n/time_format.h"
 #include "ui/base/mojom/window_open_disposition.mojom.h"
 #include "ui/base/window_open_disposition.h"
@@ -122,16 +127,22 @@ UserNotesPageHandler::UserNotesPageHandler(
       service_(PowerBookmarkServiceFactory::GetForBrowserContext(profile_)),
       browser_(browser),
       user_notes_ui_(user_notes_ui) {
+  if (!UserNotesController::IsUserNotesSupported(profile_)) {
+    return;
+  }
+
   bookmarks::BookmarkModel* bookmark_model =
       BookmarkModelFactory::GetForBrowserContext(profile_);
   if (bookmark_model) {
     bookmark_model_ = bookmark_model->AsWeakPtr();
   }
+
   pref_change_registrar_.Init(profile_->GetPrefs());
   pref_change_registrar_.Add(
       prefs::kUserNotesSortByNewest,
       base::BindRepeating(&UserNotesPageHandler::OnSortByNewestPrefChanged,
                           base::Unretained(this)));
+
   service_->AddObserver(this);
   DCHECK(browser_);
   browser_->tab_strip_model()->AddObserver(this);
@@ -143,6 +154,9 @@ UserNotesPageHandler::UserNotesPageHandler(
 }
 
 UserNotesPageHandler::~UserNotesPageHandler() {
+  if (!UserNotesController::IsUserNotesSupported(profile_)) {
+    return;
+  }
   service_->RemoveObserver(this);
   browser_->tab_strip_model()->RemoveObserver(this);
   Observe(nullptr);
@@ -157,21 +171,31 @@ void UserNotesPageHandler::ShowUI() {
 
 void UserNotesPageHandler::GetNoteOverviews(const std::string& user_input,
                                             GetNoteOverviewsCallback callback) {
-  service_->GetPowerOverviewsForType(
-      sync_pb::PowerBookmarkSpecifics::POWER_TYPE_NOTE,
-      base::BindOnce(
-          [](GetNoteOverviewsCallback callback, const GURL& current_tab_url,
-             base::WeakPtr<bookmarks::BookmarkModel> bookmark_model,
-             std::vector<std::unique_ptr<power_bookmarks::PowerOverview>>
-                 power_overviews) {
-            std::vector<side_panel::mojom::NoteOverviewPtr> results;
-            for (auto& power_overview : power_overviews) {
-              results.push_back(PowerOverviewToMojo(
-                  *power_overview, current_tab_url, bookmark_model));
-            }
-            std::move(callback).Run(std::move(results));
-          },
-          std::move(callback), current_tab_url_, bookmark_model_));
+  auto service_callback =
+      [](GetNoteOverviewsCallback callback, const GURL& current_tab_url,
+         base::WeakPtr<bookmarks::BookmarkModel> bookmark_model,
+         std::vector<std::unique_ptr<power_bookmarks::PowerOverview>>
+             power_overviews) {
+        std::vector<side_panel::mojom::NoteOverviewPtr> results;
+        for (auto& power_overview : power_overviews) {
+          results.push_back(PowerOverviewToMojo(
+              *power_overview, current_tab_url, bookmark_model));
+        }
+        std::move(callback).Run(std::move(results));
+      };
+
+  if (user_input.empty()) {
+    service_->GetPowerOverviewsForType(
+        sync_pb::PowerBookmarkSpecifics::POWER_TYPE_NOTE,
+        base::BindOnce(service_callback, std::move(callback), current_tab_url_,
+                       bookmark_model_));
+  } else {
+    service_->SearchPowerOverviews(
+        {.query = user_input,
+         .power_type = sync_pb::PowerBookmarkSpecifics::POWER_TYPE_NOTE},
+        base::BindOnce(service_callback, std::move(callback), current_tab_url_,
+                       bookmark_model_));
+  }
 }
 
 void UserNotesPageHandler::GetNotesForCurrentTab(
@@ -277,6 +301,18 @@ void UserNotesPageHandler::HasNotesInAnyPages(
           std::move(callback)));
 }
 
+void UserNotesPageHandler::OpenInNewTab(const ::GURL& url) {
+  OpenUrl(url, WindowOpenDisposition::NEW_FOREGROUND_TAB);
+}
+
+void UserNotesPageHandler::OpenInNewWindow(const ::GURL& url) {
+  OpenUrl(url, WindowOpenDisposition::NEW_WINDOW);
+}
+
+void UserNotesPageHandler::OpenInIncognitoWindow(const ::GURL& url) {
+  OpenUrl(url, WindowOpenDisposition::OFF_THE_RECORD);
+}
+
 void UserNotesPageHandler::OnSortByNewestPrefChanged() {
   PrefService* pref_service = profile_->GetPrefs();
   if (pref_service) {
@@ -319,5 +355,35 @@ void UserNotesPageHandler::UpdateCurrentTabUrl() {
     current_tab_url_ = web_contents->GetLastCommittedURL();
     page_->CurrentTabUrlChanged(start_creation_after_tab_change_);
     start_creation_after_tab_change_ = false;
+  }
+}
+
+void UserNotesPageHandler::OpenUrl(const ::GURL& url,
+                                   WindowOpenDisposition open_location) {
+  // We will open in incognito if the user is already in incognito or requesting
+  // to open in incognito.
+  bool opening_in_incognito =
+      (browser_->profile() && browser_->profile()->IsIncognitoProfile()) ||
+      open_location == WindowOpenDisposition::OFF_THE_RECORD;
+  if (opening_in_incognito &&
+      !IsURLAllowedInIncognito(url, browser_->profile())) {
+    return;
+  }
+
+  NavigateParams params(browser_->profile(), url,
+                        ui::PAGE_TRANSITION_AUTO_BOOKMARK);
+  params.disposition = open_location;
+  params.browser = browser_;
+  base::WeakPtr<content::NavigationHandle> handle = Navigate(&params);
+
+  // If we have opened in a new window, we need to open the side panel to user
+  // notes.
+  bool opening_in_new_window =
+      open_location == WindowOpenDisposition::NEW_WINDOW ||
+      open_location == WindowOpenDisposition::OFF_THE_RECORD;
+  if (opening_in_new_window && handle) {
+    content::WebContents* opened_tab = handle->GetWebContents();
+    auto* new_browser = chrome::FindBrowserWithWebContents(opened_tab);
+    UserNotesController::ShowUserNotesForBrowser(new_browser);
   }
 }

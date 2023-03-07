@@ -430,7 +430,7 @@ RenderWidgetHostImpl::RenderWidgetHostImpl(
       waiting_for_init_(renderer_initiated_creation),
       delegate_(delegate),
       agent_scheduling_group_(site_instance_group->agent_scheduling_group()),
-      site_instance_group_(std::move(site_instance_group)),
+      site_instance_group_(site_instance_group->GetSafeRef()),
       routing_id_(routing_id),
       is_hidden_(hidden),
       last_view_screen_rect_(kInvalidScreenRect),

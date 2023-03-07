@@ -226,10 +226,10 @@ class UnretainedRefWrapper {
   // instantiating UnretainedWrapper with a T that is not supported by
   // raw_ref would trigger raw_ref<T>'s static_assert.
   template <typename U = T>
-  explicit UnretainedRefWrapper(const raw_ref<U, PtrTraits>& o)
-      : ref_(o.get()) {}
+  explicit UnretainedRefWrapper(const raw_ref<U, PtrTraits>& o) : ref_(o) {}
   template <typename U = T>
-  explicit UnretainedRefWrapper(raw_ref<U, PtrTraits>&& o) : ref_(o.get()) {}
+  explicit UnretainedRefWrapper(raw_ref<U, PtrTraits>&& o)
+      : ref_(std::move(o)) {}
 
   T& get() const {
     // `ref_` is either a `raw_ref` or a regular C++ reference.
@@ -1359,21 +1359,20 @@ struct IsOnceCallback : std::false_type {};
 template <typename Signature>
 struct IsOnceCallback<OnceCallback<Signature>> : std::true_type {};
 
-// IsUnretainedMayDangle is true if |T| is of type
-// UnretainedWrapper<T, unretained_traits::MayDangle>.
+// IsUnretainedMayDangle is true if StorageType is of type
+// `UnretainedWrapper<T, unretained_traits::MayDangle, PtrTraits>.
 // Note that it is false for unretained_traits::MayDangleUntriaged.
-template <typename T>
+template <typename StorageType>
 inline constexpr bool IsUnretainedMayDangle = false;
 template <typename T, RawPtrTraits PtrTraits>
 inline constexpr bool IsUnretainedMayDangle<
     UnretainedWrapper<T, unretained_traits::MayDangle, PtrTraits>> = true;
 
-// UnretainedAndRawPtrHaveCompatibleTraits is true if |T| is of type
-// UnretainedWrapper<T, unretained_traits::MayDangle, Traits1> and U is of type
-// raw_ptr<T, Traits2>, and
-// UnretainedWrapper<T, unretained_traits::MayDangle, Traits1>::GetPtrType is of
-// type raw_ptr<T, Traits2>.
-template <typename T, typename U>
+// UnretainedAndRawPtrHaveCompatibleTraits is true if StorageType is of type
+// `UnretainedWrapper<T, unretained_traits::MayDangle, PtrTraits1>` and
+// FunctionParamType is of type `raw_ptr<T, PtrTraits2>`, and the former's
+// ::GetPtrType is the same type as the latter.
+template <typename StorageType, typename FunctionParamType>
 inline constexpr bool UnretainedAndRawPtrHaveCompatibleTraits = false;
 template <typename T,
           RawPtrTraits PtrTraitsInUnretained,

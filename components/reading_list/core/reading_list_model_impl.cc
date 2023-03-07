@@ -183,7 +183,9 @@ bool ReadingListModelImpl::DeleteAllEntries() {
   for (const auto& url : GetKeys()) {
     RemoveEntryByURL(url);
   }
-  return entries_.empty();
+
+  DCHECK(entries_.empty());
+  return true;
 }
 
 void ReadingListModelImpl::UpdateEntryStateCountersOnEntryRemoval(
@@ -350,7 +352,7 @@ const ReadingListEntry& ReadingListModelImpl::AddOrReplaceEntry(
     RemoveEntryByURL(url);
   }
 
-  std::string trimmed_title = base::CollapseWhitespaceASCII(title, false);
+  std::string trimmed_title = TrimTitle(title);
 
   auto entry =
       base::MakeRefCounted<ReadingListEntry>(url, trimmed_title, clock_->Now());
@@ -402,7 +404,7 @@ void ReadingListModelImpl::SetEntryTitleIfExists(const GURL& url,
     return;
   }
   ReadingListEntry& entry = *(iterator->second);
-  std::string trimmed_title = base::CollapseWhitespaceASCII(title, false);
+  std::string trimmed_title = TrimTitle(title);
   if (entry.Title() == trimmed_title) {
     return;
   }
@@ -557,6 +559,11 @@ ReadingListModelImpl::BeginBatchUpdatesWithSyncMetadata() {
 bool ReadingListModelImpl::IsTrackingSyncMetadata() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return sync_bridge_.change_processor()->IsTrackingMetadata();
+}
+
+// static
+std::string ReadingListModelImpl::TrimTitle(const std::string& title) {
+  return base::CollapseWhitespaceASCII(title, false);
 }
 
 // static

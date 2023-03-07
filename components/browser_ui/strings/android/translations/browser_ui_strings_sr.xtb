@@ -99,7 +99,6 @@
 <translation id="2713106313042589954">Искључи камеру</translation>
 <translation id="2717722538473713889">Имејл адресе</translation>
 <translation id="2750481671343847896">Сајтови могу да приказују упите за пријављивање из услуга за идентитет.</translation>
-<translation id="2779966372261694284">Одјавићете се са овог сајта</translation>
 <translation id="2822354292072154809">Желите ли стварно да ресетујете све дозволе за сајт за <ph name="CHOSEN_OBJECT_NAME" />?</translation>
 <translation id="2870560284913253234">Сајт</translation>
 <translation id="2874939134665556319">Претходна песма</translation>
@@ -278,6 +277,7 @@
 <translation id="6040143037577758943">Затвори</translation>
 <translation id="6042308850641462728">Још</translation>
 <translation id="6064125863973209585">Довршена преузимања</translation>
+<translation id="6071501408666570960">Можда ћете бити одјављени са овог сајта</translation>
 <translation id="6165508094623778733">Сазнајте више</translation>
 <translation id="6177111841848151710">Блокирано је за актуелни претраживач</translation>
 <translation id="6177128806592000436">Веза са овим сајтом није безбедна</translation>

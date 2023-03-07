@@ -53,7 +53,8 @@ enable_python_utils =
 
 # Platforms that cannot use python_utils (like Android but see full
 # list above) will instead use a remote server.
-use_remote_test_server = !enable_python_utils && enable_websockets
+use_remote_test_server =
+    !enable_python_utils && (enable_websockets || (is_cronet_build && !is_ios))
 
 # Whether //net should use an external GSSAPI library for implementing HTTP
 # Negotiate authentication. All platforms for which use_kerberos is true should
@@ -85,6 +86,8 @@ buildflag_header("buildflags") {
     "USE_KERBEROS=$use_kerberos",
     "USE_EXTERNAL_GSSAPI=$use_external_gssapi",
     "TRIAL_COMPARISON_CERT_VERIFIER_SUPPORTED=$trial_comparison_cert_verifier_supported",
+    "CHROME_ROOT_STORE_OPTIONAL=$chrome_root_store_optional",
+    "CHROME_ROOT_STORE_ONLY=$chrome_root_store_only",
     "CHROME_ROOT_STORE_SUPPORTED=$chrome_root_store_supported",
   ]
 }
@@ -1827,7 +1830,7 @@ if (is_ios) {
   bundle_data_from_filelist("test_support_bundle_data") {
     visibility = [ ":test_support" ]
     testonly = true
-    filelist_name = "test/test_support_bundle_data.filelist"
+    filelist_name = "data/test_support_bundle_data.filelist"
   }
 }
 
@@ -2040,7 +2043,7 @@ static_library("test_support") {
     configs += [ "//build/config/linux/nss" ]
   }
 
-  if (enable_websockets) {
+  if (enable_websockets || (is_cronet_build && !is_ios)) {
     sources += [
       "test/spawned_test_server/base_test_server.cc",
       "test/spawned_test_server/base_test_server.h",
@@ -2448,9 +2451,9 @@ if (!is_ios) {
 }
 
 if (is_ios) {
-  bundle_data_from_filelist("net_unittests_bundle_data") {
+  bundle_data_from_filelist("net_test_bundle_data") {
     testonly = true
-    filelist_name = "test/net_unittests_bundle_data.filelist"
+    filelist_name = "data/test_bundle_data.filelist"
   }
 }
 
@@ -3077,7 +3080,10 @@ test("net_unittests") {
   }
 
   if (is_ios) {
-    bundle_deps = [ ":net_unittests_bundle_data" ]
+    bundle_deps = [
+      ":net_test_bundle_data",
+      "//net/third_party/nist-pkits:test_bundle_data",
+    ]
   }
 
   if (enable_unix_sockets) {

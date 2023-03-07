@@ -24,6 +24,7 @@ import androidx.annotation.Px;
 import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.MathUtils;
+import org.chromium.chrome.R;
 import org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider;
 import org.chromium.chrome.browser.customtabs.features.toolbar.CustomTabToolbar;
 import org.chromium.chrome.browser.fullscreen.FullscreenManager;
@@ -135,35 +136,40 @@ public class PartialCustomTabSideSheetStrategy extends PartialCustomTabBaseStrat
 
         int start;
         int end;
-        AnimatorUpdateListener updateListener;
+        int restWidth = mVersionCompat.getDisplayWidth() - mUnclampedInitialWidth;
         Window window = mActivity.getWindow();
+        configureLayoutBeyondScreen(true);
+        // For smooth animation, make the window full-width first and then translate it
+        // rather than resizing the window itself during the animation.
         if (mSheetOnRight) {
-            // For smooth animation, make the window full-width first and then translate it
-            // rather than resizing the window itself during the animation.
-            configureLayoutBeyondScreen(true);
             setWindowWidth(mVersionCompat.getDisplayWidth());
             start = window.getAttributes().x;
-            end = mIsMaximized ? 0 : mVersionCompat.getDisplayWidth() - mUnclampedInitialWidth;
-            updateListener = (animator) -> setWindowX((int) animator.getAnimatedValue());
+            end = mIsMaximized ? 0 : restWidth;
         } else {
-            // When the sheet is positioned on left side, making full-width window first causes
-            // a visual glitch. Resizing the window while animating may be the best we can do.
-            start = window.getAttributes().width;
-            end = mIsMaximized ? mVersionCompat.getDisplayWidth() : mUnclampedInitialWidth;
-            updateListener = (animator) -> setWindowWidth((int) animator.getAnimatedValue());
+            if (mIsMaximized) {
+                // For the left-side sheet, adjust the start x (out of the screen) before
+                // animating the full-width tab back into screen.
+                var attrs = mActivity.getWindow().getAttributes();
+                attrs.x = -restWidth;
+                attrs.width = mVersionCompat.getDisplayWidth();
+                mActivity.getWindow().setAttributes(attrs);
+            }
+            start = window.getAttributes().x;
+            end = mIsMaximized ? 0 : -restWidth;
         }
+        AnimatorUpdateListener updateListener = (anim) -> setWindowX((int) anim.getAnimatedValue());
         startAnimation(start, end, updateListener, () -> onMaximizeEnd(animate), animate);
         return mIsMaximized;
     }
 
     private void onMaximizeEnd(boolean animate) {
         if (isMaximized()) {
-            if (mSheetOnRight) configureLayoutBeyondScreen(false);
+            configureLayoutBeyondScreen(false);
             maybeInvokeResizeCallback();
         } else {
             // System UI dimensions are not settled yet. Post the task.
             new Handler().post(() -> {
-                if (mSheetOnRight) configureLayoutBeyondScreen(false);
+                configureLayoutBeyondScreen(false);
                 initializeSize();
                 maybeInvokeResizeCallback();
             });
@@ -199,16 +205,30 @@ public class PartialCustomTabSideSheetStrategy extends PartialCustomTabBaseStrat
 
     @Override
     protected void setTopMargins(int shadowOffset, int handleOffset) {
-        View handleView = mActivity.findViewById(org.chromium.chrome.R.id.custom_tabs_handle_view);
-        ViewGroup.MarginLayoutParams lp =
-                (ViewGroup.MarginLayoutParams) handleView.getLayoutParams();
-        lp.setMargins(shadowOffset, 0, 0, 0);
+        int leftMargin = mSheetOnRight ? shadowOffset : 0;
+        int rightMargin = !mSheetOnRight ? shadowOffset : 0;
+        float elevation = calculateElevation();
+        ViewGroup coordinatorLayout = (ViewGroup) mActivity.findViewById(R.id.coordinator);
+        coordinatorLayout.setElevation(elevation);
+        View handleView = mActivity.findViewById(R.id.custom_tabs_handle_view);
+        if (handleView != null) {
+            handleView.setElevation(elevation);
+        }
+
+        // Side sheet does not have the same drag handle view that bottom sheet does and it
+        // requires a higher offset to look like an authentic shadow.
+        shadowOffset = shadowOffset * SIDE_SHADOW_MULTIPLIER;
+        if (handleView != null) {
+            ViewGroup.MarginLayoutParams lp =
+                    (ViewGroup.MarginLayoutParams) handleView.getLayoutParams();
+            lp.setMargins(leftMargin, 0, rightMargin, 0);
+        }
 
         // Make enough room for the handle View.
         int topOffset = Math.max(handleOffset - shadowOffset, 0);
         ViewGroup.MarginLayoutParams mlp =
                 (ViewGroup.MarginLayoutParams) mToolbarCoordinator.getLayoutParams();
-        mlp.setMargins(shadowOffset, topOffset, 0, 0);
+        mlp.setMargins(leftMargin, topOffset, rightMargin, 0);
     }
 
     @Override
@@ -285,6 +305,27 @@ public class PartialCustomTabSideSheetStrategy extends PartialCustomTabBaseStrat
     private int calculateWidth(int unclampedWidth) {
         return MathUtils.clamp(unclampedWidth, mVersionCompat.getDisplayWidth(),
                 (int) (mVersionCompat.getDisplayWidth() * MINIMAL_WIDTH_RATIO));
+    }
+
+    private float calculateElevation() {
+        int width = calculateWidth(mUnclampedInitialWidth);
+        int displayWidth = mVersionCompat.getDisplayWidth();
+
+        // Shadows grow depending on size of activity, which is undesirable for this purpose
+        // To keep the shadow size consistent, we stratify the elevation according to the width.
+        if (width >= (displayWidth * 3 / 4)) {
+            // Side Sheet > 75% of screen
+            return 5;
+        } else if (width >= displayWidth / 2) {
+            // Side Sheet between 75% and 50% of screen
+            return 10;
+        } else if (width > displayWidth / 3) {
+            // Side Sheet between 33% and 50% of screen
+            return 15;
+        } else {
+            // 33% min-width Side Sheet
+            return 20;
+        }
     }
 
     @Override

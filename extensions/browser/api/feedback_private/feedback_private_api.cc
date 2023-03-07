@@ -137,6 +137,10 @@ void SendFeedback(content::BrowserContext* browser_context,
     feedback_data->set_user_email(*feedback_info.email);
   if (feedback_info.trace_id)
     feedback_data->set_trace_id(*feedback_info.trace_id);
+  if (feedback_params.send_autofill_metadata &&
+      feedback_info.autofill_metadata) {
+    feedback_data->set_autofill_metadata(*feedback_info.autofill_metadata);
+  }
 
   // Note that the blob_uuids are generated in
   // renderer/resources/feedback_private_custom_bindings.js
@@ -319,7 +323,7 @@ void FeedbackPrivateGetSystemInformationFunction::OnCompleted(
 ExtensionFunction::ResponseAction FeedbackPrivateReadLogSourceFunction::Run() {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   using Params = feedback_private::ReadLogSource::Params;
-  std::unique_ptr<Params> api_params = Params::CreateDeprecated(args());
+  absl::optional<Params> api_params = Params::Create(args());
 
   LogSourceAccessManager* log_source_manager =
       FeedbackPrivateAPI::GetFactoryInstance()
@@ -351,8 +355,8 @@ void FeedbackPrivateReadLogSourceFunction::OnCompleted(
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 ExtensionFunction::ResponseAction FeedbackPrivateSendFeedbackFunction::Run() {
-  std::unique_ptr<feedback_private::SendFeedback::Params> params(
-      feedback_private::SendFeedback::Params::CreateDeprecated(args()));
+  absl::optional<feedback_private::SendFeedback::Params> params =
+      feedback_private::SendFeedback::Params::Create(args());
   EXTENSION_FUNCTION_VALIDATE(params);
 
   bool load_system_info =
@@ -386,8 +390,8 @@ void FeedbackPrivateSendFeedbackFunction::OnCompleted(
 }
 
 ExtensionFunction::ResponseAction FeedbackPrivateOpenFeedbackFunction::Run() {
-  std::unique_ptr<feedback_private::OpenFeedback::Params> params(
-      feedback_private::OpenFeedback::Params::CreateDeprecated(args()));
+  absl::optional<feedback_private::OpenFeedback::Params> params =
+      feedback_private::OpenFeedback::Params::Create(args());
   EXTENSION_FUNCTION_VALIDATE(params);
 
   ExtensionsAPIClient::Get()->GetFeedbackPrivateDelegate()->OpenFeedback(

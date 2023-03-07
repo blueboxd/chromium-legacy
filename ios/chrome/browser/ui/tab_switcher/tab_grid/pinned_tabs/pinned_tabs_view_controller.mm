@@ -187,46 +187,39 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
 - (GridTransitionLayout*)transitionLayout {
   [self.collectionView layoutIfNeeded];
 
-  NSMutableArray<GridTransitionItem*>* items = [[NSMutableArray alloc] init];
   GridTransitionActiveItem* activeItem;
   GridTransitionItem* selectionItem;
 
-  for (NSIndexPath* path in self.collectionView.indexPathsForVisibleItems) {
-    PinnedCell* cell = base::mac::ObjCCastStrict<PinnedCell>(
-        [self.collectionView cellForItemAtIndexPath:path]);
+  NSIndexPath* selectedItemIndexPath =
+      self.collectionView.indexPathsForSelectedItems.firstObject;
+  PinnedCell* selectedCell = base::mac::ObjCCastStrict<PinnedCell>(
+      [self.collectionView cellForItemAtIndexPath:selectedItemIndexPath]);
 
-    UICollectionViewLayoutAttributes* attributes =
-        [self.collectionView layoutAttributesForItemAtIndexPath:path];
+  if ([selectedCell hasIdentifier:_selectedItemID]) {
+    UICollectionViewLayoutAttributes* attributes = [self.collectionView
+        layoutAttributesForItemAtIndexPath:selectedItemIndexPath];
     // Normalize frame to window coordinates. The attributes class applies this
     // change to the other properties such as center, bounds, etc.
     attributes.frame = [self.collectionView convertRect:attributes.frame
                                                  toView:nil];
 
-    if ([cell hasIdentifier:_selectedItemID]) {
-      PinnedTransitionCell* activeCell =
-          [PinnedTransitionCell transitionCellFromCell:cell];
-      activeItem = [GridTransitionActiveItem itemWithCell:activeCell
-                                                   center:attributes.center
-                                                     size:attributes.size];
-      // If the active item is the last inserted item, it needs to be animated
-      // differently.
-      if ([cell hasIdentifier:_lastInsertedItemID]) {
-        activeItem.isAppearing = YES;
-      }
-
-      selectionItem = [GridTransitionItem
-          itemWithCell:[PinnedCell transitionSelectionCellFromCell:cell]
-                center:attributes.center];
-    } else {
-      UIView* cellSnapshot = [cell snapshotViewAfterScreenUpdates:YES];
-      GridTransitionItem* item =
-          [GridTransitionItem itemWithCell:cellSnapshot
-                                    center:attributes.center];
-      [items addObject:item];
+    PinnedTransitionCell* activeCell =
+        [PinnedTransitionCell transitionCellFromCell:selectedCell];
+    activeItem = [GridTransitionActiveItem itemWithCell:activeCell
+                                                 center:attributes.center
+                                                   size:attributes.size];
+    // If the active item is the last inserted item, it needs to be animated
+    // differently.
+    if ([selectedCell hasIdentifier:_lastInsertedItemID]) {
+      activeItem.isAppearing = YES;
     }
+
+    selectionItem = [GridTransitionItem
+        itemWithCell:[PinnedCell transitionSelectionCellFromCell:selectedCell]
+              center:attributes.center];
   }
 
-  return [GridTransitionLayout layoutWithInactiveItems:items
+  return [GridTransitionLayout layoutWithInactiveItems:@[]
                                             activeItem:activeItem
                                          selectionItem:selectionItem];
 }
@@ -549,16 +542,10 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
 
     NSIndexPath* dropIndexPath = CreateIndexPath(destinationIndex);
     // Drop synchronously if local object is available.
-    __weak __typeof(self) weakSelf = self;
     if (item.dragItem.localObject) {
-      _dropAnimationInProgress = YES;
-      [[coordinator dropItem:item.dragItem toItemAtIndexPath:dropIndexPath]
-          addCompletion:^(UIViewAnimatingPosition finalPosition) {
-            [weakSelf dropAnimationDidEnd];
-          }];
-
       // The sourceIndexPath is non-nil if the drop item is from this same
       // collection view.
+      _dropAnimationInProgress = YES;
       [self.dragDropHandler dropItem:item.dragItem
                              toIndex:destinationIndex
                   fromSameCollection:(item.sourceIndexPath != nil)];
@@ -781,6 +768,7 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
   // disappear from the user's sight.
   [self scrollCollectionViewToLastItemAnimated:YES];
 
+  [self dropAnimationDidEnd];
   [self pinnedTabsAvailable:_available];
 }
 

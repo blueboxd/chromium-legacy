@@ -319,6 +319,11 @@ MockDrmDevice::PlaneProperties& MockDrmDevice::MockDrmState::AddPlane(
   return plane;
 }
 
+bool MockDrmDevice::MockDrmState::HasResources() const {
+  return !connector_properties.empty() || !crtc_properties.empty() ||
+         !encoder_properties.empty();
+}
+
 MockDrmDevice::MockDrmDevice(std::unique_ptr<GbmDevice> gbm_device)
     : DrmDevice(base::FilePath(),
                 base::ScopedFD(),
@@ -378,10 +383,8 @@ void MockDrmDevice::InitializeState(MockDrmState& state, bool use_atomic) {
 bool MockDrmDevice::InitializeStateWithResult(MockDrmState& state,
                                               bool use_atomic) {
   if (use_atomic) {
-    SetCapability(DRM_CLIENT_CAP_ATOMIC, 1);
     plane_manager_ = std::make_unique<HardwareDisplayPlaneManagerAtomic>(this);
   } else {
-    SetCapability(DRM_CLIENT_CAP_ATOMIC, 0);
     plane_manager_ = std::make_unique<HardwareDisplayPlaneManagerLegacy>(this);
   }
   SetCapability(DRM_CLIENT_CAP_UNIVERSAL_PLANES, 1);
@@ -431,6 +434,9 @@ void MockDrmDevice::SetSystemLimitOfModifiers(uint64_t limit) {
 }
 
 ScopedDrmResourcesPtr MockDrmDevice::GetResources() const {
+  if (!drm_state_.HasResources())
+    return nullptr;
+
   ScopedDrmResourcesPtr resources(DrmAllocator<drmModeRes>());
   resources->count_crtcs = drm_state_.crtc_properties.size();
   resources->crtcs = static_cast<uint32_t*>(
@@ -443,6 +449,12 @@ ScopedDrmResourcesPtr MockDrmDevice::GetResources() const {
       drmMalloc(sizeof(uint32_t) * resources->count_connectors));
   for (size_t i = 0; i < drm_state_.connector_properties.size(); ++i)
     resources->connectors[i] = drm_state_.connector_properties[i].id;
+
+  resources->count_encoders = drm_state_.encoder_properties.size();
+  resources->encoders = static_cast<uint32_t*>(
+      drmMalloc(sizeof(uint32_t) * resources->count_encoders));
+  for (size_t i = 0; i < drm_state_.encoder_properties.size(); ++i)
+    resources->encoders[i] = drm_state_.encoder_properties[i].id;
 
   return resources;
 }

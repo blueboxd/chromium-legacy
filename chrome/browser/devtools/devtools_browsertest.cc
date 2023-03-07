@@ -1992,7 +1992,7 @@ class BrowserAutofillManagerTestDelegateDevtoolsImpl
     // Set an override for the minimum 500 ms threshold before enter key strokes
     // are accepted.
     if (base::WeakPtr<autofill::AutofillPopupControllerImpl> controller =
-            autofill::ChromeAutofillClient::FromWebContents(
+            autofill::ChromeAutofillClient::FromWebContentsForTesting(
                 inspected_contents_.get())
                 ->popup_controller_for_testing()) {
       controller->DisableThresholdForTesting(true);

@@ -25,7 +25,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/exclusive_access/exclusive_access_context.h"
-#include "chrome/browser/ui/performance_controls/high_efficiency_iph_controller.h"
+#include "chrome/browser/ui/performance_controls/high_efficiency_opt_in_iph_controller.h"
 #include "chrome/browser/ui/tabs/tab_renderer_data.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
 #include "chrome/browser/ui/translate/partial_translate_bubble_model.h"
@@ -415,8 +415,6 @@ class BrowserView : public BrowserWindow,
   bool window_management_permission_granted_for_testing() const {
     return window_management_permission_granted_;
   }
-
-  void set_isolated_web_app_true_for_testing() { is_isolated_web_app_ = true; }
 
   // Update the side panel's horizontal alignment when
   // prefs::kSidePanelHorizontalAlignment is changed from the appearance
@@ -954,9 +952,6 @@ class BrowserView : public BrowserWindow,
   void SetWindowManagementPermissionSubscriptionForBorderlessMode(
       content::WebContents* web_contents);
 
-  // Updates whether the web app is an isolated web app.
-  void UpdateIsIsolatedWebApp();
-
   WebAppFrameToolbarView* web_app_frame_toolbar();
   const WebAppFrameToolbarView* web_app_frame_toolbar() const;
 
@@ -1221,7 +1216,8 @@ class BrowserView : public BrowserWindow,
 
   OnLinkOpeningFromGestureCallbackList link_opened_from_gesture_callbacks_;
 
-  std::unique_ptr<HighEfficiencyIPHController> high_efficiency_iph_controller_;
+  std::unique_ptr<HighEfficiencyOptInIPHController>
+      high_efficiency_opt_in_iph_controller_;
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   // |loading_animation_tracker_| is used to measure animation smoothness for
@@ -1233,7 +1229,6 @@ class BrowserView : public BrowserWindow,
   bool should_show_window_controls_overlay_toggle_ = false;
   bool borderless_mode_enabled_ = false;
   bool window_management_permission_granted_ = false;
-  bool is_isolated_web_app_ = false;
   absl::optional<content::PermissionController::SubscriptionId>
       window_management_subscription_id_;
 

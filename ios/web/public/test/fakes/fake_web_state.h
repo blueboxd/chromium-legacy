@@ -61,8 +61,8 @@ class FakeWebState : public WebState {
   void Stop() override {}
   const NavigationManager* GetNavigationManager() const override;
   NavigationManager* GetNavigationManager() override;
-  const WebFramesManager* GetPageWorldWebFramesManager() const override;
   WebFramesManager* GetPageWorldWebFramesManager() override;
+  WebFramesManager* GetWebFramesManager(ContentWorld world) override;
   const SessionCertificatePolicyCache* GetSessionCertificatePolicyCache()
       const override;
   SessionCertificatePolicyCache* GetSessionCertificatePolicyCache() override;
@@ -96,6 +96,9 @@ class FakeWebState : public WebState {
 
   bool SetSessionStateData(NSData* data) override;
   NSData* SessionStateData() override;
+
+  void SetSwipeRecognizerProvider(
+      id<CRWSwipeRecognizerProvider> delegate) override;
 
   PermissionState GetStateForPermission(Permission permission) const override
       API_AVAILABLE(ios(15.0));
@@ -139,6 +142,9 @@ class FakeWebState : public WebState {
   void SetNavigationManager(
       std::unique_ptr<NavigationManager> navigation_manager);
   void SetWebFramesManager(
+      std::unique_ptr<WebFramesManager> web_frames_manager);
+  void SetWebFramesManager(
+      ContentWorld content_world,
       std::unique_ptr<WebFramesManager> web_frames_manager);
   void SetView(UIView* view);
   void SetIsCrashed(bool value);
@@ -200,7 +206,8 @@ class FakeWebState : public WebState {
   bool content_is_html_ = true;
   std::string mime_type_;
   std::unique_ptr<NavigationManager> navigation_manager_;
-  std::unique_ptr<WebFramesManager> web_frames_manager_;
+  std::map<ContentWorld, std::unique_ptr<WebFramesManager>>
+      web_frames_managers_;
   UIView* view_ = nil;
   CRWWebViewProxyType web_view_proxy_;
   NSData* last_loaded_data_ = nil;

@@ -22,7 +22,7 @@ TouchToFillCreditCardController::~TouchToFillCreditCardController() {
 bool TouchToFillCreditCardController::Show(
     std::unique_ptr<TouchToFillCreditCardView> view,
     base::WeakPtr<TouchToFillDelegate> delegate,
-    base::span<const autofill::CreditCard* const> cards_to_suggest) {
+    base::span<const autofill::CreditCard> cards_to_suggest) {
   // Abort if TTF surface is already shown.
   if (view_)
     return false;
@@ -63,8 +63,10 @@ void TouchToFillCreditCardController::ShowCreditCardSettings(JNIEnv* env) {
 
 void TouchToFillCreditCardController::SuggestionSelected(
     JNIEnv* env,
-    base::android::JavaParamRef<jstring> unique_id) {
-  delegate_->SuggestionSelected(ConvertJavaStringToUTF8(env, unique_id));
+    base::android::JavaParamRef<jstring> unique_id,
+    bool is_virtual) {
+  delegate_->SuggestionSelected(ConvertJavaStringToUTF8(env, unique_id),
+                                is_virtual);
 }
 
 base::android::ScopedJavaLocalRef<jobject>

@@ -430,11 +430,6 @@ bool IsAccessibilitySelectToSpeakPageMigrationEnabled() {
   return ::features::IsAccessibilitySelectToSpeakPageMigrationEnabled();
 }
 
-bool IsExperimentalAccessibilitySelectToSpeakVoiceSwitchingEnabled() {
-  return ::features::
-      IsExperimentalAccessibilitySelectToSpeakVoiceSwitchingEnabled();
-}
-
 bool AreExperimentalAccessibilityColorEnhancementSettingsEnabled() {
   return ::features::
       AreExperimentalAccessibilityColorEnhancementSettingsEnabled();
@@ -568,6 +563,10 @@ void AccessibilitySection::AddLoadTimeData(
       {"chromeVoxLabel", IDS_SETTINGS_CHROMEVOX_LABEL},
       {"chromeVoxOptionsLabel", IDS_SETTINGS_CHROMEVOX_OPTIONS_LABEL},
       {"chromeVoxGeneralLabel", IDS_SETTINGS_CHROMEVOX_GENERAL_LABEL},
+      {"chromeVoxVoicesLabel", IDS_SETTINGS_CHROMEVOX_VOICES_LABEL},
+      {"chromeVoxBrailleLabel", IDS_SETTINGS_CHROMEVOX_BRAILLE_LABEL},
+      {"chromeVoxDeveloperOptionsLabel",
+       IDS_SETTINGS_CHROMEVOX_DEVELOPER_OPTIONS_LABEL},
       {"chromeVoxUseVerboseMode", IDS_SETTINGS_CHROMEVOX_USE_VERBOSE_MODE},
       {"chromeVoxAutoRead", IDS_SETTINGS_CHROMEVOX_AUTO_READ},
       {"chromeVoxSpeakTextUnderMouse",
@@ -575,6 +574,24 @@ void AccessibilitySection::AddLoadTimeData(
       {"chromeVoxUsePitchChanges", IDS_SETTINGS_CHROMEVOX_USE_PITCH_CHANGES},
       {"chromeVoxAnnounceRichTextAttributes",
        IDS_SETTINGS_CHROMEVOX_ANNOUNCE_RICH_TEXT_ATTRIBUTES},
+      {"chromeVoxCapitalStrategy", IDS_SETTINGS_CHROMEVOX_CAPITAL_STRATEGY},
+      {"chromeVoxAnnounceCapitals", IDS_SETTINGS_CHROMEVOX_ANNOUNCE_CAPITALS},
+      {"chromeVoxIncreasePitch", IDS_SETTINGS_CHROMEVOX_INCREASE_PITCH},
+      {"chromeVoxNumberReadingStyle",
+       IDS_SETTINGS_CHROMEVOX_NUMBER_READING_STYLE},
+      {"chromeVoxAsWords", IDS_SETTINGS_CHROMEVOX_NUMBER_READING_STYLE_WORDS},
+      {"chromeVoxAsDigits", IDS_SETTINGS_CHROMEVOX_NUMBER_READING_STYLE_DIGITS},
+      {"chromeVoxPunctuationEcho", IDS_SETTINGS_CHROMEVOX_PUNCTUATION_ECHO},
+      {"chromeVoxNone", IDS_SETTINGS_CHROMEVOX_PUNCTUATION_ECHO_NONE},
+      {"chromeVoxSome", IDS_SETTINGS_CHROMEVOX_PUNCTUATION_ECHO_SOME},
+      {"chromeVoxAll", IDS_SETTINGS_CHROMEVOX_PUNCTUATION_ECHO_ALL},
+      {"chromeVoxAnnounceDownloadNotifications",
+       IDS_SETTINGS_CHROMEVOX_ANNOUNCE_DOWNLOAD_NOTIFICATIONS},
+      {"chromeVoxSmartStickyMode", IDS_SETTINGS_CHROMEVOX_SMART_STICKY_MODE},
+      {"chromeVoxAudioStrategy", IDS_SETTINGS_CHROMEVOX_AUDIO_STRATEGY},
+      {"chromeVoxAudioNormal", IDS_SETTINGS_CHROMEVOX_AUDIO_NORMAL},
+      {"chromeVoxAudioDuck", IDS_SETTINGS_CHROMEVOX_AUDIO_DUCK},
+      {"chromeVoxAudioSuspend", IDS_SETTINGS_CHROMEVOX_AUDIO_SUSPEND},
       {"chromeVoxTutorialLabel", IDS_SETTINGS_CHROMEVOX_TUTORIAL_LABEL},
       {"clickOnStopDescription", IDS_SETTINGS_CLICK_ON_STOP_DESCRIPTION},
       {"clickOnStopLabel", IDS_SETTINGS_CLICK_ON_STOP_LABEL},
@@ -981,10 +998,6 @@ void AccessibilitySection::AddLoadTimeData(
 
   html_source->AddBoolean("isAccessibilitySelectToSpeakPageMigrationEnabled",
                           IsAccessibilitySelectToSpeakPageMigrationEnabled());
-
-  html_source->AddBoolean(
-      "isExperimentalAccessibilitySelectToSpeakVoiceSwitchingEnabled",
-      IsExperimentalAccessibilitySelectToSpeakVoiceSwitchingEnabled());
 
   html_source->AddBoolean(
       "areExperimentalAccessibilityColorEnhancementSettingsEnabled",

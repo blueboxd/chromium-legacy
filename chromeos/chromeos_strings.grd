@@ -2606,6 +2606,9 @@
         <message name="IDS_PERSONALIZATION_APP_KEYBOARD_BACKLIGHT_ZONE_CUSTOMIZATION_BUTTON" desc="The text of the button that allows users to customize rgb keyboard zone colors.">
           Customize
         </message>
+        <message name="IDS_PERSONALIZATION_APP_KEYBOARD_BACKLIGHT_ZONE_CUSTOMIZATION_DISMISS_BUTTON" desc="The text of the button that dismisses the zone customization dialog.">
+          Done
+        </message>
         <message name="IDS_PERSONALIZATION_APP_KEYBOARD_BACKLIGHT_WALLPAPER_COLOR_DESCRIPTION" desc="The description for the button that allows users to select a keyboard backlight wallpaper-extracted color.">
           Match wallpaper
         </message>
@@ -3783,7 +3786,6 @@
         <message name="IDS_SHORTCUT_CUSTOMIZATION_CATEGORY_ACCESSIBILITY" desc="Category named 'Accessibility' shown on the navigation sidebar" translateable="false">Accessibility</message>
         <message name="IDS_SHORTCUT_CUSTOMIZATION_CATEGORY_DEBUG" desc="Category named 'Debug' shown on the navigation sidebar" translateable="false">Debug</message>
         <message name="IDS_SHORTCUT_CUSTOMIZATION_CATEGORY_DEVELOPER" desc="Category named 'Developer' shown on the navigation sidebar" translateable="false">Developer</message>
-        <message name="IDS_SHORTCUT_CUSTOMIZATION_CATEGORY_EVENT_REWRITER" desc="Category named 'Special Keys' shown on the navigation sidebar" translateable="false">Special Keys</message>
         <message name="IDS_SHORTCUT_CUSTOMIZATION_SUBCATEGORY_GENERAL_CONTROLS" desc="Subcategory named 'GeneralControls' shown within main shortcuts section" translateable="false">General Controls</message>
         <message name="IDS_SHORTCUT_CUSTOMIZATION_SUBCATEGORY_APPS" desc="Subcategory named 'Apps' shown within main shortcuts section" translateable="false">Apps</message>
         <message name="IDS_SHORTCUT_CUSTOMIZATION_SUBCATEGORY_MEDIA" desc="Subcategory named 'Media' shown within main shortcuts section" translateable="false">Media</message>
@@ -3802,7 +3804,6 @@
         <message name="IDS_SHORTCUT_CUSTOMIZATION_SUBCATEGORY_CHROMEVOX" desc="Subcategory named 'ChromeVox' shown within main shortcuts section" translateable="false">ChromeVox</message>
         <message name="IDS_SHORTCUT_CUSTOMIZATION_SUBCATEGORY_VISIBILITY" desc="Subcategory named 'Visibility' shown within main shortcuts section" translateable="false">Visibility</message>
         <message name="IDS_SHORTCUT_CUSTOMIZATION_SUBCATEGORY_ACCESSIBILITY_NAVIGATION" desc="Subcategory named 'AccessibilityNavigation' shown within main shortcuts section" translateable="false">Accessibility Navigation</message>
-        <message name="IDS_SHORTCUT_CUSTOMIZATION_SUBCATEGORY_SIX_PACK" desc="Subcategory named 'Six Pack' shown within main shortcuts section" translateable="false">Six Pack</message>
         <message name="IDS_SHORTCUT_CUSTOMIZATION_KEY_SPACE" desc="Lowercase name of the keyboard key 'Space'" translateable="false">space</message>
         <message name="IDS_SHORTCUT_CUSTOMIZATION_KEY_TAB" desc="Lowercase name of the keyboard key 'Tab'" translateable="false">tab</message>
         <message name="IDS_SHORTCUT_CUSTOMIZATION_KEY_ESCAPE" desc="Lowercase name of the keyboard key 'Escape', abbreviated if possible" translateable="false">esc</message>
@@ -3847,7 +3848,7 @@
         <message name="IDS_SHORTCUT_CUSTOMIZATION_ICON_LABEL_BROWSER_SEARCH" desc="The text read aloud by the screen reader describing the keyboard icon 'search'." translateable="false">
           search
         </message>
-        <message name="IDS_SHORTCUT_CUSTOMIZATION_ICON_LABEL_DICTATION_TOGGLE" desc="The text read aloud by the screen reader describing the keyboard icon 'toggle dictation'." translateable="false">
+        <message name="IDS_SHORTCUT_CUSTOMIZATION_ICON_LABEL_TOGGLE_DICTATION" desc="The text read aloud by the screen reader describing the keyboard icon 'toggle dictation'." translateable="false">
           toggle dictation
         </message>
         <message name="IDS_SHORTCUT_CUSTOMIZATION_ICON_LABEL_EMOJI_PICKER" desc="The text read aloud by the screen reader describing the keyboard icon 'emoji picker'." translateable="false">
@@ -3867,6 +3868,15 @@
         </message>
         <message name="IDS_SHORTCUT_CUSTOMIZATION_ICON_LABEL_LAUNCH_ASSISTANT" desc="The text read aloud by the screen reader describing the keyboard icon 'assistant'." translateable="false">
           assistant
+        </message>
+        <message name="IDS_SHORTCUT_CUSTOMIZATION_ICON_LABEL_MEDIA_FAST_FORWARD" desc="The text read aloud by the screen reader describing the keyboard icon 'fast forward media'." translateable="false">
+          fast forward media
+        </message>
+         <message name="IDS_SHORTCUT_CUSTOMIZATION_ICON_LABEL_MEDIA_PAUSE" desc="The text read aloud by the screen reader describing the keyboard icon 'pause media'." translateable="false">
+          pause media
+        </message>
+         <message name="IDS_SHORTCUT_CUSTOMIZATION_ICON_LABEL_MEDIA_PLAY" desc="The text read aloud by the screen reader describing the keyboard icon 'play media'." translateable="false">
+          play media
         </message>
         <message name="IDS_SHORTCUT_CUSTOMIZATION_ICON_LABEL_MEDIA_PLAY_PAUSE" desc="The text read aloud by the screen reader describing the keyboard icon 'play pause'." translateable="false">
           play pause
@@ -4011,6 +4021,27 @@
         <!-- Arc Input Overlay -->
         <message name="IDS_INPUT_OVERLAY_SETTINGS_NUDGE_ALPHAV2" desc="Label displayed next to the Settings UI's entry point so the user is aware.">
           Open menu to customize keys. Drag menu to move.
+        </message>
+        <message name="IDS_INPUT_OVERLAY_KEYMAPPING_KEY" desc="Accessibility label for key label. Spoken by screen readers when the label 'w' control gets focus but not visually rendered.">
+          Keymapping key
+        </message>
+        <message name="IDS_INPUT_OVERLAY_KEYMAPPING_TOUCH_POINT_DOT" desc="Accessibility label for touch point which is dot shape. Spoken by screen readers when the dot-shaped touch point control gets focus but not visually rendered.">
+          Keymapping touch point
+        </message>
+        <message name="IDS_INPUT_OVERLAY_KEYMAPPING_TOUCH_POINT_CROSS" desc="Accessibility label for touch point which is cross shape. Spoken by screen readers when the cross-shaped touch point control gets focus but not visually rendered.">
+          Keymapping D-pad
+        </message>
+        <message name="IDS_INPUT_OVERLAY_LAYOUT_ACCTIONS_MENU" desc="Accessibility label for save and reset button group. Spoken by screen readers when the save and reset button group gets focus but not visually rendered.">
+          Layout actions menu
+        </message>
+        <message name="IDS_INPUT_OVERLAY_KEY_LABEL_BACKSPACE" desc="Name for symbol of backspace key. Spoken by screen readers when symbol backspace renders in key label and gets focus but the symbol name not visually rendered.">
+          backspace
+        </message>
+        <message name="IDS_INPUT_OVERLAY_KEY_LABEL_ENTER" desc="Name for symbol of enter key. Spoken by screen readers when symbol enter renders in key label and gets focus but the symbol name not visually rendered.">
+          enter
+        </message>
+        <message name="IDS_INPUT_OVERLAY_KEY_LABEL_SPACE" desc="Name for symbol of space key. Spoken by screen readers when symbol space renders in key label and gets focus but the symbol name not visually rendered.">
+          space
         </message>
         <!-- End of Arc Input Overlay -->
       </if>

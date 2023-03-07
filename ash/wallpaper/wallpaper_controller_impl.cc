@@ -533,7 +533,7 @@ void DownloadGooglePhotosImage(
   }
   ImageDownloader::Get()->Download(url_with_dimensions,
                                    kDownloadGooglePhotoTrafficAnnotation,
-                                   headers, absl::nullopt, std::move(callback));
+                                   account_id, headers, std::move(callback));
 }
 
 // Returns an appropriate ColorMode value based on the Light/Dark mode state.
@@ -1652,7 +1652,7 @@ void WallpaperControllerImpl::OnColorCalculationComplete(
       info.location, wallpaper_calculated_colors.prominent_colors);
   pref_manager_->CacheKMeanColor(info.location,
                                  wallpaper_calculated_colors.k_mean_color);
-  if (features::IsJellyEnabled()) {
+  if (chromeos::features::IsJellyEnabled()) {
     pref_manager_->CacheCelebiColor(info.location,
                                     wallpaper_calculated_colors.celebi_color);
   }
@@ -2652,9 +2652,11 @@ void WallpaperControllerImpl::CalculateWallpaperColors() {
 }
 
 bool WallpaperControllerImpl::ShouldCalculateColors() const {
+  session_manager::SessionState session_state =
+      Shell::Get()->session_controller()->GetSessionState();
   gfx::ImageSkia image = GetWallpaper();
-  return Shell::Get()->session_controller()->GetSessionState() ==
-             session_manager::SessionState::ACTIVE &&
+  return (session_state == session_manager::SessionState::ACTIVE ||
+          session_state == session_manager::SessionState::OOBE) &&
          !image.isNull();
 }
 
@@ -2800,7 +2802,7 @@ void WallpaperControllerImpl::OnAttemptSetOnlineWallpaper(
     // wallpaper picker to the new one.
     std::string url = params.url.spec() + GetBackdropWallpaperSuffix();
     ImageDownloader::Get()->Download(
-        GURL(url), kDownloadOnlineWallpaperTrafficAnnotation,
+        GURL(url), kDownloadOnlineWallpaperTrafficAnnotation, params.account_id,
         base::BindOnce(&WallpaperControllerImpl::OnOnlineWallpaperDecoded,
                        set_wallpaper_weak_factory_.GetWeakPtr(), params,
                        /*save_file=*/true, std::move(callback)));
@@ -2818,7 +2820,7 @@ void WallpaperControllerImpl::OnAttemptSetOnlineWallpaper(
     for (size_t i = 0; i < variants.size(); i++) {
       ImageDownloader::Get()->Download(
           GURL(variants.at(i).raw_url.spec() + GetBackdropWallpaperSuffix()),
-          kDownloadOnlineWallpaperTrafficAnnotation,
+          kDownloadOnlineWallpaperTrafficAnnotation, params.account_id,
           base::BindOnce(
               &WallpaperControllerImpl::OnOnlineWallpaperVariantDownloaded,
               set_wallpaper_weak_factory_.GetWeakPtr(), params, on_done,

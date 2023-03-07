@@ -163,6 +163,7 @@
 <translation id="2346474577291266260">उत्कृष्ट (<ph name="SIGNAL_STRENGTH" />)</translation>
 <translation id="2359808026110333948">सुरू ठेवा</translation>
 <translation id="2364498172489649528">पास झाले</translation>
+<translation id="2367335866686097760">कीमॅपिंग की</translation>
 <translation id="2380886658946992094">Legal</translation>
 <translation id="2391082728065870591">फीडबॅक अहवाल पाठवा</translation>
 <translation id="2407209115954268704">सिम लॉक स्टेटस</translation>
@@ -235,7 +236,9 @@
 <translation id="319101249942218879">अवतार इमेज बदला</translation>
 <translation id="3192947282887913208">ऑडिओ फाइल</translation>
 <translation id="3199982728237701504">दस्तऐवज फीडर (दोन बाजू असलेले)</translation>
+<translation id="3211671540163313381">कीमॅपिंग D-pad</translation>
 <translation id="3226405216343213872">स्कॅनर शोधत आहे</translation>
+<translation id="3226657629376379887">लेआउट अ‍ॅक्‍शन मेनू</translation>
 <translation id="3246869037381808805">एक दिवसापेक्षा जुने प्रिंट जॉब काढून टाकले जातील</translation>
 <translation id="3268178239013324452">अयशस्वी झाले - दार उघडे आहे</translation>
 <translation id="3275506277319227640"><ph name="DIRECTION" /> कडे डॉक करा</translation>
@@ -568,6 +571,7 @@
 <translation id="6117895505466548728"><ph name="TITLE" />, + आणखी <ph name="NUMBER" /> अल्बम</translation>
 <translation id="6122191549521593678">ऑनलाइन</translation>
 <translation id="6122277663991249694">ChromeOS इनपुट पद्धत सेवा</translation>
+<translation id="6136285399872347291">backspace</translation>
 <translation id="6137767437444130246">वापरकर्ता सर्टिफिकेट</translation>
 <translation id="6146993107019042706">पूर्ण करण्यासाठी, तुमचा नवीन पासवर्ड एंटर करा</translation>
 <translation id="6147514244879357420">PNG</translation>
@@ -615,6 +619,7 @@
 <translation id="650266656685499220">अल्बम तयार करण्यासाठी Google Photos वर जा</translation>
 <translation id="6516990319416533844">बॅटरी चार्जिंग रेटची चाचणी घेण्यासाठी, थोडा वेळ तुमची बॅटरी ड्रेन होऊ द्या</translation>
 <translation id="6517239166834772319">एक्सप्लोर करा</translation>
+<translation id="6526200165918397681">वॉलपेपर जुळवा</translation>
 <translation id="6527081081771465939">अनोळखी वायफाय सुरक्षा प्रोटोकॉल</translation>
 <translation id="6535178685492749208">तुम्ही ऑफलाइन आहात. फीडबॅक हा नंतर पाठवला जाईल.</translation>
 <translation id="65587193855025101">फ्लॅटबेड</translation>
@@ -671,6 +676,7 @@
 <translation id="7086440545492620869"><ph name="VALUE" /> <ph name="DISPLAY_NAME" /></translation>
 <translation id="710028965487274708">अयशस्वी झाले - ऑथोरायझेशन करता आले नाही</translation>
 <translation id="7103252855940681301"><ph name="NAME" /> नावाची <ph name="COUNT" /> पैकी <ph name="INDEX" /> डिव्हाइस.</translation>
+<translation id="7108668606237948702">प्रविष्‍ट करा</translation>
 <translation id="7130438335435247835">अ‍ॅक्सेस पॉइंट नाव (APN)</translation>
 <translation id="7134436342991564651">{0,plural, =1{नेम सर्व्हर}other{नेम सर्व्हर}}</translation>
 <translation id="7143207342074048698">कनेक्ट करत आहे</translation>
@@ -800,6 +806,7 @@
 <translation id="8318753676953949627">कोणत्याही इमेज नाहीत</translation>
 <translation id="8336739000755212683">डिव्हाइस खाते इमेज बदला</translation>
 <translation id="8347227221149377169">प्रिंट कार्ये</translation>
+<translation id="8351855506390808906">कीमॅपिंग टच पॉइंट</translation>
 <translation id="8352772353338965963">मल्टिपल साइन-इन वर खाते जोडा. सर्व साइन इन केलेल्या खात्यांवर पासवर्डशिवाय प्रवेश केला जाऊ शकतो, म्हणून हे वैशिष्ट्य केवळ विश्वसनीय खात्यांसह वापरले जावे.</translation>
 <translation id="8364946094152050673">रिकामे नेम सर्व्हर</translation>
 <translation id="8372477600026034341">अतिरिक्त होस्ट</translation>
@@ -897,6 +904,7 @@
 <translation id="9138630967333032450">डावीकडे शिफ्ट करा</translation>
 <translation id="9149391708638971077">मेमरी चाचणी रन करा</translation>
 <translation id="9157515863513902090">मोठ्या बाजूला डॉक करा</translation>
+<translation id="9161276708550942948">स्पेस</translation>
 <translation id="9173638680043580060">एका मिनिटापेक्षा कमी वेळ शिल्लक आहे</translation>
 <translation id="917720651393141712">चाचणी करा</translation>
 <translation id="9188992814426075118">तुमचा कीबोर्ड तुमच्या वॉलपेपरशी आपोआप जुळवून घेऊ शकतो</translation>

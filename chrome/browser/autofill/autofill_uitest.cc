@@ -130,7 +130,7 @@ AutofillUiTest::~AutofillUiTest() {}
 
 void AutofillUiTest::SetUpOnMainThread() {
   // Make autofill popup stay open by ignoring external changes when possible.
-  ChromeAutofillClient::FromWebContents(GetWebContents())
+  ChromeAutofillClient::FromWebContentsForTesting(GetWebContents())
       ->KeepPopupOpenForTesting();
   // Inject the test delegate into the BrowserAutofillManager of the main frame.
   RenderFrameHostChanged(
@@ -158,6 +158,7 @@ void AutofillUiTest::TearDownOnMainThread() {
   BrowserAutofillManager* autofill_manager = GetBrowserAutofillManager();
   if (autofill_manager)
     autofill_manager->client()->HideAutofillPopup(PopupHidingReason::kTabGone);
+  current_main_rfh_ = nullptr;
   InProcessBrowserTest::TearDownOnMainThread();
 }
 

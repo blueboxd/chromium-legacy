@@ -78,14 +78,6 @@ BASE_FEATURE(kAvoidUnnecessaryBeforeUnloadCheckSync,
              "AvoidUnnecessaryBeforeUnloadCheckSync",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-// When enabled, stops canceling navigation when another navigation commits or
-// starts. This supports the same goal as kQueueNavigationsWhileWaitingForCommit
-// but for the non-queueing parts, and is disabled by default.
-// See https://crbug.com/838348 and https://crbug.com/1220337.
-BASE_FEATURE(kAvoidUnnecessaryNavigationCancellations,
-             "AvoidUnnecessaryNavigationCancellations",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
 // Kill switch for Background Fetch.
 BASE_FEATURE(kBackgroundFetch,
              "BackgroundFetch",
@@ -592,6 +584,10 @@ BASE_FEATURE(kInstalledAppProvider,
 // isolated web apps via the isolated-app:// scheme, and other advanced isolated
 // app functionality. See https://github.com/reillyeon/isolated-web-apps for a
 // general overview.
+// Please don't use this feature flag directly to guard the IWA code. Use
+// IsolatedWebAppsPolicy::AreIsolatedWebAppsEnabled() in the browser process
+// or check kEnableIsolatedWebAppsInRenderer command line flag in the renderer
+// process.
 BASE_FEATURE(kIsolatedWebApps,
              "IsolatedWebApps",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -1011,10 +1007,21 @@ const base::FeatureParam<ServiceWorkerBypassFetchHandlerStrategy>
         &service_worker_bypass_fetch_handler_strategy_options};
 
 const base::FeatureParam<ServiceWorkerBypassFetchHandlerTarget>::Option
-    service_worker_bypass_fetch_handler_target_options[] = {{
-        ServiceWorkerBypassFetchHandlerTarget::kMainResource,
-        "main_resource",
-    }};
+    service_worker_bypass_fetch_handler_target_options[] = {
+        {
+            ServiceWorkerBypassFetchHandlerTarget::kMainResource,
+            "main_resource",
+        },
+        {
+            ServiceWorkerBypassFetchHandlerTarget::
+                kAllOnlyIfServiceWorkerNotStarted,
+            "all_only_if_service_worker_not_started",
+        },
+        {
+            ServiceWorkerBypassFetchHandlerTarget::kSubResource,
+            "sub_resource",
+        },
+};
 const base::FeatureParam<ServiceWorkerBypassFetchHandlerTarget>
     kServiceWorkerBypassFetchHandlerTarget{
         &kServiceWorkerBypassFetchHandler, "bypass_for",

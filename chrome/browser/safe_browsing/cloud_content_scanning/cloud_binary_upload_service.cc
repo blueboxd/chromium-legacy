@@ -287,6 +287,13 @@ void CloudBinaryUploadService::UploadForDeepScanning(
                        weakptr_factory_.GetWeakPtr(), raw_request));
   }
 
+  // `request` might have been destroyed by:
+  // - `OnGetRequestData` or
+  // - `OnGetInstanceID`.
+  if (!IsActive(raw_request)) {
+    return;
+  }
+
   active_timers_[raw_request] = std::make_unique<base::OneShotTimer>();
   active_timers_[raw_request]->Start(
       FROM_HERE, is_auth_request ? kAuthTimeout : kScanningTimeout,

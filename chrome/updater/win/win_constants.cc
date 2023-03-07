@@ -15,8 +15,6 @@ const wchar_t kGoogleUpdate3WebUserClassProgId[] =
 
 const wchar_t kGlobalPrefix[] = L"Global\\G";
 
-const wchar_t kPrefsAccessMutex[] = L"" PREFS_ACCESS_MUTEX;
-
 const wchar_t kRegKeyCommands[] = L"Commands";
 const wchar_t kRegValueCommandLine[] = L"CommandLine";
 const wchar_t kRegValueAutoRunOnOSUpgrade[] = L"AutoRunOnOSUpgrade";
@@ -34,6 +32,14 @@ const wchar_t kRegValueInstallerResult[] = L"InstallerResult";
 const wchar_t kRegValueInstallerResultUIString[] = L"InstallerResultUIString";
 const wchar_t kRegValueInstallerSuccessLaunchCmdLine[] =
     L"InstallerSuccessLaunchCmdLine";
+
+const wchar_t kRegValueLastInstallerResult[] = L"LastInstallerResult";
+const wchar_t kRegValueLastInstallerError[] = L"LastInstallerError";
+const wchar_t kRegValueLastInstallerExtraCode1[] = L"LastInstallerExtraCode1";
+const wchar_t kRegValueLastInstallerResultUIString[] =
+    L"LastInstallerResultUIString";
+const wchar_t kRegValueLastInstallerSuccessLaunchCmdLine[] =
+    L"LastInstallerSuccessLaunchCmdLine";
 
 const wchar_t kRegKeyCompanyCloudManagement[] =
     COMPANY_POLICIES_KEY L"CloudManagement\\";

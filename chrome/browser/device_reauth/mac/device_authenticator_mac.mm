@@ -8,21 +8,33 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/notreached.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/device_reauth/mac/authenticator_mac.h"
+#include "chrome/browser/password_manager/password_manager_util_mac.h"
+#include "chrome/grit/chromium_strings.h"
 #include "components/device_reauth/device_authenticator.h"
+#include "components/password_manager/core/browser/reauth_purpose.h"
+#include "components/password_manager/core/common/password_manager_features.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "device/fido/mac/touch_id_context.h"
+#include "ui/base/l10n/l10n_util.h"
 
-DeviceAuthenticatorMac::DeviceAuthenticatorMac() = default;
+DeviceAuthenticatorMac::DeviceAuthenticatorMac(
+    std::unique_ptr<AuthenticatorMacInterface> authenticator)
+    : authenticator_(std::move(authenticator)) {}
 
 DeviceAuthenticatorMac::~DeviceAuthenticatorMac() = default;
 
-bool DeviceAuthenticatorMac::CanAuthenticate(
-    device_reauth::DeviceAuthRequester requester) {
-  base::scoped_nsobject<LAContext> context([[LAContext alloc] init]);
-  bool is_available = @available(macOS 10.12.2, *) &&
-      [context canEvaluatePolicy:LAPolicyDeviceOwnerAuthenticationWithBiometrics
-                           error:nil];
+// static
+scoped_refptr<DeviceAuthenticatorMac> DeviceAuthenticatorMac::CreateForTesting(
+    std::unique_ptr<AuthenticatorMacInterface> authenticator) {
+  return base::WrapRefCounted(
+      new DeviceAuthenticatorMac(std::move(authenticator)));
+}
+
+bool DeviceAuthenticatorMac::CanAuthenticateWithBiometrics() {
+  bool is_available = authenticator_->CheckIfBiometricsAvailable()
+                      && @available(macOS 10.12.2, *);
   base::UmaHistogramBoolean("PasswordManager.CanUseBiometricsMac",
                             is_available);
   if (is_available) {
@@ -59,10 +71,20 @@ void DeviceAuthenticatorMac::AuthenticateWithMessage(
     std::move(callback).Run(/*success=*/true);
     return;
   }
+  callback_ = std::move(callback);
+  // Always use CanAuthenticateWithBiometrics() before invoking the biometrics
+  // API, and if it fails use password_manager_util_mac::AuthenticateUser()
+  // instead, until crbug.com/1358442 is fixed.
+  if (!CanAuthenticateWithBiometrics() ||
+      !base::FeatureList::IsEnabled(
+          password_manager::features::kBiometricAuthenticationInSettings)) {
+    OnAuthenticationCompleted(authenticator_->AuthenticateUserWithNonBiometrics(
+        l10n_util::GetStringFUTF16(IDS_PASSWORDS_AUTHENTICATION_PROMPT_PREFIX,
+                                   message)));
+    return;
+  }
 
   touch_id_auth_context_ = device::fido::mac::TouchIdContext::Create();
-  callback_ = std::move(callback);
-
   touch_id_auth_context_->PromptTouchId(
       message,
       base::BindOnce(&DeviceAuthenticatorMac::OnAuthenticationCompleted,

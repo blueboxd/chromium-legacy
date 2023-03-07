@@ -42,6 +42,7 @@
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry_factory.h"
 #include "chrome/browser/device_api/managed_configuration_api_factory.h"
+#include "chrome/browser/dips/dips_cleanup_service_factory.h"
 #include "chrome/browser/dips/dips_service_factory.h"
 #include "chrome/browser/dom_distiller/dom_distiller_service_factory.h"
 #include "chrome/browser/domain_reliability/service_factory.h"
@@ -57,7 +58,6 @@
 #include "chrome/browser/file_system_access/file_system_access_permission_context_factory.h"
 #include "chrome/browser/first_party_sets/first_party_sets_policy_service_factory.h"
 #include "chrome/browser/font_pref_change_notifier_factory.h"
-#include "chrome/browser/google/google_search_domain_mixing_metrics_emitter_factory.h"
 #include "chrome/browser/heavy_ad_intervention/heavy_ad_service_factory.h"
 #include "chrome/browser/history/domain_diversity_reporter_factory.h"
 #include "chrome/browser/history/history_service_factory.h"
@@ -553,6 +553,7 @@ void ChromeBrowserMainExtraPartsProfiles::
   DiceResponseHandler::EnsureFactoryBuilt();
   DiceWebSigninInterceptorFactory::GetInstance();
 #endif
+  DIPSCleanupServiceFactory::GetInstance();
   DIPSServiceFactory::GetInstance();
   DocumentSuggestionsServiceFactory::GetInstance();
   DomainDiversityReporterFactory::GetInstance();
@@ -599,7 +600,6 @@ void ChromeBrowserMainExtraPartsProfiles::
   if (base::FeatureList::IsEnabled(kVariationsGoogleGroupFiltering)) {
     GoogleGroupsUpdaterServiceFactory::GetInstance();
   }
-  GoogleSearchDomainMixingMetricsEmitterFactory::GetInstance();
   HeavyAdServiceFactory::GetInstance();
 #if !BUILDFLAG(IS_ANDROID)
   HidChooserContextFactory::GetInstance();

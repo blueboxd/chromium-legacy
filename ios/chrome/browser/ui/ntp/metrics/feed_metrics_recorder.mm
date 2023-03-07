@@ -15,6 +15,7 @@
 #import "ios/chrome/browser/ntp/features.h"
 #import "ios/chrome/browser/ui/content_suggestions/ntp_home_metrics.h"
 #import "ios/chrome/browser/ui/ntp/feed_control_delegate.h"
+#import "ios/chrome/browser/ui/ntp/metrics/feed_metrics_constants.h"
 #import "ios/chrome/browser/ui/ntp/metrics/feed_session_recorder.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_follow_delegate.h"
 
@@ -71,7 +72,7 @@ using feed::FeedUserActionType;
 @property(nonatomic, assign) NSTimeInterval discoverPreviousTimeInFeedGV;
 @property(nonatomic, assign) NSTimeInterval followingPreviousTimeInFeedGV;
 
-// Timer to signal end of session. Set for `kMinutesBetweenSessions`.
+// Timer to signal end of session.
 @property(nonatomic, strong) NSTimer* sessionEndTimer;
 
 @end
@@ -1191,18 +1192,17 @@ using feed::FeedUserActionType;
   }
 }
 
-// Sets or extends the session end timer by `kMinutesBetweenSessions`.
+// Sets or extends the session end timer.
 - (void)setOrExtendSessionEndTimer {
   [self.sessionEndTimer invalidate];
   __weak FeedMetricsRecorder* weakSelf = self;
-  self.sessionEndTimer =
-      [NSTimer scheduledTimerWithTimeInterval:kMinutesBetweenSessions *
-                                              60 /*seconds per minute*/
-                                       target:weakSelf
-                                     selector:@selector
-                                     (refreshFeedIfSessionConditionsAreMet)
-                                     userInfo:nil
-                                      repeats:NO];
+  self.sessionEndTimer = [NSTimer
+      scheduledTimerWithTimeInterval:GetFeedSessionEndTimerTimeoutInSeconds()
+                              target:weakSelf
+                            selector:@selector
+                            (refreshFeedIfSessionConditionsAreMet)
+                            userInfo:nil
+                             repeats:NO];
 }
 
 // Refresh the feed if session conditions are met. See implementation for which
@@ -1211,7 +1211,8 @@ using feed::FeedUserActionType;
   [self.sessionEndTimer invalidate];
   self.sessionEndTimer = nil;
   if (self.engagedSimpleReportedDiscover) {
-    self.feedRefresher->RefreshFeed(/*feed_visible=*/false);
+    self.feedRefresher->RefreshFeed(
+        FeedRefreshTrigger::kForegroundFeedNotVisible);
   }
 }
 

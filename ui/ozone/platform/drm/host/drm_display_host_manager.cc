@@ -270,7 +270,7 @@ DrmDisplayHostManager::DrmDisplayHostManager(
       LOG(FATAL) << "Failed to open primary graphics card";
       return;
     }
-    host_properties->supports_overlays = IsAtomic(*primary_drm_device_);
+    host_properties->supports_overlays = primary_drm_device_->is_atomic();
     drm_devices_[primary_graphics_card_path_] =
         primary_graphics_card_path_sysfs;
   }
@@ -286,7 +286,7 @@ DrmDisplayHostManager::DrmDisplayHostManager(
     // Create a dummy DisplaySnapshot and resolve display ID collisions.
     std::unique_ptr<display::DisplaySnapshot> current_display_snapshot =
         CreateDisplaySnapshot(*primary_drm_device_, display_info.get(), 0,
-                              gfx::Point(), display::DrmFormatsAndModifiers());
+                              display::DrmFormatsAndModifiers());
 
     const auto colliding_display_snapshot_iter =
         edid_id_collision_map.find(current_display_snapshot->edid_display_id());

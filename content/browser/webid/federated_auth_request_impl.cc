@@ -902,7 +902,16 @@ void FederatedAuthRequestImpl::MaybeShowAccountsDialog() {
 
   fetch_data_ = FetchData();
 
-  std::string rp_url_for_display = FormatOriginForDisplay(GetEmbeddingOrigin());
+  // TODO(crbug.com/1418719): Replace exclude_iframe based on client metadata
+  // response.
+  bool exclude_iframe = true;
+  absl::optional<std::string> iframe_url_for_display = absl::nullopt;
+  std::string top_frame_url_for_display =
+      FormatOriginForDisplay(GetEmbeddingOrigin());
+
+  if (!exclude_iframe && GetEmbeddingOrigin() != origin()) {
+    iframe_url_for_display = FormatOriginForDisplay(origin());
+  }
 
   // TODO(crbug.com/1383384): Handle auto_reauthn for multi IDP.
   bool idp_enabled_auto_reauthn = true;
@@ -969,11 +978,26 @@ void FederatedAuthRequestImpl::MaybeShowAccountsDialog() {
   // trial. Should revisit based on the OT feedback.
   bool show_auto_reauthn_checkbox = false;
 
+  bool intercept = false;
+  // In tests (content_shell or when --use-fake-ui-for-fedcm is used), the
+  // dialog controller will immediately select an account. But if browser
+  // automation is enabled, we don't want that to happen because automation
+  // should be able to choose which account to select or to cancel.
+  // So we use this call to see whether interception is enabled.
+  // It is not needed in regular Chrome even when automation is used because
+  // there, the dialog will wait for user input anyway.
+  devtools_instrumentation::WillShowFedCmDialog(&render_frame_host(),
+                                                &intercept);
+  // Since we don't reuse the controller for each request, and intercept
+  // defaults to false, we only need to call this if intercept is true.
+  if (intercept) {
+    request_dialog_controller_->SetIsInterceptionEnabled(intercept);
+  }
   // TODO(crbug.com/1382863): Handle UI where some IDPs are successful and some
   // IDPs are failing in the multi IDP case.
   request_dialog_controller_->ShowAccountsDialog(
       WebContents::FromRenderFrameHost(&render_frame_host()),
-      rp_url_for_display, idp_data_for_display,
+      top_frame_url_for_display, iframe_url_for_display, idp_data_for_display,
       auto_reauthn ? SignInMode::kAuto : SignInMode::kExplicit,
       show_auto_reauthn_checkbox,
       base::BindOnce(&FederatedAuthRequestImpl::OnAccountSelected,

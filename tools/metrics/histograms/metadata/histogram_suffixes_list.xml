@@ -1052,24 +1052,6 @@ chromium-metrics-reviews@google.com.
   <affected-histogram name="Net.QuicSession.PathValidationSuccess"/>
 </histogram_suffixes>
 
-<histogram_suffixes name="ContentIndexDatabaseTask" separator=".">
-  <suffix name="Add" label="Register content"/>
-  <suffix name="ClearCorruptedData" label="Clear data in SW"/>
-  <suffix name="Delete" label="Delete content"/>
-  <suffix name="GetAllEntries" label="Get all entries"/>
-  <suffix name="GetDescriptions" label="Get registered content"/>
-  <suffix name="GetEntry" label="Get a specific entry"/>
-  <suffix name="GetIcon" label="Get content icon"/>
-  <affected-histogram name="ContentIndex.Database"/>
-</histogram_suffixes>
-
-<histogram_suffixes name="ContentIndexDispatchPhase" separator=".">
-  <suffix name="Dispatch" label="Dispatch Service Worker event"/>
-  <suffix name="Find" label="Find Service Worker"/>
-  <suffix name="Start" label="Start Service Worker"/>
-  <affected-histogram name="ContentIndex.ContentDeleteEvent"/>
-</histogram_suffixes>
-
 <histogram_suffixes name="ContentSetting" separator=".">
   <suffix name="Allow" label="Allow"/>
   <suffix name="AllowThirdParty" label="All third parties allowed on a domain"/>
@@ -1146,8 +1128,6 @@ chromium-metrics-reviews@google.com.
   <suffix name="ShoppingDomain"
       label="The context menu was shown for a link that its domain is on the
              Shopping domain allowlist in the Lens experiment."/>
-  <affected-histogram name="ContextMenu.SelectedOptionAndroid.Image"/>
-  <affected-histogram name="ContextMenu.SelectedOptionAndroid.ImageLink"/>
   <affected-histogram name="ContextMenu.Shown"/>
 </histogram_suffixes>
 
@@ -1768,7 +1748,6 @@ chromium-metrics-reviews@google.com.
       label="Optimization Guide prediction models."/>
   <suffix name="PluginVmImage" label="PluginVm image."/>
   <affected-histogram name="Download.Service.Request.ClientAction"/>
-  <affected-histogram name="Download.Service.Upload.HasUploadData"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="Download_Service_EntryState" separator=".">
@@ -2078,15 +2057,6 @@ chromium-metrics-reviews@google.com.
   <affected-histogram name="PLT.PT_StartToFinish"/>
 </histogram_suffixes>
 
-<histogram_suffixes name="GeolocationSettingsDialogSource" separator=".">
-  <suffix name="DSE" label="Default search engine"/>
-  <suffix name="NonDSE" label="Non-default search engine"/>
-  <affected-histogram name="Geolocation.SettingsDialog.AcceptEvent"/>
-  <affected-histogram name="Geolocation.SettingsDialog.DenyEvent"/>
-  <affected-histogram name="Geolocation.SettingsDialog.ShowEvent"/>
-  <affected-histogram name="Geolocation.SettingsDialog.SuppressEvent"/>
-</histogram_suffixes>
-
 <histogram_suffixes name="GetAuthTokenType" separator=".">
   <suffix name="RemoteConsentApproved"
       label="The remote consent has been approved for the getAuthToken()
@@ -2149,12 +2119,6 @@ chromium-metrics-reviews@google.com.
   <affected-histogram name="GridTabSwitcher.DirtySpan"/>
   <affected-histogram name="GridTabSwitcher.FramePerSecond"/>
   <affected-histogram name="GridTabSwitcher.MaxFrameInterval"/>
-</histogram_suffixes>
-
-<histogram_suffixes name="GwpAsanBackingAllocator" separator=".">
-  <suffix name="Malloc" label="From malloc"/>
-  <suffix name="PartitionAlloc" label="From PartitionAlloc"/>
-  <affected-histogram name="GwpAsan.CrashAnalysisResult"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="GWSChromeJointExperiment" separator="_">
@@ -2412,18 +2376,6 @@ chromium-metrics-reviews@google.com.
   <suffix name="Prompt" label="window.prompt() dialog"/>
   <affected-histogram name="JSDialogs.OriginRelationship"/>
   <affected-histogram name="JSDialogs.Scheme"/>
-</histogram_suffixes>
-
-<histogram_suffixes name="LCDTextDisallowedReasonSuffixes" separator=".">
-  <suffix name="HighDPI"
-      label="In web pages where device scale factor is greater than or equal
-             to 1.5."/>
-  <suffix name="LowDPI"
-      label="In web pages where device scale factor is less than 1.5."/>
-  <affected-histogram
-      name="Compositing.Renderer.LCDTextDisallowedReasonKPixels"/>
-  <affected-histogram
-      name="Compositing.Renderer.LCDTextDisallowedReasonLayers"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="LeakDetectionDialogType" separator=".">
@@ -3647,7 +3599,6 @@ chromium-metrics-reviews@google.com.
       name="PageLoad.Clients.ServiceWorker2.PaintTiming.NavigationToFirstContentfulPaint"/>
   <affected-histogram
       name="PageLoad.Clients.ServiceWorker2.ParseTiming.NavigationToParseStart"/>
-  <affected-histogram name="PageLoad.Experimental.Bytes.Cache2"/>
   <affected-histogram name="PageLoad.Experimental.Bytes.Network"/>
   <affected-histogram name="PageLoad.Experimental.Bytes.Total2"/>
   <affected-histogram
@@ -4615,6 +4566,13 @@ chromium-metrics-reviews@google.com.
   <suffix name="FontCaches" label="Only counting memory used by font caches."/>
   <suffix name="Gpu.GrShaderCache"
       label="Only counting memory used by Shader Cache."/>
+  <suffix name="HibernatedCanvas.OriginalSize"
+      label="Total size of all hibernated canvas snapshots in a given
+             renderer, prio to compression. 0 when the renderer is visible."/>
+  <suffix name="HibernatedCanvas.Size"
+      label="Total size of all hibernated canvas snapshots in a given
+             renderer, after compression if enabled. 0 when the renderer is
+             visible."/>
   <suffix name="History" label="Only counting memory used by History service."/>
   <suffix name="LevelDatabase"
       label="Only counting memory used by Level databases."/>

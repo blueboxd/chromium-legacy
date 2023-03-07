@@ -48,7 +48,7 @@ BluetoothRemoteGattCharacteristicFloss::
 }
 
 std::string BluetoothRemoteGattCharacteristicFloss::GetIdentifier() const {
-  return base::StringPrintf("%s/%d", service_->GetIdentifier().c_str(),
+  return base::StringPrintf("%s/%04x", service_->GetIdentifier().c_str(),
                             characteristic_->instance_id);
 }
 
@@ -58,12 +58,16 @@ device::BluetoothUUID BluetoothRemoteGattCharacteristicFloss::GetUUID() const {
 
 BluetoothRemoteGattCharacteristicFloss::Properties
 BluetoothRemoteGattCharacteristicFloss::GetProperties() const {
-  return characteristic_->properties;
+  const auto& [props, perms] = ConvertPropsAndPermsFromFloss(
+      characteristic_->properties, characteristic_->permissions);
+  return props;
 }
 
 BluetoothRemoteGattCharacteristicFloss::Permissions
 BluetoothRemoteGattCharacteristicFloss::GetPermissions() const {
-  return characteristic_->permissions;
+  const auto& [props, perms] = ConvertPropsAndPermsFromFloss(
+      characteristic_->properties, characteristic_->permissions);
+  return perms;
 }
 
 const std::vector<uint8_t>& BluetoothRemoteGattCharacteristicFloss::GetValue()

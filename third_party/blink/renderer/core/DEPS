@@ -111,6 +111,7 @@ include_rules = [
     "+ui/gfx/animation/keyframe/animation_curve.h",
     "+ui/gfx/animation/keyframe/keyframed_animation_curve.h",
     "+ui/gfx/animation/keyframe/timing_function.h",
+    "+ui/gfx/codec/png_codec.h",
     "+ui/gfx/geometry",
     "+ui/gfx/range/range.h",
     "-web",
@@ -190,5 +191,8 @@ specific_include_rules = {
     ],
     "media_values.h": [
         "+ui/base/pointer/pointer_device.h",
+    ],
+    "xml_http_request.cc": [
+        "+net/base/mime_util.h",
     ],
 }

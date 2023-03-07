@@ -25,6 +25,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
 #include "components/download/public/common/download_danger_type.h"
+#include "components/download/public/common/download_item.h"
 #include "components/download/public/common/mock_download_item.h"
 #include "components/offline_items_collection/core/offline_item.h"
 #include "components/offline_items_collection/core/test_support/mock_offline_content_provider.h"
@@ -161,17 +162,23 @@ class DownloadBubbleUIControllerTest : public testing::Test {
     return *content_provider_;
   }
 
-  void InitDownloadItem(const base::FilePath::CharType* path,
-                        DownloadState state,
-                        const std::string& id,
-                        bool is_transient = false,
-                        base::Time start_time = base::Time::Now(),
-                        bool may_show_animation = true) {
+  void InitDownloadItem(
+      const base::FilePath::CharType* path,
+      DownloadState state,
+      const std::string& id,
+      bool is_transient = false,
+      base::Time start_time = base::Time::Now(),
+      bool may_show_animation = true,
+      download::DownloadItem::TargetDisposition target_disposition =
+          download::DownloadItem::TARGET_DISPOSITION_PROMPT,
+      const std::string& mime_type = "",
+      download::DownloadItem::DownloadCreationType creation_type =
+          download::DownloadItem::DownloadCreationType::TYPE_ACTIVE_DOWNLOAD) {
     size_t index = items_.size();
     items_.push_back(std::make_unique<StrictMockDownloadItem>());
     EXPECT_CALL(item(index), GetId())
         .WillRepeatedly(Return(static_cast<uint32_t>(items_.size() + 1)));
-    EXPECT_CALL(item(index), GetGuid()).WillRepeatedly(ReturnRef(id));
+    EXPECT_CALL(item(index), GetGuid()).WillRepeatedly(ReturnRefOfCopy(id));
     EXPECT_CALL(item(index), GetState()).WillRepeatedly(Return(state));
     EXPECT_CALL(item(index), GetStartTime()).WillRepeatedly(Return(start_time));
     EXPECT_CALL(item(index), GetTargetFilePath())
@@ -191,18 +198,18 @@ class DownloadBubbleUIControllerTest : public testing::Test {
     EXPECT_CALL(item(index), IsTransient())
         .WillRepeatedly(Return(is_transient));
     EXPECT_CALL(item(index), GetDownloadCreationType())
-        .WillRepeatedly(Return(download::DownloadItem::DownloadCreationType::
-                                   TYPE_ACTIVE_DOWNLOAD));
+        .WillRepeatedly(Return(creation_type));
     EXPECT_CALL(item(index), IsPaused()).WillRepeatedly(Return(false));
     EXPECT_CALL(item(index), IsDangerous()).WillRepeatedly(Return(false));
     // Functions called when checking ShouldShowDownloadStartedAnimation().
     EXPECT_CALL(item(index), IsSavePackageDownload())
         .WillRepeatedly(Return(false));
     EXPECT_CALL(item(index), GetTargetDisposition())
-        .WillRepeatedly(
-            Return(download::DownloadItem::TARGET_DISPOSITION_PROMPT));
-    EXPECT_CALL(item(index), GetMimeType()).WillRepeatedly(Return(""));
+        .WillRepeatedly(Return(target_disposition));
+    EXPECT_CALL(item(index), GetMimeType()).WillRepeatedly(Return(mime_type));
     EXPECT_CALL(item(index), GetURL())
+        .WillRepeatedly(ReturnRef(GURL::EmptyGURL()));
+    EXPECT_CALL(item(index), GetReferrerUrl())
         .WillRepeatedly(ReturnRef(GURL::EmptyGURL()));
     std::vector<download::DownloadItem*> items;
     for (size_t i = 0; i < items_.size(); ++i) {
@@ -210,6 +217,8 @@ class DownloadBubbleUIControllerTest : public testing::Test {
     }
     EXPECT_CALL(*manager_, GetAllDownloads(_))
         .WillRepeatedly(SetArgPointee<0>(items));
+    EXPECT_CALL(*manager_, GetDownloadByGuid(id))
+        .WillRepeatedly(Return(&(item(index))));
     item(index).AddObserver(&controller().get_download_notifier_for_testing());
     content::DownloadItemUtils::AttachInfoForTesting(&(item(index)), profile_,
                                                      nullptr);
@@ -259,7 +268,6 @@ class DownloadBubbleUIControllerTest : public testing::Test {
   content::BrowserTaskEnvironment task_environment_{
       base::test::TaskEnvironment::TimeSource::MOCK_TIME};
 
- private:
   std::unique_ptr<DownloadBubbleUIController> controller_;
   std::unique_ptr<DownloadBubbleUIController> second_controller_;
   std::unique_ptr<NiceMock<MockDownloadDisplayController>> display_controller_;
@@ -334,6 +342,70 @@ TEST_F(DownloadBubbleUIControllerTest, TransientDownloadShouldNotShow) {
   EXPECT_EQ(models[0]->GetContentId().id, ids[1]);
 }
 
+TEST_F(DownloadBubbleUIControllerTest,
+       CompleteHistoryImportShouldNotShowInPartialView) {
+  std::vector<std::string> ids = {"history_import1", "history_import2"};
+  // Complete history import item.
+  InitDownloadItem(
+      FILE_PATH_LITERAL("/foo/bar.pdf"), download::DownloadItem::COMPLETE,
+      ids[0],
+      /*is_transient=*/false, /*start_time=*/base::Time::Now(),
+      /*may_show_animation=*/true,
+      download::DownloadItem::TARGET_DISPOSITION_OVERWRITE,
+      /*mime_type=*/"",
+      download::DownloadItem::DownloadCreationType::TYPE_HISTORY_IMPORT);
+  // In-progress history import item.
+  InitDownloadItem(
+      FILE_PATH_LITERAL("/foo/bar2.pdf"), download::DownloadItem::IN_PROGRESS,
+      ids[1],
+      /*is_transient=*/false, /*start_time=*/base::Time::Now(),
+      /*may_show_animation=*/true,
+      download::DownloadItem::TARGET_DISPOSITION_OVERWRITE,
+      /*mime_type=*/"",
+      download::DownloadItem::DownloadCreationType::TYPE_HISTORY_IMPORT);
+  std::vector<DownloadUIModelPtr> partial_view = controller().GetPartialView();
+  ASSERT_EQ(partial_view.size(), 1u);
+  EXPECT_EQ(partial_view[0]->GetContentId().id, ids[1]);
+  std::vector<DownloadUIModelPtr> main_view = controller().GetMainView();
+  EXPECT_EQ(main_view.size(), 2u);
+}
+
+TEST_F(DownloadBubbleUIControllerTest, FastCrxDownloadShowsNoUI) {
+  std::string id = "fast_crx";
+  EXPECT_CALL(display_controller(), OnNewItem(_)).Times(0);
+  EXPECT_CALL(display_controller(), OnUpdatedItem(_, _, _)).Times(0);
+  InitDownloadItem(FILE_PATH_LITERAL("/foo/bar2.pdf"),
+                   download::DownloadItem::IN_PROGRESS, id,
+                   /*is_transient=*/false, /*start_time=*/base::Time::Now(),
+                   /*may_show_animation=*/true,
+                   download::DownloadItem::TARGET_DISPOSITION_OVERWRITE,
+                   "application/x-chrome-extension");
+  EXPECT_CALL(*manager_, GetDownloadByGuid(id))
+      .WillRepeatedly(Return(items_[0].get()));
+  task_environment_.FastForwardBy(base::Seconds(1));
+  UpdateDownloadItem(/*item_index=*/0, DownloadState::COMPLETE);
+}
+
+TEST_F(DownloadBubbleUIControllerTest, SlowCrxDownloadShowsDelayedUI) {
+  std::string id = "slow_crx";
+  EXPECT_CALL(display_controller(), OnNewItem(_)).Times(0);
+  EXPECT_CALL(display_controller(), OnUpdatedItem(_, _, _)).Times(0);
+  InitDownloadItem(FILE_PATH_LITERAL("/foo/bar2.pdf"),
+                   download::DownloadItem::IN_PROGRESS, id,
+                   /*is_transient=*/false, /*start_time=*/base::Time::Now(),
+                   /*may_show_animation=*/true,
+                   download::DownloadItem::TARGET_DISPOSITION_OVERWRITE,
+                   "application/x-chrome-extension");
+  EXPECT_CALL(*manager_, GetDownloadByGuid(id))
+      .WillRepeatedly(Return(items_[0].get()));
+  EXPECT_CALL(display_controller(), OnNewItem(true)).Times(1);
+  EXPECT_CALL(display_controller(), OnUpdatedItem(false, false, true)).Times(1);
+  task_environment_.FastForwardBy(base::Seconds(2));
+  UpdateDownloadItem(/*item_index=*/0, DownloadState::IN_PROGRESS);
+  EXPECT_CALL(display_controller(), OnUpdatedItem(true, false, true)).Times(1);
+  UpdateDownloadItem(/*item_index=*/0, DownloadState::COMPLETE);
+}
+
 TEST_F(DownloadBubbleUIControllerTest, ListIsSorted) {
   std::vector<DownloadSortingState> sort_states = {
       DownloadSortingState("Download 1", base::Hours(2),
@@ -365,6 +437,13 @@ TEST_F(DownloadBubbleUIControllerTest, ListIsSorted) {
   }
   InitOfflineItem(OfflineItemState::IN_PROGRESS, offline_item);
 
+  std::vector<DownloadUIModelPtr> in_progress_models =
+      controller().GetInProgressItems();
+  EXPECT_EQ(in_progress_models.size(), 4u);
+  for (unsigned long i = 0; i < 4u; i++) {
+    EXPECT_EQ(in_progress_models[i]->GetContentId().id, sorted_ids[i]);
+  }
+
   std::vector<DownloadUIModelPtr> models = controller().GetMainView();
   EXPECT_EQ(models.size(), sorted_ids.size());
   for (unsigned long i = 0; i < models.size(); i++) {
@@ -390,6 +469,14 @@ TEST_F(DownloadBubbleUIControllerTest, ListIsRecent) {
                    download::DownloadItem::IN_PROGRESS, ids[2],
                    /*is_transient=*/false, now - start_time_offsets[2]);
   InitOfflineItem(OfflineItemState::IN_PROGRESS, ids[3]);
+
+  std::vector<DownloadUIModelPtr> in_progress_models =
+      controller().GetInProgressItems();
+  EXPECT_EQ(in_progress_models.size(), sorted_ids.size());
+  for (unsigned long i = 0; i < in_progress_models.size(); i++) {
+    EXPECT_EQ(in_progress_models[i]->GetContentId().id, sorted_ids[i]);
+  }
+
   std::vector<DownloadUIModelPtr> models = controller().GetMainView();
   EXPECT_EQ(models.size(), sorted_ids.size());
   for (unsigned long i = 0; i < models.size(); i++) {
@@ -414,6 +501,15 @@ TEST_F(DownloadBubbleUIControllerTest, ListIsCappedAndMostRecent) {
                      download::DownloadItem::IN_PROGRESS, id,
                      /*is_transient=*/false,
                      kFirstStartTime + base::Seconds(i));
+  }
+
+  std::vector<DownloadUIModelPtr> in_progress_models =
+      controller().GetInProgressItems();
+  EXPECT_EQ(in_progress_models.size(), kMaxDownloadsToShow);
+  for (const DownloadUIModelPtr& model : in_progress_models) {
+    // Expect the oldest download, which started at kFirstStartTime, to be the 1
+    // excluded, due to the sorting in GetInProgressItems.
+    EXPECT_GT(model->GetStartTime(), kFirstStartTime);
   }
 
   std::vector<DownloadUIModelPtr> partial_view_models =

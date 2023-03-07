@@ -881,7 +881,7 @@ std::set<int> Av1Decoder::RefreshReferenceSlots(
     const libgav1::ObuFrameHeader& frame_hdr,
     const libgav1::RefCountedBufferPtr current_frame,
     const scoped_refptr<MmapedBuffer> buffer,
-    const uint32_t last_queued_buffer_index) {
+    const uint32_t last_queued_buffer_id) {
   state_->UpdateReferenceFrames(
       current_frame, base::strict_cast<int>(frame_hdr.refresh_frame_flags));
 
@@ -913,7 +913,7 @@ std::set<int> Av1Decoder::RefreshReferenceSlots(
 
     // Note that the CAPTURE buffer for previous frame can be used as well,
     // but it is already queued again at this point.
-    reusable_buffer_ids.erase(last_queued_buffer_index);
+    reusable_buffer_ids.erase(last_queued_buffer_id);
 
     // Updates to assign current key frame as a reference frame for all
     // reference frame slots in the reference frames list.
@@ -976,7 +976,7 @@ void Av1Decoder::QueueReusableBuffersInCaptureQueue(
       LOG(ERROR) << "VIDIOC_QBUF failed for CAPTURE queue.";
 
     if (is_inter_frame)
-      CAPTURE_queue_->set_last_queued_buffer_index(reusable_buffer_id);
+      CAPTURE_queue_->set_last_queued_buffer_id(reusable_buffer_id);
   }
 }
 
@@ -1039,7 +1039,7 @@ VideoDecoder::Result Av1Decoder::DecodeNextFrame(std::vector<char>& y_plane,
       const std::set<int> reusable_buffer_ids =
           RefreshReferenceSlots(current_frame_header, current_frame,
                                 ref_frames_[current_frame_header.frame_to_show],
-                                CAPTURE_queue_->last_queued_buffer_index());
+                                CAPTURE_queue_->last_queued_buffer_id());
 
       QueueReusableBuffersInCaptureQueue(
           reusable_buffer_ids,
@@ -1101,12 +1101,13 @@ VideoDecoder::Result Av1Decoder::DecodeNextFrame(std::vector<char>& y_plane,
   if (!v4l2_ioctl_->MediaRequestIocQueue(OUTPUT_queue_))
     LOG(FATAL) << "MEDIA_REQUEST_IOC_QUEUE failed.";
 
-  uint32_t index;
+  uint32_t buffer_id;
 
-  if (!v4l2_ioctl_->DQBuf(CAPTURE_queue_, &index))
+  if (!v4l2_ioctl_->DQBuf(CAPTURE_queue_, &buffer_id)) {
     LOG(FATAL) << "VIDIOC_DQBUF failed for CAPTURE queue.";
+  }
 
-  scoped_refptr<MmapedBuffer> buffer = CAPTURE_queue_->GetBuffer(index);
+  scoped_refptr<MmapedBuffer> buffer = CAPTURE_queue_->GetBuffer(buffer_id);
   size = CAPTURE_queue_->display_size();
   if (CAPTURE_queue_->fourcc() == V4L2_PIX_FMT_NV12) {
     CHECK_EQ(buffer->mmaped_planes().size(), 1u)
@@ -1128,15 +1129,16 @@ VideoDecoder::Result Av1Decoder::DecodeNextFrame(std::vector<char>& y_plane,
   }
 
   const std::set<int> reusable_buffer_ids = RefreshReferenceSlots(
-      current_frame_header, current_frame, CAPTURE_queue_->GetBuffer(index),
-      CAPTURE_queue_->last_queued_buffer_index());
+      current_frame_header, current_frame, CAPTURE_queue_->GetBuffer(buffer_id),
+      CAPTURE_queue_->last_queued_buffer_id());
 
   QueueReusableBuffersInCaptureQueue(
       reusable_buffer_ids,
       !libgav1::IsIntraFrame(current_frame_header.frame_type));
 
-  if (!v4l2_ioctl_->DQBuf(OUTPUT_queue_, &index))
+  if (!v4l2_ioctl_->DQBuf(OUTPUT_queue_, &buffer_id)) {
     LOG(FATAL) << "VIDIOC_DQBUF failed for OUTPUT queue.";
+  }
 
   if (!v4l2_ioctl_->MediaRequestIocReinit(OUTPUT_queue_))
     LOG(FATAL) << "MEDIA_REQUEST_IOC_REINIT failed.";

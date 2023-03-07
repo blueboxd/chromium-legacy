@@ -6,6 +6,7 @@
 
 #include "base/metrics/histogram_functions.h"
 #include "chromeos/ash/components/login/login_state/login_state.h"
+#include "chromeos/ash/components/network/hotspot_controller.h"
 #include "chromeos/ash/components/network/network_event_log.h"
 
 namespace ash {
@@ -22,6 +23,128 @@ const char HotspotMetricsHelper::kHotspotAllowStatusHistogram[] =
 const char HotspotMetricsHelper::kHotspotAllowStatusAtLoginHistogram[] =
     "Network.Ash.Hotspot.Upstream.Cellular.Capability.AllowStatusAtLogin";
 
+// static
+const char HotspotMetricsHelper::kHotspotEnableResultHistogram[] =
+    "Network.Ash.Hotspot.Upstream.Cellular.EnableHotspot.OperationResult";
+
+// static
+const char HotspotMetricsHelper::kHotspotDisableResultHistogram[] =
+    "Network.Ash.Hotspot.Upstream.Cellular.DisableHotspot.OperationResult";
+
+// static
+const char HotspotMetricsHelper::kHotspotSetConfigResultHistogram[] =
+    "Network.Ash.Hotspot.SetConfig.OperationResult";
+
+// static
+const char HotspotMetricsHelper::kHotspotCheckReadinessResultHistogram[] =
+    "Network.Ash.Hotspot.Upstream.Cellular.CheckReadiness.OperationResult";
+
+// static
+const char HotspotMetricsHelper::kHotspotUsageConfigAutoDisable[] =
+    "Network.Ash.Hotspot.Upstream.Cellular.Usage.Config.AutoDisable";
+
+// static
+const char HotspotMetricsHelper::kHotspotUsageConfigMAR[] =
+    "Network.Ash.Hotspot.Upstream.Cellular.Usage.Config.MAR";
+
+// static
+const char HotspotMetricsHelper::kHotspotUsageConfigCompatibilityMode[] =
+    "Network.Ash.Hotspot.Upstream.Cellular.Usage.Config.CompatibilityMode";
+
+// static
+void HotspotMetricsHelper::RecordSetTetheringEnabledResult(
+    bool enabled,
+    hotspot_config::mojom::HotspotControlResult result) {
+  HotspotMetricsSetEnabledResult metrics_result =
+      GetSetEnabledMetricsResult(result);
+  if (enabled) {
+    base::UmaHistogramEnumeration(kHotspotEnableResultHistogram,
+                                  metrics_result);
+    return;
+  }
+  base::UmaHistogramEnumeration(kHotspotDisableResultHistogram, metrics_result);
+}
+
+// static
+void HotspotMetricsHelper::RecordCheckTetheringReadinessResult(
+    HotspotCapabilitiesProvider::CheckTetheringReadinessResult result) {
+  base::UmaHistogramEnumeration(kHotspotCheckReadinessResultHistogram,
+                                GetCheckReadinessMetricsResult(result));
+}
+
+// static
+void HotspotMetricsHelper::RecordSetHotspotConfigResult(
+    hotspot_config::mojom::SetHotspotConfigResult result) {
+  base::UmaHistogramEnumeration(kHotspotSetConfigResultHistogram,
+                                GetSetConfigMetricsResult(result));
+}
+
+HotspotMetricsHelper::HotspotMetricsSetEnabledResult
+HotspotMetricsHelper::GetSetEnabledMetricsResult(
+    const hotspot_config::mojom::HotspotControlResult& result) {
+  using hotspot_config::mojom::HotspotControlResult;
+
+  switch (result) {
+    case HotspotControlResult::kSuccess:
+      return HotspotMetricsSetEnabledResult::kSuccess;
+    case HotspotControlResult::kNotAllowed:
+      return HotspotMetricsSetEnabledResult::kNotAllowed;
+    case HotspotControlResult::kReadinessCheckFailed:
+      return HotspotMetricsSetEnabledResult::kReadinessCheckFailure;
+    case HotspotControlResult::kDisableWifiFailed:
+      return HotspotMetricsSetEnabledResult::kDisableWifiFailure;
+    case HotspotControlResult::kInvalidConfiguration:
+      return HotspotMetricsSetEnabledResult::kInvalidConfiguration;
+    case HotspotControlResult::kUpstreamNotAvailable:
+      return HotspotMetricsSetEnabledResult::kUpstreamNotAvailable;
+    case HotspotControlResult::kNetworkSetupFailure:
+      return HotspotMetricsSetEnabledResult::kNetworkSetupFailure;
+    case HotspotControlResult::kWifiDriverFailure:
+      return HotspotMetricsSetEnabledResult::kWifiDriverFailure;
+    case HotspotControlResult::kCellularAttachFailure:
+      return HotspotMetricsSetEnabledResult::kCellularAttachFailure;
+    case HotspotControlResult::kShillOperationFailed:
+      return HotspotMetricsSetEnabledResult::kShillOperationFailure;
+    default:
+      return HotspotMetricsSetEnabledResult::kUnknownFailure;
+  }
+}
+
+HotspotMetricsHelper::HotspotMetricsCheckReadinessResult
+HotspotMetricsHelper::GetCheckReadinessMetricsResult(
+    const HotspotCapabilitiesProvider::CheckTetheringReadinessResult& result) {
+  using CheckReadinessResult =
+      HotspotCapabilitiesProvider::CheckTetheringReadinessResult;
+
+  switch (result) {
+    case CheckReadinessResult::kReady:
+      return HotspotMetricsCheckReadinessResult::kReady;
+    case CheckReadinessResult::kNotAllowed:
+      return HotspotMetricsCheckReadinessResult::kNotAllowed;
+    case CheckReadinessResult::kUpstreamNetworkNotAvailable:
+      return HotspotMetricsCheckReadinessResult::kUpstreamNetworkNotAvailable;
+    case CheckReadinessResult::kShillOperationFailed:
+      return HotspotMetricsCheckReadinessResult::kShillOperationFailed;
+    case CheckReadinessResult::kUnknownResult:
+      return HotspotMetricsCheckReadinessResult::kUnknownResult;
+  }
+}
+
+HotspotMetricsHelper::HotspotMetricsSetConfigResult
+HotspotMetricsHelper::GetSetConfigMetricsResult(
+    const hotspot_config::mojom::SetHotspotConfigResult& result) {
+  using hotspot_config::mojom::SetHotspotConfigResult;
+
+  switch (result) {
+    case SetHotspotConfigResult::kSuccess:
+      return HotspotMetricsSetConfigResult::kSuccess;
+    case SetHotspotConfigResult::kFailedNotLogin:
+      return HotspotMetricsSetConfigResult::kFailedNotLogin;
+    case SetHotspotConfigResult::kFailedInvalidConfiguration:
+      return HotspotMetricsSetConfigResult::kFailedInvalidConfiguration;
+  }
+}
+
 HotspotMetricsHelper::HotspotMetricsHelper() = default;
 
 HotspotMetricsHelper::~HotspotMetricsHelper() {
@@ -36,13 +159,19 @@ HotspotMetricsHelper::~HotspotMetricsHelper() {
 }
 
 void HotspotMetricsHelper::Init(
-    HotspotCapabilitiesProvider* hotspot_capabilities_provider) {
+    HotspotCapabilitiesProvider* hotspot_capabilities_provider,
+    HotspotStateHandler* hotspot_state_handler,
+    HotspotController* hotspot_controller) {
+  hotspot_state_handler_ = hotspot_state_handler;
   hotspot_capabilities_provider_ = hotspot_capabilities_provider;
   hotspot_capabilities_provider_->AddObserver(this);
   if (LoginState::IsInitialized()) {
     LoginState::Get()->AddObserver(this);
     LoggedInStateChanged();
   }
+
+  hotspot_controller->ObserveEnabledStateChanges(
+      hostpot_enabled_state_observer_receiver_.BindNewPipeAndPassRemote());
 }
 
 void HotspotMetricsHelper::OnHotspotCapabilitiesChanged() {
@@ -112,6 +241,21 @@ HotspotMetricsHelper::GetMetricsAllowStatus() {
       // not cellular capable. Otherwise, it would drown out the metric.
       return absl::nullopt;
   }
+}
+
+void HotspotMetricsHelper::OnHotspotTurnedOn(bool wifi_turned_off) {
+  auto hotspot_config = hotspot_state_handler_->GetHotspotConfig();
+  if (!hotspot_config) {
+    NET_LOG(ERROR) << "Error getting hotspot config when hotspot is turned on.";
+    return;
+  }
+  base::UmaHistogramBoolean(kHotspotUsageConfigAutoDisable,
+                            hotspot_config->auto_disable);
+  base::UmaHistogramBoolean(
+      kHotspotUsageConfigCompatibilityMode,
+      hotspot_config->band == hotspot_config::mojom::WiFiBand::k2_4GHz);
+  base::UmaHistogramBoolean(kHotspotUsageConfigMAR,
+                            hotspot_config->bssid_randomization);
 }
 
 }  // namespace ash

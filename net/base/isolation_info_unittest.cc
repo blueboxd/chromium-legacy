@@ -55,19 +55,13 @@ void DuplicateAndCompare(const IsolationInfo& isolation_info) {
   absl::optional<IsolationInfo> duplicate_isolation_info =
       IsolationInfo::CreateIfConsistent(
           isolation_info.request_type(), isolation_info.top_frame_origin(),
-          net::IsolationInfo::IsFrameSiteEnabled()
-              ? isolation_info.frame_origin()
-              : absl::nullopt,
-          isolation_info.site_for_cookies(), isolation_info.party_context(),
+          isolation_info.frame_origin(), isolation_info.site_for_cookies(),
+          isolation_info.party_context(),
           isolation_info.nonce().has_value() ? &isolation_info.nonce().value()
                                              : nullptr);
 
   ASSERT_TRUE(duplicate_isolation_info);
   EXPECT_TRUE(isolation_info.IsEqualForTesting(*duplicate_isolation_info));
-}
-
-TEST_F(IsolationInfoTest, IsFrameSiteEnabled) {
-  EXPECT_TRUE(IsolationInfo::IsFrameSiteEnabled());
 }
 
 TEST_F(IsolationInfoTest, DebugString) {
@@ -77,9 +71,7 @@ TEST_F(IsolationInfoTest, DebugString) {
   std::vector<std::string> parts;
   parts.push_back(
       "request_type: kMainFrame; top_frame_origin: https://a.foo.test; ");
-  if (IsolationInfo::IsFrameSiteEnabled()) {
-    parts.push_back("frame_origin: https://b.bar.test; ");
-  }
+  parts.push_back("frame_origin: https://b.bar.test; ");
   parts.push_back("network_anonymization_key: ");
   parts.push_back(isolation_info.network_anonymization_key().ToDebugString());
   parts.push_back("; network_isolation_key: ");
@@ -119,10 +111,9 @@ TEST_F(IsolationInfoTest, CreateNetworkAnonymizationKeyForIsolationInfo) {
   // Triple-keyed IsolationInfo + double-keyed + cross site bit
   // NetworkAnonymizationKey case.
   EXPECT_EQ(isolation_info.frame_origin(), kOrigin2);
-  EXPECT_EQ(isolation_info.network_anonymization_key().GetIsCrossSite(), true);
-  EXPECT_EQ(
-      same_site_isolation_info.network_anonymization_key().GetIsCrossSite(),
-      false);
+  EXPECT_TRUE(isolation_info.network_anonymization_key().IsCrossSite());
+  EXPECT_TRUE(
+      same_site_isolation_info.network_anonymization_key().IsSameSite());
 }
 
 // A 2.5-keyed NAK created with two identical opaque origins should be
@@ -136,13 +127,13 @@ TEST_F(IsolationInfoTest, CreateNetworkAnonymizationKeyForIsolationInfoOpaque) {
       isolation_info.CreateNetworkAnonymizationKeyForIsolationInfo(
           opaque, opaque, &kNonce1);
 
-  EXPECT_FALSE(nak.GetIsCrossSite().value());
+  EXPECT_TRUE(nak.IsSameSite());
 
   url::Origin opaque2;
   nak = isolation_info.CreateNetworkAnonymizationKeyForIsolationInfo(
       opaque, opaque2, &kNonce1);
 
-  EXPECT_TRUE(nak.GetIsCrossSite().value());
+  EXPECT_TRUE(nak.IsCrossSite());
 }
 
 TEST_F(IsolationInfoTest, RequestTypeMainFrame) {

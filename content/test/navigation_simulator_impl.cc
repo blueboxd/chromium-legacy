@@ -1293,6 +1293,14 @@ bool NavigationSimulatorImpl::SimulateBrowserInitiatedStart() {
     return false;
   }
 
+  // Prerendered page activation can be deferred by CommitDeferringConditions in
+  // BeginNavigation(), and `request_` may not have been set by
+  // DidStartNavigation() yet. In that case, we set the `request_` here.
+  if (request->is_potentially_prerendered_page_activation_for_testing()) {
+    DCHECK(!request_);
+    request_ = request;
+  }
+
   CHECK_EQ(request_, request);
   return true;
 }
@@ -1322,8 +1330,11 @@ bool NavigationSimulatorImpl::SimulateRendererInitiatedStart() {
           base::TimeTicks() /* renderer_before_unload_start */,
           base::TimeTicks() /* renderer_before_unload_end */,
           absl::nullopt /* web_bundle_token */,
-          blink::mojom::NavigationInitiatorActivationAndAdStatus::
-              kDidNotStartWithTransientActivation,
+          has_user_gesture_
+              ? blink::mojom::NavigationInitiatorActivationAndAdStatus::
+                    kStartedWithTransientActivationFromNonAd
+              : blink::mojom::NavigationInitiatorActivationAndAdStatus::
+                    kDidNotStartWithTransientActivation,
           false /* is_container_initiated */);
   auto common_params = blink::CreateCommonNavigationParams();
   common_params->navigation_start = base::TimeTicks::Now();

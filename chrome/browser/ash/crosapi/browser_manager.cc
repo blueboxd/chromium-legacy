@@ -635,6 +635,10 @@ bool BrowserManager::IsRunningOrWillRun() const {
          state_ == State::CREATING_LOG_FILE || state_ == State::TERMINATING;
 }
 
+bool BrowserManager::IsInitialized() const {
+  return state_ != State::NOT_INITIALIZED;
+}
+
 void BrowserManager::NewWindow(bool incognito,
                                bool should_trigger_session_restore) {
   int64_t target_display_id =
@@ -1694,6 +1698,9 @@ void BrowserManager::RecordLacrosLaunchMode() {
 
   UMA_HISTOGRAM_ENUMERATION("Ash.Lacros.Launch.ModeAndSource",
                             lacros_mode_and_source);
+  LOG(WARNING) << "Using LacrosLaunchModeAndSource "
+               << static_cast<int>(lacros_mode_and_source);
+
   if (!lacros_mode_.has_value() || !lacros_mode_and_source_.has_value() ||
       lacros_mode != *lacros_mode_ ||
       lacros_mode_and_source != *lacros_mode_and_source_) {

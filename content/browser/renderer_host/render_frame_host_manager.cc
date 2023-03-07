@@ -644,10 +644,10 @@ void RenderFrameHostManager::CommitPendingIfNecessary(
     CommitPending(std::move(speculative_render_frame_host_),
                   std::move(stored_page_to_restore_), clear_proxies_on_commit);
 
-    if (base::FeatureList::IsEnabled(
-            features::kAvoidUnnecessaryNavigationCancellations)) {
-      // When kAvoidUnnecessaryNavigationCancellations is enabled, if there are
-      // other navigation requests that are ongoing, set their "associated
+    if (GetNavigationQueueingFeatureLevel() >=
+        NavigationQueueingFeatureLevel::kAvoidRedundantCancellations) {
+      // When avoiding redundant navigation cancellations, if there are other
+      // navigation requests that are ongoing, set their "associated
       // RenderFrameHost type" NONE, as the old type may no longer be accurate:
       // - If it was previously set to CURRENT, the current RenderFrameHost
       // had already changed to the previously-speculative RenderFrameHost. It
@@ -670,10 +670,10 @@ void RenderFrameHostManager::CommitPendingIfNecessary(
             NavigationRequest::AssociatedRenderFrameHostType::NONE);
       }
     } else {
-      // When kAvoidUnnecessaryNavigationCancellations is disabled, if there are
-      // other navigations that are ongoing, cancel them if they're not pending
-      // commit. Note that the pending commit navigations that are in the old
-      // RFH will get deleted when the old RFH gets unloaded.
+      // Otherwise, if not attempting to avoid redundant cancellations, cancel
+      // any other navigations that are ongoing if they're not pending commit.
+      // Note that the pending commit navigations that are in the old RFH will
+      // get deleted when the old RFH gets unloaded.
       frame_tree_node_->ResetNavigationRequest(
           NavigationDiscardReason::kCommittedNavigation);
     }
@@ -1062,14 +1062,12 @@ void RenderFrameHostManager::RestorePage(
   // in the long run. For now, and to avoid complex edge cases, we simply reuse
   // it to preserve the understood logic in CommitPending.
 
-  // When the kAvoidUnnecessaryNavigationCancellations flag is disabled, there
-  // should be no speculative RFH at this point. With BackForwardCache, it
-  // should have never been created, and with prerender activation, it should
-  // have been cleared out earlier.
+  // When navigation queueing is disabled, there should be no speculative RFH at
+  // this point. With BackForwardCache, it should have never been created, and
+  // with prerender activation, it should have been cleared out earlier.
   // TODO(https://crbug.com/1220337): Ensure we aren't deleting a pending commit
   // RFH.
-  DCHECK(base::FeatureList::IsEnabled(
-             features::kAvoidUnnecessaryNavigationCancellations) ||
+  DCHECK(ShouldAvoidRedundantNavigationCancellations() ||
          !speculative_render_frame_host_);
   SCOPED_CRASH_KEY_BOOL("Bug1407526", "spec_rfh_exists",
                         !!speculative_render_frame_host_);
@@ -1140,10 +1138,9 @@ void RenderFrameHostManager::DidCreateNavigationRequest(
     // what is done inside GetFrameHostForNavigation(request), but we avoid
     // calling that method for navigations which will be forced into the current
     // document.
-    if (base::FeatureList::IsEnabled(
-            features::kAvoidUnnecessaryNavigationCancellations)) {
-      // When kAvoidUnnecessaryNavigationCancellations is enabled, only delete
-      // the speculative RFH if it is unused. In particular, this means that a
+    if (ShouldAvoidRedundantNavigationCancellations()) {
+      // When avoiding redundant navigation cancellations, only delete the
+      // speculative RFH if it is unused. In particular, this means that a
       // speculative RFH with a pending-commit navigation won't be deleted
       // anymore.
       DiscardSpeculativeRFHIfUnused(NavigationDiscardReason::kNewNavigation);
@@ -1274,14 +1271,14 @@ RenderFrameHostManager::GetFrameHostForNavigation(
     // sync. See https://crbug.com/838348.
     //
     // In theory, it would be possible to simply avoid discarding it (see the
-    // later branch for the kAvoidUnnecessaryNavigationCancellations feature;
-    // however, this navigation race should be fairly rare, so for navigation
-    // queueing, do the simple thing and give up trying to assign a
-    // RenderFrameHost for the navigation.
+    // later branch for avoiding redundant cancellations: however, this
+    // navigation race should be fairly rare, so for navigation queueing, do the
+    // simple thing and give up trying to assign a RenderFrameHost for the
+    // navigation.
     if (speculative_render_frame_host_ &&
         speculative_render_frame_host_
             ->HasPendingCommitForCrossDocumentNavigation() &&
-        base::FeatureList::IsEnabled(kQueueNavigationsWhileWaitingForCommit)) {
+        ShouldQueueNavigationsWhenPendingCommitRFHExists()) {
       return base::unexpected(
           GetFrameHostForNavigationFailed::kBlockedByPendingCommit);
     }
@@ -1336,10 +1333,9 @@ RenderFrameHostManager::GetFrameHostForNavigation(
     // `DiscardSpeculativeRFHIfUnused()` can work correctly.
     request->SetAssociatedRFHType(
         NavigationRequest::AssociatedRenderFrameHostType::CURRENT);
-    if (base::FeatureList::IsEnabled(
-            features::kAvoidUnnecessaryNavigationCancellations)) {
-      // When kAvoidUnnecessaryNavigationCancellations is enabled, only delete
-      // the speculative RFH if it is unused.
+    if (ShouldAvoidRedundantNavigationCancellations()) {
+      // When avoiding redundant navigation cancellations, only delete the
+      // speculative RFH if it is unused.
       DiscardSpeculativeRFHIfUnused(NavigationDiscardReason::kNewNavigation);
     } else {
       // When the flag is disabled, always delete the speculative RFH, even if
@@ -1365,8 +1361,7 @@ RenderFrameHostManager::GetFrameHostForNavigation(
       // navigation, avoid discarding it now: the commit needs to complete in
       // order for the browser and the renderer state to remain in sync. See
       // https://crbug.com/838348.
-      if (base::FeatureList::IsEnabled(
-              kQueueNavigationsWhileWaitingForCommit) &&
+      if (ShouldQueueNavigationsWhenPendingCommitRFHExists() &&
           speculative_render_frame_host_ &&
           speculative_render_frame_host_
               ->HasPendingCommitForCrossDocumentNavigation()) {
@@ -1583,14 +1578,13 @@ RenderFrameHostManager::UnsetSpeculativeRenderFrameHost(
               "RenderFrameHostManager::UnsetSpeculativeRenderFrameHost",
               ChromeTrackEvent::kFrameTreeNodeInfo, *frame_tree_node_);
 
-  if (base::FeatureList::IsEnabled(kQueueNavigationsWhileWaitingForCommit)) {
-    if (HasPendingCommitForCrossDocumentNavigation()) {
-      // With navigation queueing, pending commit navigations in speculative
-      // RenderFrameHosts shouldn't get deleted, unless the FrameTreeNode or
-      // renderer process is gone/will be gone soon.
-      CHECK(reason == NavigationDiscardReason::kRenderProcessGone ||
-            reason == NavigationDiscardReason::kWillRemoveFrame);
-    }
+  if (ShouldQueueNavigationsWhenPendingCommitRFHExists() &&
+      HasPendingCommitForCrossDocumentNavigation()) {
+    // With navigation queueing, pending commit navigations in speculative
+    // RenderFrameHosts shouldn't get deleted, unless the FrameTreeNode or
+    // renderer process is gone/will be gone soon.
+    CHECK(reason == NavigationDiscardReason::kRenderProcessGone ||
+          reason == NavigationDiscardReason::kWillRemoveFrame);
   }
 
   speculative_render_frame_host_->GetProcess()->RemovePendingView();
@@ -1604,7 +1598,7 @@ RenderFrameHostManager::UnsetSpeculativeRenderFrameHost(
   } else {
     DCHECK_EQ(speculative_render_frame_host_->lifecycle_state(),
               LifecycleStateImpl::kPendingCommit);
-    if (!base::FeatureList::IsEnabled(kQueueNavigationsWhileWaitingForCommit)) {
+    if (!ShouldQueueNavigationsWhenPendingCommitRFHExists()) {
       // The browser process already asked the renderer to commit the
       // navigation. The renderer is guaranteed to commit the navigation and
       // swap in the provisional `RenderFrame` to replace the current
@@ -1718,11 +1712,20 @@ void RenderFrameHostManager::OnDidUpdateFrameOwnerProperties(
 }
 
 RenderFrameHostManager::SiteInstanceDescriptor::SiteInstanceDescriptor(
+    SiteInstanceImpl* site_instance)
+    : existing_site_instance(site_instance),
+      relation(SiteInstanceRelation::PREEXISTING) {}
+
+RenderFrameHostManager::SiteInstanceDescriptor::SiteInstanceDescriptor(
     UrlInfo dest_url_info,
     SiteInstanceRelation relation_to_current)
     : existing_site_instance(nullptr),
       dest_url_info(dest_url_info),
-      relation(relation_to_current) {}
+      relation(relation_to_current) {
+  DCHECK((relation_to_current == SiteInstanceRelation::RELATED) ||
+         (relation_to_current == SiteInstanceRelation::RELATED_IN_COOP_GROUP) ||
+         (relation_to_current == SiteInstanceRelation::UNRELATED));
+}
 
 void RenderFrameHostManager::CleanupSpeculativeRfhForRenderProcessGone() {
   CHECK(speculative_render_frame_host_);
@@ -1914,16 +1917,8 @@ RenderFrameHostManager::ShouldSwapBrowsingInstancesForNavigation(
   // If the navigation should end up in a different StoragePartition, create a
   // new BrowsingInstance, as we can only have one StoragePartition per
   // BrowsingInstance.
-  //
-  // Skip this check if effective URLs are involved. This ensures same-site
-  // navigations to non-app sites from an isolated hosted app stay in the same
-  // StoragePartition and process. This behavior is covered in
-  // IsolatedAppTest.IsolatedAppProcessModel.
   if (DoesNavigationChangeStoragePartition(current_instance,
-                                           destination_url_info) &&
-      !current_instance
-           ->IsNavigationAllowedToStayInSameProcessDueToEffectiveURLs(
-               browser_context, is_main_frame, destination_url_info.url)) {
+                                           destination_url_info)) {
     return BrowsingContextGroupSwap::CreateSecuritySwap();
   }
 
@@ -1987,7 +1982,7 @@ RenderFrameHostManager::ShouldSwapBrowsingInstancesForNavigation(
   // are no other windows in the BrowsingInstance.
   // TODO(https://crbug.com/1221127): For single-page websites, do we want to
   // do a full proactive swap if `coop_swap_result` is kSwapRelated? See if a
-  // different BrowsingInstance in the same CoopRelatedBrowsingContextGroup
+  // different BrowsingInstance in the same CoopRelatedGroup
   // provides the same guarantees.
   return ShouldProactivelySwapBrowsingInstance(destination_url_info, is_reload,
                                                is_same_site,
@@ -2248,10 +2243,10 @@ RenderFrameHostManager::GetSiteInstanceForNavigation(
       new_instance.get(), dest_url_info.web_exposed_isolation_info));
 
   // If `should_swap_result.ShouldSwap()` is true, we must use a different
-  // SiteInstance than the current one. If we didn't, we would have the same
-  // SiteInstance belong to two BrowsingInstances, which is not possible.
+  // SiteInstance in a different BrowsingInstance as the current one.
   if (should_swap_result->ShouldSwap()) {
     CHECK_NE(new_instance, current_instance);
+    CHECK(!new_instance->IsRelatedSiteInstance(current_instance));
   }
 
   if (new_instance == current_instance) {
@@ -2442,16 +2437,16 @@ RenderFrameHostManager::DetermineSiteInstanceForURL(
     BrowsingContextGroupSwap browsing_context_group_swap,
     bool was_server_redirect,
     std::string* reason) {
-  // Note that this function should return SiteInstance with
-  // SiteInstanceRelation::UNRELATED relation to `current_instance` iff
-  // `browsing_context_group_swap.ShouldSwap()` is true.
+  // Note that this function should return a SiteInstanceDescriptor with
+  // SiteInstanceRelation::UNRELATED or
+  // SiteInstanceRelation::RELATED_IN_COOP_GROUP relations to `current_instance`
+  // iff `browsing_context_group_swap.ShouldSwap()` is true.
 
   // If the entry has an instance already we should usually use it, unless it is
   // no longer suitable.
   if (dest_instance &&
       CanUseDestinationInstance(dest_url_info, current_instance, dest_instance,
-                                is_failure,
-                                browsing_context_group_swap.ShouldSwap())) {
+                                is_failure, browsing_context_group_swap)) {
     AppendReason(reason, "DetermineSiteInstanceForURL => dest_instance");
     return SiteInstanceDescriptor(dest_instance);
   }
@@ -2477,10 +2472,15 @@ RenderFrameHostManager::DetermineSiteInstanceForURL(
                                     SiteInstanceRelation::RELATED);
     }
 
-    // TODO(https://crbug.com/1221127): If we're coming from a COOP:
-    // restrict-properties page, we should stay in the same COOP:
-    // restrict-properties group, so that further navigations get a chance to
-    // preserve their scriptability.
+    if (browsing_context_group_swap.type() ==
+        BrowsingContextGroupSwapType::kRelatedCoopSwap) {
+      // If we're dealing with COOP: restrict-properties, we need to stay in the
+      // same CoopRelatedGroup, so that further navigations get a
+      // chance to preserve their scriptability.
+      return SiteInstanceDescriptor(
+          computed_url_info, SiteInstanceRelation::RELATED_IN_COOP_GROUP);
+    }
+
     return SiteInstanceDescriptor(computed_url_info,
                                   SiteInstanceRelation::UNRELATED);
   }
@@ -2489,15 +2489,10 @@ RenderFrameHostManager::DetermineSiteInstanceForURL(
   // preserve a relation to the previous BrowsingInstance.
   if (browsing_context_group_swap.type() ==
       BrowsingContextGroupSwapType::kRelatedCoopSwap) {
-    // TODO(https://crbug.com/1221127): Implement the COOP group mechanisms.
-    // We should make sure that we use a BrowsingInstance in the same COOP
-    // group, to preserve minimal scriptability.
-    //
-    // For now, simply return an unrelated SiteInstance.
     AppendReason(reason,
-                 "DetermineSiteInstanceForURL => browsing-instance-swap");
+                 "DetermineSiteInstanceForURL => related_in_COOP_group");
     return SiteInstanceDescriptor(dest_url_info,
-                                  SiteInstanceRelation::UNRELATED);
+                                  SiteInstanceRelation::RELATED_IN_COOP_GROUP);
   }
 
   // If a swap is required, we need to force the SiteInstance AND
@@ -2713,12 +2708,23 @@ bool RenderFrameHostManager::CanUseDestinationInstance(
     SiteInstanceImpl* current_instance,
     SiteInstanceImpl* dest_instance,
     bool is_failure,
-    bool force_browsing_instance_swap) {
-  // If we've decided that the target SiteInstance cannot be in the same
-  // BrowsingInstance, and that the dest_instance is, we should not reuse it.
-  if (force_browsing_instance_swap &&
-      dest_instance->IsRelatedSiteInstance(current_instance)) {
-    return false;
+    const BrowsingContextGroupSwap& browsing_context_group_swap) {
+  // Start by verifying that the dest_instance is compatible with the browsing
+  // context group swap decision.
+  if (browsing_context_group_swap.ShouldSwap()) {
+    // 1. If we've decided that the target SiteInstance cannot be in the same
+    // BrowsingInstance, and that the dest_instance is, we should not reuse it.
+    if (dest_instance->IsRelatedSiteInstance(current_instance)) {
+      return false;
+    }
+
+    // 2. If we aren't looking for a SiteInstance in the same CoopRelatedGroup,
+    // then don't use a dest_instance in that group.
+    if (browsing_context_group_swap.type() !=
+            BrowsingContextGroupSwapType::kRelatedCoopSwap &&
+        dest_instance->IsCoopRelatedSiteInstance(current_instance)) {
+      return false;
+    }
   }
 
   // Note: The later call to IsSuitableForUrlInfo does not have context
@@ -2817,6 +2823,11 @@ scoped_refptr<SiteInstanceImpl> RenderFrameHostManager::ConvertToSiteInstance(
   // |descriptor.web_exposed_isolation_info|."
   if (descriptor.relation == SiteInstanceRelation::RELATED) {
     return current_instance->GetRelatedSiteInstanceImpl(
+        descriptor.dest_url_info);
+  }
+
+  if (descriptor.relation == SiteInstanceRelation::RELATED_IN_COOP_GROUP) {
+    return current_instance->GetCoopRelatedSiteInstanceImpl(
         descriptor.dest_url_info);
   }
 

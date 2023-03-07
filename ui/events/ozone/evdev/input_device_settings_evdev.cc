@@ -22,6 +22,12 @@ InputDeviceSettingsEvdev::InputDeviceSettingsEvdev(
     const InputDeviceSettingsEvdev& input_device_settings) = default;
 InputDeviceSettingsEvdev::~InputDeviceSettingsEvdev() = default;
 
+void InputDeviceSettingsEvdev::RemoveDeviceFromSettings(int device_id) {
+  touchpad_settings_.erase(device_id);
+  pointing_stick_settings_.erase(device_id);
+  mouse_settings_.erase(device_id);
+}
+
 TouchpadSettingsEvdev& InputDeviceSettingsEvdev::GetTouchpadSettings() {
   return touchpad_settings_[kSharedSettingsDeviceId];
 }
@@ -61,7 +67,6 @@ MouseSettingsEvdev& InputDeviceSettingsEvdev::GetMouseSettings(int device_id) {
   if (!enable_per_device_settings) {
     return GetMouseSettings();
   }
-
   return mouse_settings_[device_id];
 }
 
@@ -99,7 +104,7 @@ InputDeviceSettingsEvdev::GetPointingStickSettings(int device_id) const {
 
 TouchpadSettingsEvdev::TouchpadSettingsEvdev() = default;
 TouchpadSettingsEvdev::TouchpadSettingsEvdev(
-    const TouchpadSettingsEvdev& touchpad_settings_) = default;
+    const TouchpadSettingsEvdev& touchpad_settings) = default;
 TouchpadSettingsEvdev::~TouchpadSettingsEvdev() = default;
 
 }  // namespace ui

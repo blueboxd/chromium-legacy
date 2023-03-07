@@ -231,6 +231,16 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Browser.ERP.UploadEncryptedReport"
+    enum="EnterpriseDMServerRequestSuccess" expires_after="2024-03-01">
+  <owner>anasr@google.com</owner>
+  <owner>cros-reporting-team@google.com</owner>
+  <summary>
+    Status of a completed ERP upload request, either successful, with a failure
+    or with a server error.
+  </summary>
+</histogram>
+
 <histogram name="Browser.ERP.{Param}PayloadSizePerHour" units="KiB"
     expires_after="2023-11-17">
   <owner>xuhong@chromium.org</owner>
@@ -678,7 +688,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Browser.WindowCount.Guest" units="units"
-    expires_after="2023-07-02">
+    expires_after="2023-09-03">
   <owner>rhalavati@chromium.org</owner>
   <owner>chrome-privacy-core@google.com</owner>
   <summary>
@@ -690,7 +700,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Browser.WindowCount.Incognito" units="units"
-    expires_after="2023-07-02">
+    expires_after="2023-09-03">
   <owner>rhalavati@chromium.org</owner>
   <owner>chrome-privacy-core@google.com</owner>
   <summary>
@@ -773,18 +783,6 @@ chromium-metrics-reviews@google.com.
   <summary>
     Count of renderer process crashes that we miscounted because we took the
     exit code too early. Grouped by type.
-  </summary>
-</histogram>
-
-<histogram name="BrowserRenderProcessHost.InvisibleMediaStreamFrameDepth"
-    units="frame_depth" expires_after="M72">
-  <owner>boliu@chromium.org</owner>
-  <owner>alexmos@chromium.org</owner>
-  <summary>
-    Recorded at most once per renderer process when it first becomes invisible
-    and has media stream. Record the frame depth of the process. Note this
-    metric is only meaningful when some form of OOPIF is enabled; otherwise
-    frame depth is always 0.
   </summary>
 </histogram>
 

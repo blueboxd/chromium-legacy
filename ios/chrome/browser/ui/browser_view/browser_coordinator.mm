@@ -31,6 +31,7 @@
 #import "ios/chrome/browser/follow/follow_browser_agent.h"
 #import "ios/chrome/browser/follow/followed_web_site.h"
 #import "ios/chrome/browser/main/browser.h"
+#import "ios/chrome/browser/metrics/tab_usage_recorder_browser_agent.h"
 #import "ios/chrome/browser/ntp/features.h"
 #import "ios/chrome/browser/ntp/new_tab_page_tab_helper.h"
 #import "ios/chrome/browser/ntp/new_tab_page_tab_helper_delegate.h"
@@ -39,6 +40,7 @@
 #import "ios/chrome/browser/prerender/prerender_service.h"
 #import "ios/chrome/browser/prerender/prerender_service_factory.h"
 #import "ios/chrome/browser/promos_manager/features.h"
+#import "ios/chrome/browser/sessions/session_restoration_browser_agent.h"
 #import "ios/chrome/browser/signin/account_consistency_browser_agent.h"
 #import "ios/chrome/browser/signin/account_consistency_service_factory.h"
 #import "ios/chrome/browser/store_kit/store_kit_coordinator.h"
@@ -164,6 +166,7 @@
 #import "ios/chrome/browser/ui/whats_new/whats_new_util.h"
 #import "ios/chrome/browser/url/chrome_url_constants.h"
 #import "ios/chrome/browser/url_loading/url_loading_browser_agent.h"
+#import "ios/chrome/browser/url_loading/url_loading_notifier_browser_agent.h"
 #import "ios/chrome/browser/url_loading/url_loading_params.h"
 #import "ios/chrome/browser/web/font_size/font_size_tab_helper.h"
 #import "ios/chrome/browser/web/page_placeholder_tab_helper.h"
@@ -637,6 +640,7 @@ enum class ToolbarKind {
 - (void)destroyViewController {
   // TODO(crbug.com/1272516): Set the WebUsageEnablerBrowserAgent to disabled.
   self.viewController.active = NO;
+
   // TODO(crbug.com/1415244): Remove when BVC will no longer handle commands.
   [self.dispatcher stopDispatchingToTarget:self.viewController];
   [self.viewController shutdown];
@@ -848,6 +852,12 @@ enum class ToolbarKind {
       static_cast<id<OmniboxCommands>>(_dispatcher);
   _viewControllerDependencies.isOffTheRecord =
       self.browser->GetBrowserState()->IsOffTheRecord();
+  _viewControllerDependencies.urlLoadingBrowserAgent =
+      UrlLoadingBrowserAgent::FromBrowser(self.browser);
+  _viewControllerDependencies.urlLoadingNotifierBrowserAgent =
+      UrlLoadingNotifierBrowserAgent::FromBrowser(self.browser);
+  _viewControllerDependencies.tabUsageRecorderBrowserAgent =
+      TabUsageRecorderBrowserAgent::FromBrowser(self.browser);
 }
 
 - (void)updateViewControllerDependencies {
@@ -1134,10 +1144,8 @@ enum class ToolbarKind {
   [self.priceNotificationsViewCoordiantor stop];
   self.priceNotificationsViewCoordiantor = nil;
 
-  if (IsFullscreenPromosManagerEnabled()) {
-    [self.promosManagerCoordinator stop];
-    self.promosManagerCoordinator = nil;
-  }
+  [self.promosManagerCoordinator stop];
+  self.promosManagerCoordinator = nil;
 
   [self.readingListCoordinator stop];
   self.readingListCoordinator = nil;
@@ -1217,11 +1225,14 @@ enum class ToolbarKind {
 
   ChromeBrowserState* browserState = self.browser->GetBrowserState();
   BrowserViewController* browserViewController = self.viewController;
+  SessionRestorationBrowserAgent* sessionRestorationBrowserAgent =
+      SessionRestorationBrowserAgent::FromBrowser(self.browser);
 
   DCHECK(self.browserContainerCoordinator.viewController);
   self.tabEventsMediator = [[TabEventsMediator alloc]
       initWithWebStateList:self.browser->GetWebStateList()
-            ntpCoordinator:_NTPCoordinator];
+            ntpCoordinator:_NTPCoordinator
+          restorationAgent:sessionRestorationBrowserAgent];
   self.tabEventsMediator.consumer = browserViewController;
 
   browserViewController.reauthHandler =
@@ -1589,6 +1600,12 @@ enum class ToolbarKind {
 #pragma mark - FindInPageCommands
 
 - (void)openFindInPage {
+  if (_toolbarAccessoryPresenter.isPresenting) {
+    _nextToolbarToPresent = ToolbarKind::kFindInPage;
+    [self closeTextZoom];
+    return;
+  }
+
   if (ios::provider::IsNativeFindInPageWithSystemFindPanel()) {
     [self showSystemFindPanel];
   } else {
@@ -1603,13 +1620,13 @@ enum class ToolbarKind {
     return;
   }
 
-  auto* helper = GetConcreteFindTabHelperFromWebState(currentWebState);
+  AbstractFindTabHelper* helper =
+      GetConcreteFindTabHelperFromWebState(currentWebState);
   DCHECK(helper);
   if (helper->IsFindUIActive()) {
     helper->StopFinding();
   } else {
     [self.findBarCoordinator stop];
-    self.findBarCoordinator = nil;
   }
 }
 
@@ -1639,12 +1656,17 @@ enum class ToolbarKind {
     helper->DismissFindNavigator();
   } else {
     [self.findBarCoordinator stop];
-    self.findBarCoordinator = nil;
   }
 }
 
 - (void)defocusFindInPage {
-  [self.findBarCoordinator defocusFindBar];
+  if (ios::provider::IsNativeFindInPageWithSystemFindPanel()) {
+    // The System Find Panel UI cannot be "defocused" so closing Find in Page
+    // altogether instead.
+    [self closeFindInPage];
+  } else {
+    [self.findBarCoordinator defocusFindBar];
+  }
 }
 
 - (void)searchFindInPage {
@@ -1702,12 +1724,6 @@ enum class ToolbarKind {
     return;
   }
 
-  if (_toolbarAccessoryPresenter.isPresenting) {
-    _nextToolbarToPresent = ToolbarKind::kFindInPage;
-    [self closeTextZoom];
-    return;
-  }
-
   FindBarCoordinator* findBarCoordinator = self.findBarCoordinator;
   [findBarCoordinator stop];
   self.findBarCoordinator = [self newFindBarCoordinator];
@@ -1741,15 +1757,13 @@ enum class ToolbarKind {
 #pragma mark - PromosManagerCommands
 
 - (void)maybeDisplayPromo {
-  if (IsFullscreenPromosManagerEnabled()) {
-    if (!self.promosManagerCoordinator) {
-      self.promosManagerCoordinator = [[PromosManagerCoordinator alloc]
-          initWithBaseViewController:self.viewController
-                             browser:self.browser];
-    }
-
-    [self.promosManagerCoordinator start];
+  if (!self.promosManagerCoordinator) {
+    self.promosManagerCoordinator = [[PromosManagerCoordinator alloc]
+        initWithBaseViewController:self.viewController
+                           browser:self.browser];
   }
+
+  [self.promosManagerCoordinator start];
 }
 
 - (void)requestAppStoreReview {
@@ -1851,12 +1865,10 @@ enum class ToolbarKind {
 - (void)toolbarAccessoryCoordinatorDidDismissUI:
     (ChromeCoordinator*)coordinator {
   if (self.findBarCoordinator) {
-    [self.findBarCoordinator stop];
     self.findBarCoordinator = nil;
   }
 
   if (self.textZoomCoordinator) {
-    [self.textZoomCoordinator stop];
     self.textZoomCoordinator = nil;
   }
 
@@ -1881,16 +1893,27 @@ enum class ToolbarKind {
 #pragma mark - TextZoomCommands
 
 - (void)openTextZoom {
-  if (_toolbarAccessoryPresenter.isPresenting) {
-    _nextToolbarToPresent = ToolbarKind::kTextZoom;
+  web::WebState* currentWebState =
+      self.browser->GetWebStateList()->GetActiveWebState();
+  DCHECK(currentWebState);
+  AbstractFindTabHelper* findTabHelper =
+      GetConcreteFindTabHelperFromWebState(currentWebState);
+  DCHECK(findTabHelper);
+  if (findTabHelper->IsFindUIActive()) {
+    // If Find UI is active, close Find in Page.
     [self closeFindInPage];
-    return;
+    if (_toolbarAccessoryPresenter.isPresenting) {
+      // If the Chrome Find Bar is presented (as opposed to the System Find
+      // Panel UI) then open Text Zoom asynchronously once the Find Bar is
+      // dismissed.
+      _nextToolbarToPresent = ToolbarKind::kTextZoom;
+      return;
+    }
   }
 
   TextZoomCoordinator* textZoomCoordinator = self.textZoomCoordinator;
   if (textZoomCoordinator) {
     [textZoomCoordinator stop];
-    self.textZoomCoordinator = nil;
   }
 
   self.textZoomCoordinator = [self newTextZoomCoordinator];
@@ -1908,7 +1931,6 @@ enum class ToolbarKind {
     }
   }
   [self.textZoomCoordinator stop];
-  self.textZoomCoordinator = nil;
 }
 
 - (void)showTextZoomUIIfActive {
@@ -1930,7 +1952,6 @@ enum class ToolbarKind {
 
 - (void)hideTextZoomUI {
   [self.textZoomCoordinator stop];
-  self.textZoomCoordinator = nil;
 }
 
 - (TextZoomCoordinator*)newTextZoomCoordinator {

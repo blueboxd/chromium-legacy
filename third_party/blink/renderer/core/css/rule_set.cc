@@ -117,14 +117,15 @@ RuleData::RuleData(StyleRule* rule,
       position_(position),
       specificity_(Selector().Specificity() + extra_specificity),
       link_match_type_(DetermineLinkMatchType(add_rule_flags, Selector())),
-      has_document_security_origin_(add_rule_flags &
-                                    kRuleHasDocumentSecurityOrigin),
+      has_document_security_origin_(
+          (add_rule_flags & kRuleHasDocumentSecurityOrigin) != 0),
       valid_property_filter_(
           static_cast<std::underlying_type_t<ValidPropertyFilter>>(
               DetermineValidPropertyFilter(add_rule_flags, Selector()))),
       is_entirely_covered_by_bucketing_(
           false),  // Will be computed in ComputeEntirelyCoveredByBucketing().
       is_easy_(false),  // Ditto.
+      is_initial_((add_rule_flags & kRuleIsInitial) != 0),
       descendant_selector_identifier_hashes_() {}
 
 void RuleData::ComputeEntirelyCoveredByBucketing() {
@@ -336,9 +337,9 @@ void RuleSet::FindBestRuleSetAndAdd(CSSSelector& component,
   AtomicString part_name;
   CSSSelector::PseudoType pseudo_type = CSSSelector::kPseudoUnknown;
 
-#ifndef NDEBUG
+#if DCHECK_IS_ON()
   all_rules_.push_back(rule_data);
-#endif
+#endif  // DCHECK_IS_ON()
 
   bool is_exact_attr;
   const CSSSelector* it = ExtractBestSelectorValues(
@@ -683,6 +684,10 @@ void RuleSet::AddChildRules(const HeapVector<Member<StyleRuleBase>>& rules,
       }
       AddChildRules(scope_rule->ChildRules(), medium, add_rule_flags,
                     container_query, cascade_layer, inner_style_scope);
+    } else if (auto* initial_rule = DynamicTo<StyleRuleInitial>(rule)) {
+      AddChildRules(initial_rule->ChildRules(), medium,
+                    add_rule_flags | kRuleIsInitial, container_query,
+                    cascade_layer, style_scope);
     }
   }
 }
@@ -1104,17 +1109,17 @@ void RuleSet::Trace(Visitor* visitor) const {
   visitor->Trace(layer_intervals_);
   visitor->Trace(container_query_intervals_);
   visitor->Trace(scope_intervals_);
-#ifndef NDEBUG
+#if DCHECK_IS_ON()
   visitor->Trace(all_rules_);
-#endif
+#endif  // DCHECK_IS_ON()
 }
 
-#ifndef NDEBUG
+#if DCHECK_IS_ON()
 void RuleSet::Show() const {
   for (const RuleData& rule : all_rules_) {
     rule.Selector().Show();
   }
 }
-#endif
+#endif  // DCHECK_IS_ON()
 
 }  // namespace blink

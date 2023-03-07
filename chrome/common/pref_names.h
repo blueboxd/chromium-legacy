@@ -360,6 +360,7 @@ extern const char kDeskAPIThirdPartyAccessEnabled[];
 extern const char kDeskAPIThirdPartyAllowlist[];
 extern const char kForceMaximizeOnFirstRun[];
 extern const char kInsightsExtensionEnabled[];
+extern const char kMandatoryExtensionsForIncognitoNavigation[];
 extern const char kOOMKillsDailyCount[];
 extern const char kOOMKillsDailySample[];
 extern const char kRestrictedManagedGuestSessionExtensionCleanupExemptList[];
@@ -985,7 +986,6 @@ extern const char kCryptAuthDeviceId[];
 extern const char kCryptAuthInstanceId[];
 extern const char kCryptAuthInstanceIdToken[];
 extern const char kEasyUnlockHardlockState[];
-extern const char kEasyUnlockLocalStateTpmKeys[];
 extern const char kEasyUnlockLocalStateUserPrefs[];
 
 extern const char kRecoveryComponentNeedsElevation[];
@@ -1291,11 +1291,8 @@ extern const char kNewBaseUrlInheritanceBehaviorAllowed[];
 extern const char kOutOfProcessSystemDnsResolutionEnabled[];
 #endif  // BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_LINUX)
 
-#if BUILDFLAG(IS_ANDROID)
-extern const char kQuickDeleteDialogSuppressed[];
-#endif
-
 extern const char kHttpAllowlist[];
+extern const char kHttpsUpgradesEnabled[];
 
 }  // namespace prefs
 

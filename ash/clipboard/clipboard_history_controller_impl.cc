@@ -27,6 +27,7 @@
 #include "ash/system/toast/toast_manager_impl.h"
 #include "ash/wm/window_util.h"
 #include "base/barrier_closure.h"
+#include "base/check.h"
 #include "base/check_op.h"
 #include "base/functional/bind.h"
 #include "base/functional/callback_forward.h"
@@ -45,6 +46,7 @@
 #include "base/unguessable_token.h"
 #include "base/values.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
+#include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/clipboard/clipboard_data.h"
@@ -58,6 +60,7 @@
 #include "ui/base/models/simple_menu_model.h"
 #include "ui/base/webui/web_ui_util.h"
 #include "ui/chromeos/events/keyboard_capability.h"
+#include "ui/color/color_provider_source.h"
 #include "ui/events/event.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/keycodes/keyboard_codes_posix.h"
@@ -382,14 +385,54 @@ void ClipboardHistoryControllerImpl::ShowMenu(
   }
 }
 
-gfx::Rect ClipboardHistoryControllerImpl::GetMenuBoundsInScreenForTest() const {
-  return context_menu_->GetMenuBoundsInScreenForTest();
+void ClipboardHistoryControllerImpl::GetHistoryValues(
+    GetHistoryValuesCallback callback) const {
+  // Map of `ClipboardHistoryItem` IDs to their corresponding bitmaps.
+  std::map<base::UnguessableToken, SkBitmap> bitmaps_to_be_encoded;
+  for (auto& item : clipboard_history_->GetItems()) {
+    if (item.display_format() == ClipboardHistoryItem::DisplayFormat::kPng) {
+      const auto& maybe_png = item.data().maybe_png();
+      if (!maybe_png.has_value()) {
+        // The clipboard contains an image which has not yet been encoded to a
+        // PNG.
+        auto maybe_bitmap = item.data().GetBitmapIfPngNotEncoded();
+        DCHECK(maybe_bitmap.has_value());
+        bitmaps_to_be_encoded.emplace(item.id(),
+                                      std::move(maybe_bitmap.value()));
+      }
+    }
+  }
+
+  // Map of `ClipboardHistoryItem` IDs to their encoded PNGs.
+  auto encoded_pngs = std::make_unique<
+      std::map<base::UnguessableToken, std::vector<uint8_t>>>();
+  auto* encoded_pngs_ptr = encoded_pngs.get();
+
+  // Post back to this sequence once all images have been encoded.
+  base::RepeatingClosure barrier = base::BarrierClosure(
+      bitmaps_to_be_encoded.size(),
+      base::BindPostTaskToCurrentDefault(base::BindOnce(
+          &ClipboardHistoryControllerImpl::GetHistoryValuesWithEncodedPNGs,
+          weak_ptr_factory_.GetMutableWeakPtr(), std::move(callback),
+          std::move(encoded_pngs))));
+
+  // Encode images on background threads.
+  for (auto id_and_bitmap : bitmaps_to_be_encoded) {
+    base::ThreadPool::PostTask(
+        FROM_HERE, base::BindOnce(&EncodeBitmapToPNG, barrier, encoded_pngs_ptr,
+                                  std::move(id_and_bitmap.first),
+                                  std::move(id_and_bitmap.second)));
+  }
+
+  if (!new_bitmap_to_write_while_encoding_for_test_.isNull()) {
+    ui::ScopedClipboardWriter scw(ui::ClipboardBuffer::kCopyPaste);
+    scw.WriteImage(new_bitmap_to_write_while_encoding_for_test_);
+    new_bitmap_to_write_while_encoding_for_test_.reset();
+  }
 }
 
-void ClipboardHistoryControllerImpl::GetHistoryValuesForTest(
-    GetHistoryValuesCallback callback) const {
-  GetHistoryValues(/*item_id_filter=*/std::set<std::string>(),
-                   std::move(callback));
+gfx::Rect ClipboardHistoryControllerImpl::GetMenuBoundsInScreenForTest() const {
+  return context_menu_->GetMenuBoundsInScreenForTest();  // IN-TEST
 }
 
 void ClipboardHistoryControllerImpl::BlockGetHistoryValuesForTest() {
@@ -420,65 +463,7 @@ ClipboardHistoryControllerImpl::CreateScopedPause() {
       clipboard_history_.get());
 }
 
-void ClipboardHistoryControllerImpl::GetHistoryValues(
-    const std::set<std::string>& item_id_filter,
-    GetHistoryValuesCallback callback) const {
-  // Map of ClipboardHistoryItem IDs to their corresponding bitmaps.
-  std::map<base::UnguessableToken, SkBitmap> bitmaps_to_be_encoded;
-  // Get the clipboard data for each clipboard history item.
-  for (auto& item : clipboard_history_->GetItems()) {
-    // If the |item_id_filter| contains values, then only return the clipboard
-    // items included in it.
-    if (!item_id_filter.empty() &&
-        item_id_filter.find(item.id().ToString()) == item_id_filter.end()) {
-      continue;
-    }
-
-    if (item.display_format() == ClipboardHistoryItem::DisplayFormat::kPng) {
-      const auto& maybe_png = item.data().maybe_png();
-      if (!maybe_png.has_value()) {
-        // The clipboard contains an image which has not yet been encoded to a
-        // PNG.
-        auto maybe_bitmap = item.data().GetBitmapIfPngNotEncoded();
-        DCHECK(maybe_bitmap.has_value());
-        bitmaps_to_be_encoded.emplace(item.id(),
-                                      std::move(maybe_bitmap.value()));
-      }
-    }
-  }
-
-  // Map of ClipboardHistoryItem ID to its encoded PNG. Since encoding images
-  // may happen on separate threads, a lock is used to ensure thread-safe
-  // insertion into `encoded_pngs`.
-  auto encoded_pngs = std::make_unique<
-      std::map<base::UnguessableToken, std::vector<uint8_t>>>();
-  auto* encoded_pngs_ptr = encoded_pngs.get();
-
-  // Post back to this sequence once all images have been encoded.
-  base::RepeatingClosure barrier = base::BarrierClosure(
-      bitmaps_to_be_encoded.size(),
-      base::BindPostTaskToCurrentDefault(base::BindOnce(
-          &ClipboardHistoryControllerImpl::GetHistoryValuesWithEncodedPNGs,
-          weak_ptr_factory_.GetMutableWeakPtr(), item_id_filter,
-          std::move(callback), std::move(encoded_pngs))));
-
-  // Encode images on background threads.
-  for (auto id_and_bitmap : bitmaps_to_be_encoded) {
-    base::ThreadPool::PostTask(
-        FROM_HERE, base::BindOnce(&EncodeBitmapToPNG, barrier, encoded_pngs_ptr,
-                                  std::move(id_and_bitmap.first),
-                                  std::move(id_and_bitmap.second)));
-  }
-
-  if (!new_bitmap_to_write_while_encoding_for_test_.isNull()) {
-    ui::ScopedClipboardWriter scw(ui::ClipboardBuffer::kCopyPaste);
-    scw.WriteImage(new_bitmap_to_write_while_encoding_for_test_);
-    new_bitmap_to_write_while_encoding_for_test_.reset();
-  }
-}
-
 void ClipboardHistoryControllerImpl::GetHistoryValuesWithEncodedPNGs(
-    const std::set<std::string>& item_id_filter,
     GetHistoryValuesCallback callback,
     std::unique_ptr<std::map<base::UnguessableToken, std::vector<uint8_t>>>
         encoded_pngs) {
@@ -490,7 +475,7 @@ void ClipboardHistoryControllerImpl::GetHistoryValuesWithEncodedPNGs(
         FROM_HERE,
         base::BindOnce(
             &ClipboardHistoryControllerImpl::GetHistoryValuesWithEncodedPNGs,
-            weak_ptr_factory_.GetWeakPtr(), item_id_filter, std::move(callback),
+            weak_ptr_factory_.GetWeakPtr(), std::move(callback),
             std::move(encoded_pngs)));
     return;
   }
@@ -507,13 +492,6 @@ void ClipboardHistoryControllerImpl::GetHistoryValuesWithEncodedPNGs(
   bool all_images_encoded = true;
   // Get the clipboard data for each clipboard history item.
   for (auto& item : clipboard_history_->GetItems()) {
-    // If the |item_id_filter| contains values, then only return the clipboard
-    // items included in it.
-    if (!item_id_filter.empty() &&
-        item_id_filter.find(item.id().ToString()) == item_id_filter.end()) {
-      continue;
-    }
-
     if (item.display_format() == ClipboardHistoryItem::DisplayFormat::kPng &&
         !item.data().maybe_png().has_value()) {
       // The clipboard contains an image which has not yet been encoded to a
@@ -535,9 +513,9 @@ void ClipboardHistoryControllerImpl::GetHistoryValuesWithEncodedPNGs(
     base::Value::Dict item_dict;
     item_dict.Set(kIDKey, item.id().ToString());
     item_dict.Set(kTimeCopiedKey, item.time_copied().ToJsTimeIgnoringNull());
-    if (const auto maybe_image_data_url = item.GetImageDataUrl();
-        maybe_image_data_url.has_value()) {
-      item_dict.Set(kImageDataKey, maybe_image_data_url.value());
+    if (const auto& maybe_image = item.display_image()) {
+      item_dict.Set(kImageDataKey, webui::GetBitmapDataUrl(
+                                       *maybe_image->GetImage().ToSkBitmap()));
     }
     switch (item.display_format()) {
       case ClipboardHistoryItem::DisplayFormat::kText:
@@ -551,6 +529,22 @@ void ClipboardHistoryControllerImpl::GetHistoryValuesWithEncodedPNGs(
         item_dict.Set(kDisplayFormatKey, kHtmlFormat);
         break;
       case ClipboardHistoryItem::DisplayFormat::kFile:
+        DCHECK(!item_dict.contains(kImageDataKey));
+
+        const auto& icon = item.icon();
+        DCHECK(icon.has_value());
+
+        const auto* active_window = window_util::GetActiveWindow();
+        const auto* color_provider =
+            ColorUtil::GetColorProviderSourceForWindow(
+                active_window ? active_window
+                              : Shell::Get()->GetPrimaryRootWindow())
+                ->GetColorProvider();
+        DCHECK(color_provider);
+
+        item_dict.Set(
+            kImageDataKey,
+            webui::GetBitmapDataUrl(*icon->Rasterize(color_provider).bitmap()));
         item_dict.Set(kTextDataKey, item.display_text());
         item_dict.Set(kDisplayFormatKey, kFileFormat);
         break;
@@ -559,7 +553,7 @@ void ClipboardHistoryControllerImpl::GetHistoryValuesWithEncodedPNGs(
   }
 
   if (!all_images_encoded) {
-    GetHistoryValues(item_id_filter, std::move(callback));
+    GetHistoryValues(std::move(callback));
     return;
   }
 
@@ -613,13 +607,13 @@ void ClipboardHistoryControllerImpl::OnClipboardHistoryItemAdded(
     const ClipboardHistoryItem& item,
     bool is_duplicate) {
   for (auto& observer : observers_)
-    observer.OnClipboardHistoryItemListAddedOrRemoved();
+    observer.OnClipboardHistoryItemsUpdated();
 }
 
 void ClipboardHistoryControllerImpl::OnClipboardHistoryItemRemoved(
     const ClipboardHistoryItem& item) {
   for (auto& observer : observers_)
-    observer.OnClipboardHistoryItemListAddedOrRemoved();
+    observer.OnClipboardHistoryItemsUpdated();
 }
 
 void ClipboardHistoryControllerImpl::OnClipboardHistoryCleared() {
@@ -710,7 +704,7 @@ void ClipboardHistoryControllerImpl::OnOperationConfirmed(bool copy) {
 void ClipboardHistoryControllerImpl::OnCachedImageModelUpdated(
     const std::vector<base::UnguessableToken>& menu_item_ids) {
   for (auto& observer : observers_)
-    observer.OnClipboardHistoryItemsUpdated(menu_item_ids);
+    observer.OnClipboardHistoryItemsUpdated();
 }
 
 void ClipboardHistoryControllerImpl::ExecuteCommand(int command_id,

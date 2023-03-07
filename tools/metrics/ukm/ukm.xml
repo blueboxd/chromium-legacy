@@ -3237,8 +3237,11 @@ be describing additional metrics about the same event.
 </event>
 
 <event name="Blink.ContextMenu.ImageSelection">
-  <owner>benwgold@google.com</owner>
+  <obsolete>
+    No longer recorded after August 2022 launch of the feature.
+  </obsolete>
   <owner>flackr@chromium.org</owner>
+  <owner>blink-interactions-team@google.com</owner>
   <summary>
     Sent when a user long presses or right clicks a document (and that an image
     is found). Requires that the `EnablePenetratingImageSelection` feature is
@@ -5448,7 +5451,7 @@ be describing additional metrics about the same event.
       will be recorded iff `CandidateTopic2` is recorded.
     </summary>
   </metric>
-  <metric name="FailureReason" enum="BrowsingTopicsApiAccessFailureReason">
+  <metric name="FailureReason" enum="BrowsingTopicsApiAccessResult">
     <summary>
       The reason why the API access is not allowed.
     </summary>

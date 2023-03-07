@@ -2938,6 +2938,8 @@ enum class DeviceLocalAccountSessionType { kPublic, kAppKiosk, kWebKiosk };
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 class GetAuthTokenFunctionDeviceLocalAccountTestPlatformHelper {
  public:
+  const AccountId kFakeAccountId = AccountId::FromUserEmail("test@test");
+
   explicit GetAuthTokenFunctionDeviceLocalAccountTestPlatformHelper(
       DeviceLocalAccountSessionType session_type)
       : session_type_(session_type) {}
@@ -2950,26 +2952,34 @@ class GetAuthTokenFunctionDeviceLocalAccountTestPlatformHelper {
             : ash::LoginState::LoggedInUserType::LOGGED_IN_USER_KIOSK);
     auto user_manager = std::make_unique<ash::FakeChromeUserManager>();
     user_manager::User* user = nullptr;
-    const AccountId account_id = AccountId::FromUserEmail("test@test");
     switch (session_type_) {
       case DeviceLocalAccountSessionType::kPublic:
-        user = user_manager->AddPublicAccountUser(account_id);
+        user = user_manager->AddPublicAccountUser(kFakeAccountId);
         break;
       case DeviceLocalAccountSessionType::kAppKiosk:
-        user = user_manager->AddKioskAppUser(account_id);
+        user = user_manager->AddKioskAppUser(kFakeAccountId);
         break;
       case DeviceLocalAccountSessionType::kWebKiosk:
-        user = user_manager->AddWebKioskAppUser(account_id);
+        user = user_manager->AddWebKioskAppUser(kFakeAccountId);
         break;
     }
     ASSERT_TRUE(user);
-    user_manager->UserLoggedIn(account_id, user->username_hash(),
+    user_manager->UserLoggedIn(kFakeAccountId, user->username_hash(),
                                /*browser_restart=*/false, /*is_child=*/false);
     scoped_user_manager_ = std::make_unique<user_manager::ScopedUserManager>(
         std::move(user_manager));
   }
 
-  void TearDownOnMainThread() { scoped_user_manager_.reset(); }
+  void TearDownOnMainThread() {
+    auto* fake_manager = static_cast<ash::FakeChromeUserManager*>(
+        user_manager::UserManager::Get());
+    // Explicitly removing the user is required; otherwise ProfileHelper keeps
+    // a dangling pointer to the User.
+    // TODO(b/208629291): Consider removing all users from ProfileHelper in the
+    // destructor of `ash::FakeChromeUserManager`.
+    fake_manager->RemoveUserFromList(kFakeAccountId);
+    scoped_user_manager_.reset();
+  }
 
  private:
   const DeviceLocalAccountSessionType session_type_;
@@ -3513,6 +3523,93 @@ IN_PROC_BROWSER_TEST_F(LaunchWebAuthFlowFunctionTest, InteractionRequired) {
       IdentityLaunchWebAuthFlowFunction::Error::kInteractionRequired, 1);
 }
 
+// Checks that, by default, when a page fully loads in silent mode and doesn't
+// redirect, `launchWebAuthFlow()` terminates with an error.
+IN_PROC_BROWSER_TEST_F(LaunchWebAuthFlowFunctionTest,
+                       InteractionRequiredAfterLoad) {
+  net::EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);
+  https_server.ServeFilesFromSourceDirectory(
+      "chrome/test/data/extensions/api_test/identity");
+  ASSERT_TRUE(https_server.Start());
+  GURL auth_url(https_server.GetURL("/redirect_after_load.html"));
+
+  auto function = base::MakeRefCounted<IdentityLaunchWebAuthFlowFunction>();
+  scoped_refptr<const Extension> empty_extension(
+      ExtensionBuilder("Test").Build());
+  function->set_extension(empty_extension.get());
+
+  std::string args = base::StringPrintf(
+      R"([{"interactive": false, "url": "%s"}])", auth_url.spec().c_str());
+  std::string error =
+      utils::RunFunctionAndReturnError(function.get(), args, browser());
+
+  EXPECT_EQ(errors::kInteractionRequired, error);
+}
+
+// Checks that when a page fully loads in silent mode and doesn't redirect,
+// `launchWebAuthFlow()` terminates with an error after a specific timeout.
+IN_PROC_BROWSER_TEST_F(LaunchWebAuthFlowFunctionTest,
+                       InteractionRequiredWithTimeout) {
+  net::EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);
+  https_server.ServeFilesFromSourceDirectory(
+      "chrome/test/data/extensions/api_test/identity");
+  ASSERT_TRUE(https_server.Start());
+  GURL auth_url(https_server.GetURL("/interaction_required.html"));
+
+  auto function = base::MakeRefCounted<IdentityLaunchWebAuthFlowFunction>();
+  scoped_refptr<const Extension> empty_extension(
+      ExtensionBuilder("Test").Build());
+  function->set_extension(empty_extension.get());
+
+  std::string args = base::StringPrintf(
+      R"([{
+        "interactive": false,
+        "url": "%s",
+        "abortOnLoadForNonInteractive": false,
+        "timeoutMsForNonInteractive": 5000
+      }])",
+      auth_url.spec().c_str());
+  std::string error =
+      utils::RunFunctionAndReturnError(function.get(), args, browser());
+
+  // The function is expected to return `errors::kInteractionRequired` as the
+  // page is expected to be loaded within the allotted time, but a race is still
+  // possible where page load takes more than 5s, in which case
+  // `errors::kPageLoadTimedOut` is returned. Accept both errors here because we
+  // don't have a reliable way of sequencing page load before timeout in these
+  // tests.
+  EXPECT_TRUE(error == errors::kInteractionRequired ||
+              error == errors::kPageLoadTimedOut);
+}
+
+// Checks that when a page fails to fully load before timeout in silent mode,
+// `launchWebAuthFlow()` terminates with an error after a specific timeout.
+IN_PROC_BROWSER_TEST_F(LaunchWebAuthFlowFunctionTest, LoadTimedOut) {
+  net::EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);
+  https_server.ServeFilesFromSourceDirectory(
+      "chrome/test/data/extensions/api_test/identity");
+  ASSERT_TRUE(https_server.Start());
+  GURL auth_url(https_server.GetURL("/interaction_required.html"));
+
+  auto function = base::MakeRefCounted<IdentityLaunchWebAuthFlowFunction>();
+  scoped_refptr<const Extension> empty_extension(
+      ExtensionBuilder("Test").Build());
+  function->set_extension(empty_extension.get());
+
+  std::string args = base::StringPrintf(
+      R"([{
+        "interactive": false,
+        "url": "%s",
+        "abortOnLoadForNonInteractive": false,
+        "timeoutMsForNonInteractive": 10
+      }])",
+      auth_url.spec().c_str());
+  std::string error =
+      utils::RunFunctionAndReturnError(function.get(), args, browser());
+
+  EXPECT_EQ(errors::kPageLoadTimedOut, error);
+}
+
 IN_PROC_BROWSER_TEST_F(LaunchWebAuthFlowFunctionTest, LoadFailed) {
   net::EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);
   https_server.ServeFilesFromSourceDirectory(
@@ -3557,6 +3654,38 @@ IN_PROC_BROWSER_TEST_F(LaunchWebAuthFlowFunctionTest, NonInteractiveSuccess) {
   histogram_tester()->ExpectUniqueSample(
       kLaunchWebAuthFlowResultHistogramName,
       IdentityLaunchWebAuthFlowFunction::Error::kNone, 1);
+}
+
+// Checks that when a page fully loads in silent mode and then performs a
+// JavaScript redirect `launchWebAuthFlow()` finishes successfully.
+IN_PROC_BROWSER_TEST_F(LaunchWebAuthFlowFunctionTest,
+                       NonInteractiveSuccessAfterLoad) {
+  net::EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);
+  https_server.ServeFilesFromSourceDirectory(
+      "chrome/test/data/extensions/api_test/identity");
+  ASSERT_TRUE(https_server.Start());
+  GURL auth_url(https_server.GetURL("/redirect_after_load.html"));
+
+  auto function = base::MakeRefCounted<IdentityLaunchWebAuthFlowFunction>();
+  scoped_refptr<const Extension> empty_extension(
+      ExtensionBuilder("Test").Build());
+  function->set_extension(empty_extension.get());
+
+  function->InitFinalRedirectURLPrefixForTest("abcdefghij");
+  std::string args = base::StringPrintf(
+      R"([{
+        "interactive": false,
+        "url": "%s",
+        "abortOnLoadForNonInteractive": false,
+        "timeoutMsForNonInteractive": 20000
+      }])",
+      auth_url.spec().c_str());
+  std::unique_ptr<base::Value> value(
+      utils::RunFunctionAndReturnSingleResult(function.get(), args, browser()));
+
+  EXPECT_TRUE(value->is_string());
+  EXPECT_EQ("https://abcdefghij.chromiumapp.org/callback#test",
+            value->GetString());
 }
 
 IN_PROC_BROWSER_TEST_F(LaunchWebAuthFlowFunctionTest,

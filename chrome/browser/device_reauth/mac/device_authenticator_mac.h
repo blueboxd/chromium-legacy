@@ -11,6 +11,8 @@
 #include "chrome/browser/device_reauth/chrome_device_authenticator_factory.h"
 #include "components/device_reauth/device_authenticator.h"
 
+class AuthenticatorMacInterface;
+
 namespace device {
 namespace fido {
 namespace mac {
@@ -21,11 +23,14 @@ class TouchIdContext;
 
 class DeviceAuthenticatorMac : public ChromeDeviceAuthenticatorCommon {
  public:
-  // Returns true, when biometrics are available and also the device screen lock
-  // is setup, false otherwise.
-  bool CanAuthenticate(device_reauth::DeviceAuthRequester requester) override;
+  // Creates an instance of DeviceAuthenticatorWin for testing purposes
+  // only.
+  static scoped_refptr<DeviceAuthenticatorMac> CreateForTesting(
+      std::unique_ptr<AuthenticatorMacInterface> authenticator);
 
-  // Trigges an authentication flow based on biometrics, with the
+  bool CanAuthenticateWithBiometrics() override;
+
+  // Triggers an authentication flow based on biometrics, with the
   // screen lock as fallback. Note: this only supports one authentication
   // request at a time.
   // |use_last_valid_auth| if set to false, ignores the grace 60 seconds
@@ -35,14 +40,13 @@ class DeviceAuthenticatorMac : public ChromeDeviceAuthenticatorCommon {
                     AuthenticateCallback callback,
                     bool use_last_valid_auth) override;
 
-  // Trigges an authentication flow based on biometrics.
-  // Creates touchIdAuthentication object, request user to authenticate(proper
-  // box with that information will appear on the screen and the `message` will
-  // be displayed there) using his touchId or if it's not setUp default one with
-  // password will appear.
-  // Always use CanAuthenticate() before using this method, and if it fails use
-  // password_manager_util_mac::AuthenticateUser() instead, until
-  // crbug.com/1358442 is fixed.
+  // Triggers an OS-level authentication flow.
+  // If biometrics are available, it creates touchIdAuthentication object,
+  // request user to authenticate(proper box with that information will appear
+  // on the screen and the `message` will be displayed there) using his touchId
+  // or if it's not setUp default one with password will appear. If biometrics
+  // aren't available, it falls back to the legacy authentication flow.
+
   void AuthenticateWithMessage(const std::u16string& message,
                                AuthenticateCallback callback) override;
 
@@ -53,7 +57,8 @@ class DeviceAuthenticatorMac : public ChromeDeviceAuthenticatorCommon {
 
  private:
   friend class ChromeDeviceAuthenticatorFactory;
-  DeviceAuthenticatorMac();
+  explicit DeviceAuthenticatorMac(
+      std::unique_ptr<AuthenticatorMacInterface> authenticator);
   ~DeviceAuthenticatorMac() override;
 
   // Called when the authentication completes with the result |success|.
@@ -67,6 +72,8 @@ class DeviceAuthenticatorMac : public ChromeDeviceAuthenticatorCommon {
   std::unique_ptr<device::fido::mac::TouchIdContext> touch_id_auth_context_;
 
   SEQUENCE_CHECKER(sequence_checker_);
+
+  std::unique_ptr<AuthenticatorMacInterface> authenticator_;
 
   // Factory for weak pointers to this class.
   base::WeakPtrFactory<DeviceAuthenticatorMac> weak_ptr_factory_{this};

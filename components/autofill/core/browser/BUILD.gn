@@ -162,8 +162,6 @@ static_library("browser") {
     "data_model/iban.h",
     "data_model/phone_number.cc",
     "data_model/phone_number.h",
-    "data_model/test_data_creator.cc",
-    "data_model/test_data_creator.h",
     "field_filler.cc",
     "field_filler.h",
     "field_type_utils.cc",
@@ -297,6 +295,8 @@ static_library("browser") {
     "metrics/precedence_over_autocomplete_metrics.h",
     "metrics/profile_import_metrics.cc",
     "metrics/profile_import_metrics.h",
+    "metrics/quality_metrics.cc",
+    "metrics/quality_metrics.h",
     "metrics/shadow_prediction_metrics.cc",
     "metrics/shadow_prediction_metrics.h",
     "metrics/stored_profile_metrics.cc",
@@ -498,6 +498,13 @@ static_library("browser") {
     ]
   }
 
+  if (is_android) {
+    sources += [
+      "metrics/form_events/form_event_logger_weblayer_android.cc",
+      "metrics/form_events/form_event_logger_weblayer_android.h",
+    ]
+  }
+
   if (is_ios || is_android) {
     sources += [
       "payments/autofill_credit_card_filling_infobar_delegate_mobile.cc",
@@ -574,6 +581,7 @@ static_library("browser") {
     "//components/keyed_service/core",
     "//components/language/core/browser",
     "//components/optimization_guide/core",
+    "//components/optimization_guide/proto:optimization_guide_proto",
     "//components/os_crypt",
     "//components/policy/core/browser",
     "//components/policy/core/common",
@@ -667,6 +675,8 @@ static_library("test_support") {
     "metrics/ukm_metrics_test_utils.h",
     "mock_autocomplete_history_manager.cc",
     "mock_autocomplete_history_manager.h",
+    "mock_autofill_optimization_guide.cc",
+    "mock_autofill_optimization_guide.h",
     "mock_iban_manager.cc",
     "mock_iban_manager.h",
     "mock_merchant_promo_code_manager.cc",
@@ -910,6 +920,7 @@ source_set("unit_tests") {
     "metrics/payments/wallet_usage_data_metrics_unittest.cc",
     "metrics/precedence_over_autocomplete_metrics_unittest.cc",
     "metrics/profile_import_metrics_unittest.cc",
+    "metrics/quality_metrics_unittest.cc",
     "metrics/shadow_prediction_metrics_unittest.cc",
     "metrics/stored_profile_metrics_unittest.cc",
     "metrics/suggestions_list_metrics_unittest.cc",
@@ -969,6 +980,11 @@ source_set("unit_tests") {
         [ "autofill_save_update_address_profile_delegate_ios_unittest.cc" ]
   }
 
+  if (is_android) {
+    sources +=
+        [ "metrics/form_events/form_event_logger_weblayer_android_unittest.cc" ]
+  }
+
   if (is_ios || is_android) {
     sources += [
       "ui/mobile_label_formatter_unittest.cc",
@@ -978,8 +994,11 @@ source_set("unit_tests") {
   }
 
   if (!is_ios) {
+    sources += [ "autofill_policy_handler_unittest.cc" ]
+  }
+
+  if (is_win || is_mac || is_android) {
     sources += [
-      "autofill_policy_handler_unittest.cc",
       "metrics/payments/better_auth_metrics_unittest.cc",
       "payments/credit_card_fido_authenticator_unittest.cc",
     ]
@@ -1016,6 +1035,7 @@ source_set("unit_tests") {
     "//components/image_fetcher/core:test_support",
     "//components/leveldb_proto",
     "//components/optimization_guide/core",
+    "//components/optimization_guide/proto:optimization_guide_proto",
     "//components/os_crypt",
     "//components/os_crypt:test_support",
     "//components/policy/core/common",

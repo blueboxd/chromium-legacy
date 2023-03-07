@@ -99,7 +99,6 @@
 <translation id="2713106313042589954">कॅमेरा बंद करा</translation>
 <translation id="2717722538473713889">ईमेल ॲड्रेस</translation>
 <translation id="2750481671343847896">साइट ओळखीच्या सेवांकडून मिळणाऱ्या साइन इन सूचना दाखवू शकतात.</translation>
-<translation id="2779966372261694284">तुम्हाला या साइटमधून साइन आउट केले जाईल</translation>
 <translation id="2822354292072154809">तुम्हाला नक्की <ph name="CHOSEN_OBJECT_NAME" /> साठी सर्व साइट परवानग्या रीसेट करायच्या आहेत का?</translation>
 <translation id="2870560284913253234">साइट</translation>
 <translation id="2874939134665556319">मागील ट्रॅक</translation>
@@ -261,6 +260,7 @@
 <translation id="5740126560802162366">साइट या तुमच्या डिव्हाइसवर डेटा सेव्ह करू शकतात</translation>
 <translation id="5771720122942595109"><ph name="PERMISSION_1" /> ला ब्लॉक केले</translation>
 <translation id="5804241973901381774">परवानग्या</translation>
+<translation id="5810805850857689118">ही कृती <ph name="ORIGIN" /> आणि त्या अंतर्गत सर्व साइटसाठी सर्व डेटा आणि कुकी साफ करेल</translation>
 <translation id="5860033963881614850">बंद</translation>
 <translation id="5876056640971328065">व्हिडिओ थांबवा</translation>
 <translation id="5884085660368669834">साइट प्राधान्‍य</translation>
@@ -277,6 +277,7 @@
 <translation id="6040143037577758943">बंद करा</translation>
 <translation id="6042308850641462728">अधिक</translation>
 <translation id="6064125863973209585">डाउनलोड पूर्ण झाले</translation>
+<translation id="6071501408666570960">तुम्हाला या साइटमधून साइन आउट केले जाऊ शकते</translation>
 <translation id="6165508094623778733">अधिक जाणून घ्या</translation>
 <translation id="6177111841848151710">सध्याच्या शोध इंजीनसाठी ब्लॉक केले</translation>
 <translation id="6177128806592000436">या साइटवरील तुमचे कनेक्शन सुरक्षित नाही</translation>
@@ -413,6 +414,7 @@
 <translation id="8514955299594277296">साइटना तुमच्या डिव्हाइसवर डेटा सेव्ह करण्याची अनुमती देऊ नका (शिफारस केली जात नाही)</translation>
 <translation id="851751545965956758">डिव्हाइसेसशी कनेक्ट करण्यापासून साइटना ब्लॉक करा</translation>
 <translation id="8525306231823319788">फुल स्क्रीन</translation>
+<translation id="8528440122773422556">ही कृती <ph name="ORIGIN" /> अंतर्गत किंवा तुमच्या होम स्क्रीनवर त्याच्या अ‍ॅपद्वारे सर्व साइटनी स्टोअर केलेला सर्व डेटा आणि कुकी साफ करेल</translation>
 <translation id="8541410041357371550">तुम्हाला आणखी उपयुक्त जाहिराती दाखवण्यासाठी ही साइट Chrome मधून तुमचे जाहिरातीचे विषय मिळवते</translation>
 <translation id="8564613706851221529">{COUNT,plural, =1{<ph name="FPS_MEMBERS_COUNT" /> <ph name="FPS_OWNER" /> साइटसाठी कुकीना अनुमती आहे}other{<ph name="FPS_MEMBERS_COUNT" /> <ph name="FPS_OWNER" /> साइटसाठी कुकीना अनुमती आहे}}</translation>
 <translation id="857943718398505171">अनुमती दिली (शिफारस केलेले)</translation>
@@ -441,6 +443,7 @@
 <translation id="8986362086234534611">विसरा</translation>
 <translation id="8990043154272859344">तुम्हाला सर्व साइटमधून साइन आउट केले जाईल</translation>
 <translation id="9019902583201351841">आपल्या पालकांद्वारे व्यवस्थापित करण्यात आले</translation>
+<translation id="9039697262778250930">तुम्हाला या साइटमधून साइन आउट केले जाऊ शकता</translation>
 <translation id="9074739597929991885">ब्लूटूथ</translation>
 <translation id="9090268041676521955">ही साइट तुमच्या अ‍ॅक्टिव्हिटी पाहू शकते अशा गटामध्ये आहे. हा गट <ph name="FPS_OWNER" /> यांनी परिभाषित केला आहे</translation>
 <translation id="9106233582039520022">कुकी हटवायच्या आहेत का?</translation>

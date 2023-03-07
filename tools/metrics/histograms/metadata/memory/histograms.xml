@@ -52,6 +52,14 @@ chromium-metrics-reviews@google.com.
     <owner>tguilbert@chromium.org</owner>
     <owner>webrtc-audio-uma@google.com</owner>
   </variant>
+  <variant name="CdmService">
+    <owner>xhwang@chromium.org</owner>
+    <owner>media-dev@chromium.org</owner>
+  </variant>
+  <variant name="MediaFoundationService">
+    <owner>xhwang@chromium.org</owner>
+    <owner>media-dev@chromium.org</owner>
+  </variant>
   <variant name="PaintPreviewCompositor">
     <owner>ckitagawa@chromium.org</owner>
     <owner>fredmello@chromium.org</owner>
@@ -1848,7 +1856,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Memory.ParkableString.Compression.Latency"
-    units="microseconds" expires_after="2023-07-02">
+    units="microseconds" expires_after="2023-09-03">
   <owner>lizeb@chromium.org</owner>
   <owner>thiabaud@google.com</owner>
   <summary>
@@ -2197,7 +2205,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram base="true" name="Memory.PressureWindowDuration" units="ms"
-    expires_after="2023-07-02">
+    expires_after="2023-09-03">
 <!-- Name completed by histogram_suffixes name="Memory.Pressure.TransitionType" -->
 
   <owner>fdoray@chromium.org</owner>
@@ -2442,7 +2450,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Memory.System.AvailableMB" units="MB"
-    expires_after="2023-06-30">
+    expires_after="2023-09-03">
   <owner>fdoray@chromium.org</owner>
   <owner>catan-team@chromium.org</owner>
   <summary>
@@ -2834,18 +2842,6 @@ chromium-metrics-reviews@google.com.
   <token key="UtilityProcessType" variants="UtilityProcessType"/>
 </histogram>
 
-<histogram name="MemoryAndroid.DeviceMemoryClass" units="units"
-    expires_after="2020-06-07">
-  <owner>hajimehoshi@chromium.org</owner>
-  <owner>kenjibaheux@google.com</owner>
-  <owner>kouhei@chromium.org</owner>
-  <summary>
-    Value of getMemoryClass() recorded once upon startup. This is an integer,
-    device-specific constant correlated with the amount of memory available on
-    Android device.
-  </summary>
-</histogram>
-
 <histogram name="MemoryAndroid.EvictedTreeSize" units="units"
     expires_after="2023-03-01">
   <owner>jonross@chromium.org</owner>
@@ -2902,14 +2898,6 @@ chromium-metrics-reviews@google.com.
     Whether Chrome is running in low ram mode. This histogram is reported on
     every upload by Android devices. A device is considered low-RAM if it has
     512MiB of RAM or lower (see SysUtils.detectLowEndDevice()).
-  </summary>
-</histogram>
-
-<histogram name="MemoryWarning.OccurrencesPerSession" units="units"
-    expires_after="M85">
-  <owner>marq@chromium.org</owner>
-  <summary>
-    The number of memory warnings during a given foreground session.
   </summary>
 </histogram>
 

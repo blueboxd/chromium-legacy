@@ -202,6 +202,7 @@ void UpdateMetricsPrefsOnPermissionChange(
 
   local_state->ClearPref(metrics::prefs::kMetricsClientID);
   local_state->ClearPref(metrics::prefs::kMetricsProvisionalClientID);
+  local_state->ClearPref(metrics::prefs::kMetricsLogRecordId);
 
   // Don't clear the entropy state if the user opted out in the FRE. This is to
   // prevent experiments that have been randomized based on the low-entropy
@@ -215,14 +216,6 @@ void UpdateMetricsPrefsOnPermissionChange(
 }
 
 void ApplyMetricsReportingPolicy() {
-#if BUILDFLAG(IS_ANDROID)
-  // Android must verify if this policy is feature-enabled.
-  if (!base::FeatureList::IsEnabled(
-          policy::features::kActivateMetricsReportingEnabledPolicyAndroid)) {
-    return;
-  }
-#endif  // BUILDFLAG(IS_ANDROID)
-
   GoogleUpdateSettings::CollectStatsConsentTaskRunner()->PostTask(
       FROM_HERE,
       base::BindOnce(

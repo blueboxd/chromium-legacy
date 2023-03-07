@@ -106,7 +106,7 @@ BASE_FEATURE(kBackForwardCacheDedicatedWorker,
 
 BASE_FEATURE(kBackForwardCacheNotReachedOnJavaScriptExecution,
              "BackForwardCacheNotReachedOnJavaScriptExecution",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Allows pages with keepalive requests to stay eligible for the back/forward
 // cache. See https://crbug.com/1347101 for more details.
@@ -180,11 +180,6 @@ BASE_FEATURE(kUserLevelMemoryPressureSignal,
              "UserLevelMemoryPressureSignal",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-// Perform memory purges after freezing only if all pages are frozen.
-BASE_FEATURE(kFreezePurgeMemoryAllPagesFrozen,
-             "FreezePurgeMemoryAllPagesFrozen",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
 // Enables the `sec-ch-ua-full` client hint to be sent along with the full user
 // agent string in the HTTP request headers, as well as surfacing the full user
 // agent string in the JS APIs (navigator.userAgent, etc).
@@ -228,9 +223,7 @@ BASE_FEATURE(kMixedContentAutoupgrade,
 // Used to control the collection of anchor element metrics (crbug.com/856683).
 // If kNavigationPredictor is enabled, then metrics of anchor elements
 // in the first viewport after the page load and the metrics of the clicked
-// anchor element will be extracted and recorded. Additionally, navigation
-// predictor may preconnect/prefetch to resources/origins to make the
-// future navigations faster.
+// anchor element will be extracted and recorded.
 BASE_FEATURE(kNavigationPredictor,
              "NavigationPredictor",
 #if BUILDFLAG(IS_ANDROID)
@@ -354,20 +347,6 @@ bool IsFencedFramesEnabled() {
 BASE_FEATURE(kPreviewsResourceLoadingHintsSpecificResourceTypes,
              "PreviewsResourceLoadingHintsSpecificResourceTypes",
              base::FEATURE_DISABLED_BY_DEFAULT);
-
-// Perform a memory purge after a renderer is backgrounded. Formerly labelled as
-// the "PurgeAndSuspend" experiment.
-//
-// TODO(https://crbug.com/926186): Disabled by default on Android for historical
-// reasons. Consider enabling by default if experiment results are positive.
-BASE_FEATURE(kPurgeRendererMemoryWhenBackgrounded,
-             "PurgeRendererMemoryWhenBackgrounded",
-#if BUILDFLAG(IS_ANDROID)
-             base::FEATURE_DISABLED_BY_DEFAULT
-#else
-             base::FEATURE_ENABLED_BY_DEFAULT
-#endif
-);
 
 // Determines if the SDP attrbute extmap-allow-mixed should be offered by
 // default or not. The default value can be overridden by passing
@@ -928,12 +907,6 @@ BASE_FEATURE(kSendCnameAliasesToSubresourceFilterFromRenderer,
 BASE_FEATURE(kScopeMemoryCachePerContext,
              "ScopeMemoryCachePerContext",
              base::FEATURE_DISABLED_BY_DEFAULT);
-
-// Allow image context menu selections to penetrate through transparent
-// elements.
-BASE_FEATURE(kEnablePenetratingImageSelection,
-             "EnablePenetratingImageSelection",
-             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Used to configure a per-origin allowlist of performance.mark events that are
 // permitted to be included in slow reports traces. See crbug.com/1181774.

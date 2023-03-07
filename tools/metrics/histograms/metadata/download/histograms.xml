@@ -99,7 +99,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Download.Bubble.DragInfo" enum="Download.DragInfo"
-    expires_after="2023-07-02">
+    expires_after="2023-09-03">
   <owner>xinghuilu@chromium.org</owner>
   <owner>chrome-counter-abuse-alerts@google.com</owner>
   <summary>
@@ -291,17 +291,8 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Download.CountsChrome" enum="ChromeDownloadCountType"
-    expires_after="2020-10-25">
-  <owner>dtrainor@chromium.org</owner>
-  <summary>
-    Various individual counts in the download system, for example the number of
-    downloads blocked by throttling from the DownloadRequestLimiter.
-  </summary>
-</histogram>
-
 <histogram name="Download.DangerousDialog.Events"
-    enum="DangerousDownloadDialogEvent" expires_after="2023-07-02">
+    enum="DangerousDownloadDialogEvent" expires_after="2023-09-03">
   <owner>qinmin@chromium.org</owner>
   <summary>
     Records user interactions with the dangerous download dialog on Android.
@@ -866,26 +857,6 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Download.OpenMethod.{DownloadContent}"
-    enum="DownloadOpenMethod" expires_after="2023-04-06">
-  <owner>xinghuilu@chromium.org</owner>
-  <owner>chrome-counter-abuse-alerts@google.com</owner>
-  <summary>
-    Invocation count for methods of opening a {DownloadContent} download. For
-    some file types, Chrome defaults to opening the file in the browser instead
-    of invoking the system handler. The user has the option of overriding this
-    behavior. This histogram is added for debugging purpose and will be removed
-    after it is done.
-  </summary>
-  <token key="DownloadContent">
-    <variant name="DOCUMENT" summary="document"/>
-    <variant name="PDF" summary="pdf"/>
-    <variant name="SPREADSHEET" summary="spreadsheet"/>
-    <variant name="TEXT" summary="text"/>
-    <variant name="UNRECOGNIZED" summary="unrecognized"/>
-  </token>
-</histogram>
-
 <histogram name="Download.OpensOutstanding" units="units" expires_after="M77">
   <owner>dtrainor@chromium.org</owner>
   <summary>The number of unopened downloads, when one is opened.</summary>
@@ -1031,7 +1002,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Download.Retry.InterruptReason" enum="InterruptReason"
-    expires_after="2023-07-02">
+    expires_after="2023-09-03">
   <owner>thefrog@chromium.org</owner>
   <owner>chrome-counter-abuse-alerts@google.com</owner>
   <summary>
@@ -1109,19 +1080,29 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Download.Service.Entry.Event"
-    enum="Download.Service.EntryEvent" expires_after="M88">
+    enum="Download.Service.EntryEvent" expires_after="never">
+<!-- expires-never: Monitors download system health. -->
+
   <owner>dtrainor@chromium.org</owner>
-  <summary>An action the download service took on an active download.</summary>
+  <owner>shaktisahu@chromium.org</owner>
+  <summary>
+    An action the download service took on an active download. Note that this
+    histogram was expired between M88 and 2023-03-03.
+  </summary>
 </histogram>
 
 <histogram name="Download.Service.Entry.RetryCount" units="attempts"
-    expires_after="M88">
+    expires_after="never">
+<!-- expires-never: Monitors download system health. -->
+
   <owner>dtrainor@chromium.org</owner>
+  <owner>shaktisahu@chromium.org</owner>
   <summary>
     Records how many attempts have taken place at the time of a retry for a
     download in the Download Service. This differs from
     Download.Service.Entry.ResumptionCount, which records resumptions not
-    complete restarts.
+    complete restarts. Note that this histogram was expired between M88 and
+    2023-03-03.
   </summary>
 </histogram>
 
@@ -1274,30 +1255,6 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Download.Service.Upload.EntryNotFound" enum="BooleanHit"
-    expires_after="M85">
-  <owner>shaktisahu@chromium.org</owner>
-  <summary>
-    Records if the entry has been deleted for some reason while we are waiting
-    for the client to respond with the upload data.
-  </summary>
-</histogram>
-
-<histogram base="true" name="Download.Service.Upload.HasUploadData"
-    enum="BooleanUpload" expires_after="2021-01-31">
-<!-- Name completed by histogram_suffixes
-     name="Download.Service.Client" -->
-
-  <owner>shaktisahu@chromium.org</owner>
-  <owner>clank-downloads@google.com</owner>
-  <summary>
-    The download service uses a single code path for both downloading and
-    uploading data. This metric records whether a given request includes upload
-    data. It is recorded upon starting a download or upload, immediately after
-    the client indicates whether the request includes upload data.
-  </summary>
-</histogram>
-
 <histogram name="Download.Session.IsDownloadBubbleShowingWhenSession{Status}"
     enum="BooleanShowing" expires_after="2023-04-30">
   <owner>xinghuilu@chromium.org</owner>
@@ -1314,7 +1271,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Download.Session.TotalDurationIncludingBubbleTime" units="ms"
-    expires_after="2023-07-02">
+    expires_after="2023-09-03">
   <owner>xinghuilu@chromium.org</owner>
   <owner>chrome-counter-abuse-alerts@google.com</owner>
   <summary>
@@ -1383,15 +1340,6 @@ chromium-metrics-reviews@google.com.
     dropdown button was clicked as well when DownloadCommands were enabled or
     executed. Each action or enable event is only emitted once; as a result, it
     is safe to compute a ratio by dividing enabled events by clicked events.
-  </summary>
-</histogram>
-
-<histogram name="Download.ShowDangerousDownloadConfirmationPrompt"
-    enum="DownloadItem.DangerType" expires_after="M77">
-  <owner>dtrainor@chromium.org</owner>
-  <summary>
-    User saw the confirm prompt to save a download which was marked dangerous.
-    Grouped by the type of danger.
   </summary>
 </histogram>
 

@@ -26,6 +26,7 @@
 #include "base/test/task_environment.h"
 #include "base/time/time.h"
 #include "components/aggregation_service/aggregation_service.mojom.h"
+#include "components/attribution_reporting/aggregatable_dedup_key.h"
 #include "components/attribution_reporting/aggregatable_trigger_data.h"
 #include "components/attribution_reporting/aggregatable_values.h"
 #include "components/attribution_reporting/aggregation_keys.h"
@@ -33,17 +34,19 @@
 #include "components/attribution_reporting/filters.h"
 #include "components/attribution_reporting/source_type.mojom.h"
 #include "components/attribution_reporting/suitable_origin.h"
+#include "components/attribution_reporting/test_utils.h"
 #include "components/attribution_reporting/trigger_registration.h"
 #include "content/browser/attribution_reporting/aggregatable_histogram_contribution.h"
-#include "content/browser/attribution_reporting/attribution_observer_types.h"
 #include "content/browser/attribution_reporting/attribution_report.h"
 #include "content/browser/attribution_reporting/attribution_storage_sql.h"
 #include "content/browser/attribution_reporting/attribution_test_utils.h"
 #include "content/browser/attribution_reporting/attribution_trigger.h"
 #include "content/browser/attribution_reporting/common_source_info.h"
+#include "content/browser/attribution_reporting/create_report_result.h"
 #include "content/browser/attribution_reporting/rate_limit_result.h"
 #include "content/browser/attribution_reporting/storable_source.h"
 #include "content/browser/attribution_reporting/stored_source.h"
+#include "content/browser/attribution_reporting/test/configurable_storage_delegate.h"
 #include "content/public/browser/attribution_data_model.h"
 #include "content/public/browser/storage_partition.h"
 #include "net/base/schemeful_site.h"
@@ -144,13 +147,12 @@ class AttributionStorageTest : public testing::Test {
     // TOO(apaseltiner): Replace this logic with explicit setting of expected
     // values.
     auto event_trigger = base::ranges::find_if(
-        conversion.registration().event_triggers.vec(),
+        conversion.registration().event_triggers,
         [&](const attribution_reporting::EventTriggerData& event_trigger) {
-          return source.common_info().filter_data().Matches(
+          return source.filter_data().Matches(
               source.common_info().source_type(), event_trigger.filters);
         });
-    CHECK(event_trigger !=
-          conversion.registration().event_triggers.vec().end());
+    CHECK(event_trigger != conversion.registration().event_triggers.end());
 
     return ReportBuilder(AttributionInfoBuilder(
                              source,
@@ -281,10 +283,11 @@ TEST_F(AttributionStorageTest, MultipleImpressionsForConversion_OneConverts) {
 
 TEST_F(AttributionStorageTest,
        CrossOriginSameDomainConversion_ImpressionConverted) {
-  auto impression = SourceBuilder()
-                        .SetDestinationOrigin(
-                            *SuitableOrigin::Deserialize("https://sub.a.test"))
-                        .Build();
+  auto impression =
+      SourceBuilder()
+          .SetDestinationSites(
+              {net::SchemefulSite::Deserialize("https://sub.a.test")})
+          .Build();
   storage()->StoreSource(impression);
   EXPECT_EQ(
       AttributionTrigger::EventLevelResult::kSuccess,
@@ -431,10 +434,11 @@ TEST_F(AttributionStorageTest,
 
 TEST_F(AttributionStorageTest,
        ConversionWithDifferentConversionOrigin_NoReportScheduled) {
-  auto impression = SourceBuilder()
-                        .SetDestinationOrigin(*SuitableOrigin::Deserialize(
-                            "https://different.test"))
-                        .Build();
+  auto impression =
+      SourceBuilder()
+          .SetDestinationSites(
+              {net::SchemefulSite::Deserialize("https://different.test")})
+          .Build();
   storage()->StoreSource(impression);
   EXPECT_EQ(AttributionTrigger::EventLevelResult::kNoMatchingImpressions,
             MaybeCreateAndStoreEventLevelReport(DefaultTrigger()));
@@ -887,7 +891,7 @@ TEST_F(AttributionStorageTest,
 
   storage()->StoreSource(SourceBuilder()
                              .SetSourceOrigin(origin)
-                             .SetDestinationOrigin(origin)
+                             .SetDestinationSites({net::SchemefulSite(origin)})
                              .Build());
   MaybeCreateAndStoreEventLevelReport(
       TriggerBuilder().SetDestinationOrigin(origin).Build());
@@ -949,12 +953,13 @@ TEST_F(AttributionStorageTest, ClearDataNullFilter) {
   for (int i = 0; i < 10; i++) {
     auto origin =
         *SuitableOrigin::Deserialize(base::StringPrintf("https://%d.com/", i));
-    storage()->StoreSource(SourceBuilder(now)
-                               .SetExpiry(base::Days(30))
-                               .SetSourceOrigin(origin)
-                               .SetReportingOrigin(origin)
-                               .SetDestinationOrigin(origin)
-                               .Build());
+    storage()->StoreSource(
+        SourceBuilder(now)
+            .SetExpiry(base::Days(30))
+            .SetSourceOrigin(origin)
+            .SetReportingOrigin(origin)
+            .SetDestinationSites({net::SchemefulSite(origin)})
+            .Build());
     task_environment_.FastForwardBy(base::Days(1));
   }
 
@@ -1314,8 +1319,8 @@ TEST_F(AttributionStorageTest,
                 .SetSourceOrigin(*SuitableOrigin::Deserialize(source_origin))
                 .SetReportingOrigin(
                     *SuitableOrigin::Deserialize(reporting_origin))
-                .SetDestinationOrigin(
-                    *SuitableOrigin::Deserialize(destination_origin))
+                .SetDestinationSites(
+                    {net::SchemefulSite::Deserialize(destination_origin)})
                 .SetExpiry(base::Days(30))
                 .Build())
         .status;
@@ -1361,8 +1366,8 @@ TEST_F(AttributionStorageTest, DestinationLimit_ApplyLimit) {
                 .SetSourceOrigin(*SuitableOrigin::Deserialize(source_origin))
                 .SetReportingOrigin(
                     *SuitableOrigin::Deserialize(reporting_origin))
-                .SetDestinationOrigin(
-                    *SuitableOrigin::Deserialize(destination_origin))
+                .SetDestinationSites(
+                    {net::SchemefulSite::Deserialize(destination_origin)})
                 .SetExpiry(expiry)
                 .Build())
         .status;
@@ -1404,14 +1409,16 @@ TEST_F(AttributionStorageTest, DestinationLimit_ApplyLimit) {
 TEST_F(AttributionStorageTest,
        MaxAttributionDestinationsPerSource_AppliesToNavigationSources) {
   delegate()->set_max_destinations_per_source_site_reporting_origin(1);
-  storage()->StoreSource(SourceBuilder()
-                             .SetDestinationOrigin(*SuitableOrigin::Deserialize(
-                                 "https://a.example/"))
-                             .Build());
-  storage()->StoreSource(SourceBuilder()
-                             .SetDestinationOrigin(*SuitableOrigin::Deserialize(
-                                 "https://b.example"))
-                             .Build());
+  storage()->StoreSource(
+      SourceBuilder()
+          .SetDestinationSites(
+              {net::SchemefulSite::Deserialize("https://a.example/")})
+          .Build());
+  storage()->StoreSource(
+      SourceBuilder()
+          .SetDestinationSites(
+              {net::SchemefulSite::Deserialize("https://b.example")})
+          .Build());
 
   EXPECT_THAT(storage()->GetActiveSources(), SizeIs(1));
 }
@@ -1419,15 +1426,16 @@ TEST_F(AttributionStorageTest,
 TEST_F(AttributionStorageTest,
        MaxAttributionDestinationsPerSource_CountsAllSourceTypes) {
   delegate()->set_max_destinations_per_source_site_reporting_origin(1);
-  storage()->StoreSource(SourceBuilder()
-                             .SetDestinationOrigin(*SuitableOrigin::Deserialize(
-                                 "https://a.example/"))
-                             .SetSourceType(SourceType::kNavigation)
-                             .Build());
+  storage()->StoreSource(
+      SourceBuilder()
+          .SetDestinationSites(
+              {net::SchemefulSite::Deserialize("https://a.example/")})
+          .SetSourceType(SourceType::kNavigation)
+          .Build());
   AttributionStorage::StoreSourceResult result = storage()->StoreSource(
       SourceBuilder()
-          .SetDestinationOrigin(
-              *SuitableOrigin::Deserialize("https://b.example"))
+          .SetDestinationSites(
+              {net::SchemefulSite::Deserialize("https://b.example")})
           .SetSourceType(SourceType::kEvent)
           .Build());
   EXPECT_EQ(result.status,
@@ -1444,28 +1452,31 @@ TEST_F(AttributionStorageTest,
 
   const base::TimeDelta expiry = base::Milliseconds(5);
 
-  storage()->StoreSource(SourceBuilder()
-                             .SetDestinationOrigin(*SuitableOrigin::Deserialize(
-                                 "https://a.example/"))
-                             .SetSourceType(SourceType::kNavigation)
-                             .SetExpiry(expiry)
-                             .Build());
-  storage()->StoreSource(SourceBuilder()
-                             .SetDestinationOrigin(*SuitableOrigin::Deserialize(
-                                 "https://b.example"))
-                             .SetSourceType(SourceType::kEvent)
-                             .Build());
+  storage()->StoreSource(
+      SourceBuilder()
+          .SetDestinationSites(
+              {net::SchemefulSite::Deserialize("https://a.example/")})
+          .SetSourceType(SourceType::kNavigation)
+          .SetExpiry(expiry)
+          .Build());
+  storage()->StoreSource(
+      SourceBuilder()
+          .SetDestinationSites(
+              {net::SchemefulSite::Deserialize("https://b.example")})
+          .SetSourceType(SourceType::kEvent)
+          .Build());
 
   EXPECT_THAT(storage()->GetActiveSources(), SizeIs(1));
 
   task_environment_.FastForwardBy(expiry);
   EXPECT_THAT(storage()->GetActiveSources(), IsEmpty());
 
-  storage()->StoreSource(SourceBuilder()
-                             .SetDestinationOrigin(*SuitableOrigin::Deserialize(
-                                 "https://b.example"))
-                             .SetSourceType(SourceType::kEvent)
-                             .Build());
+  storage()->StoreSource(
+      SourceBuilder()
+          .SetDestinationSites(
+              {net::SchemefulSite::Deserialize("https://b.example")})
+          .SetSourceType(SourceType::kEvent)
+          .Build());
 
   EXPECT_THAT(storage()->GetActiveSources(), SizeIs(1));
 }
@@ -1483,11 +1494,12 @@ TEST_F(AttributionStorageTest,
           .Build());
   EXPECT_THAT(storage()->GetActiveSources(), IsEmpty());
 
-  storage()->StoreSource(SourceBuilder()
-                             .SetDestinationOrigin(*SuitableOrigin::Deserialize(
-                                 "https://c.example"))
-                             .SetSourceType(SourceType::kEvent)
-                             .Build());
+  storage()->StoreSource(
+      SourceBuilder()
+          .SetDestinationSites(
+              {net::SchemefulSite::Deserialize("https://c.example")})
+          .SetSourceType(SourceType::kEvent)
+          .Build());
   EXPECT_THAT(storage()->GetActiveSources(), SizeIs(1));
 }
 
@@ -1840,16 +1852,18 @@ TEST_F(AttributionStorageTest, TriggerPriority_DeactivatesImpression) {
 }
 
 TEST_F(AttributionStorageTest, DedupKey_Dedups) {
-  storage()->StoreSource(SourceBuilder()
-                             .SetSourceEventId(1)
-                             .SetDestinationOrigin(*SuitableOrigin::Deserialize(
-                                 "https://a.example"))
-                             .Build());
-  storage()->StoreSource(SourceBuilder()
-                             .SetSourceEventId(2)
-                             .SetDestinationOrigin(*SuitableOrigin::Deserialize(
-                                 "https://b.example"))
-                             .Build());
+  storage()->StoreSource(
+      SourceBuilder()
+          .SetSourceEventId(1)
+          .SetDestinationSites(
+              {net::SchemefulSite::Deserialize("https://a.example")})
+          .Build());
+  storage()->StoreSource(
+      SourceBuilder()
+          .SetSourceEventId(2)
+          .SetDestinationSites(
+              {net::SchemefulSite::Deserialize("https://b.example")})
+          .Build());
   EXPECT_THAT(storage()->GetActiveSources(),
               ElementsAre(DedupKeysAre(IsEmpty()), DedupKeysAre(IsEmpty())));
 
@@ -1918,11 +1932,12 @@ TEST_F(AttributionStorageTest, DedupKey_Dedups) {
 }
 
 TEST_F(AttributionStorageTest, DedupKey_DedupsAfterConversionDeletion) {
-  storage()->StoreSource(SourceBuilder()
-                             .SetSourceEventId(1)
-                             .SetDestinationOrigin(*SuitableOrigin::Deserialize(
-                                 "https://a.example"))
-                             .Build());
+  storage()->StoreSource(
+      SourceBuilder()
+          .SetSourceEventId(1)
+          .SetDestinationSites(
+              {net::SchemefulSite::Deserialize("https://a.example")})
+          .Build());
   EXPECT_THAT(storage()->GetActiveSources(), SizeIs(1));
 
   task_environment_.FastForwardBy(base::Milliseconds(1));
@@ -1964,16 +1979,18 @@ TEST_F(AttributionStorageTest, DedupKey_DedupsAfterConversionDeletion) {
 
 TEST_F(AttributionStorageTest, AggregatableDedupKey_Dedups) {
   TestAggregatableSourceProvider provider;
-  storage()->StoreSource(provider.GetBuilder()
-                             .SetSourceEventId(1)
-                             .SetDestinationOrigin(*SuitableOrigin::Deserialize(
-                                 "https://a.example"))
-                             .Build());
-  storage()->StoreSource(provider.GetBuilder()
-                             .SetSourceEventId(2)
-                             .SetDestinationOrigin(*SuitableOrigin::Deserialize(
-                                 "https://b.example"))
-                             .Build());
+  storage()->StoreSource(
+      provider.GetBuilder()
+          .SetSourceEventId(1)
+          .SetDestinationSites(
+              {net::SchemefulSite::Deserialize("https://a.example")})
+          .Build());
+  storage()->StoreSource(
+      provider.GetBuilder()
+          .SetSourceEventId(2)
+          .SetDestinationSites(
+              {net::SchemefulSite::Deserialize("https://b.example")})
+          .Build());
   EXPECT_THAT(storage()->GetActiveSources(),
               ElementsAre(AggregatableDedupKeysAre(IsEmpty()),
                           AggregatableDedupKeysAre(IsEmpty())));
@@ -2045,12 +2062,13 @@ TEST_F(AttributionStorageTest, AggregatableDedupKey_Dedups) {
 
 TEST_F(AttributionStorageTest,
        AggregatableDedupKey_DedupsAfterConversionDeletion) {
-  storage()->StoreSource(TestAggregatableSourceProvider()
-                             .GetBuilder()
-                             .SetSourceEventId(1)
-                             .SetDestinationOrigin(*SuitableOrigin::Deserialize(
-                                 "https://a.example"))
-                             .Build());
+  storage()->StoreSource(
+      TestAggregatableSourceProvider()
+          .GetBuilder()
+          .SetSourceEventId(1)
+          .SetDestinationSites(
+              {net::SchemefulSite::Deserialize("https://a.example")})
+          .Build());
   EXPECT_THAT(storage()->GetActiveSources(), SizeIs(1));
 
   task_environment_.FastForwardBy(base::Milliseconds(1));
@@ -2091,12 +2109,13 @@ TEST_F(AttributionStorageTest,
 }
 
 TEST_F(AttributionStorageTest, DedupKey_AggregatableReportNotDedups) {
-  storage()->StoreSource(TestAggregatableSourceProvider()
-                             .GetBuilder()
-                             .SetSourceEventId(1)
-                             .SetDestinationOrigin(*SuitableOrigin::Deserialize(
-                                 "https://a.example"))
-                             .Build());
+  storage()->StoreSource(
+      TestAggregatableSourceProvider()
+          .GetBuilder()
+          .SetSourceEventId(1)
+          .SetDestinationSites(
+              {net::SchemefulSite::Deserialize("https://a.example")})
+          .Build());
 
   auto result = storage()->MaybeCreateAndStoreReport(
       DefaultAggregatableTriggerBuilder()
@@ -2123,12 +2142,13 @@ TEST_F(AttributionStorageTest, DedupKey_AggregatableReportNotDedups) {
 }
 
 TEST_F(AttributionStorageTest, AggregatableDedupKey_EventLevelReportNotDedups) {
-  storage()->StoreSource(TestAggregatableSourceProvider()
-                             .GetBuilder()
-                             .SetSourceEventId(1)
-                             .SetDestinationOrigin(*SuitableOrigin::Deserialize(
-                                 "https://a.example"))
-                             .Build());
+  storage()->StoreSource(
+      TestAggregatableSourceProvider()
+          .GetBuilder()
+          .SetSourceEventId(1)
+          .SetDestinationSites(
+              {net::SchemefulSite::Deserialize("https://a.example")})
+          .Build());
 
   auto result = storage()->MaybeCreateAndStoreReport(
       DefaultAggregatableTriggerBuilder()
@@ -2168,7 +2188,7 @@ TEST_F(AttributionStorageTest, AggregatableDedupKeysFiltering) {
 
   storage()->StoreSource(
       SourceBuilder()
-          .SetDestinationOrigin(origin)
+          .SetDestinationSites({net::SchemefulSite(origin)})
           .SetReportingOrigin(origin)
           .SetFilterData(*AttributionFilterData::Create({{"abc", {"123"}}}))
           .SetAggregationKeys(
@@ -2180,13 +2200,9 @@ TEST_F(AttributionStorageTest, AggregatableDedupKeysFiltering) {
       attribution_reporting::TriggerRegistration(
           FilterPair(),
           /*debug_key=*/absl::nullopt,
-          *attribution_reporting::AggregatableDedupKeyList::Create(
-              {attribution_reporting::AggregatableDedupKey(
-                  /*dedup_key=*/123, FilterPair())}),
-          attribution_reporting::EventTriggerDataList(),
-          *attribution_reporting::AggregatableTriggerDataList::Create(
-              aggregatable_trigger_data),
-          aggregatable_values,
+          {attribution_reporting::AggregatableDedupKey(
+              /*dedup_key=*/123, FilterPair())},
+          /*event_triggers=*/{}, aggregatable_trigger_data, aggregatable_values,
           /*debug_reporting=*/false,
           ::aggregation_service::mojom::AggregationCoordinator::kDefault),
       /*destination_origin=*/origin, /*attestation=*/absl::nullopt,
@@ -2203,46 +2219,42 @@ TEST_F(AttributionStorageTest, AggregatableDedupKeysFiltering) {
       {
           "filter mismatch",
           attribution_reporting::AggregatableDedupKey(
-              /*dedup_key=*/123,
-              FilterPair{.positive = *AttributionFilters::Create({{
-                             {"abc", {"456"}},
-                         }})}),
+              /*dedup_key=*/123, FilterPair{.positive = AttributionFilters({{
+                                                {"abc", {"456"}},
+                                            }})}),
           false,
       },
       {
           "filter match",
           attribution_reporting::AggregatableDedupKey(
-              /*dedup_key=*/123,
-              FilterPair{.positive = *AttributionFilters::Create({{
-                             {"abc", {"123"}},
-                         }})}),
+              /*dedup_key=*/123, FilterPair{.positive = AttributionFilters({{
+                                                {"abc", {"123"}},
+                                            }})}),
           true,
       },
       {
           "negated filters match",
           attribution_reporting::AggregatableDedupKey(
               /*dedup_key=*/123,
-              FilterPair{
-                  .negative =
-                      attribution_reporting::Filters::ForSourceTypeForTesting(
-                          SourceType::kNavigation)}),
+              FilterPair{.negative =
+                             attribution_reporting::FiltersForSourceType(
+                                 SourceType::kNavigation)}),
           false,
       },
       {
           "negated filters mismatch",
           attribution_reporting::AggregatableDedupKey(
               /*dedup_key=*/123,
-              FilterPair{
-                  .negative =
-                      attribution_reporting::Filters::ForSourceTypeForTesting(
-                          SourceType::kEvent)}),
+              FilterPair{.negative =
+                             attribution_reporting::FiltersForSourceType(
+                                 SourceType::kEvent)}),
           true,
       },
       {
           "null dedup key",
           attribution_reporting::AggregatableDedupKey(
               /*dedup_key=*/absl::nullopt,
-              FilterPair{.positive = *AttributionFilters::Create({{
+              FilterPair{.positive = AttributionFilters({{
                              {"abc", {"123"}},
                          }})}),
           false,
@@ -2254,12 +2266,8 @@ TEST_F(AttributionStorageTest, AggregatableDedupKeysFiltering) {
         /*reporting_origin=*/origin,
         attribution_reporting::TriggerRegistration(
             FilterPair(),
-            /*debug_key=*/absl::nullopt,
-            *attribution_reporting::AggregatableDedupKeyList::Create(
-                {test_case.aggregatable_dedup_key}),
-            attribution_reporting::EventTriggerDataList(),
-            *attribution_reporting::AggregatableTriggerDataList::Create(
-                aggregatable_trigger_data),
+            /*debug_key=*/absl::nullopt, {test_case.aggregatable_dedup_key},
+            /*event_triggers=*/{}, aggregatable_trigger_data,
             aggregatable_values,
             /*debug_reporting=*/false,
             ::aggregation_service::mojom::AggregationCoordinator::kDefault),
@@ -2626,13 +2634,15 @@ TEST_F(AttributionStorageTest, GetAttributionDataKeysSet) {
       SourceBuilder()
           .SetReportingOrigin(*SuitableOrigin::Deserialize("https://b.r.test"))
           .SetSourceOrigin(*SuitableOrigin::Deserialize("https://s1.test"))
-          .SetDestinationOrigin(*SuitableOrigin::Deserialize("https://d1.test"))
+          .SetDestinationSites(
+              {net::SchemefulSite::Deserialize("https://d1.test")})
           .Build();
   auto s3 =
       SourceBuilder()
           .SetReportingOrigin(*SuitableOrigin::Deserialize("https://b.r.test"))
           .SetSourceOrigin(*SuitableOrigin::Deserialize("https://s2.test"))
-          .SetDestinationOrigin(*SuitableOrigin::Deserialize("https://d2.test"))
+          .SetDestinationSites(
+              {net::SchemefulSite::Deserialize("https://d2.test")})
           .Build();
 
   storage()->StoreSource(s1);
@@ -2987,7 +2997,7 @@ TEST_F(AttributionStorageTest, NoMatchingTriggerData_ReturnsError) {
 
   storage()->StoreSource(SourceBuilder()
                              .SetSourceType(SourceType::kNavigation)
-                             .SetDestinationOrigin(origin)
+                             .SetDestinationSites({net::SchemefulSite(origin)})
                              .SetReportingOrigin(origin)
                              .Build());
 
@@ -2998,17 +3008,15 @@ TEST_F(AttributionStorageTest, NoMatchingTriggerData_ReturnsError) {
           attribution_reporting::TriggerRegistration(
               FilterPair(),
               /*debug_key=*/absl::nullopt,
-              attribution_reporting::AggregatableDedupKeyList(),
-              *attribution_reporting::EventTriggerDataList::Create(
-                  {attribution_reporting::EventTriggerData(
-                      /*data=*/11,
-                      /*priority=*/12,
-                      /*dedup_key=*/13,
-                      FilterPair{
-                          .positive = attribution_reporting::Filters::
-                              ForSourceTypeForTesting(SourceType::kEvent)})}),
-              /*aggregatable_trigger_data=*/
-              attribution_reporting::AggregatableTriggerDataList(),
+              /*aggregatable_dedup_keys=*/{},
+              {attribution_reporting::EventTriggerData(
+                  /*data=*/11,
+                  /*priority=*/12,
+                  /*dedup_key=*/13,
+                  FilterPair{.positive =
+                                 attribution_reporting::FiltersForSourceType(
+                                     SourceType::kEvent)})},
+              /*aggregatable_trigger_data=*/{},
               /*aggregatable_values=*/
               attribution_reporting::AggregatableValues(),
               /*debug_reporting=*/false,
@@ -3029,7 +3037,7 @@ TEST_F(AttributionStorageTest, MatchingTriggerData_UsesCorrectData) {
   storage()->StoreSource(
       SourceBuilder()
           .SetSourceType(SourceType::kNavigation)
-          .SetDestinationOrigin(origin)
+          .SetDestinationSites({net::SchemefulSite(origin)})
           .SetReportingOrigin(origin)
           .SetFilterData(*AttributionFilterData::Create({{"abc", {"123"}}}))
           .Build());
@@ -3040,7 +3048,7 @@ TEST_F(AttributionStorageTest, MatchingTriggerData_UsesCorrectData) {
           /*data=*/11,
           /*priority=*/12,
           /*dedup_key=*/13,
-          FilterPair{.positive = *AttributionFilters::Create({{
+          FilterPair{.positive = AttributionFilters({{
                          {"abc", {"456"}},
                      }})}),
 
@@ -3049,10 +3057,10 @@ TEST_F(AttributionStorageTest, MatchingTriggerData_UsesCorrectData) {
           /*data=*/21,
           /*priority=*/22,
           /*dedup_key=*/23,
-          FilterPair{.positive = *AttributionFilters::Create({{
+          FilterPair{.positive = AttributionFilters({{
                          {"abc", {"123"}},
                      }}),
-                     .negative = *AttributionFilters::Create({{
+                     .negative = AttributionFilters({{
                          {"source_type", {"navigation"}},
                      }})}),
 
@@ -3061,10 +3069,10 @@ TEST_F(AttributionStorageTest, MatchingTriggerData_UsesCorrectData) {
           /*data=*/31,
           /*priority=*/32,
           /*dedup_key=*/33,
-          FilterPair{.positive = *AttributionFilters::Create({{
+          FilterPair{.positive = AttributionFilters({{
                          {"abc", {"123"}},
                      }}),
-                     .negative = *AttributionFilters::Create({{
+                     .negative = AttributionFilters({{
                          {"source_type", {"event"}},
                      }})}),
 
@@ -3074,10 +3082,10 @@ TEST_F(AttributionStorageTest, MatchingTriggerData_UsesCorrectData) {
           /*data=*/41,
           /*priority=*/42,
           /*dedup_key=*/43,
-          FilterPair{.positive = *AttributionFilters::Create({{
+          FilterPair{.positive = AttributionFilters({{
                          {"abc", {"123"}},
                      }}),
-                     .negative = *AttributionFilters::Create({{
+                     .negative = AttributionFilters({{
                          {"source_type", {"event"}},
                      }})}),
   };
@@ -3089,11 +3097,8 @@ TEST_F(AttributionStorageTest, MatchingTriggerData_UsesCorrectData) {
           attribution_reporting::TriggerRegistration(
               FilterPair(),
               /*debug_key=*/absl::nullopt,
-              attribution_reporting::AggregatableDedupKeyList(),
-              *attribution_reporting::EventTriggerDataList::Create(
-                  event_triggers),
-              /*aggregatable_trigger_data=*/
-              attribution_reporting::AggregatableTriggerDataList(),
+              /*aggregatable_dedup_keys=*/{}, event_triggers,
+              /*aggregatable_trigger_data=*/{},
               /*aggregatable_values=*/
               attribution_reporting::AggregatableValues(),
               /*debug_reporting=*/false,
@@ -3113,14 +3118,14 @@ TEST_F(AttributionStorageTest, MatchingTriggerData_UsesCorrectData) {
 TEST_F(AttributionStorageTest, TopLevelTriggerFiltering) {
   const auto origin = *SuitableOrigin::Deserialize("https://r.test");
 
-  auto event_triggers = *attribution_reporting::EventTriggerDataList::Create(
-      {attribution_reporting::EventTriggerData(
+  std::vector<attribution_reporting::EventTriggerData> event_triggers = {
+      attribution_reporting::EventTriggerData(
           /*data=*/11,
           /*priority=*/12,
-          /*dedup_key=*/13, FilterPair())});
+          /*dedup_key=*/13, FilterPair())};
 
   std::vector<attribution_reporting::AggregatableTriggerData>
-      aggregatable_trigger_data{
+      aggregatable_trigger_data = {
           *attribution_reporting::AggregatableTriggerData::Create(
               absl::MakeUint128(/*high=*/1, /*low=*/0),
               /*source_keys=*/{"0"}, FilterPair())};
@@ -3130,7 +3135,7 @@ TEST_F(AttributionStorageTest, TopLevelTriggerFiltering) {
 
   storage()->StoreSource(
       SourceBuilder()
-          .SetDestinationOrigin(origin)
+          .SetDestinationSites({net::SchemefulSite(origin)})
           .SetReportingOrigin(origin)
           .SetFilterData(*AttributionFilterData::Create({{"abc", {"123"}}}))
           .SetAggregationKeys(
@@ -3140,14 +3145,12 @@ TEST_F(AttributionStorageTest, TopLevelTriggerFiltering) {
   AttributionTrigger trigger1(
       /*reporting_origin=*/origin,
       attribution_reporting::TriggerRegistration(
-          FilterPair{.positive = *AttributionFilters::Create({{
+          FilterPair{.positive = AttributionFilters({{
                          {"abc", {"456"}},
                      }})},
           /*debug_key=*/absl::nullopt,
-          attribution_reporting::AggregatableDedupKeyList(), event_triggers,
-          *attribution_reporting::AggregatableTriggerDataList::Create(
-              aggregatable_trigger_data),
-          aggregatable_values,
+          /*aggregatable_dedup_keys=*/{}, event_triggers,
+          aggregatable_trigger_data, aggregatable_values,
           /*debug_reporting=*/false,
           ::aggregation_service::mojom::AggregationCoordinator::kDefault),
       /*destination_origin=*/origin, /*attestation=*/absl::nullopt,
@@ -3156,14 +3159,12 @@ TEST_F(AttributionStorageTest, TopLevelTriggerFiltering) {
   AttributionTrigger trigger2(
       /*reporting_origin=*/origin,
       attribution_reporting::TriggerRegistration(
-          FilterPair{.positive = *AttributionFilters::Create({{
+          FilterPair{.positive = AttributionFilters({{
                          {"abc", {"123"}},
                      }})},
           /*debug_key=*/absl::nullopt,
-          attribution_reporting::AggregatableDedupKeyList(), event_triggers,
-          *attribution_reporting::AggregatableTriggerDataList::Create(
-              aggregatable_trigger_data),
-          aggregatable_values,
+          /*aggregatable_dedup_keys=*/{}, event_triggers,
+          aggregatable_trigger_data, aggregatable_values,
           /*debug_reporting=*/false,
           ::aggregation_service::mojom::AggregationCoordinator::kDefault),
       /*destination_origin=*/origin, /*attestation=*/absl::nullopt,
@@ -3172,15 +3173,11 @@ TEST_F(AttributionStorageTest, TopLevelTriggerFiltering) {
   AttributionTrigger trigger3(
       /*reporting_origin=*/origin,
       attribution_reporting::TriggerRegistration(
-          FilterPair{
-              .negative =
-                  attribution_reporting::Filters::ForSourceTypeForTesting(
-                      SourceType::kNavigation)},
+          FilterPair{.negative = attribution_reporting::FiltersForSourceType(
+                         SourceType::kNavigation)},
           /*debug_key=*/absl::nullopt,
-          attribution_reporting::AggregatableDedupKeyList(), event_triggers,
-          *attribution_reporting::AggregatableTriggerDataList::Create(
-              aggregatable_trigger_data),
-          aggregatable_values,
+          /*aggregatable_dedup_keys=*/{}, event_triggers,
+          aggregatable_trigger_data, aggregatable_values,
           /*debug_reporting=*/false,
           ::aggregation_service::mojom::AggregationCoordinator::kDefault),
       /*destination_origin=*/origin,

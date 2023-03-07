@@ -9,12 +9,11 @@ source_set("password_checkup") {
     "password_checkup_coordinator.mm",
     "password_checkup_mediator.h",
     "password_checkup_mediator.mm",
-    "password_checkup_utils.h",
-    "password_checkup_utils.mm",
   ]
   deps = [
     ":password_checkup_ui",
-    "//components/password_manager/core/browser",
+    ":password_checkup_utils",
+    "//base",
     "//ios/chrome/browser/main:public",
     "//ios/chrome/browser/passwords",
     "//ios/chrome/browser/ui/coordinators:chrome_coordinators",
@@ -29,10 +28,29 @@ source_set("password_checkup_ui") {
     "password_checkup_consumer.h",
     "password_checkup_view_controller.h",
     "password_checkup_view_controller.mm",
+    "password_checkup_view_controller_delegate.h",
+  ]
+  deps = [
+    ":password_checkup_utils",
+    "resources:password_checkup_header_background_color",
+    "//base",
+    "//ios/chrome/app/strings",
+    "//ios/chrome/browser/ui/settings:settings_root",
+    "//ui/base",
+  ]
+}
+
+source_set("password_checkup_utils") {
+  configs += [ "//build/config/compiler:enable_arc" ]
+  sources = [
+    "password_checkup_utils.h",
+    "password_checkup_utils.mm",
   ]
   deps = [
     "//base",
-    "//ios/chrome/browser/ui/settings:settings_root",
+    "//components/password_manager/core/browser",
+    "//ios/chrome/app/strings",
+    "//ui/base",
   ]
 }
 
@@ -55,17 +73,21 @@ source_set("unit_tests") {
   deps = [
     ":password_checkup",
     ":password_checkup_ui",
+    ":password_checkup_utils",
     "//base",
     "//base/test:test_support",
     "//components/keyed_service/core",
     "//components/password_manager/core/browser:password_form",
     "//components/password_manager/core/browser:test_support",
+    "//components/password_manager/core/common",
     "//components/password_manager/core/common:features",
+    "//components/prefs:test_support",
     "//ios/chrome/browser/browser_state:test_support",
     "//ios/chrome/browser/passwords",
     "//ios/chrome/browser/passwords:store_factory",
     "//ios/web/public/test",
     "//testing/gtest",
+    "//third_party/ocmock",
   ]
 }
 

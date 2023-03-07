@@ -667,12 +667,9 @@ views::SizeBounds CompoundTabContainer::GetAvailableSize(
                              views::SizeBound());
   }
 
-  if (child == base::to_address(unpinned_tab_container_)) {
-    return views::SizeBounds(GetAvailableWidthForUnpinnedTabContainer(),
-                             views::SizeBound());
-  }
-
-  NOTREACHED_NORETURN();
+  CHECK_EQ(child, base::to_address(unpinned_tab_container_));
+  return views::SizeBounds(GetAvailableWidthForUnpinnedTabContainer(),
+                           views::SizeBound());
 }
 
 gfx::Size CompoundTabContainer::CalculatePreferredSize() const {
@@ -958,8 +955,8 @@ gfx::Rect CompoundTabContainer::ConvertUnpinnedContainerIdealBoundsToLocal(
   return ideal_bounds;
 }
 
-raw_ref<TabContainer> CompoundTabContainer::GetTabContainerFor(
-    TabSlotView* view) const {
+raw_ref<TabContainer, DanglingUntriaged>
+CompoundTabContainer::GetTabContainerFor(TabSlotView* view) const {
   if (view->GetTabSlotViewType() == TabSlotView::ViewType::kTabGroupHeader)
     return unpinned_tab_container_;
 

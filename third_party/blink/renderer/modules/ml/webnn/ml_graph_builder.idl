@@ -62,6 +62,10 @@ dictionary MLResample2dOptions {
   sequence<long> axes;
 };
 
+dictionary MLTransposeOptions{
+  sequence<long> permutation;
+};
+
 [
   RuntimeEnabled=MachineLearningNeuralNetwork,
   Exposed=(Window, DedicatedWorker)
@@ -74,6 +78,8 @@ dictionary MLResample2dOptions {
 
   [RaisesException] MLOperand clamp(MLOperand input, optional MLClampOptions options = {});
   [RaisesException] MLOperator clamp(optional MLClampOptions options = {});
+
+  [RaisesException] MLOperand concat(sequence<MLOperand> inputs, long axis);
 
   [RaisesException] MLOperand conv2d(MLOperand input, MLOperand filter, optional MLConv2dOptions options = {});
 
@@ -103,6 +109,8 @@ dictionary MLResample2dOptions {
 
   [RaisesException] MLOperand sigmoid(MLOperand input);
   [RaisesException] MLOperator sigmoid();
+
+  [RaisesException] MLOperand transpose(MLOperand input, optional MLTransposeOptions options = {});
 
   [RaisesException] MLOperand softmax(MLOperand input);
 

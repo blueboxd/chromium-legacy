@@ -303,8 +303,8 @@ inline constexpr int kErrorFailedToDeleteDataFolder = 17;
 // Failed to get versioned updater folder path.
 inline constexpr int kErrorFailedToGetVersionedInstallDirectory = 18;
 
-// Failed to get the installed app bundle path.
-inline constexpr int kErrorFailedToGetAppBundlePath = 19;
+// Failed to get the install directory.
+inline constexpr int kErrorFailedToGetInstallDir = 19;
 
 // Failed to remove the active(unversioned) update service job from Launchd.
 inline constexpr int kErrorFailedToRemoveActiveUpdateServiceJobFromLaunchd = 20;
@@ -375,6 +375,9 @@ inline constexpr int kErrorFailedToInstallSystemdUnit = 40;
 
 // Failed to remove one or more Systemd units during uninstallation.
 inline constexpr int kErrorFailedToRemoveSystemdUnit = 41;
+
+// Running as the wrong user for the provided UpdaterScope.
+inline constexpr int kErrorWrongUser = 42;
 
 inline constexpr int kErrorTagParsing = 50;
 

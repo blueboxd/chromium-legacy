@@ -61,7 +61,7 @@ class IBAN : public AutofillDataModel {
 
   // Returns the value (the actual bank account number) of IBAN.
   const std::u16string& value() const { return value_; }
-  void set_value(const std::u16string& value) { value_ = value; }
+  void set_value(const std::u16string& value);
 
   const std::u16string& nickname() const { return nickname_; }
   // Set the |nickname_| with the processed input (replace all tabs and newlines
@@ -84,10 +84,36 @@ class IBAN : public AutofillDataModel {
   std::u16string GetIdentifierStringForAutofillDisplay(
       bool is_value_masked = true) const;
 
- private:
+  // Returns true if IBAN value is valid.
+  // The validation follows the below steps:
+  // 1. The IBAN consists of 16 to 34 alphanumeric characters, the first two
+  //    letters are country code.
+  // 2. Check that the total IBAN length is correct as per the country.
+  // 3. Move the four initial characters to the end of the string and replace
+  //    each letter in with two digits, thereby expanding the string, where
+  //    'A' = 10, 'B' = 11, ..., 'Z' = 35.
+  // 4. Interpret the string as a decimal integer and compute the remainder of
+  //    the number on division by 97, returning true if the remainder is 1.
+  //
+  // The validation algorithm is from:
+  // https://en.wikipedia.org/wiki/International_Bank_Account_Number#Algorithms
+  bool IsValid() const;
+
   // Returns a version of |value_| which does not have any separator characters
   // (e.g., '-' and ' ').
   std::u16string GetStrippedValue() const;
+
+ private:
+  // This method does the following steps:
+  // 1. Move the four initial characters to the end of the string.
+  // 2. Replace each letter in with two digits, thereby expanding the string,
+  //    where 'A' = 10, 'B' = 11, ..., 'Z' = 35.
+  // 3. Treat the converted string as decimal and get the remainder of it on
+  //    division by 97.
+  //
+  // The algorithm is from:
+  // https://en.wikipedia.org/wiki/International_Bank_Account_Number#Modulo_operation_on_IBAN
+  int GetRemainderOfIbanValue(const std::u16string& stripped_value) const;
 
   // This is the ID assigned by the server to uniquely identify this IBAN.
   // Note: server_id is empty for now as only local IBAN is supported.

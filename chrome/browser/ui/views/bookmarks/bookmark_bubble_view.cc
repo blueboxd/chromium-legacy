@@ -92,8 +92,11 @@ class BookmarkBubbleView::BookmarkBubbleDelegate
 
   void ShowEditor() {
     DCHECK(dialog_model()->host());
+
+    Profile* const profile = browser_->profile();
+
     const bookmarks::BookmarkNode* node =
-        BookmarkModelFactory::GetForBrowserContext(browser_->profile())
+        BookmarkModelFactory::GetForBrowserContext(profile)
             ->GetMostRecentlyAddedUserNodeForURL(url_);
     DCHECK(bookmark_bubble_->anchor_widget());
     gfx::NativeWindow native_parent =
@@ -105,7 +108,7 @@ class BookmarkBubbleView::BookmarkBubbleDelegate
     dialog_model()->host()->Close();
 
     if (node && native_parent) {
-      BookmarkEditor::Show(native_parent, browser_->profile(),
+      BookmarkEditor::Show(native_parent, profile,
                            BookmarkEditor::EditDetails::EditNode(node),
                            BookmarkEditor::SHOW_TREE);
     }

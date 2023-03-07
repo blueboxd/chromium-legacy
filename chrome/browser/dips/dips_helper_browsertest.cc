@@ -53,29 +53,6 @@ using testing::Pair;
 
 namespace {
 
-class UserActivationObserver : public content::WebContentsObserver {
- public:
-  explicit UserActivationObserver(content::WebContents* web_contents,
-                                  content::RenderFrameHost* render_frame_host)
-      : WebContentsObserver(web_contents),
-        render_frame_host_(render_frame_host) {}
-
-  // Wait until the frame receives user activation.
-  void Wait() { run_loop_.Run(); }
-
-  // WebContentsObserver override
-  void FrameReceivedUserActivation(
-      content::RenderFrameHost* render_frame_host) override {
-    if (render_frame_host_ == render_frame_host) {
-      run_loop_.Quit();
-    }
-  }
-
- private:
-  raw_ptr<content::RenderFrameHost> const render_frame_host_;
-  base::RunLoop run_loop_;
-};
-
 class FrameCookieAccessObserver : public content::WebContentsObserver {
  public:
   explicit FrameCookieAccessObserver(WebContents* web_contents,
@@ -98,8 +75,6 @@ class FrameCookieAccessObserver : public content::WebContentsObserver {
   const raw_ptr<content::RenderFrameHost> render_frame_host_;
   base::RunLoop run_loop_;
 };
-
-using StateForURLCallback = base::OnceCallback<void(const DIPSState&)>;
 
 // Histogram names
 constexpr char kTimeToInteraction[] =
@@ -174,8 +149,7 @@ class DIPSTabHelperBrowserTest : public PlatformBrowserTest,
   absl::optional<StateValue> GetDIPSState(const GURL& url) {
     absl::optional<StateValue> state;
 
-    StateForURL(url,
-                base::BindLambdaForTesting([&](const DIPSState& loaded_state) {
+    StateForURL(url, base::BindLambdaForTesting([&](DIPSState loaded_state) {
                   if (loaded_state.was_loaded()) {
                     state = loaded_state.ToStateValue();
                   }
@@ -771,8 +745,8 @@ class DIPSPrepopulateTest : public PlatformBrowserTest {
         ->FlushLossyWebsiteSettings();
   }
 
-  raw_ptr<DIPSService> dips_service;
-  raw_ptr<base::SequenceBound<DIPSStorage>> storage;
+  raw_ptr<DIPSService, DanglingUntriaged> dips_service;
+  raw_ptr<base::SequenceBound<DIPSStorage>, DanglingUntriaged> storage;
 
  private:
   base::test::ScopedFeatureList feature_list_;
@@ -820,7 +794,10 @@ IN_PROC_BROWSER_TEST_F(DIPSPrepopulateTest, PRE_PrepopulateExactlyOnce) {
   FlushLossyWebsiteSettings();
 }
 
-IN_PROC_BROWSER_TEST_F(DIPSPrepopulateTest, PrepopulateExactlyOnce) {
+// TODO (crbug.com/1418692): Rework this test to work without enabling and
+// disabling the DIPS feature, as opening a profile with the feature disabled
+// now causes any existing db files it has to be removed.
+IN_PROC_BROWSER_TEST_F(DIPSPrepopulateTest, DISABLED_PrepopulateExactlyOnce) {
   ASSERT_NE(dips_service, nullptr);  // Verify that DIPS is on.
   // Only the sites that were prepopulated the first time is in the database.
   auto a_state = GetDIPSState(GURL("http://a.test"));

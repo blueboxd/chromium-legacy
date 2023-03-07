@@ -56,6 +56,8 @@ struct COMPONENT_EXPORT(EVDEV) InputDeviceSettingsEvdev {
   InputDeviceSettingsEvdev(const InputDeviceSettingsEvdev&);
   ~InputDeviceSettingsEvdev();
 
+  void RemoveDeviceFromSettings(int device_id);
+
   TouchpadSettingsEvdev& GetTouchpadSettings();
   TouchpadSettingsEvdev& GetTouchpadSettings(int device_id);
   const TouchpadSettingsEvdev& GetTouchpadSettings() const;
@@ -77,6 +79,7 @@ struct COMPONENT_EXPORT(EVDEV) InputDeviceSettingsEvdev {
   bool tap_to_click_paused = false;
   // Three finger click applies to all touchpad devices.
   bool three_finger_click_enabled = false;
+  bool suspend_acceleration = false;  // Applies to all mice/pointing sticks.
   bool touch_event_logging_enabled = false;
   bool enable_devices = true;  // If false, all input is disabled.
   bool enable_internal_touchpad = true;

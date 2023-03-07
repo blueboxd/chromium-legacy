@@ -8,13 +8,16 @@
 #include <memory>
 #include <vector>
 
+#include "base/allocator/partition_allocator/extended_api.h"
 #include "base/allocator/partition_allocator/partition_alloc.h"
 #include "base/allocator/partition_allocator/partition_alloc_base/logging.h"
 #include "base/allocator/partition_allocator/partition_alloc_base/strings/stringprintf.h"
 #include "base/allocator/partition_allocator/partition_alloc_base/threading/platform_thread_for_testing.h"
 #include "base/allocator/partition_allocator/partition_alloc_base/time/time.h"
 #include "base/allocator/partition_allocator/partition_alloc_check.h"
+#include "base/allocator/partition_allocator/partition_alloc_for_testing.h"
 #include "base/allocator/partition_allocator/thread_cache.h"
+#include "base/debug/debugging_buildflags.h"
 #include "base/timer/lap_timer.h"
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -24,6 +27,11 @@
 // Some tests allocate many GB of memory, which can cause issues on Android and
 // address-space exhaustion for any 32-bit process.
 #define MEMORY_CONSTRAINED
+#endif
+
+#if BUILDFLAG(ENABLE_ALLOCATION_STACK_TRACE_RECORDER)
+#include "base/allocator/dispatcher/dispatcher.h"
+#include "base/debug/allocation_trace.h"
 #endif
 
 namespace partition_alloc::internal {
@@ -59,7 +67,10 @@ perf_test::PerfResultReporter SetUpReporter(const std::string& story_name) {
 enum class AllocatorType {
   kSystem,
   kPartitionAlloc,
-  kPartitionAllocWithThreadCache
+  kPartitionAllocWithThreadCache,
+#if BUILDFLAG(ENABLE_ALLOCATION_STACK_TRACE_RECORDER)
+  kPartitionAllocWithAllocationStackTraceRecorder,
+#endif
 };
 
 class Allocator {
@@ -100,36 +111,83 @@ class PartitionAllocator : public Allocator {
   }};
 };
 
-// Only one partition with a thread cache.
-ThreadSafePartitionRoot* g_partition_root = nullptr;
 class PartitionAllocatorWithThreadCache : public Allocator {
  public:
-  explicit PartitionAllocatorWithThreadCache(bool use_alternate_bucket_dist) {
-    if (!g_partition_root) {
-      g_partition_root = new ThreadSafePartitionRoot({
-          PartitionOptions::AlignedAlloc::kDisallowed,
-          PartitionOptions::ThreadCache::kEnabled,
-          PartitionOptions::Quarantine::kDisallowed,
-          PartitionOptions::Cookie::kAllowed,
-          PartitionOptions::BackupRefPtr::kDisabled,
-          PartitionOptions::BackupRefPtrZapping::kDisabled,
-          PartitionOptions::UseConfigurablePool::kNo,
-      });
-    }
+  explicit PartitionAllocatorWithThreadCache(bool use_alternate_bucket_dist)
+      : scope_(allocator_.root()) {
     ThreadCacheRegistry::Instance().PurgeAll();
-    if (!use_alternate_bucket_dist)
-      g_partition_root->SwitchToDenserBucketDistribution();
-    else
-      g_partition_root->ResetBucketDistributionForTesting();
+    if (!use_alternate_bucket_dist) {
+      allocator_.root()->SwitchToDenserBucketDistribution();
+    } else {
+      allocator_.root()->ResetBucketDistributionForTesting();
+    }
   }
   ~PartitionAllocatorWithThreadCache() override = default;
 
   void* Alloc(size_t size) override {
-    return g_partition_root->AllocWithFlagsNoHooks(0, size,
-                                                   PartitionPageSize());
+    return allocator_.root()->AllocWithFlagsNoHooks(0, size,
+                                                    PartitionPageSize());
   }
-  void Free(void* data) override { ThreadSafePartitionRoot::FreeNoHooks(data); }
+  void Free(void* data) override { allocator_.root()->Free(data); }
+
+ private:
+  static constexpr partition_alloc::PartitionOptions kOpts = {
+    PartitionOptions::AlignedAlloc::kDisallowed,
+#if !BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
+    PartitionOptions::ThreadCache::kEnabled,
+#else
+    PartitionOptions::ThreadCache::kDisabled,
+#endif  // BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
+    PartitionOptions::Quarantine::kDisallowed,
+    PartitionOptions::Cookie::kAllowed,
+    PartitionOptions::BackupRefPtr::kDisabled,
+    PartitionOptions::BackupRefPtrZapping::kDisabled,
+    PartitionOptions::UseConfigurablePool::kNo,
+  };
+  PartitionAllocatorForTesting<internal::ThreadSafe, internal::DisallowLeaks>
+      allocator_{kOpts};
+  internal::ThreadCacheProcessScopeForTesting scope_;
 };
+
+#if BUILDFLAG(ENABLE_ALLOCATION_STACK_TRACE_RECORDER)
+class PartitionAllocatorWithAllocationStackTraceRecorder : public Allocator {
+ public:
+  explicit PartitionAllocatorWithAllocationStackTraceRecorder(
+      bool register_hooks)
+      : register_hooks_(register_hooks) {
+    if (register_hooks_) {
+      dispatcher_.InitializeForTesting(&recorder_);
+    }
+  }
+
+  ~PartitionAllocatorWithAllocationStackTraceRecorder() override {
+    if (register_hooks_) {
+      dispatcher_.ResetForTesting();
+    }
+  }
+
+  void* Alloc(size_t size) override {
+    return alloc_.AllocWithFlags(0, size, nullptr);
+  }
+
+  void Free(void* data) override { ThreadSafePartitionRoot::Free(data); }
+
+ private:
+  bool const register_hooks_;
+  ThreadSafePartitionRoot alloc_{{
+      PartitionOptions::AlignedAlloc::kDisallowed,
+      PartitionOptions::ThreadCache::kDisabled,
+      PartitionOptions::Quarantine::kDisallowed,
+      PartitionOptions::Cookie::kAllowed,
+      PartitionOptions::BackupRefPtr::kDisabled,
+      PartitionOptions::BackupRefPtrZapping::kDisabled,
+      PartitionOptions::UseConfigurablePool::kNo,
+  }};
+  ::base::allocator::dispatcher::Dispatcher& dispatcher_ =
+      ::base::allocator::dispatcher::Dispatcher::GetInstance();
+  ::base::debug::tracer::AllocationTraceRecorder recorder_;
+};
+#endif  // BUILDFLAG(ENABLE_ALLOCATION_STACK_TRACE_RECORDER)
 
 class TestLoopThread : public base::PlatformThreadForTesting::Delegate {
  public:
@@ -318,6 +376,11 @@ std::unique_ptr<Allocator> CreateAllocator(AllocatorType type,
     case AllocatorType::kPartitionAllocWithThreadCache:
       return std::make_unique<PartitionAllocatorWithThreadCache>(
           use_alternate_bucket_dist);
+#if BUILDFLAG(ENABLE_ALLOCATION_STACK_TRACE_RECORDER)
+    case AllocatorType::kPartitionAllocWithAllocationStackTraceRecorder:
+      return std::make_unique<
+          PartitionAllocatorWithAllocationStackTraceRecorder>(true);
+#endif
   }
 }
 
@@ -371,6 +434,11 @@ void RunTest(int thread_count,
     case AllocatorType::kPartitionAllocWithThreadCache:
       alloc_type_str = "PartitionAllocWithThreadCache";
       break;
+#if BUILDFLAG(ENABLE_ALLOCATION_STACK_TRACE_RECORDER)
+    case AllocatorType::kPartitionAllocWithAllocationStackTraceRecorder:
+      alloc_type_str = "PartitionAllocWithAllocationStackTraceRecorder";
+      break;
+#endif
   }
 
   std::string name = base::TruncatingStringPrintf(
@@ -394,9 +462,15 @@ INSTANTIATE_TEST_SUITE_P(
     ::testing::Combine(
         ::testing::Values(1, 2, 3, 4),
         ::testing::Values(false, true),
-        ::testing::Values(AllocatorType::kSystem,
-                          AllocatorType::kPartitionAlloc,
-                          AllocatorType::kPartitionAllocWithThreadCache)));
+        ::testing::Values(
+            AllocatorType::kSystem,
+            AllocatorType::kPartitionAlloc,
+            AllocatorType::kPartitionAllocWithThreadCache
+#if BUILDFLAG(ENABLE_ALLOCATION_STACK_TRACE_RECORDER)
+            ,
+            AllocatorType::kPartitionAllocWithAllocationStackTraceRecorder
+#endif
+            )));
 
 // This test (and the other one below) allocates a large amount of memory, which
 // can cause issues on Android.

@@ -16,6 +16,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/trace_event/trace_event.h"
+#include "components/crash/core/common/crash_key.h"
 #include "media/base/win/mf_helpers.h"
 #include "ui/gfx/color_space_win.h"
 #include "ui/gfx/geometry/rect_conversions.h"
@@ -208,6 +209,7 @@ struct IntelVpeExt {
   raw_ptr<void> param;
 };
 
+// Return true if VpSuperResolution has been set successfully.
 bool ToggleIntelVpSuperResolution(ID3D11VideoContext* video_context,
                                   ID3D11VideoProcessor* video_processor,
                                   bool is_on_battery_power) {
@@ -264,7 +266,8 @@ bool ToggleIntelVpSuperResolution(ID3D11VideoContext* video_context,
   return !is_on_battery_power;
 }
 
-void ToggleNvidiaVpSuperResolution(ID3D11VideoContext* video_context,
+// Return true if VpSuperResolution has been set successfully.
+bool ToggleNvidiaVpSuperResolution(ID3D11VideoContext* video_context,
                                    ID3D11VideoProcessor* video_processor,
                                    bool is_on_battery_power) {
   TRACE_EVENT1("gpu", "ToggleNvidiaVpSuperResolution", "on",
@@ -290,11 +293,16 @@ void ToggleNvidiaVpSuperResolution(ID3D11VideoContext* video_context,
       video_processor, 0, &kNvidiaPPEInterfaceGUID,
       sizeof(stream_extension_info), &stream_extension_info);
 
+  base::UmaHistogramSparse(is_on_battery_power
+                               ? "GPU.NvidiaVpSuperResolution.Off.SetStreamExt"
+                               : "GPU.NvidiaVpSuperResolution.On.SetStreamExt",
+                           hr);
   if (FAILED(hr)) {
     DLOG(ERROR) << "VideoProcessorSetStreamExtension failed with error 0x"
                 << std::hex << hr;
-    return;
+    return false;
   }
+  return !is_on_battery_power;
 }
 
 bool IsWithinMargin(int i, int j) {
@@ -314,6 +322,22 @@ std::string OverlayTypeToString(DCLayerOverlayType overlay_type) {
     overlay_type_str = "software video frame";
   }
   return overlay_type_str;
+}
+
+void DumpWithoutCrashingForVideoProcessorBlt(HRESULT hr,
+                                             bool use_vp_super_resolution) {
+  static crash_reporter::CrashKeyString<16> vp_super_resolution(
+      "vp_super_resolution");
+  vp_super_resolution.Set(use_vp_super_resolution ? "on" : "off");
+
+  static crash_reporter::CrashKeyString<128> vp_blt_error_code(
+      "vp_blt_error_code");
+  vp_blt_error_code.Set(base::NumberToString(hr));
+
+  base::debug::DumpWithoutCrashing();
+
+  vp_super_resolution.Clear();
+  vp_blt_error_code.Clear();
 }
 
 }  // namespace
@@ -1582,31 +1606,35 @@ bool SwapChainPresenter::VideoProcessorBlt(
       DCHECK(output_view_);
     }
 
-    bool use_intel_vp_super_resolution = false;
+    bool use_vp_super_resolution = false;
     if (!layer_tree_->disable_vp_super_resolution()) {
       if (gpu_vendor_id_ == 0x8086 &&
           base::FeatureList::IsEnabled(features::kIntelVpSuperResolution)) {
-        use_intel_vp_super_resolution = ToggleIntelVpSuperResolution(
+        use_vp_super_resolution = ToggleIntelVpSuperResolution(
             video_context.Get(), video_processor.Get(), is_on_battery_power_);
       }
       if (gpu_vendor_id_ == 0x10de &&
           base::FeatureList::IsEnabled(features::kNvidiaVpSuperResolution)) {
-        ToggleNvidiaVpSuperResolution(
+        use_vp_super_resolution = ToggleNvidiaVpSuperResolution(
             video_context.Get(), video_processor.Get(), is_on_battery_power_);
       }
     }
 
     hr = video_context->VideoProcessorBlt(video_processor.Get(),
                                           output_view_.Get(), 0, 1, &stream);
-    if (gpu_vendor_id_ == 0x8086) {
-      base::UmaHistogramSparse(
-          (use_intel_vp_super_resolution
-               ? "GPU.IntelVpSuperResolution.On.VideoProcessorBlt"
-               : "GPU.IntelVpSuperResolution.Off.VideoProcessorBlt"),
-          hr);
-    }
+    base::UmaHistogramSparse(
+        (use_vp_super_resolution
+             ? "GPU.VideoProcessorBlt.VpSuperResolution.On"
+             : "GPU.VideoProcessorBlt.VpSuperResolution.Off"),
+        hr);
+
     if (FAILED(hr)) {
       DLOG(ERROR) << "VideoProcessorBlt failed with error 0x" << std::hex << hr;
+
+      // TODO(crbug.com/1318380): Remove this crash dump once we have collected
+      // some valid dumps.
+      DumpWithoutCrashingForVideoProcessorBlt(hr, use_vp_super_resolution);
+
       return false;
     }
   }

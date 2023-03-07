@@ -50,6 +50,7 @@ enum AddRuleFlag {
   kRuleHasNoSpecialState = 0,
   kRuleHasDocumentSecurityOrigin = 1 << 0,
   kRuleIsVisitedDependent = 1 << 1,
+  kRuleIsInitial = 1 << 2,
 };
 
 // Some CSS properties do not apply to certain pseudo-elements, and need to be
@@ -126,6 +127,7 @@ class CORE_EXPORT RuleData {
   void ComputeEntirelyCoveredByBucketing();
   void ResetEntirelyCoveredByBucketing();
   bool SelectorIsEasy() const { return is_easy_; }
+  bool IsInitial() const { return is_initial_; }
 
   bool ContainsUncommonAttributeSelector() const {
     return contains_uncommon_attribute_selector_;
@@ -194,6 +196,7 @@ class CORE_EXPORT RuleData {
   unsigned is_entirely_covered_by_bucketing_ : 1;
   unsigned is_easy_ : 1;  // See EasySelectorChecker.
   // 32 bits above
+  unsigned is_initial_ : 1;  // Inside @initial {}.
   union {
     // Used by RuleMap before compaction, to hold what bucket this RuleData
     // is to be sorted into. (If the RuleData lives in a RuleMap, the hashes
@@ -225,7 +228,8 @@ struct SameSizeAsRuleData {
   Member<void*> a;
   unsigned b;
   unsigned c;
-  unsigned d[4];
+  unsigned d;
+  unsigned e[4];
 };
 
 ASSERT_SIZE(RuleData, SameSizeAsRuleData);
@@ -517,10 +521,10 @@ class CORE_EXPORT RuleSet final : public GarbageCollected<RuleSet> {
     return scope_intervals_;
   }
 
-#ifndef NDEBUG
+#if DCHECK_IS_ON()
   void Show() const;
   const HeapVector<RuleData>& AllRulesForTest() const { return all_rules_; }
-#endif
+#endif  // DCHECK_IS_ON()
 
   void Trace(Visitor*) const;
 
@@ -652,9 +656,9 @@ class CORE_EXPORT RuleSet final : public GarbageCollected<RuleSet> {
   // Empty vector if the stylesheet doesn't use any @scopes.
   HeapVector<Interval<StyleScope>> scope_intervals_;
 
-#ifndef NDEBUG
+#if DCHECK_IS_ON()
   HeapVector<RuleData> all_rules_;
-#endif
+#endif  // DCHECK_IS_ON()
 };
 
 }  // namespace blink

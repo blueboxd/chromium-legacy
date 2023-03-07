@@ -13,6 +13,8 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.when;
 
+import static org.chromium.ui.test.util.MockitoHelper.doCallback;
+
 import android.accounts.Account;
 import android.app.Activity;
 import android.app.Instrumentation;
@@ -79,6 +81,7 @@ import org.chromium.chrome.browser.locale.LocaleManagerDelegate;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.chrome.browser.privacy.settings.PrivacyPreferencesManagerImpl;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.search_engines.DefaultSearchEngineDialogHelperUtils;
 import org.chromium.chrome.browser.search_engines.SearchEnginePromoType;
 import org.chromium.chrome.browser.search_engines.TemplateUrlServiceFactory;
@@ -231,21 +234,14 @@ public class FirstRunIntegrationTest {
     }
 
     private void setHasAppRestrictionForMock(boolean hasAppRestriction) {
-        Mockito.doAnswer(invocation -> {
-                   Callback<Boolean> callback = invocation.getArgument(0);
-                   callback.onResult(hasAppRestriction);
-                   return null;
-               })
+        doCallback((Callback<Boolean> callback) -> callback.onResult(hasAppRestriction))
                 .when(mMockAppRestrictionInfo)
                 .getHasAppRestriction(any());
         FirstRunAppRestrictionInfo.setInitializedInstanceForTest(mMockAppRestrictionInfo);
     }
 
     private void setTemplateUrlServiceForMock() {
-        Mockito.doAnswer(invocation -> {
-                   mTemplateUrlServiceWhenLoadedRunnables.add(invocation.getArgument(0));
-                   return null;
-               })
+        doCallback((Runnable runnable) -> mTemplateUrlServiceWhenLoadedRunnables.add(runnable))
                 .when(mTemplateUrlService)
                 .runWhenLoaded(any());
         TemplateUrlServiceFactory.setInstanceForTesting(mTemplateUrlService);
@@ -253,13 +249,16 @@ public class FirstRunIntegrationTest {
 
     private void replaceMockTemplateUrlServiceWithInitReal() {
         CriteriaHelper.pollUiThread(() -> {
-            Assert.assertEquals(TemplateUrlServiceFactory.get(), mTemplateUrlService);
+            Assert.assertEquals(
+                    TemplateUrlServiceFactory.getForProfile(Profile.getLastUsedRegularProfile()),
+                    mTemplateUrlService);
             TemplateUrlServiceFactory.setInstanceForTesting(null);
-            TemplateUrlServiceFactory.get().runWhenLoaded(() -> {
-                for (Runnable runnable : mTemplateUrlServiceWhenLoadedRunnables) {
-                    runnable.run();
-                }
-            });
+            TemplateUrlServiceFactory.getForProfile(Profile.getLastUsedRegularProfile())
+                    .runWhenLoaded(() -> {
+                        for (Runnable runnable : mTemplateUrlServiceWhenLoadedRunnables) {
+                            runnable.run();
+                        }
+                    });
         });
     }
 
@@ -996,7 +995,8 @@ public class FirstRunIntegrationTest {
 
             @Override
             public List<TemplateUrl> getSearchEnginesForPromoDialog(int promoType) {
-                return TemplateUrlServiceFactory.get().getTemplateUrls();
+                return TemplateUrlServiceFactory.getForProfile(Profile.getLastUsedRegularProfile())
+                        .getTemplateUrls();
             }
         };
         TestThreadUtils.runOnUiThreadBlocking(

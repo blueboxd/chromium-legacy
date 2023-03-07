@@ -34,13 +34,13 @@
 #include "extensions/browser/management_policy.h"
 #endif
 
-#if !BUILDFLAG(IS_ANDROID)
+#if BUILDFLAG(IS_CHROMEOS)
 #include "chrome/browser/ui/browser_list_observer.h"
-#endif  // !BUILDFLAG(IS_ANDROID)
+#endif  // BUILDFLAG(IS_CHROMEOS)
 
-#if !BUILDFLAG(IS_ANDROID)
+#if BUILDFLAG(IS_CHROMEOS)
 class Browser;
-#endif  // !BUILDFLAG(IS_ANDROID)
+#endif  // BUILDFLAG(IS_CHROMEOS)
 
 class PrefService;
 class Profile;
@@ -79,7 +79,7 @@ class SupervisedUserService : public KeyedService,
                               public extensions::ManagementPolicy::Provider,
 #endif
                               public syncer::SyncTypePreferenceProvider,
-#if !BUILDFLAG(IS_ANDROID)
+#if BUILDFLAG(IS_CHROMEOS)
                               public BrowserListObserver,
 #endif
                               public SupervisedUserURLFilter::Observer {
@@ -175,10 +175,10 @@ class SupervisedUserService : public KeyedService,
 
   static std::string GetEduCoexistenceLoginUrl();
 
-  // Returns true if the user is a type of Family Link supervised account, this
-  // includes Unicorn, Geller, and Griffin accounts.
-  bool IsChild() const;
+  // Returns true if the extensions permissions parental control is enabled.
+  bool AreExtensionsPermissionsEnabled() const;
 
+  // Returns true if the URL filtering parental control is enabled.
   bool IsURLFilteringEnabled() const;
 
   // Returns true if there is a custodian for the child.  A child can have
@@ -194,22 +194,22 @@ class SupervisedUserService : public KeyedService,
   // SyncTypePreferenceProvider implementation:
   bool IsCustomPassphraseAllowed() const override;
 
-#if !BUILDFLAG(IS_ANDROID)
+#if BUILDFLAG(IS_CHROMEOS)
   // BrowserListObserver implementation:
   void OnBrowserSetLastActive(Browser* browser) override;
-#endif  // !BUILDFLAG(IS_ANDROID)
+#endif  // BUILDFLAG(IS_CHROMEOS)
 
   // SupervisedUserURLFilter::Observer implementation:
   void OnSiteListUpdated() override;
 
-#if !BUILDFLAG(IS_ANDROID)
+#if BUILDFLAG(IS_CHROMEOS)
   bool signout_required_after_supervision_enabled() {
     return signout_required_after_supervision_enabled_;
   }
   void set_signout_required_after_supervision_enabled() {
     signout_required_after_supervision_enabled_ = true;
   }
-#endif  // !BUILDFLAG(IS_ANDROID)
+#endif  // BUILDFLAG(IS_CHROMEOS)
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   // Updates the set of approved extensions to add approval for |extension|.
@@ -261,6 +261,10 @@ class SupervisedUserService : public KeyedService,
       ValidateURLSupportCallback check_webstore_url_callback);
 
   void SetActive(bool active);
+
+  // Returns true if the user is a type of Family Link supervised account, this
+  // includes Unicorn, Geller, and Griffin accounts.
+  bool IsChild() const;
 
   void OnCustodianInfoChanged();
 
@@ -420,7 +424,7 @@ class SupervisedUserService : public KeyedService,
 
   base::ObserverList<SupervisedUserServiceObserver>::Unchecked observer_list_;
 
-#if !BUILDFLAG(IS_ANDROID)
+#if BUILDFLAG(IS_CHROMEOS)
   bool signout_required_after_supervision_enabled_ = false;
 #endif
 

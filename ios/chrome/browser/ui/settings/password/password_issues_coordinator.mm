@@ -38,7 +38,7 @@
   IOSChromePasswordCheckManager* _manager;
 
   // Type of insecure credentials issues to display.
-  WarningType _warningType;
+  password_manager::WarningType _warningType;
 }
 
 // Main view controller for this coordinator.
@@ -56,7 +56,7 @@
 
 @synthesize baseNavigationController = _baseNavigationController;
 
-- (instancetype)initForWarningType:(WarningType)warningType
+- (instancetype)initForWarningType:(password_manager::WarningType)warningType
           baseNavigationController:(UINavigationController*)navigationController
                            browser:(Browser*)browser {
   self = [super initWithBaseViewController:navigationController
@@ -131,7 +131,8 @@
       initWithBaseNavigationController:self.baseNavigationController
                                browser:self.browser
                             credential:password.credential
-                          reauthModule:self.reauthModule];
+                          reauthModule:self.reauthModule
+                  supportMoveToAccount:NO];
   self.passwordDetails.delegate = self;
   [self.passwordDetails start];
 }

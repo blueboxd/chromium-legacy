@@ -286,6 +286,10 @@ BASE_FEATURE(kReduceAcceptLanguage,
              "ReduceAcceptLanguage",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+const base::FeatureParam<base::TimeDelta> kReduceAcceptLanguageCacheDuration{
+    &kReduceAcceptLanguage, "reduce-accept-language-cache-duration",
+    base::Days(30)};
+
 // Gate access to ReduceAcceptLanguage origin trial major code. Currently, All
 // ReduceAcceptLanguage feature codes are guarded by the feature flag
 // kReduceAcceptLanguage. This feature flag is useful on control major code
@@ -306,9 +310,10 @@ BASE_FEATURE(kPrivateNetworkAccessPreflightShortTimeout,
              "PrivateNetworkAccessPreflightShortTimeout",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
-// Allow secure same origin PNA requests without preflights.
-BASE_FEATURE(kPrivateNetworkAccessAllowSecureSameOrigin,
-             "PrivateNetworkAccessAllowSecureSameOrigin",
+// Allow potentially trustworthy same origin local network requests without
+// preflights.
+BASE_FEATURE(kLocalNetworkAccessAllowPotentiallyTrustworthySameOrigin,
+             "LocalNetworkAccessAllowPotentiallyTrustworthySameOrigin",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Handle the Link header DNS prefetches and preconnects in the network

@@ -1081,6 +1081,11 @@ policies:
   1080: ShowTouchpadScrollScreenEnabled
   1081: DeviceSystemAecEnabled
   1082: HttpAllowlist
+  1083: HttpsUpgradesEnabled
+  1084: RealTimeDownloadProtectionRequestAllowed
+  1085: MandatoryExtensionsForIncognitoNavigation
+  1086: CredentialProviderPromoEnabled
+
 atomic_groups:
   1: Homepage
   2: RemoteAccess

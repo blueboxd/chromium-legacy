@@ -1,5 +1,6 @@
 include_rules = [
   "+cc/base",
+  "+components/crash/core/common/crash_key.h",
   "+components/metal_util/types.h",
   "+components/viz/common/resources/resource_format.h",
   "+mojo/public/cpp/bindings",
@@ -60,5 +61,9 @@ specific_include_rules = {
   ],
   "swap_chain_presenter.cc": [
     "+media/base/win/mf_helpers.h"
+  ],
+  # NOTE: See comment in ./BUILD.gn with respect to this dependency.
+  "gl_image_gl_texture_unittest\.cc": [
+    "+media/gpu/vaapi/gl_image_gl_texture.h"
   ],
 }

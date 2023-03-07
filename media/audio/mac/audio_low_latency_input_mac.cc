@@ -126,7 +126,7 @@ static AudioDeviceID FindFirstOutputSubdevice(
     AudioDeviceID aggregate_device_id) {
   const AudioObjectPropertyAddress property_address = {
       kAudioAggregateDevicePropertyFullSubDeviceList,
-      kAudioObjectPropertyScopeGlobal, kAudioObjectPropertyElementMaster};
+      kAudioObjectPropertyScopeGlobal, kAudioObjectPropertyElementMain};
   base::ScopedCFTypeRef<CFArrayRef> subdevices;
   UInt32 size = sizeof(subdevices);
   OSStatus result = AudioObjectGetPropertyData(
@@ -256,7 +256,7 @@ AudioInputStream::OpenOutcome AUAudioInputStream::Open() {
   // Verify that we have a valid device. Send appropriate error code to
   // HandleError() to ensure that the error type is added to UMA stats.
   if (input_device_id_ == kAudioObjectUnknown) {
-    NOTREACHED() << "Device ID is unknown";
+    LOG(ERROR) << "Device ID is unknown";
     HandleError(kAudioUnitErr_InvalidElement);
     return OpenOutcome::kFailed;
   }
@@ -672,7 +672,7 @@ void AUAudioInputStream::Stop() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   deferred_start_cb_.Cancel();
   DVLOG(1) << __FUNCTION__ << " this " << this;
-  ;
+
   StopAgc();
   if (noise_reduction_suppressed_) {
     manager_->UnsuppressNoiseReduction(input_device_id_);
@@ -710,7 +710,6 @@ void AUAudioInputStream::Stop() {
 void AUAudioInputStream::Close() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DVLOG(1) << __FUNCTION__ << " this " << this;
-  ;
 
   // It is valid to call Close() before calling open or Start().
   // It is also valid to call Close() after Start() has been called.
@@ -729,7 +728,7 @@ void AUAudioInputStream::Close() {
 double AUAudioInputStream::GetMaxVolume() {
   // Verify that we have a valid device.
   if (input_device_id_ == kAudioObjectUnknown) {
-    NOTREACHED() << "Device ID is unknown";
+    LOG(ERROR) << "Device ID is unknown";
     return 0.0;
   }
 
@@ -751,17 +750,17 @@ void AUAudioInputStream::SetVolume(double volume) {
 
   // Verify that we have a valid device.
   if (input_device_id_ == kAudioObjectUnknown) {
-    NOTREACHED() << "Device ID is unknown";
+    LOG(ERROR) << "Device ID is unknown";
     return;
   }
 
   Float32 volume_float32 = static_cast<Float32>(volume);
   AudioObjectPropertyAddress property_address = {
       kAudioDevicePropertyVolumeScalar, kAudioDevicePropertyScopeInput,
-      kAudioObjectPropertyElementMaster};
+      kAudioObjectPropertyElementMain};
 
   // Try to set the volume for master volume channel.
-  if (IsVolumeSettableOnChannel(kAudioObjectPropertyElementMaster)) {
+  if (IsVolumeSettableOnChannel(kAudioObjectPropertyElementMain)) {
     OSStatus result = AudioObjectSetPropertyData(
         input_device_id_, &property_address, 0, nullptr, sizeof(volume_float32),
         &volume_float32);
@@ -798,13 +797,13 @@ void AUAudioInputStream::SetVolume(double volume) {
 double AUAudioInputStream::GetVolume() {
   // Verify that we have a valid device.
   if (input_device_id_ == kAudioObjectUnknown) {
-    NOTREACHED() << "Device ID is unknown";
+    LOG(ERROR) << "Device ID is unknown";
     return 0.0;
   }
 
   AudioObjectPropertyAddress property_address = {
       kAudioDevicePropertyVolumeScalar, kAudioDevicePropertyScopeInput,
-      kAudioObjectPropertyElementMaster};
+      kAudioObjectPropertyElementMain};
 
   if (AudioObjectHasProperty(input_device_id_, &property_address)) {
     // The device supports master volume control, get the volume from the
@@ -851,7 +850,7 @@ bool AUAudioInputStream::IsMuted() {
 
   AudioObjectPropertyAddress property_address = {
       kAudioDevicePropertyMute, kAudioDevicePropertyScopeInput,
-      kAudioObjectPropertyElementMaster};
+      kAudioObjectPropertyElementMain};
 
   if (!AudioObjectHasProperty(input_device_id_, &property_address)) {
     DLOG(ERROR) << "Device does not support checking master mute state";
@@ -1154,7 +1153,7 @@ int AUAudioInputStream::HardwareSampleRate() {
 
   AudioObjectPropertyAddress default_input_device_address = {
       kAudioHardwarePropertyDefaultInputDevice, kAudioObjectPropertyScopeGlobal,
-      kAudioObjectPropertyElementMaster};
+      kAudioObjectPropertyElementMain};
   OSStatus result = AudioObjectGetPropertyData(kAudioObjectSystemObject,
                                                &default_input_device_address, 0,
                                                0, &info_size, &device_id);
@@ -1166,7 +1165,7 @@ int AUAudioInputStream::HardwareSampleRate() {
 
   AudioObjectPropertyAddress nominal_sample_rate_address = {
       kAudioDevicePropertyNominalSampleRate, kAudioObjectPropertyScopeGlobal,
-      kAudioObjectPropertyElementMaster};
+      kAudioObjectPropertyElementMain};
   result = AudioObjectGetPropertyData(device_id, &nominal_sample_rate_address,
                                       0, 0, &info_size, &nominal_sample_rate);
   if (result != noErr)
@@ -1191,7 +1190,7 @@ int AUAudioInputStream::GetNumberOfChannelsFromStream() {
   // Get the stream format, to be able to read the number of channels.
   AudioObjectPropertyAddress property_address = {
       kAudioDevicePropertyStreamFormat, kAudioDevicePropertyScopeInput,
-      kAudioObjectPropertyElementMaster};
+      kAudioObjectPropertyElementMain};
   AudioStreamBasicDescription stream_format;
   UInt32 size = sizeof(stream_format);
   OSStatus result = AudioObjectGetPropertyData(
@@ -1225,8 +1224,8 @@ void AUAudioInputStream::HandleError(OSStatus err) {
   // carries one extra level of information.
   base::UmaHistogramSparse("Media.InputErrorMac",
                            GetInputCallbackIsActive() ? err : (err * -1));
-  NOTREACHED() << "error " << logging::DescriptionFromOSStatus(err) << " ("
-               << err << ")";
+  LOG(ERROR) << "Input error " << logging::DescriptionFromOSStatus(err) <<
+      " (" << err << ")";
   if (sink_)
     sink_->OnError();
 }

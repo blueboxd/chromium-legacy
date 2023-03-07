@@ -257,6 +257,16 @@ chromium-metrics-reviews@google.com.
   </token>
 </histogram>
 
+<histogram name="Network.Ash.Hotspot.SetConfig.OperationResult"
+    enum="HotspotSetConfigResult" expires_after="2023-10-01">
+  <owner>jiajunz@google.com</owner>
+  <owner>cros-connectivity@google.com</owner>
+  <summary>
+    Measures and tracks the result of setting hotspot configuration. Emitted
+    whenever attempts to update hotspot configuration.
+  </summary>
+</histogram>
+
 <histogram name="Network.Ash.Hotspot.Upstream.Cellular.Capability.AllowStatus"
     enum="HotspotAllowStatus" expires_after="2023-10-01">
   <owner>jiajunz@google.com</owner>
@@ -280,6 +290,67 @@ chromium-metrics-reviews@google.com.
     when user login which gives the user enough time to connect to their
     upstream cellular network.
   </summary>
+</histogram>
+
+<histogram
+    name="Network.Ash.Hotspot.Upstream.Cellular.CheckReadiness.OperationResult"
+    enum="HotspotCheckReadinessResult" expires_after="2023-10-01">
+  <owner>jiajunz@google.com</owner>
+  <owner>cros-connectivity@google.com</owner>
+  <summary>
+    Measures and tracks the result of checking tethering readiness. Emitted
+    whenever attempts to check tehtering readiness, for exmaple: when cellular
+    network get connected or when enable hotspot.
+  </summary>
+</histogram>
+
+<histogram
+    name="Network.Ash.Hotspot.Upstream.Cellular.Usage.Config.AutoDisable"
+    enum="BooleanEnabled" expires_after="2023-10-01">
+  <owner>jiajunz@google.com</owner>
+  <owner>cros-connectivity@google.com</owner>
+  <summary>
+    Measures and tracks the number of whether the hotspot auto disable
+    configuration is set for usage. Emitted each time the hotspot starts
+    successfully.
+  </summary>
+</histogram>
+
+<histogram
+    name="Network.Ash.Hotspot.Upstream.Cellular.Usage.Config.CompatibilityMode"
+    enum="BooleanEnabled" expires_after="2023-10-01">
+  <owner>jiajunz@google.com</owner>
+  <owner>cros-connectivity@google.com</owner>
+  <summary>
+    Measures and tracks the number of whether the hotspot extend compatibility
+    mode is set for usage. Emitted each time the hotspot starts successfully.
+  </summary>
+</histogram>
+
+<histogram name="Network.Ash.Hotspot.Upstream.Cellular.Usage.Config.MAR"
+    enum="BooleanEnabled" expires_after="2023-10-01">
+  <owner>jiajunz@google.com</owner>
+  <owner>cros-connectivity@google.com</owner>
+  <summary>
+    Measures and tracks the number of whether the hotspot BSSID randomization
+    configuration is set for usage. Emitted each time the hotspot starts
+    successfully.
+  </summary>
+</histogram>
+
+<histogram
+    name="Network.Ash.Hotspot.Upstream.Cellular.{Operation}.OperationResult"
+    enum="HotspotSetEnabledResult" expires_after="2023-10-01">
+  <owner>jiajunz@google.com</owner>
+  <owner>cros-connectivity@google.com</owner>
+  <summary>
+    Measures and tracks the result of turning on/off hotspot. Emitted whenever
+    attempts to enabled/disabled hotspot.
+  </summary>
+  <token key="Operation">
+    <variant name="DisableHotspot"/>
+    <variant name="EnableHotspot"/>
+  </token>
 </histogram>
 
 <histogram name="Network.Ash.VPN.{VPNProviderType}.ConfigurationSource"
@@ -1466,16 +1537,6 @@ chromium-metrics-reviews@google.com.
     <variant name="DnsOverHttps"/>
     <variant name="PlainText"/>
   </token>
-</histogram>
-
-<histogram name="Network.EarlyHints.Preload.RequestDestination"
-    enum="RequestDestination" expires_after="2023-04-15">
-  <owner>bashi@chromium.org</owner>
-  <owner>blink-network-stack@google.com</owner>
-  <summary>
-    Records a request destination when a preload initiated by an Early Hints is
-    loaded from the network.
-  </summary>
 </histogram>
 
 <histogram name="Network.NetworkPortalDetectorHasProxy" enum="Boolean"
@@ -3168,7 +3229,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Network.Shill.WiFi.TimeFromRekeyToFailureSeconds"
-    units="seconds" expires_after="2023-07-02">
+    units="seconds" expires_after="2023-09-03">
   <owner>billyzhao@chromium.org</owner>
   <owner>cros-network-metrics@google.com</owner>
   <summary>
@@ -3489,7 +3550,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="NetworkService.ClearStaleDataDirectoryResult"
-    enum="DeleteStaleCookiesResult" expires_after="2023-07-02">
+    enum="DeleteStaleCookiesResult" expires_after="2023-09-03">
   <owner>wfh@chromium.org</owner>
   <owner>pasko@chromium.org</owner>
   <summary>
@@ -3533,7 +3594,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="NetworkService.DeletedOldCacheData" enum="Boolean"
-    expires_after="2023-06-30">
+    expires_after="2023-09-03">
   <owner>wfh@chromium.org</owner>
   <owner>mmenke@chromium.org</owner>
   <summary>
@@ -3545,7 +3606,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="NetworkService.GrantSandboxResult"
-    enum="NetworkServiceSandboxGrantResult" expires_after="2023-04-30">
+    enum="NetworkServiceSandboxGrantResult" expires_after="2023-09-03">
   <owner>wfh@chromium.org</owner>
   <owner>mmenke@chromium.org</owner>
   <summary>
@@ -3643,37 +3704,6 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="NetworkService.TimeToFirstResponse" units="ms"
-    expires_after="M82">
-  <owner>cduvall@chromium.org</owner>
-  <owner>cmumford@chromium.org</owner>
-  <summary>
-    How long it takes the network service to respond to the first mojo call.
-    This will be used to debug http://crbug.com/934317.
-  </summary>
-</histogram>
-
-<histogram name="NetworkService.TimeToFirstResponse.AfterCrash" units="ms"
-    expires_after="M82">
-  <owner>cduvall@chromium.org</owner>
-  <owner>cmumford@chromium.org</owner>
-  <summary>
-    How long it takes the network service to respond to the first mojo call
-    after a network service crash. This will be used to debug
-    http://crbug.com/934317.
-  </summary>
-</histogram>
-
-<histogram name="NetworkService.TimeToFirstResponse.OnStartup" units="ms"
-    expires_after="M82">
-  <owner>cduvall@chromium.org</owner>
-  <owner>cmumford@chromium.org</owner>
-  <summary>
-    How long it takes the network service to respond to the first mojo call on
-    startup. This will be used to debug http://crbug.com/934317.
-  </summary>
-</histogram>
-
 <histogram name="NetworkService.TimeToGrantCacheAccess" units="ms"
     expires_after="2023-08-08">
   <owner>wfh@chromium.org</owner>
@@ -3704,7 +3734,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="NetworkService.TimeToMigrateData" units="ms"
-    expires_after="2023-07-02">
+    expires_after="2023-09-03">
   <owner>wfh@chromium.org</owner>
   <owner>mmenke@chromium.org</owner>
   <summary>

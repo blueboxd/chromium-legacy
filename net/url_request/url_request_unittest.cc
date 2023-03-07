@@ -10526,13 +10526,12 @@ class HTTPSOCSPTest : public HTTPSCertNetFetchingTest {
 };
 
 static bool UsingBuiltinCertVerifier() {
-#if BUILDFLAG(IS_FUCHSIA) || BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
+#if BUILDFLAG(IS_FUCHSIA) || BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS) || \
+    BUILDFLAG(CHROME_ROOT_STORE_ONLY)
   return true;
+#elif BUILDFLAG(CHROME_ROOT_STORE_OPTIONAL)
+  return base::FeatureList::IsEnabled(features::kChromeRootStoreUsed);
 #else
-#if BUILDFLAG(CHROME_ROOT_STORE_SUPPORTED)
-  if (base::FeatureList::IsEnabled(features::kChromeRootStoreUsed))
-    return true;
-#endif
   return false;
 #endif
 }
@@ -10545,13 +10544,7 @@ static bool UsingBuiltinCertVerifier() {
 // If it does not, then tests which rely on 'hard fail' behaviour should be
 // skipped.
 static bool SystemSupportsHardFailRevocationChecking() {
-  if (UsingBuiltinCertVerifier())
-    return true;
-#if BUILDFLAG(IS_WIN)
-  return true;
-#else
-  return false;
-#endif
+  return UsingBuiltinCertVerifier();
 }
 
 // SystemUsesChromiumEVMetadata returns true iff the current operating system
@@ -10721,6 +10714,7 @@ TEST_F(HTTPSOCSPTest, IntermediateResponseOldButStillValid) {
     EXPECT_EQ(CERT_STATUS_REVOKED, cert_status & CERT_STATUS_ALL_ERRORS);
   } else {
 #if BUILDFLAG(IS_WIN)
+    // TODO(https://crbug.com/1380536): cleanup the IS_WIN blocks in this file.
     // TODO(mattm): Seems to be flaky on Windows. Either returns
     // CERT_STATUS_UNABLE_TO_CHECK_REVOCATION (which gets masked off due to
     // soft-fail), or CERT_STATUS_REVOKED.
@@ -12888,16 +12882,16 @@ TEST_F(URLRequestTest, SetIsolationInfoFromNak) {
   SchemefulSite site_a = SchemefulSite(GURL("https://a.com/"));
   SchemefulSite site_b = SchemefulSite(GURL("https://b.com/"));
   base::UnguessableToken nak_nonce = base::UnguessableToken::Create();
-  NetworkAnonymizationKey populated_cross_site_nak(site_a, site_b, true,
-                                                   nak_nonce);
+  auto populated_cross_site_nak = NetworkAnonymizationKey::CreateFromParts(
+      site_a, /*is_cross_site=*/true, nak_nonce);
   IsolationInfo expected_isolation_info_populated_cross_site_nak =
       IsolationInfo::Create(IsolationInfo::RequestType::kOther,
                             url::Origin::Create(GURL("https://a.com/")),
                             url::Origin(), SiteForCookies(),
                             /*party_context=*/absl::nullopt, &nak_nonce);
 
-  NetworkAnonymizationKey populated_same_site_nak(site_a, site_a, false,
-                                                  nak_nonce);
+  auto populated_same_site_nak = NetworkAnonymizationKey::CreateFromParts(
+      site_a, /*is_cross_site=*/false, nak_nonce);
   IsolationInfo expected_isolation_info_populated_same_site_nak =
       IsolationInfo::Create(IsolationInfo::RequestType::kOther,
                             url::Origin::Create(GURL("https://a.com/")),
@@ -13079,8 +13073,10 @@ TEST_F(PartitionConnectionsByNetworkAnonymizationKey,
   RegisterDefaultHandlers(&test_server);
   ASSERT_TRUE(test_server.Start());
   const auto original_url = test_server.GetURL("/echo");
-  NetworkAnonymizationKey network_anonymization_key1(kTestSiteA, kTestSiteA);
-  NetworkAnonymizationKey network_anonymization_key2(kTestSiteB, kTestSiteB);
+  const auto network_anonymization_key1 =
+      NetworkAnonymizationKey::CreateSameSite(kTestSiteA);
+  const auto network_anonymization_key2 =
+      NetworkAnonymizationKey::CreateSameSite(kTestSiteB);
 
   // Create a request from first party `kTestSiteA`.
   {
@@ -13139,8 +13135,10 @@ TEST_F(PartitionConnectionsByNetworkAnonymizationKey,
   RegisterDefaultHandlers(&test_server);
   ASSERT_TRUE(test_server.Start());
   const auto original_url = test_server.GetURL("/echo");
-  NetworkAnonymizationKey network_anonymization_key1(kTestSiteA, kTestSiteA);
-  NetworkAnonymizationKey network_anonymization_key2(kTestSiteA, kTestSiteB);
+  const auto network_anonymization_key1 =
+      NetworkAnonymizationKey::CreateSameSite(kTestSiteA);
+  const auto network_anonymization_key2 =
+      NetworkAnonymizationKey::CreateCrossSite(kTestSiteA);
 
   // Create a request from first party `kTestSiteA`.
   {
@@ -13199,8 +13197,10 @@ TEST_F(
   RegisterDefaultHandlers(&test_server);
   ASSERT_TRUE(test_server.Start());
   const auto original_url = test_server.GetURL("/echo");
-  NetworkAnonymizationKey network_anonymization_key1(kTestSiteA, kTestSiteB);
-  NetworkAnonymizationKey network_anonymization_key2(kTestSiteA, kTestSiteC);
+  const auto network_anonymization_key1 =
+      NetworkAnonymizationKey::CreateCrossSite(kTestSiteA);
+  const auto network_anonymization_key2 =
+      NetworkAnonymizationKey::CreateCrossSite(kTestSiteA);
 
   // Create a request from first party `kTestSiteA`.
   {
@@ -13260,10 +13260,12 @@ TEST_F(PartitionConnectionsByNetworkAnonymizationKey,
   RegisterDefaultHandlers(&test_server);
   ASSERT_TRUE(test_server.Start());
   const auto original_url = test_server.GetURL("/echo");
-  NetworkAnonymizationKey network_anonymization_key1(kTestSiteA, kTestSiteA,
-                                                     false, kNonceA);
-  NetworkAnonymizationKey network_anonymization_key2(kTestSiteA, kTestSiteA,
-                                                     false, kNonceB);
+  const auto network_anonymization_key1 =
+      NetworkAnonymizationKey::CreateFromParts(
+          kTestSiteA, /*is_cross_site=*/false, kNonceA);
+  const auto network_anonymization_key2 =
+      NetworkAnonymizationKey::CreateFromParts(
+          kTestSiteA, /*is_cross_site=*/false, kNonceB);
 
   // Create a request from first party `kTestSiteA`.
   {

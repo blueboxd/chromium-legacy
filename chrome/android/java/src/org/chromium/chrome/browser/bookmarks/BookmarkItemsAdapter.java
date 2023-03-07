@@ -6,11 +6,8 @@ package org.chromium.chrome.browser.bookmarks;
 
 import android.content.Context;
 import android.text.TextUtils;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.LinearLayout;
-import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -26,17 +23,16 @@ import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.sync.SyncService;
-import org.chromium.chrome.browser.ui.signin.PersonalizedSigninPromoView;
+import org.chromium.chrome.browser.sync.SyncService.SyncStateChangedListener;
 import org.chromium.chrome.browser.ui.signin.SyncPromoController.SyncPromoState;
 import org.chromium.components.bookmarks.BookmarkId;
 import org.chromium.components.bookmarks.BookmarkItem;
 import org.chromium.components.bookmarks.BookmarkType;
 import org.chromium.components.browser_ui.widget.dragreorder.DragReorderableListAdapter;
-import org.chromium.components.browser_ui.widget.highlight.ViewHighlighter;
-import org.chromium.components.browser_ui.widget.highlight.ViewHighlighter.HighlightParams;
-import org.chromium.components.browser_ui.widget.highlight.ViewHighlighter.HighlightShape;
+import org.chromium.components.browser_ui.widget.selectable_list.SelectionDelegate.SelectionObserver;
 import org.chromium.components.feature_engagement.EventConstants;
 import org.chromium.components.power_bookmarks.PowerBookmarkMeta;
+import org.chromium.ui.modelutil.PropertyModel;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -45,8 +41,7 @@ import java.util.List;
 /**
  * BaseAdapter for {@link RecyclerView}. It manages bookmarks to list there.
  */
-public class BookmarkItemsAdapter extends DragReorderableListAdapter<BookmarkListEntry>
-        implements BookmarkUIObserver, SyncService.SyncStateChangedListener {
+public class BookmarkItemsAdapter extends DragReorderableListAdapter<BookmarkListEntry> {
     private static final int MAXIMUM_NUMBER_OF_SEARCH_RESULTS = 500;
     private static final String EMPTY_QUERY = null;
 
@@ -60,8 +55,15 @@ public class BookmarkItemsAdapter extends DragReorderableListAdapter<BookmarkLis
         View buildView(@NonNull ViewGroup parent, @ViewType int viewType);
     }
 
+    /** Abstraction around how to bind type specific {@link View}s. */
+    interface ViewBinder {
+        void bindView(View view, @ViewType int viewType, PropertyModel model);
+    }
+
     private final List<BookmarkId> mTopLevelFolders = new ArrayList<>();
     private final Profile mProfile;
+    private final ViewFactory mViewFactory;
+    private final ViewBinder mViewBinder;
     private final SyncService mSyncService;
     private final BookmarkPromoHeader mPromoHeaderManager;
 
@@ -70,7 +72,6 @@ public class BookmarkItemsAdapter extends DragReorderableListAdapter<BookmarkLis
     @ViewType
     private int mPromoHeaderType = ViewType.INVALID;
     private BookmarkDelegate mDelegate;
-    private ViewFactory mViewFactory;
     private String mSearchText;
     private BookmarkId mCurrentFolder;
 
@@ -92,7 +93,7 @@ public class BookmarkItemsAdapter extends DragReorderableListAdapter<BookmarkLis
             assert mDelegate != null;
             clearHighlight();
 
-            if (mDelegate.getCurrentState() == BookmarkUIState.STATE_SEARCHING) {
+            if (mDelegate.getCurrentState() == BookmarkUiState.STATE_SEARCHING) {
                 // We cannot rely on removing the specific list item that corresponds to the
                 // removed node because the node might be a parent with children also shown
                 // in the list.
@@ -101,7 +102,7 @@ public class BookmarkItemsAdapter extends DragReorderableListAdapter<BookmarkLis
             }
 
             if (node.isFolder()) {
-                mDelegate.notifyStateChange(BookmarkItemsAdapter.this);
+                mDelegate.notifyStateChange(mBookmarkUiObserver);
             } else {
                 int deletedPosition = getPositionForBookmark(node.getId());
                 if (deletedPosition >= 0) {
@@ -114,29 +115,106 @@ public class BookmarkItemsAdapter extends DragReorderableListAdapter<BookmarkLis
         public void bookmarkModelChanged() {
             assert mDelegate != null;
             clearHighlight();
-            mDelegate.notifyStateChange(BookmarkItemsAdapter.this);
+            mDelegate.notifyStateChange(mBookmarkUiObserver);
 
-            if (mDelegate.getCurrentState() == BookmarkUIState.STATE_SEARCHING) {
+            if (mDelegate.getCurrentState() == BookmarkUiState.STATE_SEARCHING) {
                 if (!TextUtils.equals(mSearchText, EMPTY_QUERY)) {
                     search(mSearchText);
                 } else {
-                    mDelegate.closeSearchUI();
+                    mDelegate.closeSearchUi();
                 }
             }
         }
     };
 
-    BookmarkItemsAdapter(Context context, Profile profile) {
+    private final BookmarkUiObserver mBookmarkUiObserver = new BookmarkUiObserver() {
+        @Override
+        public void onDestroy() {
+            mDelegate.removeUiObserver(mBookmarkUiObserver);
+            mDelegate.getModel().removeObserver(mBookmarkModelObserver);
+            mDelegate.getSelectionDelegate().removeObserver(mSelectionObserver);
+            mDelegate = null;
+            mPromoHeaderManager.destroy();
+            mSyncService.removeSyncStateChangedListener(mSyncStateChangedListener);
+        }
+
+        @Override
+        public void onFolderStateSet(BookmarkId folder) {
+            assert mDelegate != null;
+            clearHighlight();
+
+            mSearchText = EMPTY_QUERY;
+            mCurrentFolder = folder;
+            enableDrag();
+
+            if (topLevelFoldersShowing()) {
+                setBookmarks(mTopLevelFolders);
+            } else {
+                setBookmarks(mDelegate.getModel().getChildIDs(folder));
+            }
+
+            if (BookmarkId.SHOPPING_FOLDER.equals(folder)) {
+                mDelegate.getSelectableListLayout().setEmptyViewText(
+                        R.string.tracked_products_empty_list_title);
+            } else if (folder.getType() == BookmarkType.READING_LIST) {
+                TrackerFactory.getTrackerForProfile(mProfile).notifyEvent(
+                        EventConstants.READ_LATER_BOOKMARK_FOLDER_OPENED);
+                mDelegate.getSelectableListLayout().setEmptyViewText(
+                        R.string.reading_list_empty_list_title);
+            } else {
+                mDelegate.getSelectableListLayout().setEmptyViewText(
+                        R.string.bookmarks_folder_empty);
+            }
+        }
+
+        @Override
+        public void onSearchStateSet() {
+            clearHighlight();
+            disableDrag();
+            // Headers should not appear in Search mode
+            // Don't need to notify because we need to redraw everything in the next step
+            updateHeader(false);
+            removeSectionHeaders();
+            notifyDataSetChanged();
+        }
+    };
+
+    private final SelectionObserver<BookmarkId> mSelectionObserver = new SelectionObserver<>() {
+        @Override
+        public void onSelectionStateChange(List<BookmarkId> selectedBookmarks) {
+            clearHighlight();
+        }
+    };
+
+    private final SyncStateChangedListener mSyncStateChangedListener =
+            new SyncStateChangedListener() {
+                @Override
+                public void syncStateChanged() {
+                    // If mDelegate is null, we will set the top level folders upon its
+                    // initialization (see onBookmarkDelegateInitialized method above).
+                    if (mDelegate == null) {
+                        return;
+                    }
+                    mTopLevelFolders.clear();
+                    populateTopLevelFoldersList();
+                }
+            };
+
+    BookmarkItemsAdapter(
+            Context context, Profile profile, ViewFactory viewFactory, ViewBinder viewBinder) {
         super(context);
         mProfile = profile;
+        mViewFactory = viewFactory;
+        mViewBinder = viewBinder;
+
         mSyncService = SyncService.get();
-        mSyncService.addSyncStateChangedListener(this);
+        mSyncService.addSyncStateChangedListener(mSyncStateChangedListener);
 
         Runnable promoHeaderChangeAction = () -> {
             // Notify the view of changes to the elements list as the promo might be showing.
             updateHeader(true);
         };
-        mPromoHeaderManager = new BookmarkPromoHeader(mContext, promoHeaderChangeAction);
+        mPromoHeaderManager = new BookmarkPromoHeader(mContext, mProfile, promoHeaderChangeAction);
     }
 
     /**
@@ -187,7 +265,7 @@ public class BookmarkItemsAdapter extends DragReorderableListAdapter<BookmarkLis
         }
 
         if (mCurrentFolder.getType() == BookmarkType.READING_LIST
-                && mDelegate.getCurrentState() != BookmarkUIState.STATE_SEARCHING) {
+                && mDelegate.getCurrentState() != BookmarkUiState.STATE_SEARCHING) {
             ReadingListSectionHeader.maybeSortAndInsertSectionHeaders(mElements, mContext);
         }
 
@@ -219,50 +297,30 @@ public class BookmarkItemsAdapter extends DragReorderableListAdapter<BookmarkLis
 
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
+        PropertyModel model = new PropertyModel(BookmarkManagerProperties.ALL_KEYS);
+        @ViewType
+        int viewType = holder.getItemViewType();
+
         if (holder.getItemViewType() == ViewType.PERSONALIZED_SIGNIN_PROMO
                 || holder.getItemViewType() == ViewType.PERSONALIZED_SYNC_PROMO) {
-            PersonalizedSigninPromoView view =
-                    holder.itemView.findViewById(R.id.signin_promo_view_container);
-            mPromoHeaderManager.setUpSyncPromoView(view);
+            model.set(BookmarkManagerProperties.BOOKMARK_PROMO_HEADER, mPromoHeaderManager);
         } else if (holder.getItemViewType() == ViewType.SECTION_HEADER) {
-            bindSectionHeaderViewHolder(holder.itemView, getItemByPosition(position));
+            model.set(BookmarkManagerProperties.BOOKMARK_LIST_ENTRY, getItemByPosition(position));
         } else if (BookmarkListEntry.isBookmarkEntry(holder.getItemViewType())) {
-            BookmarkRow row = ((BookmarkRow) holder.itemView);
             BookmarkId id = getIdByPosition(position);
-            row.setBookmarkId(id, getLocationFromPosition(position),
+            model.set(BookmarkManagerProperties.BOOKMARK_ID, id);
+            model.set(BookmarkManagerProperties.LOCATION, getLocationFromPosition(position));
+            model.set(BookmarkManagerProperties.IS_FROM_FILTER_VIEW,
                     BookmarkId.SHOPPING_FOLDER.equals(mCurrentFolder));
-            row.setDragHandleOnTouchListener((v, event) -> {
-                if (event.getActionMasked() == MotionEvent.ACTION_DOWN) {
-                    mItemTouchHelper.startDrag(holder);
-                }
-                // this callback consumed the click action (don't activate menu)
-                return true;
-            });
-            // Turn on the highlight for the currently highlighted bookmark.
-            if (id.equals(mHighlightedBookmark)) {
-                HighlightParams params = new HighlightParams(HighlightShape.RECTANGLE);
-                params.setNumPulses(1);
-                ViewHighlighter.turnOnHighlight(holder.itemView, params);
-                clearHighlight();
-            } else {
-                // We need this in case we are change state during a pulse.
-                ViewHighlighter.turnOffHighlight(holder.itemView);
-            }
+            model.set(BookmarkManagerProperties.ITEM_TOUCH_HELPER, mItemTouchHelper);
+            model.set(BookmarkManagerProperties.VIEW_HOLDER, holder);
+            model.set(BookmarkManagerProperties.IS_HIGHLIGHTED, id.equals(mHighlightedBookmark));
+            model.set(BookmarkManagerProperties.CLEAR_HIGHLIGHT, this::clearHighlight);
         } else if (holder.getItemViewType() == ViewType.SHOPPING_FILTER) {
-            LinearLayout layout = ((LinearLayout) holder.itemView);
-            layout.setClickable(true);
-            layout.setOnClickListener((view) -> mDelegate.openFolder(BookmarkId.SHOPPING_FOLDER));
+            model.set(BookmarkManagerProperties.OPEN_FOLDER, mDelegate::openFolder);
         }
-    }
 
-    private void bindSectionHeaderViewHolder(View view, BookmarkListEntry listItem) {
-        TextView title = view.findViewById(R.id.title);
-        title.setText(listItem.getHeaderTitle());
-        if (listItem.getSectionHeaderData().topPadding > 0) {
-            title.setPaddingRelative(title.getPaddingStart(),
-                    listItem.getSectionHeaderData().topPadding, title.getPaddingEnd(),
-                    title.getPaddingBottom());
-        }
+        mViewBinder.bindView(holder.itemView, viewType, model);
     }
 
     @Override
@@ -282,76 +340,18 @@ public class BookmarkItemsAdapter extends DragReorderableListAdapter<BookmarkLis
      * Sets the delegate to use to handle UI actions related to this adapter.
      *
      * @param delegate A {@link BookmarkDelegate} instance to handle all backend interaction.
-     * @param viewFactory An object to create {@link View}s for each item/row.
      */
-    void onBookmarkDelegateInitialized(BookmarkDelegate delegate, ViewFactory viewFactory) {
+    void onBookmarkDelegateInitialized(BookmarkDelegate delegate) {
         mDelegate = delegate;
-        mDelegate.addUIObserver(this);
+        mDelegate.addUiObserver(mBookmarkUiObserver);
         mDelegate.getModel().addObserver(mBookmarkModelObserver);
-        mDelegate.getSelectionDelegate().addObserver(this);
+        mDelegate.getSelectionDelegate().addObserver(mSelectionObserver);
 
         populateTopLevelFoldersList();
-
-        mViewFactory = viewFactory;
 
         mElements = new ArrayList<>();
         setDragStateDelegate(delegate.getDragStateDelegate());
         notifyDataSetChanged();
-    }
-
-    // BookmarkUIObserver implementations.
-    @Override
-    public void onDestroy() {
-        mDelegate.removeUIObserver(this);
-        mDelegate.getModel().removeObserver(mBookmarkModelObserver);
-        mDelegate.getSelectionDelegate().removeObserver(this);
-        mDelegate = null;
-        mPromoHeaderManager.destroy();
-        mSyncService.removeSyncStateChangedListener(this);
-    }
-
-    @Override
-    public void onFolderStateSet(BookmarkId folder) {
-        assert mDelegate != null;
-        clearHighlight();
-
-        mSearchText = EMPTY_QUERY;
-        mCurrentFolder = folder;
-        enableDrag();
-
-        if (topLevelFoldersShowing()) {
-            setBookmarks(mTopLevelFolders);
-        } else {
-            setBookmarks(mDelegate.getModel().getChildIDs(folder));
-        }
-
-        if (BookmarkId.SHOPPING_FOLDER.equals(folder)) {
-            mDelegate.getSelectableListLayout().setEmptyViewText(
-                    R.string.tracked_products_empty_list_title);
-        } else if (folder.getType() == BookmarkType.READING_LIST) {
-            TrackerFactory.getTrackerForProfile(mProfile).notifyEvent(
-                    EventConstants.READ_LATER_BOOKMARK_FOLDER_OPENED);
-            mDelegate.getSelectableListLayout().setEmptyViewText(
-                    R.string.reading_list_empty_list_title);
-        } else {
-            mDelegate.getSelectableListLayout().setEmptyViewText(R.string.bookmarks_folder_empty);
-        }
-    }
-
-    @Override
-    public void onSearchStateSet() {
-        clearHighlight();
-        disableDrag();
-        // Headers should not appear in Search mode
-        // Don't need to notify because we need to redraw everything in the next step
-        updateHeader(false);
-        removeSectionHeaders();
-        notifyDataSetChanged();
-    }
-
-    @Override
-    public void onSelectionStateChange(List<BookmarkId> selectedBookmarks) {
-        clearHighlight();
     }
 
     /**
@@ -405,18 +405,6 @@ public class BookmarkItemsAdapter extends DragReorderableListAdapter<BookmarkLis
         setOrder(mElements);
     }
 
-    // SyncStateChangedListener implementation.
-    @Override
-    public void syncStateChanged() {
-        // If mDelegate is null, we will set the top level folders upon its initialization
-        // (see onBookmarkDelegateInitialized method above).
-        if (mDelegate == null) {
-            return;
-        }
-        mTopLevelFolders.clear();
-        populateTopLevelFoldersList();
-    }
-
     /**
      * Updates mPromoHeaderType. Makes sure that the 0th index of mElements is consistent with the
      * promo header. This 0th index is null iff there is a promo header.
@@ -431,10 +419,10 @@ public class BookmarkItemsAdapter extends DragReorderableListAdapter<BookmarkLis
 
         boolean wasShowingPromo = hasPromoHeader();
 
-        int currentUIState = mDelegate.getCurrentState();
-        if (currentUIState == BookmarkUIState.STATE_LOADING) {
+        int currentUiState = mDelegate.getCurrentState();
+        if (currentUiState == BookmarkUiState.STATE_LOADING) {
             return;
-        } else if (currentUIState == BookmarkUIState.STATE_SEARCHING) {
+        } else if (currentUiState == BookmarkUiState.STATE_SEARCHING) {
             mPromoHeaderType = ViewType.INVALID;
         } else {
             switch (mPromoHeaderManager.getPromoState()) {
@@ -482,18 +470,13 @@ public class BookmarkItemsAdapter extends DragReorderableListAdapter<BookmarkLis
         mTopLevelFolders.addAll(BookmarkUtils.populateTopLevelFolders(mDelegate.getModel()));
     }
 
-    @VisibleForTesting
-    public BookmarkDelegate getDelegateForTesting() {
-        return mDelegate;
-    }
-
     @Override
     protected void setOrder(List<BookmarkListEntry> listEntries) {
         assert !topLevelFoldersShowing() : "Cannot reorder top-level folders!";
         assert mCurrentFolder.getType()
                 != BookmarkType.PARTNER : "Cannot reorder partner bookmarks!";
         assert mDelegate.getCurrentState()
-                == BookmarkUIState.STATE_FOLDER : "Can only reorder items from folder mode!";
+                == BookmarkUiState.STATE_FOLDER : "Can only reorder items from folder mode!";
 
         int startIndex = getBookmarkItemStartIndex();
         int endIndex = getBookmarkItemEndIndex();
@@ -529,6 +512,7 @@ public class BookmarkItemsAdapter extends DragReorderableListAdapter<BookmarkLis
                 && entry.getBookmarkItem().isReorderable();
     }
 
+    // DragReorderableListAdapter implementation.
     @Override
     @VisibleForTesting
     public boolean isActivelyDraggable(ViewHolder viewHolder) {
@@ -576,12 +560,6 @@ public class BookmarkItemsAdapter extends DragReorderableListAdapter<BookmarkLis
         return mCurrentFolder.equals(mDelegate.getModel().getRootFolderId());
     }
 
-    @VisibleForTesting
-    public void simulateSignInForTests() {
-        syncStateChanged();
-        onFolderStateSet(mCurrentFolder);
-    }
-
     /**
      * Scroll the bookmarks list such that bookmarkId is shown in the view, and highlight it.
      *
@@ -599,5 +577,16 @@ public class BookmarkItemsAdapter extends DragReorderableListAdapter<BookmarkLis
      */
     private void clearHighlight() {
         mHighlightedBookmark = null;
+    }
+
+    @VisibleForTesting
+    BookmarkDelegate getDelegateForTesting() {
+        return mDelegate;
+    }
+
+    @VisibleForTesting
+    public void simulateSignInForTesting() {
+        mSyncStateChangedListener.syncStateChanged();
+        mBookmarkUiObserver.onFolderStateSet(mCurrentFolder);
     }
 }

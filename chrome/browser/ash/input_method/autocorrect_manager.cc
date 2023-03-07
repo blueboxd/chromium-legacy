@@ -48,7 +48,7 @@ constexpr char kUndoWindowShowSettingCount[] = "undo_window.show_setting_count";
 
 bool IsVkAutocorrect() {
   return ChromeKeyboardControllerClient::HasInstance() &&
-         ChromeKeyboardControllerClient::Get()->is_keyboard_visible();
+         ChromeKeyboardControllerClient::Get()->is_keyboard_enabled();
 }
 
 bool IsCurrentInputMethodExperimentalMultilingual() {
@@ -345,6 +345,12 @@ void RecordPhysicalKeyboardAutocorrectPref(const std::string& engine_id,
       "InputMethod.Assistive.AutocorrectV2.PkUserPreference.All", pref);
 }
 
+void RecordSuggestionProviderMetric(
+    const ime::AutocorrectSuggestionProvider& provider) {
+  base::UmaHistogramEnumeration(
+      "InputMethod.Assistive.AutocorrectV2.SuggestionProvider.Pk", provider);
+}
+
 bool CouldTriggerAutocorrectWithSurroundingText(
     const std::u16string& text,
     const gfx::Range selection_range) {
@@ -468,6 +474,36 @@ void AutocorrectManager::ProcessSetAutocorrectRangeDone(
 
   LogAssistiveAutocorrectAction(AutocorrectActions::kUnderlined);
   RecordAssistiveCoverage(AssistiveType::kAutocorrectUnderlined);
+}
+
+void AutocorrectManager::RecordPendingMetricsAwaitingKeyPress() {
+  if (pending_user_pref_metric_ && IsVkAutocorrect()) {
+    // We only want to record a pending user pref metric if the user is
+    // currently using the physical keyboard.
+    pending_user_pref_metric_ = absl::nullopt;
+  }
+
+  if (pending_user_pref_metric_) {
+    const std::string& engine_id = pending_user_pref_metric_->engine_id;
+    RecordPhysicalKeyboardAutocorrectPref(
+        engine_id,
+        GetPhysicalKeyboardAutocorrectPref(*(profile_->GetPrefs()), engine_id));
+    pending_user_pref_metric_ = absl::nullopt;
+  }
+
+  if (pending_suggestion_provider_metric_ && IsVkAutocorrect()) {
+    // TODO(b/270090192): Unfortunately the virtual keyboard does not support
+    // the callback used to inform Chromium of the AutocorrectSuggestionProvider
+    // used in the IME service. Once it does then we can record this same metric
+    // for the virtual keyboard.
+    pending_suggestion_provider_metric_ = absl::nullopt;
+  }
+
+  if (pending_suggestion_provider_metric_) {
+    RecordSuggestionProviderMetric(
+        /*provider=*/pending_suggestion_provider_metric_->provider);
+    pending_suggestion_provider_metric_ = absl::nullopt;
+  }
 }
 
 bool AutocorrectManager::AutoCorrectPrefIsPkEnabledByDefault() {
@@ -706,6 +742,9 @@ void AutocorrectManager::LogAssistiveAutocorrectQualityBreakdown(
 
 void AutocorrectManager::OnActivate(const std::string& engine_id) {
   active_engine_id_ = engine_id;
+  // Reset the previously stored suggestion_provider, we should expect a new
+  // provider to be returned on the next OnConnectedToSuggestionProvider call.
+  suggestion_provider_ = absl::nullopt;
 
   PrefService* pref_service = profile_->GetPrefs();
   auto autocorrect_pref =
@@ -724,19 +763,7 @@ void AutocorrectManager::OnActivate(const std::string& engine_id) {
 }
 
 bool AutocorrectManager::OnKeyEvent(const ui::KeyEvent& event) {
-  if (pending_user_pref_metric_ && IsVkAutocorrect()) {
-    // We only want to record a pending user pref metric if the user is
-    // currently using the physical keyboard.
-    pending_user_pref_metric_ = absl::nullopt;
-  }
-
-  if (pending_user_pref_metric_) {
-    const std::string& engine_id = pending_user_pref_metric_->engine_id;
-    RecordPhysicalKeyboardAutocorrectPref(
-        engine_id,
-        GetPhysicalKeyboardAutocorrectPref(*(profile_->GetPrefs()), engine_id));
-    pending_user_pref_metric_ = absl::nullopt;
-  }
+  RecordPendingMetricsAwaitingKeyPress();
 
   if (!pending_autocorrect_.has_value() || event.type() != ui::ET_KEY_PRESSED) {
     return false;
@@ -909,6 +936,13 @@ void AutocorrectManager::OnFocus(int context_id) {
 
   context_id_ = context_id;
   ProcessTextFieldChange();
+}
+
+void AutocorrectManager::OnConnectedToSuggestionProvider(
+    const ime::AutocorrectSuggestionProvider& suggestion_provider) {
+  suggestion_provider_ = suggestion_provider;
+  pending_suggestion_provider_metric_ =
+      PendingSuggestionProviderMetric{.provider = suggestion_provider};
 }
 
 void AutocorrectManager::OnBlur() {
@@ -1168,6 +1202,29 @@ void AutocorrectManager::OnTextFieldContextualInfoChanged(
 
 bool AutocorrectManager::DisabledByRule() {
   return disabled_by_rule_;
+}
+
+bool AutocorrectManager::DisabledByInvalidSuggestionProvider() {
+  if (!base::FeatureList::IsEnabled(features::kAutocorrectByDefault) ||
+      !active_engine_id_ || IsVkAutocorrect()) {
+    return false;
+  }
+
+  // If the user has explicitly set their autocorrect preference to on/off in
+  // the settings page, then we should honor that preference regardless of the
+  // suggestion provider currently enabled.
+  if (GetPhysicalKeyboardAutocorrectPref(*(profile_->GetPrefs()),
+                                         *active_engine_id_) !=
+      AutocorrectPreference::kEnabledByDefault) {
+    return false;
+  }
+
+  // If the user is in the default bucket, and a suggestion provider has not
+  // been returned, or the suggestion provider returned doesn't match the
+  // expected UsEnglish840 then disable autocorrect.
+  return !(suggestion_provider_ &&
+           suggestion_provider_ ==
+               ime::AutocorrectSuggestionProvider::kUsEnglish840);
 }
 
 AutocorrectManager::PendingAutocorrectState::PendingAutocorrectState(

@@ -33,7 +33,7 @@ by a child template that "extends" this file.
 
     {# TODO(wbjacksonjr crbug.com/1417656): Remove once we build against U #}
     {% if android_sdk_release is defined and android_sdk_release == 'u' %}
-    <uses-permission android:name="android.permission.SPECIAL_FOREGROUND_SERVICE"/>
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE"/>
     {% endif %}
     <!-- Required to run the foreground service-->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
@@ -65,7 +65,7 @@ by a child template that "extends" this file.
                   android:name="STARTUP_FEATURE_SET_DATA_DIRECTORY_SUFFIX"
                   android:value="true"/>
               <meta-data
-                  android:name="STARTUP_FEATURE_SET_DIRECTORY_BASE_PATH:DEV"
+                  android:name="STARTUP_FEATURE_SET_DIRECTORY_BASE_PATH"
                   android:value="true"/>
             </service>
             <!-- WebView Developer UI Activities. If you change these Activities, please update

@@ -6,6 +6,7 @@
 
 #import "base/files/file_path.h"
 #import "base/path_service.h"
+#import "base/strings/sys_string_conversions.h"
 #import "components/password_manager/core/browser/password_manager_util.h"
 #import "components/prefs/pref_service.h"
 #import "ios/chrome/browser/application_context/application_context.h"
@@ -64,7 +65,10 @@ NSString* const kLearnMoreAnimation = @"CPE_promo_animation_edu_how_to_enable";
           prefs::kIosCredentialProviderPromoStopPromo) ||
       (promoSeenInCurrentSession &&
        trigger != CredentialProviderPromoTrigger::RemindMeLater);
+  BOOL policyEnabled = GetApplicationContext()->GetLocalState()->GetBoolean(
+      prefs::kIosCredentialProviderPromoPolicyEnabled);
   return !impressionLimitMet && IsCredentialProviderExtensionPromoEnabled() &&
+         policyEnabled &&
          !password_manager_util::IsCredentialProviderEnabledOnStartup(
              self.prefService);
 }
@@ -115,12 +119,11 @@ NSString* const kLearnMoreAnimation = @"CPE_promo_animation_edu_how_to_enable";
 }
 
 - (void)registerPromoWithPromosManager {
-  if (!self.promosManager || !IsFullscreenPromosManagerEnabled()) {
+  if (!self.promosManager) {
     return;
   }
-  // TODO(crbug.com/1392116): register the promo with a 24 hour delay.
   self.promosManager->RegisterPromoForSingleDisplay(
-      promos_manager::Promo::CredentialProviderExtension);
+      promos_manager::Promo::CredentialProviderExtension, base::Hours(24));
 
   GetApplicationContext()->GetLocalState()->SetBoolean(
       prefs::kIosCredentialProviderPromoHasRegisteredWithPromoManager, true);
@@ -178,8 +181,18 @@ NSString* const kLearnMoreAnimation = @"CPE_promo_animation_edu_how_to_enable";
   } else {
     titleString = l10n_util::GetNSString(
         IDS_IOS_CREDENTIAL_PROVIDER_PROMO_LEARN_MORE_TITLE);
-    subtitleString = l10n_util::GetNSString(
-        IDS_IOS_CREDENTIAL_PROVIDER_PROMO_LEARN_MORE_SUBTITLE);
+    NSString* settingsMenuItemString = nil;
+    if (@available(iOS 16, *)) {
+      settingsMenuItemString = l10n_util::GetNSString(
+          IDS_IOS_CREDENTIAL_PROVIDER_PROMO_OS_PASSWORDS_SETTINGS_TITLE_IOS16);
+    } else {
+      settingsMenuItemString = l10n_util::GetNSString(
+          IDS_IOS_CREDENTIAL_PROVIDER_PROMO_OS_PASSWORDS_SETTINGS_TITLE_BELOW_IOS16);
+    }
+    DCHECK(settingsMenuItemString.length > 0);
+    subtitleString = l10n_util::GetNSStringF(
+        IDS_IOS_CREDENTIAL_PROVIDER_PROMO_LEARN_MORE_SUBTITLE_WITH_PH,
+        base::SysNSStringToUTF16(settingsMenuItemString));
     primaryActionString = l10n_util::GetNSString(
         IDS_IOS_CREDENTIAL_PROVIDER_PROMO_GO_TO_SETTINGS);
   }

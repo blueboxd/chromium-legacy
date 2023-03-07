@@ -33,7 +33,6 @@
 #include "ui/accessibility/ax_tree.h"
 #include "ui/accessibility/ax_tree_serializer.h"
 #include "ui/accessibility/ax_tree_update.h"
-#include "ui/accessibility/ax_tree_update_util.h"
 #include "v8/include/v8-context.h"
 #include "v8/include/v8-microtask-queue.h"
 
@@ -221,19 +220,22 @@ ui::AXTreeUpdate GetSnapshotFromV8SnapshotLite(
   snapshot.has_tree_data = true;
   snapshot.tree_data = ax_tree_data;
   gin::Dictionary v8_snapshot_dict(isolate);
-  if (!gin::ConvertFromV8(isolate, v8_snapshot_lite, &v8_snapshot_dict))
+  if (!gin::ConvertFromV8(isolate, v8_snapshot_lite, &v8_snapshot_dict)) {
     return snapshot;
+  }
   SetAXTreeUpdateRootId(isolate, &v8_snapshot_dict, &snapshot);
 
   v8::Local<v8::Value> v8_nodes;
   v8_snapshot_dict.Get("nodes", &v8_nodes);
   std::vector<v8::Local<v8::Value>> v8_nodes_vector;
-  if (!gin::ConvertFromV8(isolate, v8_nodes, &v8_nodes_vector))
+  if (!gin::ConvertFromV8(isolate, v8_nodes, &v8_nodes_vector)) {
     return snapshot;
+  }
   for (v8::Local<v8::Value> v8_node : v8_nodes_vector) {
     gin::Dictionary v8_node_dict(isolate);
-    if (!gin::ConvertFromV8(isolate, v8_node, &v8_node_dict))
+    if (!gin::ConvertFromV8(isolate, v8_node, &v8_node_dict)) {
       continue;
+    }
     ui::AXNodeData ax_node_data;
     SetAXNodeDataId(isolate, &v8_node_dict, &ax_node_data);
     SetAXNodeDataRole(isolate, &v8_node_dict, &ax_node_data);
@@ -250,8 +252,9 @@ ui::AXTreeUpdate GetSnapshotFromV8SnapshotLite(
   v8::Local<v8::Value> v8_selection;
   v8_snapshot_dict.Get("selection", &v8_selection);
   gin::Dictionary v8_selection_dict(isolate);
-  if (!gin::ConvertFromV8(isolate, v8_selection, &v8_selection_dict))
+  if (!gin::ConvertFromV8(isolate, v8_selection, &v8_selection_dict)) {
     return snapshot;
+  }
   SetSelectionAnchorObjectId(isolate, &v8_selection_dict, &snapshot.tree_data);
   SetSelectionFocusObjectId(isolate, &v8_selection_dict, &snapshot.tree_data);
   SetSelectionAnchorOffset(isolate, &v8_selection_dict, &snapshot.tree_data);
@@ -273,8 +276,9 @@ ReadAnythingAppController* ReadAnythingAppController::Install(
   v8::HandleScope handle_scope(isolate);
   v8::Local<v8::Context> context =
       render_frame->GetWebFrame()->MainWorldScriptContext();
-  if (context.IsEmpty())
+  if (context.IsEmpty()) {
     return nullptr;
+  }
   v8::MicrotasksScope microtask_scope(isolate, context->GetMicrotaskQueue(),
                                       v8::MicrotasksScope::kDoNotRunMicrotasks);
 
@@ -284,8 +288,9 @@ ReadAnythingAppController* ReadAnythingAppController::Install(
       new ReadAnythingAppController(render_frame);
   gin::Handle<ReadAnythingAppController> handle =
       gin::CreateHandle(isolate, controller);
-  if (handle.IsEmpty())
+  if (handle.IsEmpty()) {
     return nullptr;
+  }
 
   v8::Local<v8::Object> chrome =
       content::GetOrCreateChromeObject(isolate, context);
@@ -309,57 +314,7 @@ void ReadAnythingAppController::AccessibilityEventReceived(
     const ui::AXTreeID& tree_id,
     const std::vector<ui::AXTreeUpdate>& updates,
     const std::vector<ui::AXEvent>& events) {
-  DCHECK_NE(tree_id, ui::AXTreeIDUnknown());
-  // Create a new tree if an event is received for a tree that is not yet in
-  // |trees_|.
-  if (!base::Contains(trees_, tree_id)) {
-    std::unique_ptr<ui::AXSerializableTree> new_tree =
-        std::make_unique<ui::AXSerializableTree>();
-    new_tree->AddObserver(this);
-    trees_[tree_id] = std::move(new_tree);
-  }
-  // If a tree update on the active tree is received while distillation is in
-  // progress, cache updates that are received but do not yet unserialize them.
-  // Drawing must be done on the same tree that was sent to the distiller,
-  // so it’s critical that updates are not unserialized until drawing is
-  // complete.
-  if (tree_id == model_.active_tree_id() && model_.distillation_in_progress()) {
-#if DCHECK_IS_ON()
-    DCHECK(pending_updates_.empty() ||
-           tree_id == model_.pending_updates_bundle_id());
-    model_.SetPendingUpdatesBundleId(tree_id);
-#endif
-    pending_updates_.insert(pending_updates_.end(),
-                            std::make_move_iterator(updates.begin()),
-                            std::make_move_iterator(updates.end()));
-    return;
-  }
-  UnserializeUpdates(std::move(updates), tree_id);
-}
-
-void ReadAnythingAppController::UnserializeUpdates(
-    std::vector<ui::AXTreeUpdate> updates,
-    const ui::AXTreeID& tree_id) {
-  if (updates.empty()) {
-    return;
-  }
-  DCHECK_NE(tree_id, ui::AXTreeIDUnknown());
-  DCHECK(base::Contains(trees_, tree_id));
-  ui::AXSerializableTree* tree = trees_[tree_id].get();
-  DCHECK(tree);
-  // Try to merge updates. If the updates are mergeable, MergeAXTreeUpdates will
-  // return true and merge_updates_out will contain the updates. Otherwise, if
-  // the updates are not mergeable, merge_updates_out will be empty.
-  const std::vector<ui::AXTreeUpdate>* merged_updates = &updates;
-  std::vector<ui::AXTreeUpdate> merge_updates_out;
-  if (ui::MergeAXTreeUpdates(updates, &merge_updates_out)) {
-    merged_updates = &merge_updates_out;
-  }
-
-  // Unserialize the updates.
-  for (const ui::AXTreeUpdate& update : *merged_updates) {
-    tree->Unserialize(update);
-  }
+  model_.AccessibilityEventReceived(tree_id, updates, this);
 }
 
 void ReadAnythingAppController::OnActiveAXTreeIDChanged(
@@ -375,19 +330,19 @@ void ReadAnythingAppController::OnActiveAXTreeIDChanged(
   // TODO(crbug.com/1266555): If distillation is in progress, cancel the
   // distillation request.
 #if DCHECK_IS_ON()
-  DCHECK(pending_updates_.empty() ||
+  DCHECK(model_.pending_updates().empty() ||
          model_.pending_updates_bundle_id() == previous_active_tree_id);
 #endif
-  pending_updates_.clear();
+  model_.ClearPendingUpdates();
 #if DCHECK_IS_ON()
   model_.SetPendingUpdatesBundleId(ui::AXTreeIDUnknown());
 #endif
 
   // When the UI first constructs, this function may be called before tree_id
-  // has been added to trees_ in AccessibilityEventReceived. In that case, do
-  // not distill.
+  // has been added to the tree list in AccessibilityEventReceived. In that
+  // case, do not distill.
   if (model_.active_tree_id() != ui::AXTreeIDUnknown() &&
-      base::Contains(trees_, model_.active_tree_id())) {
+      model_.ContainsTree(model_.active_tree_id())) {
     Distill();
   }
   OnAXTreeDestroyed(previous_active_tree_id);
@@ -406,15 +361,16 @@ void ReadAnythingAppController::OnAXTreeDestroyed(const ui::AXTreeID& tree_id) {
   // an accessibility tree. This means that it would never call
   // AccessibilityEventsReceived(), meaning its RFH's AXTreeID would not be in
   // trees. When that tab was destroyed, this function will be called with a
-  // tree_id not in trees_, so we return early.
-  if (!base::Contains(trees_, tree_id)) {
+  // tree_id not in the tree list, so we return early.
+  if (!model_.ContainsTree(tree_id)) {
     return;
   }
-  auto child_tree_ids = trees_[tree_id]->GetAllChildTreeIds();
+  std::set<ui::AXTreeID> child_tree_ids =
+      model_.GetTreeFromId(tree_id)->GetAllChildTreeIds();
   for (const auto& child_tree_id : child_tree_ids) {
     OnAXTreeDestroyed(child_tree_id);
   }
-  trees_.erase(tree_id);
+  model_.EraseTree(tree_id);
 }
 
 void ReadAnythingAppController::OnAtomicUpdateFinished(
@@ -437,9 +393,10 @@ void ReadAnythingAppController::OnAtomicUpdateFinished(
         break;
       case NODE_REPARENTED:
       case SUBTREE_REPARENTED:
-        if (base::Contains(content_node_ids_, change.node->id())) {
+        if (base::Contains(model_.content_node_ids(), change.node->id())) {
           need_to_distill = true;
-        } else if (base::Contains(display_node_ids_, change.node->id())) {
+        } else if (base::Contains(model_.display_node_ids(),
+                                  change.node->id())) {
           need_to_draw = true;
         }
         break;
@@ -455,9 +412,8 @@ void ReadAnythingAppController::OnAtomicUpdateFinished(
 }
 
 void ReadAnythingAppController::Distill() {
-  DCHECK_NE(model_.active_tree_id(), ui::AXTreeIDUnknown());
-  DCHECK(base::Contains(trees_, model_.active_tree_id()));
-  ui::AXSerializableTree* tree = trees_[model_.active_tree_id()].get();
+  ui::AXSerializableTree* tree =
+      model_.GetTreeFromId(model_.active_tree_id()).get();
   std::unique_ptr<ui::AXTreeSource<const ui::AXNode*>> tree_source(
       tree->CreateTreeSource());
   ui::AXTreeSerializer<const ui::AXNode*> serializer(tree_source.get());
@@ -471,9 +427,7 @@ void ReadAnythingAppController::OnAXTreeDistilled(
     const ui::AXTreeID& tree_id,
     const std::vector<ui::AXNodeID>& content_node_ids) {
   // Reset state.
-  display_node_ids_.clear();
-  model_.Reset();
-  content_node_ids_ = content_node_ids;
+  model_.Reset(content_node_ids);
 
   // Return early if any of the following scenarios occurred while waiting for
   // distillation to complete:
@@ -481,17 +435,16 @@ void ReadAnythingAppController::OnAXTreeDistilled(
   // 2. model_.active_tree_id() == ui::AXTreeIDUnknown(): The active tree was
   // change to
   //    an unknown tree id.
-  // 3. !base::Contains(trees_, tree_id): The distilled tree was destroyed.
+  // 3. !model_.ContainsTree(tree_id): The distilled tree was destroyed.
   // 4. tree_id == ui::AXTreeIDUnknown(): The distiller sent back an unknown
   //    tree id which occurs when there was an error.
   if (tree_id != model_.active_tree_id() ||
       model_.active_tree_id() == ui::AXTreeIDUnknown() ||
-      !base::Contains(trees_, tree_id) || tree_id == ui::AXTreeIDUnknown()) {
+      !model_.ContainsTree(tree_id) || tree_id == ui::AXTreeIDUnknown()) {
     return;
   }
-  model_.ResetSelection(
-      trees_[model_.active_tree_id()]->GetUnignoredSelection());
-  if (!content_node_ids_.empty()) {
+  model_.ResetSelection();
+  if (!model_.content_node_ids().empty()) {
     // If there are content_node_ids, this means the AXTree was successfully
     // distilled. Post-process in preparation to display the distilled content.
     PostProcessDistillableAXTree();
@@ -507,11 +460,7 @@ void ReadAnythingAppController::OnAXTreeDistilled(
   Draw();
   // Once drawing is complete, unserialize all of the pending updates on the
   // active tree and send out a new distillation request.
-#if DCHECK_IS_ON()
-  DCHECK(pending_updates_.empty() ||
-         model_.pending_updates_bundle_id() == model_.active_tree_id());
-#endif
-  UnserializeUpdates(std::move(pending_updates_), model_.active_tree_id());
+  model_.UnserializePendingUpdates();
 #if DCHECK_IS_ON()
   model_.SetPendingUpdatesBundleId(ui::AXTreeIDUnknown());
 #endif
@@ -527,7 +476,7 @@ void ReadAnythingAppController::Draw() {
 void ReadAnythingAppController::PostProcessAXTreeWithSelection() {
   DCHECK(model_.has_selection());
   DCHECK_NE(model_.active_tree_id(), ui::AXTreeIDUnknown());
-  DCHECK(base::Contains(trees_, model_.active_tree_id()));
+  DCHECK(model_.ContainsTree(model_.active_tree_id()));
 
   // TODO(crbug.com/1266555): Refactor selection updates into the model once
   //  trees have been moved to the model.
@@ -558,7 +507,7 @@ void ReadAnythingAppController::PostProcessAXTreeWithSelection() {
       start_node->GetAncestorsCrossingTreeBoundaryAsQueue();
   while (!ancestors.empty()) {
     ui::AXNodeID ancestor_id = ancestors.front()->id();
-    display_node_ids_.insert(ancestor_id);
+    model_.InsertDisplayNode(ancestor_id);
     ancestors.pop();
   }
 
@@ -569,18 +518,18 @@ void ReadAnythingAppController::PostProcessAXTreeWithSelection() {
   DCHECK(!end_node->IsIgnored());
   while (next_node != end_node) {
     next_node = next_node->GetNextUnignoredInTreeOrder();
-    display_node_ids_.insert(next_node->id());
+    model_.InsertDisplayNode(next_node->id());
   }
 }
 
 void ReadAnythingAppController::PostProcessDistillableAXTree() {
-  DCHECK(!content_node_ids_.empty());
+  DCHECK(!model_.content_node_ids().empty());
 
   // Display nodes are the nodes which will be displayed by the rendering
   // algorithm of Read Anything app.ts. We wish to create a subtree which
   // stretches down from tree root to every content node and includes the
   // descendants of each content node.
-  for (auto content_node_id : content_node_ids_) {
+  for (auto content_node_id : model_.content_node_ids()) {
     ui::AXNode* content_node = GetAXNode(content_node_id);
     // TODO(crbug.com/1266555): If content_node_id is from a child tree of the
     // active ax tree, GetAXNode will return nullptr. Fix GetAXNode to harvest
@@ -595,8 +544,8 @@ void ReadAnythingAppController::PostProcessDistillableAXTree() {
 
     // Add all ancestor ids, including the content node itself, which is the
     // first ancestor in the queue. Exit the loop early if an ancestor is
-    // already in display_node_ids_; this means that all of the remaining
-    // ancestors in the queue are also already in display_node_ids.
+    // already in model_.display_node_ids(); this means that all of the
+    // remaining ancestors in the queue are also already in display_node_ids.
     // IsNodeIgnoredForReadAnything removes control nodes from display_node_ids,
     // which is used by GetChildren(). This effectively prunes the tree at the
     // control node. For example, a button and its static text inside will be
@@ -605,11 +554,12 @@ void ReadAnythingAppController::PostProcessDistillableAXTree() {
         content_node->GetAncestorsCrossingTreeBoundaryAsQueue();
     while (!ancestors.empty()) {
       ui::AXNodeID ancestor_id = ancestors.front()->id();
-      if (base::Contains(display_node_ids_, ancestor_id))
+      if (base::Contains(model_.display_node_ids(), ancestor_id)) {
         break;
+      }
       ancestors.pop();
       if (!IsNodeIgnoredForReadAnything(ancestor_id)) {
-        display_node_ids_.insert(ancestor_id);
+        model_.InsertDisplayNode(ancestor_id);
       }
     }
 
@@ -617,12 +567,13 @@ void ReadAnythingAppController::PostProcessDistillableAXTree() {
     ui::AXNode* next_node = content_node;
     ui::AXNode* deepest_last_child =
         content_node->GetDeepestLastUnignoredChild();
-    if (!deepest_last_child)
+    if (!deepest_last_child) {
       continue;
+    }
     while (next_node != deepest_last_child) {
       next_node = next_node->GetNextUnignoredInTreeOrder();
       if (!IsNodeIgnoredForReadAnything(next_node->id())) {
-        display_node_ids_.insert(next_node->id());
+        model_.InsertDisplayNode(next_node->id());
       }
     }
   }
@@ -680,9 +631,8 @@ gin::ObjectTemplateBuilder ReadAnythingAppController::GetObjectTemplateBuilder(
 }
 
 ui::AXNodeID ReadAnythingAppController::RootId() const {
-  DCHECK_NE(model_.active_tree_id(), ui::AXTreeIDUnknown());
-  DCHECK(base::Contains(trees_, model_.active_tree_id()));
-  ui::AXSerializableTree* tree = trees_.at(model_.active_tree_id()).get();
+  ui::AXSerializableTree* tree =
+      model_.GetTreeFromId(model_.active_tree_id()).get();
   return tree->root()->id();
 }
 
@@ -733,7 +683,7 @@ std::vector<ui::AXNodeID> ReadAnythingAppController::GetChildren(
   DCHECK(ax_node);
   for (auto it = ax_node->UnignoredChildrenBegin();
        it != ax_node->UnignoredChildrenEnd(); ++it) {
-    if (base::Contains(display_node_ids_, it->id())) {
+    if (base::Contains(model_.display_node_ids(), it->id())) {
       child_ids.push_back(it->id());
     }
   }
@@ -755,8 +705,9 @@ std::string ReadAnythingAppController::GetLanguage(
     ui::AXNodeID ax_node_id) const {
   ui::AXNode* ax_node = GetAXNode(ax_node_id);
   DCHECK(ax_node);
-  if (NodeIsContentNode(ax_node_id))
+  if (NodeIsContentNode(ax_node_id)) {
     return ax_node->GetLanguage();
+  }
   return ax_node->GetStringAttribute(ax::mojom::StringAttribute::kLanguage);
 }
 
@@ -770,8 +721,9 @@ std::string ReadAnythingAppController::GetTextContent(
 std::string ReadAnythingAppController::GetTextDirection(
     ui::AXNodeID ax_node_id) const {
   ui::AXNode* ax_node = GetAXNode(ax_node_id);
-  if (!ax_node)
+  if (!ax_node) {
     return std::string();
+  }
 
   auto text_direction = static_cast<ax::mojom::WritingDirection>(
       ax_node->GetIntAttribute(ax::mojom::IntAttribute::kTextDirection));
@@ -916,13 +868,12 @@ void ReadAnythingAppController::SetPageHandlerForTesting(
 // moved into the model.
 ui::AXNode* ReadAnythingAppController::GetAXNode(
     ui::AXNodeID ax_node_id) const {
-  DCHECK_NE(model_.active_tree_id(), ui::AXTreeIDUnknown());
-  DCHECK(base::Contains(trees_, model_.active_tree_id()));
-  ui::AXSerializableTree* tree = trees_.at(model_.active_tree_id()).get();
+  ui::AXSerializableTree* tree =
+      model_.GetTreeFromId(model_.active_tree_id()).get();
   return tree->GetFromId(ax_node_id);
 }
 
 bool ReadAnythingAppController::NodeIsContentNode(
     ui::AXNodeID ax_node_id) const {
-  return base::Contains(content_node_ids_, ax_node_id);
+  return base::Contains(model_.content_node_ids(), ax_node_id);
 }

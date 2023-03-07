@@ -164,25 +164,32 @@ enum AuthenticationButtonType {
                               forState:UIControlStateNormal];
     if (UIApplication.sharedApplication.userInterfaceLayoutDirection ==
         UIUserInterfaceLayoutDirectionLeftToRight) {
-      // TODO(crbug.com/1418068): Remove after minimum version required is >=
+      // TODO(crbug.com/1418068): Simplify after minimum version required is >=
       // iOS 15.
-#if __IPHONE_OS_VERSION_MIN_REQUIRED >= __IPHONE_15_0
-      self.primaryActionButton.configuration.contentInsets =
-          NSDirectionalEdgeInsetsMake(0, -kImageInset, 0, 0);
-#else
-      self.primaryActionButton.imageEdgeInsets =
-          UIEdgeInsetsMake(0, -kImageInset, 0, 0);
-#endif  // __IPHONE_OS_VERSION_MIN_REQUIRED >= __IPHONE_15_0
+      if (@available(iOS 15, *)) {
+        self.primaryActionButton.configuration.contentInsets =
+            NSDirectionalEdgeInsetsMake(0, -kImageInset, 0, 0);
+      }
+#if __IPHONE_OS_VERSION_MIN_REQUIRED < __IPHONE_15_0
+      else {
+        self.primaryActionButton.imageEdgeInsets =
+            UIEdgeInsetsMake(0, -kImageInset, 0, 0);
+      }
+#endif  // __IPHONE_OS_VERSION_MIN_REQUIRED < __IPHONE_15_0
+
     } else {
-      // TODO(crbug.com/1418068): Remove after minimum version required is >=
+      // TODO(crbug.com/1418068): Simplify after minimum version required is >=
       // iOS 15.
-#if __IPHONE_OS_VERSION_MIN_REQUIRED >= __IPHONE_15_0
-      self.primaryActionButton.configuration.contentInsets =
-          NSDirectionalEdgeInsetsMake(0, 0, 0, -kImageInset);
-#else
-      self.primaryActionButton.imageEdgeInsets =
-          UIEdgeInsetsMake(0, 0, 0, -kImageInset);
-#endif  // __IPHONE_OS_VERSION_MIN_REQUIRED >= __IPHONE_15_0
+      if (@available(iOS 15, *)) {
+        self.primaryActionButton.configuration.contentInsets =
+            NSDirectionalEdgeInsetsMake(0, 0, 0, -kImageInset);
+      }
+#if __IPHONE_OS_VERSION_MIN_REQUIRED < __IPHONE_15_0
+      else {
+        self.primaryActionButton.imageEdgeInsets =
+            UIEdgeInsetsMake(0, 0, 0, -kImageInset);
+      }
+#endif  // __IPHONE_OS_VERSION_MIN_REQUIRED < __IPHONE_15_0
     }
   } else {
     // By default display 'Yes I'm in' button.
@@ -255,14 +262,42 @@ enum AuthenticationButtonType {
   self.containerView.translatesAutoresizingMaskIntoConstraints = NO;
   [self.view addSubview:self.containerView];
 
-  self.primaryActionButton = [[UIButton alloc] init];
+  // TODO(crbug.com/1418068): Simplify after minimum version required is >=
+  // iOS 15.
+  if (@available(iOS 15, *)) {
+    UIButtonConfiguration* buttonConfiguration =
+        UIButtonConfiguration.plainButtonConfiguration;
+    self.primaryActionButton =
+        [UIButton buttonWithConfiguration:buttonConfiguration
+                            primaryAction:nil];
+  }
+#if __IPHONE_OS_VERSION_MIN_REQUIRED < __IPHONE_15_0
+  else {
+    self.primaryActionButton = [[UIButton alloc] init];
+  }
+#endif  // __IPHONE_OS_VERSION_MIN_REQUIRED < __IPHONE_15_0
+
   [self.primaryActionButton addTarget:self
                                action:@selector(onPrimaryActionButtonPressed:)
                      forControlEvents:UIControlEventTouchUpInside];
   [self updatePrimaryActionButtonStyle];
   self.primaryActionButton.translatesAutoresizingMaskIntoConstraints = NO;
 
-  self.secondaryActionButton = [[UIButton alloc] init];
+  // TODO(crbug.com/1418068): Simplify after minimum version required is >=
+  // iOS 15.
+  if (@available(iOS 15, *)) {
+    UIButtonConfiguration* buttonConfiguration =
+        UIButtonConfiguration.plainButtonConfiguration;
+    self.secondaryActionButton =
+        [UIButton buttonWithConfiguration:buttonConfiguration
+                            primaryAction:nil];
+  }
+#if __IPHONE_OS_VERSION_MIN_REQUIRED < __IPHONE_15_0
+  else {
+    self.secondaryActionButton = [[UIButton alloc] init];
+  }
+#endif  // __IPHONE_OS_VERSION_MIN_REQUIRED >= __IPHONE_15_0
+
   [self.secondaryActionButton
              addTarget:self
                 action:@selector(onSecondaryActionButtonPressed:)
@@ -530,17 +565,20 @@ enum AuthenticationButtonType {
   CGFloat horizontalContentInset = constants.ButtonTitleContentHorizontalInset;
   CGFloat verticalContentInset = constants.ButtonTitleContentVerticalInset;
 
-  // TODO(crbug.com/1418068): Remove after minimum version required is >=
+  // TODO(crbug.com/1418068): Simplify after minimum version required is >=
   // iOS 15.
-#if __IPHONE_OS_VERSION_MIN_REQUIRED >= __IPHONE_15_0
-  button.configuration.contentInsets =
-      NSDirectionalEdgeInsetsMake(verticalContentInset, horizontalContentInset,
-                                  verticalContentInset, horizontalContentInset);
-#else
-  button.contentEdgeInsets =
-      UIEdgeInsetsMake(verticalContentInset, horizontalContentInset,
-                       verticalContentInset, horizontalContentInset);
-#endif  // __IPHONE_OS_VERSION_MIN_REQUIRED >= __IPHONE_15_0
+  if (@available(iOS 15, *)) {
+    button.configuration.contentInsets = NSDirectionalEdgeInsetsMake(
+        verticalContentInset, horizontalContentInset, verticalContentInset,
+        horizontalContentInset);
+  }
+#if __IPHONE_OS_VERSION_MIN_REQUIRED < __IPHONE_15_0
+  else {
+    button.contentEdgeInsets =
+        UIEdgeInsetsMake(verticalContentInset, horizontalContentInset,
+                         verticalContentInset, horizontalContentInset);
+  }
+#endif  // __IPHONE_OS_VERSION_MIN_REQUIRED < __IPHONE_15_0
 
   button.titleLabel.font = [UIFont preferredFontForTextStyle:fontStyle];
   button.titleLabel.numberOfLines = 0;

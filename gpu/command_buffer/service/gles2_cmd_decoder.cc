@@ -3583,10 +3583,6 @@ gpu::ContextResult GLES2DecoderImpl::Initialize(
   context_ = context;
   surface_ = surface;
 
-  // Set workarounds for the surface.
-  if (workarounds().rely_on_implicit_sync_for_swap_buffers)
-    surface_->SetRelyOnImplicitSync();
-
   // Create GPU Tracer for timing values.
   gpu_tracer_ = std::make_unique<GPUTracer>(this);
 
@@ -5323,11 +5319,6 @@ void GLES2DecoderImpl::Destroy(bool have_context) {
     return;
 
   DCHECK(!have_context || context_->IsCurrent(nullptr));
-
-  // Prepare to destroy the surface while the context is still current, because
-  // some surface destructors make GL calls.
-  if (surface_)
-    surface_->PrepareToDestroy(have_context);
 
 #if !BUILDFLAG(IS_ANDROID)
   // Destroy any textures that are pending destruction.
@@ -10580,15 +10571,6 @@ bool GLES2DecoderImpl::DoBindTexImageIfNeeded(Texture* texture,
       if (texture_unit)
         api()->glActiveTextureFn(texture_unit);
       api()->glBindTextureFn(textarget, texture->service_id());
-#if BUILDFLAG(IS_WIN)
-      auto* d3d_image =
-          gl::GLImage::ToGLImageD3D(texture->GetLevelImage(textarget, 0));
-      if (d3d_image) {
-        bool rv = d3d_image->BindTexImage(textarget);
-        DCHECK(rv) << "BindTexImage() failed";
-      }
-#endif
-
       texture->MarkLevelImageBound(textarget, 0);
       if (!texture_unit) {
         RestoreCurrentTextureBindings(&state_, textarget,
@@ -13115,6 +13097,13 @@ void GLES2DecoderImpl::FinishReadPixels(GLsizei width,
   if (result != nullptr) {
     result->success = 1;
   }
+}
+
+error::Error GLES2DecoderImpl::HandleReadbackARGBImagePixelsINTERNAL(
+    uint32_t immediate_data_size,
+    const volatile void* cmd_data) {
+  NOTIMPLEMENTED_LOG_ONCE();
+  return error::kNoError;
 }
 
 error::Error GLES2DecoderImpl::HandleReadPixels(uint32_t immediate_data_size,

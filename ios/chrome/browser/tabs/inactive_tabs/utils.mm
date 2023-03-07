@@ -4,6 +4,7 @@
 
 #import "ios/chrome/browser/tabs/inactive_tabs/utils.h"
 
+#import "base/metrics/histogram_functions.h"
 #import "ios/chrome/browser/main/browser.h"
 #import "ios/chrome/browser/tabs/inactive_tabs/features.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
@@ -14,10 +15,6 @@
 #error "This file requires ARC support."
 #endif
 
-namespace {
-
-// Move the web state from `source` list at `source_index` to `destination` web
-// state list at `destination_index`.
 void MoveTab(WebStateList* source,
              int source_index,
              WebStateList* destination,
@@ -29,22 +26,21 @@ void MoveTab(WebStateList* source,
                               WebStateOpener());
 }
 
-}  // namespace
-
 void MoveTabsFromActiveToInactive(Browser* active_browser,
                                   Browser* inactive_browser) {
   DCHECK(IsInactiveTabsEnabled());
   WebStateList* active_web_state_list = active_browser->GetWebStateList();
   WebStateList* inactive_web_state_list = inactive_browser->GetWebStateList();
+  const base::TimeDelta inactivityThreshold = TabInactivityThreshold();
 
   for (int index = active_web_state_list->GetIndexOfFirstNonPinnedWebState();
        index < active_web_state_list->count();) {
     web::WebState* current_web_state =
         active_web_state_list->GetWebStateAt(index);
-    base::TimeDelta timeSinceLastActivation =
+    const base::TimeDelta timeSinceLastActivation =
         base::Time::Now() - current_web_state->GetLastActiveTime();
 
-    if (timeSinceLastActivation > TabInactivityThreshold()) {
+    if (timeSinceLastActivation > inactivityThreshold) {
       MoveTab(active_web_state_list, index, inactive_web_state_list,
               inactive_web_state_list->count());
     } else {
@@ -66,14 +62,16 @@ void MoveTabsFromInactiveToActive(Browser* inactive_browser,
   DCHECK(IsInactiveTabsEnabled());
   WebStateList* active_web_state_list = active_browser->GetWebStateList();
   WebStateList* inactive_web_state_list = inactive_browser->GetWebStateList();
+  const base::TimeDelta inactivityThreshold = TabInactivityThreshold();
   int removed_web_state_number = 0;
+
   for (int index = 0; index < inactive_web_state_list->count();) {
     web::WebState* current_web_state =
         inactive_web_state_list->GetWebStateAt(index);
-    base::TimeDelta timeSinceLastActivation =
+    const base::TimeDelta timeSinceLastActivation =
         base::Time::Now() - current_web_state->GetLastActiveTime();
 
-    if (timeSinceLastActivation < TabInactivityThreshold()) {
+    if (timeSinceLastActivation < inactivityThreshold) {
       int insertion_index =
           active_web_state_list->GetIndexOfFirstNonPinnedWebState() +
           removed_web_state_number++;
@@ -90,6 +88,10 @@ void RestoreAllInactiveTabs(Browser* inactive_browser,
   DCHECK(!IsInactiveTabsEnabled());
   WebStateList* active_web_state_list = active_browser->GetWebStateList();
   WebStateList* inactive_web_state_list = inactive_browser->GetWebStateList();
+  // Record the number of tabs restored from the inactive browser after Inactive
+  // Tabs has been disabled.
+  base::UmaHistogramCounts100("Tabs.RestoredFromInactiveCount",
+                              inactive_web_state_list->count());
   for (int index = inactive_web_state_list->count() - 1; index >= 0; index--) {
     MoveTab(inactive_web_state_list, index, active_web_state_list,
             active_web_state_list->GetIndexOfFirstNonPinnedWebState());

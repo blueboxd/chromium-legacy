@@ -539,7 +539,8 @@ struct AutofillSuggestionParams {
   // keystrokes will be ignored for the first 500ms after the popup is first
   // shown. This overrides this threshold.
   if (base::WeakPtr<AutofillPopupControllerImpl> controller =
-          ChromeAutofillClient::FromWebContents(test->GetWebContents())
+          ChromeAutofillClient::FromWebContentsForTesting(
+              test->GetWebContents())
               ->popup_controller_for_testing()) {
     controller->DisableThresholdForTesting(true);
   }
@@ -2946,7 +2947,7 @@ class AutofillInteractiveIsolationTest : public AutofillInteractiveTestBase {
   ~AutofillInteractiveIsolationTest() override = default;
 
   bool IsPopupShown() {
-    return !!ChromeAutofillClient::FromWebContents(GetWebContents())
+    return !!ChromeAutofillClient::FromWebContentsForTesting(GetWebContents())
                  ->popup_controller_for_testing();
   }
 

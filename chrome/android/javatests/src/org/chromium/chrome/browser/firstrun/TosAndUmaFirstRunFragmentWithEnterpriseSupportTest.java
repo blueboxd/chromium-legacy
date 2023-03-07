@@ -11,6 +11,8 @@ import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 
+import static org.chromium.ui.test.util.MockitoHelper.doCallback;
+
 import android.app.Activity;
 import android.app.Instrumentation;
 import android.app.Instrumentation.ActivityMonitor;
@@ -79,6 +81,7 @@ import java.util.concurrent.TimeoutException;
  * workflow and UI transition.
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
+@DisabledTest(message = "https://crbug.com/1421247")
 public class TosAndUmaFirstRunFragmentWithEnterpriseSupportTest {
     @IntDef({FragmentState.LOADING, FragmentState.NO_POLICY, FragmentState.HAS_POLICY,
             FragmentState.WAITING_UNTIL_NEXT_PAGE})
@@ -168,9 +171,6 @@ public class TosAndUmaFirstRunFragmentWithEnterpriseSupportTest {
         FirstRunUtilsJni.TEST_HOOKS.setInstanceForTesting(mFirstRunUtils);
 
         EnterpriseInfo.setInstanceForTest(mFakeEnterpriseInfo);
-
-        FREMobileIdentityConsistencyFieldTrial.setFirstRunTrialGroupForTesting(
-                FREMobileIdentityConsistencyFieldTrial.DISABLED_GROUP);
 
         setAppRestrictionsMockNotInitialized();
         setPolicyServiceMockNotInitialized();
@@ -857,38 +857,22 @@ public class TosAndUmaFirstRunFragmentWithEnterpriseSupportTest {
     }
 
     private void setAppRestrictionsMockNotInitialized() {
-        Mockito.doAnswer(invocation -> {
-                   Callback<Boolean> callback = invocation.getArgument(0);
-                   mAppRestrictionsCallbacks.add(callback);
-                   return null;
-               })
+        doCallback((Callback<Boolean> callback) -> mAppRestrictionsCallbacks.add(callback))
                 .when(mMockAppRestrictionInfo)
                 .getHasAppRestriction(any());
 
-        Mockito.doAnswer(invocation -> {
-                   Callback<Long> callback = invocation.getArgument(0);
-                   mAppRestrictionsDurationCallbacks.add(callback);
-                   return null;
-               })
+        doCallback((Callback<Long> callback) -> mAppRestrictionsDurationCallbacks.add(callback))
                 .when(mMockAppRestrictionInfo)
                 .getCompletionElapsedRealtimeMs(any());
     }
 
     private void setAppRestrictionsMockInitialized(boolean hasAppRestrictions) {
-        Mockito.doAnswer(invocation -> {
-                   Callback<Boolean> callback = invocation.getArgument(0);
-                   callback.onResult(hasAppRestrictions);
-                   return null;
-               })
+        doCallback((Callback<Boolean> callback) -> callback.onResult(hasAppRestrictions))
                 .when(mMockAppRestrictionInfo)
                 .getHasAppRestriction(any());
 
         long resolvingTime = SystemClock.elapsedRealtime();
-        Mockito.doAnswer(invocation -> {
-                   Callback<Long> callback = invocation.getArgument(0);
-                   callback.onResult(resolvingTime);
-                   return null;
-               })
+        doCallback((Callback<Long> callback) -> callback.onResult(resolvingTime))
                 .when(mMockAppRestrictionInfo)
                 .getCompletionElapsedRealtimeMs(any());
 
@@ -905,11 +889,7 @@ public class TosAndUmaFirstRunFragmentWithEnterpriseSupportTest {
 
     private void setPolicyServiceMockNotInitialized() {
         Mockito.when(mPolicyService.isInitializationComplete()).thenReturn(false);
-        Mockito.doAnswer(invocation -> {
-                   PolicyService.Observer observer = invocation.getArgument(0);
-                   mPolicyServiceObservers.add(observer);
-                   return null;
-               })
+        doCallback((PolicyService.Observer observer) -> mPolicyServiceObservers.add(observer))
                 .when(mPolicyService)
                 .addObserver(any());
     }

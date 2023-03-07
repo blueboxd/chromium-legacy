@@ -67,6 +67,7 @@
 #include "net/base/features.h"
 #include "net/http/http_auth_preferences.h"
 #include "net/http/http_util.h"
+#include "net/net_buildflags.h"
 #include "net/ssl/client_cert_store.h"
 #include "services/cert_verifier/public/mojom/cert_verifier_service_factory.mojom.h"
 #include "services/network/public/cpp/cors/origin_access_list.h"
@@ -254,23 +255,30 @@ void UpdateStorageAccessSettings(Profile* profile) {
   }
 }
 
-void UpdateTopLevelStorageAccessSettings(Profile* profile) {
+void UpdateAllStorageAccessSettings(Profile* profile) {
   // TODO(crbug.com/1385156): Switch to an independent feature flag.
   if (base::FeatureList::IsEnabled(blink::features::kStorageAccessAPI) &&
       base::FeatureList::IsEnabled(
           blink::features::kStorageAccessAPIForOriginExtension)) {
-    ContentSettingsForOneType settings;
+    ContentSettingsForOneType top_level_settings;
     HostContentSettingsMapFactory::GetForProfile(profile)
         ->GetSettingsForOneType(ContentSettingsType::TOP_LEVEL_STORAGE_ACCESS,
-                                &settings);
+                                &top_level_settings);
+    ContentSettingsForOneType storage_access_settings;
+    HostContentSettingsMapFactory::GetForProfile(profile)
+        ->GetSettingsForOneType(ContentSettingsType::STORAGE_ACCESS,
+                                &storage_access_settings);
 
     profile->ForEachLoadedStoragePartition(base::BindRepeating(
-        [](ContentSettingsForOneType settings,
+        [](ContentSettingsForOneType storage_access_settings,
+           ContentSettingsForOneType top_level_settings,
            content::StoragePartition* storage_partition) {
           storage_partition->GetCookieManagerForBrowserProcess()
-              ->SetTopLevelStorageAccessSettings(settings, base::DoNothing());
+              ->SetAllStorageAccessSettings(storage_access_settings,
+                                            top_level_settings,
+                                            base::DoNothing());
         },
-        settings));
+        storage_access_settings, top_level_settings));
   }
 }
 
@@ -937,7 +945,7 @@ void ProfileNetworkContextService::ConfigureNetworkContextParamsInternal(
       cert_verifier_configuration =
           GetChromeCertVerifierServiceParams(/*local_state=*/nullptr);
   DCHECK(cert_verifier_configuration);
-#if BUILDFLAG(CHROME_ROOT_STORE_SUPPORTED)
+#if BUILDFLAG(CHROME_ROOT_STORE_OPTIONAL)
   is_trial_comparison_supported &=
       !cert_verifier_configuration->use_chrome_root_store;
 #endif
@@ -1000,8 +1008,10 @@ void ProfileNetworkContextService::ConfigureNetworkContextParamsInternal(
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   bool profile_supports_policy_certs = false;
-  if (ash::ProfileHelper::IsSigninProfile(profile_))
+  if (ash::ProfileHelper::IsSigninProfile(profile_) ||
+      ash::ProfileHelper::IsLockScreenProfile(profile_)) {
     profile_supports_policy_certs = true;
+  }
   user_manager::UserManager* user_manager = user_manager::UserManager::Get();
   if (user_manager) {
     const user_manager::User* user =
@@ -1096,13 +1106,12 @@ void ProfileNetworkContextService::OnContentSettingChanged(
       UpdateStorageAccessSettings(profile_);
       break;
     case ContentSettingsType::TOP_LEVEL_STORAGE_ACCESS:
-      UpdateTopLevelStorageAccessSettings(profile_);
+      UpdateAllStorageAccessSettings(profile_);
       break;
     case ContentSettingsType::DEFAULT:
       UpdateCookieSettings(profile_);
       UpdateLegacyCookieSettings(profile_);
-      UpdateStorageAccessSettings(profile_);
-      UpdateTopLevelStorageAccessSettings(profile_);
+      UpdateAllStorageAccessSettings(profile_);
       break;
     default:
       return;

@@ -1634,7 +1634,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.DarkTheme.SystemTray.IsDarkModeEnabled" enum="Boolean"
-    expires_after="2023-07-02">
+    expires_after="2023-09-03">
   <owner>minch@chromium.org</owner>
   <owner>changmar@chromium.org</owner>
   <summary>
@@ -1720,7 +1720,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.Desks.AssignToAllDesksSource"
-    enum="DesksAssignToAllDesksSource" expires_after="2023-07-02">
+    enum="DesksAssignToAllDesksSource" expires_after="2023-09-03">
   <owner>zxdan@chromium.org</owner>
   <owner>janetmac@chromium.org</owner>
   <summary>
@@ -1803,7 +1803,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.Desks.ConsecutiveDailyVisits" units="days"
-    expires_after="2023-07-02">
+    expires_after="2023-09-03">
   <owner>afakhry@chromium.org</owner>
   <owner>janetmac@chromium.org</owner>
   <summary>
@@ -1921,7 +1921,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.Desks.NumberOfDeskTraversals" units="units"
-    expires_after="2023-07-02">
+    expires_after="2023-09-03">
   <owner>afakhry@chromium.org</owner>
   <owner>sammiequon@chromium.org</owner>
   <owner>tclaiborne@chromium.org</owner>
@@ -2488,21 +2488,6 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Ash.Desktop.TimeBetweenNavigateToTaskSwitches" units="seconds"
-    expires_after="2021-03-15">
-  <owner>tbuckley@chromium.org</owner>
-  <owner>tclaiborne@chromium.org</owner>
-  <summary>
-    The number of seconds between task window activations triggered by users
-    clicking or tapping on a window, as recorded by the Desktop_SwitchTask user
-    action. Recorded on Chrome OS only. Task switches from other sources are
-    ignored and do not affect this metric. In other words, if a user performs
-    the following steps (1) click on task window 'A' (2) Alt+Tab to task 'Z'(3)
-    click on task window 'B', then this will result in a sample recorded for the
-    time delta between activating task window 'A'and 'B'.
-  </summary>
-</histogram>
-
 <histogram name="Ash.DeviceActiveClient.CheckMembershipCases"
     enum="DeviceActiveCheckMembershipResponseCases" expires_after="2023-08-06">
   <owner>qianwan@google.com</owner>
@@ -2630,16 +2615,6 @@ chromium-metrics-reviews@google.com.
     The effective resolution of the internal display after device scale factor
     and display zoom level has been applied. This is the exact value matching
     the display's effective resolution. This is emitted at regular intervals.
-  </summary>
-</histogram>
-
-<histogram name="Ash.DisplayChangeDialog.Saved" enum="BooleanSaved"
-    expires_after="2020-06-30">
-  <owner>zentaro@chromium.org</owner>
-  <owner>cros-peripherals@google.com</owner>
-  <summary>
-    Emitted when the user chooses an option on the Display Change Dialog that is
-    shown when a user changes the resolution of an external display.
   </summary>
 </histogram>
 
@@ -2967,17 +2942,6 @@ chromium-metrics-reviews@google.com.
   <summary>Record the floating workspace template upload status.</summary>
 </histogram>
 
-<histogram name="Ash.Glanceables.SignoutScreenshotDuration" units="ms"
-    expires_after="2023-07-02">
-  <owner>jamescook@chromium.org</owner>
-  <owner>tbarzic@chromium.org</owner>
-  <summary>
-    The amount of time it took to capture the signout screenshot, encode it to
-    PNG, and write it to disk. Recorded on startup, with data from the previous
-    session's signout.
-  </summary>
-</histogram>
-
 <histogram name="Ash.Homescreen.AnimationSmoothness" units="%"
     expires_after="2024-01-10">
   <owner>sammiequon@chromium.org</owner>
@@ -3226,7 +3190,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.Login.Login.AuthMethod.Switched"
-    enum="AuthMethodSwitchType" expires_after="2023-06-29">
+    enum="AuthMethodSwitchType" expires_after="2023-09-03">
   <owner>emaamari@google.com</owner>
   <owner>cros-lurs@google.com</owner>
   <summary>
@@ -3246,7 +3210,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.Login.Login.AuthMethod.Used.TabletMode" enum="AuthMethod"
-    expires_after="2023-07-02">
+    expires_after="2023-09-03">
   <owner>emaamari@google.com</owner>
   <owner>cros-lurs@google.com</owner>
   <summary>
@@ -3308,7 +3272,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.Login.ShowGaiaSignin.WaitTime" units="ms"
-    expires_after="2023-03-26">
+    expires_after="2024-03-01">
   <owner>agawronska@chromium.org</owner>
   <owner>galenemco@google.com</owner>
   <owner>cros-families-eng@google.com</owner>
@@ -3361,7 +3325,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram base="true" name="Ash.LoginAnimation.Smoothness" units="%"
-    expires_after="2023-06-02">
+    expires_after="2023-09-03">
   <owner>oshima@chromium.org</owner>
   <owner>chromeos-wmp@google.com</owner>
 <!-- Name completed by histogram_suffixes
@@ -3374,7 +3338,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.Media.CameraPrivacySwitch.Event"
-    enum="CameraPrivacySwitchEvent" expires_after="2023-07-02">
+    enum="CameraPrivacySwitchEvent" expires_after="2023-09-03">
   <owner>tbarzic@chromium.org</owner>
   <owner>gzadina@google.com</owner>
   <summary>
@@ -3545,7 +3509,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.NightLight.ScheduleType" enum="AshNightLightScheduleType"
-    expires_after="2023-07-02">
+    expires_after="2023-09-03">
   <owner>afakhry@chromium.org</owner>
   <owner>tclaiborne@chromium.org</owner>
   <summary>
@@ -3589,7 +3553,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.Notification.CountOfNotificationsInOneGroup"
-    units="Notifications" expires_after="2023-07-02">
+    units="Notifications" expires_after="2023-09-03">
   <owner>leandre@chromium.org</owner>
   <owner>cros-status-area-eng@google.com</owner>
   <summary>
@@ -3612,7 +3576,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="Ash.Notification.GroupNotification.SlideOut.AnimationSmoothness"
-    units="%" expires_after="2023-03-03">
+    units="%" expires_after="2023-06-15">
   <owner>amehfooz@chromium.org</owner>
   <owner>cros-status-area-eng@google.com</owner>
   <summary>
@@ -4333,35 +4297,6 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Ash.Pip.FreeResizeFinishArea" units="%"
-    expires_after="2021-06-16">
-  <owner>takise@chromium.org</owner>
-  <owner>linben@chromium.org</owner>
-  <summary>
-    Area of a Picture-in-picture window when ending a free-resize, as a
-    percentage of the area it takes up on the display it is on.
-  </summary>
-</histogram>
-
-<histogram name="Ash.Pip.FreeResizeInitialArea" units="%"
-    expires_after="2021-06-16">
-  <owner>takise@chromium.org</owner>
-  <owner>linben@chromium.org</owner>
-  <summary>
-    Initial area of a Picture-in-picture window when beginning a free-resize, as
-    a percentage of the area it takes up on the display it is on.
-  </summary>
-</histogram>
-
-<histogram name="Ash.Pip.Position" enum="AshPipPosition"
-    expires_after="2021-06-16">
-  <owner>takise@chromium.org</owner>
-  <owner>linben@chromium.org</owner>
-  <summary>
-    The position that a Picture-in-picture window was moved to by a user drag.
-  </summary>
-</histogram>
-
 <histogram name="Ash.PowerButtonScreenshot.DelayBetweenAccelKeyPressed"
     units="ms" expires_after="2020-11-15">
   <owner>zentaro@chromium.org</owner>
@@ -4954,6 +4889,9 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Ash.Shelf.Palette.InAssistantMode" units="ms"
     expires_after="2021-12-12">
+  <obsolete>
+    Kept to view historical data.
+  </obsolete>
   <owner>amehfooz@chromium.org</owner>
   <owner>cros-status-area@google.com</owner>
   <owner>gzadina@chromium.org</owner>
@@ -4965,6 +4903,9 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Ash.Shelf.Palette.InLaserPointerMode" units="ms"
     expires_after="2021-12-12">
+  <obsolete>
+    Kept to view historical data.
+  </obsolete>
   <owner>amehfooz@chromium.org</owner>
   <owner>cros-status-area@google.com</owner>
   <owner>gzadina@chromium.org</owner>
@@ -4976,6 +4917,9 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Ash.Shelf.Palette.InMagnifyMode" units="ms"
     expires_after="2021-12-12">
+  <obsolete>
+    Kept to view historical data.
+  </obsolete>
   <owner>amehfooz@chromium.org</owner>
   <owner>cros-status-area@google.com</owner>
   <owner>gzadina@chromium.org</owner>
@@ -4987,6 +4931,9 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Ash.Shelf.Palette.ModeCancellation"
     enum="PaletteModeCancelType" expires_after="2021-12-12">
+  <obsolete>
+    Kept to view historical data.
+  </obsolete>
   <owner>amehfooz@chromium.org</owner>
   <owner>cros-status-area@google.com</owner>
   <owner>gzadina@chromium.org</owner>
@@ -5009,6 +4956,9 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Ash.Shelf.Palette.Usage.AutoOpened" enum="PaletteTrayOptions"
     expires_after="2021-12-12">
+  <obsolete>
+    Kept to view historical data.
+  </obsolete>
   <owner>amehfooz@chromium.org</owner>
   <owner>cros-status-area@google.com</owner>
   <owner>gzadina@chromium.org</owner>
@@ -5020,6 +4970,9 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Ash.Shelf.Palette.Usage.Shortcut" enum="PaletteTrayOptions"
     expires_after="2021-12-12">
+  <obsolete>
+    Kept to view historical data.
+  </obsolete>
   <owner>amehfooz@chromium.org</owner>
   <owner>cros-status-area@google.com</owner>
   <owner>gzadina@chromium.org</owner>
@@ -5069,20 +5022,6 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Ash.Shelf.TimeBetweenNavigateToTaskSwitches" units="seconds"
-    expires_after="M81">
-  <owner>tbuckley@chromium.org</owner>
-  <summary>
-    The number of seconds between contiguous task switch user actions triggered
-    by the Shelf buttons where the user activates a different user-predictable
-    task. Task switches from other sources are ignored and do not affect this
-    metric. In other words, if a user performs the following steps (1) launch
-    task 'A' from the Shelf (2) Alt+Tab to task 'Z' (3) launch task 'B' from the
-    Shelf, then this will result in a sample recorded for the time delta between
-    launching tasks 'A' and 'B'.
-  </summary>
-</histogram>
-
 <histogram name="Ash.Shelf.TimeBetweenWindowMinimizedAndActivatedActions"
     units="ms" expires_after="2020-06-28">
   <owner>tbuckley@chromium.org</owner>
@@ -5109,18 +5048,6 @@ chromium-metrics-reviews@google.com.
   <summary>
     The number of Bluetooth devices available at the time of Bluetooth event
     logging.
-  </summary>
-</histogram>
-
-<histogram name="Ash.ShelfAlignmentOverTime" enum="ShelfAlignmentValue"
-    expires_after="2020-11-22">
-  <owner>kuscher@google.com</owner>
-  <summary>
-    The current state of the shelf (alignment) tracked over time by logging on a
-    regular basis (30 minutes), this is used instead of log in or shelf usage to
-    track users that do not lock/unlock or log in frequently and use a small
-    number of browser instances or otherwise infrequently interact with the
-    shelf launcher.
   </summary>
 </histogram>
 
@@ -5515,7 +5442,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.SwipeHomeToOverviewGesture"
-    enum="SwipeHomeToOverviewResult" expires_after="2023-07-02">
+    enum="SwipeHomeToOverviewResult" expires_after="2023-09-03">
   <owner>andrewxu@chromium.org</owner>
   <owner>tbarzic@chromium.org</owner>
   <summary>
@@ -5604,7 +5531,6 @@ chromium-metrics-reviews@google.com.
   <summary>
     The number of seconds between contiguous task switch user actions triggered
     by any of the other task switch actions that are tracked. (e.g.,
-    Ash.Shelf.TimeBetweenNavigateToTaskSwitches,
     Ash.Tab.TimeBetweenSwitchToExistingTabUserActions,
     Ash.WindowCycleController.TimeBetweenTaskSwitches,
     Ash.AppList.TimeBetweenTaskSwitches,
@@ -6216,7 +6142,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.WindowCycleController.Items" units="items"
-    expires_after="2023-07-02">
+    expires_after="2023-09-03">
   <owner>sammiequon@chromium.org</owner>
   <owner>tclaiborne@chromium.org</owner>
   <owner>xdai@chromium.org</owner>
@@ -6275,7 +6201,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.WindowCycleController.SwitchMode" enum="AltTabMode"
-    expires_after="2023-07-02">
+    expires_after="2023-09-03">
   <owner>afakhry@chromium.org</owner>
   <owner>xdai@chromium.org</owner>
   <owner>tclaiborne@chromium.org</owner>
@@ -6397,7 +6323,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.Wm.WindowSnapActionSource" enum="WindowSnapActionSource"
-    expires_after="2023-07-02">
+    expires_after="2023-09-03">
   <owner>xdai@chromium.org</owner>
   <owner>nupurjain@chromium.org</owner>
   <summary>

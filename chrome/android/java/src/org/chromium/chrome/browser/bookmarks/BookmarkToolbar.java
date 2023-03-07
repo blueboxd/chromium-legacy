@@ -12,7 +12,6 @@ import android.view.View.OnClickListener;
 
 import androidx.appcompat.widget.Toolbar.OnMenuItemClickListener;
 
-import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.app.bookmarks.BookmarkAddEditFolderActivity;
@@ -33,7 +32,7 @@ import java.util.List;
  * associated with the current context.
  */
 public class BookmarkToolbar extends SelectableListToolbar<BookmarkId>
-        implements BookmarkUIObserver, OnMenuItemClickListener, OnClickListener,
+        implements BookmarkUiObserver, OnMenuItemClickListener, OnClickListener,
                    DragReorderableListAdapter.DragListener {
     private BookmarkItem mCurrentFolder;
     // TODO(crbug.com/1413463): Remove reference to BookmarkDelegate.
@@ -65,15 +64,15 @@ public class BookmarkToolbar extends SelectableListToolbar<BookmarkId>
     }
 
     void setBookmarkUiState(int state) {
-        if (mBookmarkUiState == BookmarkUIState.STATE_LOADING && state != mBookmarkUiState) {
+        if (mBookmarkUiState == BookmarkUiState.STATE_LOADING && state != mBookmarkUiState) {
             showNormalView();
         }
 
         mBookmarkUiState = state;
 
-        if (state == BookmarkUIState.STATE_LOADING) {
+        if (state == BookmarkUiState.STATE_LOADING) {
             showLoadingUi();
-        } else if (state == BookmarkUIState.STATE_SEARCHING) {
+        } else if (state == BookmarkUiState.STATE_SEARCHING) {
             showSearchView(/*showKeyboard=*/true);
         } else {
             hideSearchView(/*notify=*/false);
@@ -83,7 +82,7 @@ public class BookmarkToolbar extends SelectableListToolbar<BookmarkId>
     /** Sets the delegate to use to handle UI actions related to this action bar. */
     void setBookmarkDelegate(BookmarkDelegate delegate) {
         mDelegate = delegate;
-        mDelegate.addUIObserver(this);
+        mDelegate.addUiObserver(this);
         if (!delegate.isDialogUi()) getMenu().removeItem(R.id.close_menu_id);
 
         getMenu().setGroupEnabled(R.id.selection_mode_menu_group, true);
@@ -117,7 +116,7 @@ public class BookmarkToolbar extends SelectableListToolbar<BookmarkId>
             BookmarkUtils.finishActivityOnPhone(getContext());
             return true;
         } else if (menuItem.getItemId() == R.id.search_menu_id) {
-            mDelegate.openSearchUI();
+            mDelegate.openSearchUi();
             return true;
         }
 
@@ -147,15 +146,11 @@ public class BookmarkToolbar extends SelectableListToolbar<BookmarkId>
             return true;
         } else if (menuItem.getItemId() == R.id.selection_open_in_new_tab_id) {
             RecordUserAction.record("MobileBookmarkManagerEntryOpenedInNewTab");
-            RecordHistogram.recordCount1000Histogram(
-                    "Bookmarks.Count.OpenInNewTab", mSelectionDelegate.getSelectedItems().size());
             mDelegate.openBookmarksInNewTabs(
                     selectionDelegate.getSelectedItemsAsList(), /*incognito=*/false);
             return true;
         } else if (menuItem.getItemId() == R.id.selection_open_in_incognito_tab_id) {
             RecordUserAction.record("MobileBookmarkManagerEntryOpenedInIncognito");
-            RecordHistogram.recordCount1000Histogram("Bookmarks.Count.OpenInIncognito",
-                    mSelectionDelegate.getSelectedItems().size());
             mDelegate.openBookmarksInNewTabs(
                     selectionDelegate.getSelectedItemsAsList(), /*incognito=*/true);
             return true;
@@ -201,7 +196,7 @@ public class BookmarkToolbar extends SelectableListToolbar<BookmarkId>
     @Override
     public void onDestroy() {
         if (mDelegate != null) {
-            mDelegate.removeUIObserver(this);
+            mDelegate.removeUiObserver(this);
         }
 
         if (mDragReorderableListAdapter != null) {

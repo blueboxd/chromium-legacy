@@ -592,6 +592,12 @@ const FeatureEntry::FeatureVariation kAddToHomeScreenVariations[] = {
     {"Disable on incognito", kAddToHomeScreenDisableIncognito,
      std::size(kAddToHomeScreenDisableIncognito), nullptr}};
 
+const FeatureEntry::FeatureParam kBringYourOwnTabsIOSBottomMessage[] = {
+    {kBringYourOwnTabsIOSParam, "true"}};
+const FeatureEntry::FeatureVariation kBringYourOwnTabsIOSVariations[] = {
+    {"with bottom message on tab grid", kBringYourOwnTabsIOSBottomMessage,
+     std::size(kBringYourOwnTabsIOSBottomMessage), nullptr}};
+
 // To add a new entry, add to the end of kFeatureEntries. There are four
 // distinct types of entries:
 // . ENABLE_DISABLE_VALUE: entry is either enabled, disabled, or uses the
@@ -655,10 +661,6 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kAutofillIOSDelayBetweenFieldsName,
      flag_descriptions::kAutofillIOSDelayBetweenFieldsDescription,
      flags_ui::kOsIos, MULTI_VALUE_TYPE(kAutofillIOSDelayBetweenFieldsChoices)},
-    {"fullscreen-promos-manager",
-     flag_descriptions::kFullscreenPromosManagerName,
-     flag_descriptions::kFullscreenPromosManagerDescription, flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(kFullscreenPromosManager)},
     {"fullscreen-promos-manager-skip-internal-limits",
      flag_descriptions::kFullscreenPromosManagerSkipInternalLimitsName,
      flag_descriptions::kFullscreenPromosManagerSkipInternalLimitsDescription,
@@ -1405,6 +1407,11 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
     {"new-ntp-omnibox-layout", flag_descriptions::kNewNTPOmniboxLayoutName,
      flag_descriptions::kNewNTPOmniboxLayoutDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(kNewNTPOmniboxLayout)},
+    {"bring-your-own-tabs-ios", flag_descriptions::kBringYourOwnTabsIOSName,
+     flag_descriptions::kBringYourOwnTabsIOSDescription, flags_ui::kOsIos,
+     FEATURE_WITH_PARAMS_VALUE_TYPE(kBringYourOwnTabsIOS,
+                                    kBringYourOwnTabsIOSVariations,
+                                    "BringYourOwnTabsIOS")},
 };
 
 bool SkipConditionalFeatureEntry(const flags_ui::FeatureEntry& entry) {

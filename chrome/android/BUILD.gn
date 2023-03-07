@@ -57,12 +57,6 @@ if (current_toolchain == default_toolchain) {
 
   app_hooks_impl = "java/src/org/chromium/chrome/browser/AppHooksImpl.java"
 
-  # Exclude it from JNI registration if VR is not enabled.
-  chrome_jni_file_exclusions = []
-  if (!enable_vr) {
-    chrome_jni_file_exclusions += [ "//chrome/android/features/vr/java/src/org/chromium/chrome/browser/vr/VrModuleProvider.java" ]
-  }
-
   jinja_template("chrome_public_android_feature_vr_manifest") {
     input = "features/vr/java/AndroidManifest.xml"
     output = feature_module_vr_android_manifest_path
@@ -229,13 +223,6 @@ if (current_toolchain == default_toolchain) {
     ]
   }
 
-  java_cpp_template("vr_build_config") {
-    sources = [ "//chrome/android/java/src/org/chromium/chrome/browser/vr/VrBuildConfig.template" ]
-    if (enable_vr) {
-      defines = [ "ENABLE_VR" ]
-    }
-  }
-
   android_library("chrome_java") {
     deps = [
       ":base_module_java",
@@ -255,6 +242,7 @@ if (current_toolchain == default_toolchain) {
       "$google_play_services_package:google_play_services_vision_java",
       "//base:jni_java",
       "//cc:cc_java",
+      "//cc/mojom:mojom_java",
       "//chrome/android/features/keyboard_accessory:public_java",
       "//chrome/android/features/start_surface:java_resources",
       "//chrome/android/features/start_surface:public_java",
@@ -555,6 +543,7 @@ if (current_toolchain == default_toolchain) {
       "//third_party/android_media:android_media_java",
       "//third_party/android_swipe_refresh:android_swipe_refresh_java",
       "//third_party/androidx:androidx_activity_activity_java",
+      "//third_party/androidx:androidx_annotation_annotation_experimental_java",
       "//third_party/androidx:androidx_asynclayoutinflater_asynclayoutinflater_appcompat_java",
       "//third_party/androidx:androidx_browser_browser_java",
       "//third_party/androidx:androidx_collection_collection_java",
@@ -590,7 +579,6 @@ if (current_toolchain == default_toolchain) {
       ":chrome_android_java_google_api_keys_srcjar",
       ":chrome_strict_mode_switch",
       ":resource_id_javagen",
-      ":vr_build_config",
       "//chrome:offline_pages_enum_javagen",
       "//chrome:partner_bookmarks_javagen",
       "//chrome:supervised_user_url_filter_enum_javagen",
@@ -623,7 +611,7 @@ if (current_toolchain == default_toolchain) {
 
     if (enable_arcore) {
       deps += [
-        "//components/webxr/android:ar_java_base",
+        "//components/webxr/android:ar_java",
         "//components/webxr/android:webxr_android_enums_java",
       ]
     }
@@ -851,6 +839,7 @@ if (current_toolchain == default_toolchain) {
       "//base/test:test_support_java",
       "//build/config/android/test/classpath_order:junit_tests",
       "//cc:cc_java",
+      "//cc/mojom:mojom_java",
       "//chrome/android:update_proto_java",
       "//chrome/android:usage_stats_proto_java",
       "//chrome/android/features/android_library_factory:junit_tests",
@@ -956,6 +945,7 @@ if (current_toolchain == default_toolchain) {
       "//chrome/browser/tabmodel/internal:java",
       "//chrome/browser/tabpersistence:junit",
       "//chrome/browser/thumbnail:java",
+      "//chrome/browser/touch_to_fill/common/android:junit",
       "//chrome/browser/touch_to_fill/payments/android/internal:junit",
       "//chrome/browser/ui/android/appmenu:java",
       "//chrome/browser/ui/android/appmenu/internal:junit",
@@ -1066,6 +1056,7 @@ if (current_toolchain == default_toolchain) {
       "//components/search_engines/android:java",
       "//components/security_state/content/android:java",
       "//components/security_state/core:security_state_enums_java",
+      "//components/segmentation_platform/public:junit",
       "//components/segmentation_platform/public:public_java",
       "//components/signin/core/browser:signin_enums_java",
       "//components/signin/public/android:java",
@@ -2034,7 +2025,6 @@ if (current_toolchain == default_toolchain) {
       targets += [ "//chrome/android/features/vr:java" ]
     }
     manual_jni_registration = true
-    file_exclusions = chrome_jni_file_exclusions
     if (allow_jni_multiplexing) {
       enable_jni_multiplexing = true
     }
@@ -2049,7 +2039,6 @@ if (current_toolchain == default_toolchain) {
       targets += [ "//chrome/android/features/vr:java" ]
     }
     manual_jni_registration = true
-    file_exclusions = chrome_jni_file_exclusions
     if (allow_jni_multiplexing) {
       enable_jni_multiplexing = true
     }
@@ -2064,7 +2053,6 @@ if (current_toolchain == default_toolchain) {
       if (enable_vr) {
         targets += [ "//chrome/android/features/vr:java" ]
       }
-      file_exclusions = chrome_jni_file_exclusions
       enable_jni_multiplexing = true
     }
   }
@@ -2755,7 +2743,6 @@ if (current_toolchain == default_toolchain) {
   # TODO(crbug.com/1238057): Set clear rules for what tests can be added here.
   chrome_test_apk_tmpl("chrome_public_unit_test_apk") {
     apk_name = "ChromePublicUnitTest"
-    shared_libraries = [ ":libchromefortest" ]
     deps = [
       ":chrome_unit_test_java",
       "//build/config/android/test/resource_overlay:unit_device_javatests",
@@ -2818,7 +2805,6 @@ if (current_toolchain == default_toolchain) {
     #enable_lint = true
 
     apk_name = "ChromePublicTest"
-    shared_libraries = [ ":libchromefortest" ]
     deps = [
       ":chrome_test_apk_template_resources",
       ":chrome_test_java",
@@ -2863,7 +2849,6 @@ if (current_toolchain == default_toolchain) {
   if (enable_vr) {
     chrome_test_apk_tmpl("chrome_public_test_vr_apk") {
       apk_name = "ChromePublicTestVr"
-      shared_libraries = [ ":libchromefortest" ]
       manifest_package = chrome_public_manifest_package
 
       deps = [

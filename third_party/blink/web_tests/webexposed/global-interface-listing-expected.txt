@@ -5181,6 +5181,7 @@ interface MLGraphBuilder
     method averagePool2d
     method build
     method clamp
+    method concat
     method constant
     method constructor
     method conv2d
@@ -5198,6 +5199,7 @@ interface MLGraphBuilder
     method sigmoid
     method softmax
     method sub
+    method transpose
 interface MLModelLoader
     attribute @@toStringTag
     method constructor
@@ -6338,11 +6340,9 @@ interface OscillatorNode : AudioScheduledSourceNode
     method constructor
     method setPeriodicWave
     setter type
-interface OverconstrainedError
+interface OverconstrainedError : DOMException
     attribute @@toStringTag
     getter constraint
-    getter message
-    getter name
     method constructor
 interface OverscrollEvent : Event
     attribute @@toStringTag
@@ -7095,15 +7095,15 @@ interface RTCRtpTransceiver
     attribute @@toStringTag
     getter currentDirection
     getter direction
-    getter headerExtensionsNegotiated
-    getter headerExtensionsToOffer
     getter mid
     getter receiver
     getter sender
     getter stopped
     method constructor
+    method getHeaderExtensionsToNegotiate
+    method getNegotiatedHeaderExtensions
     method setCodecPreferences
-    method setOfferedRtpHeaderExtensions
+    method setHeaderExtensionsToNegotiate
     method stop
     setter direction
 interface RTCSctpTransport : EventTarget

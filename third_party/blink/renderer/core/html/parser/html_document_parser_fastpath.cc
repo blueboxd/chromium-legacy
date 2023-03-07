@@ -38,6 +38,7 @@
 #include "third_party/blink/renderer/core/svg/svg_element.h"
 #include "third_party/blink/renderer/core/svg_names.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
+#include "third_party/blink/renderer/platform/text/segmented_string.h"
 #include "third_party/blink/renderer/platform/wtf/text/atomic_string_encoding.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_uchar.h"
 
@@ -259,6 +260,10 @@ class HTMLFastPathParser {
     template <class T, PermittedParents parents>
     struct VoidTag : Tag<T, parents> {
       static constexpr bool is_void = true;
+
+      // Called after parsing the attributes. Named to match similar calls
+      // else where.
+      static void FinishedParsingChildren(Element* element) {}
     };
 
     template <class T, PermittedParents parents>
@@ -360,6 +365,11 @@ class HTMLFastPathParser {
       static HTMLInputElement* Create(Document& document) {
         return MakeGarbageCollected<HTMLInputElement>(
             document, CreateElementFlags::ByFragmentParser(&document));
+      }
+      static void FinishedParsingChildren(Element* element) {
+        // HTMLInputElement has logic that requires this to be called in certain
+        // cases.
+        element->FinishParsingChildren();
       }
     };
 
@@ -792,6 +802,14 @@ class HTMLFastPathParser {
       for (size_t i = 0; i < entity.length; ++i) {
         out->push_back(entity.data[i]);
       }
+      // ConsumeHTMLEntity() may not have consumed all the input.
+      const unsigned remaining_length = input_segmented.length();
+      if (remaining_length) {
+        if (*(pos_ - 1) == ';') {
+          --pos_;
+        }
+        pos_ -= remaining_length;
+      }
     }
   }
 
@@ -1030,7 +1048,11 @@ class HTMLFastPathParser {
   template <class Tag>
   Element* ParseElementAfterTagname() {
     if constexpr (Tag::is_void) {
-      return ParseVoidElement(Tag::Create(document_));
+      Element* e = ParseVoidElement(Tag::Create(document_));
+      if (!failed_) {
+        Tag::FinishedParsingChildren(e);
+      }
+      return e;
     } else {
       return ParseContainerElement<Tag>(Tag::Create(document_));
     }

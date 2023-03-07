@@ -13,6 +13,7 @@
 #include "chrome/browser/ash/arc/input_overlay/ui/action_view.h"
 #include "chrome/browser/ash/arc/input_overlay/util.h"
 #include "chrome/grit/generated_resources.h"
+#include "chromeos/strings/grit/chromeos_strings.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/color/color_id.h"
@@ -21,6 +22,7 @@
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/paint_vector_icon.h"
+#include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/background.h"
 #include "ui/views/controls/highlight_path_generator.h"
 
@@ -178,8 +180,9 @@ class ActionLabelTap : public ActionLabel {
     const auto label_size = CalculatePreferredSize();
     SetSize(label_size);
     // Label position is not set yet.
-    if (label_position_ == TapLabelPosition::kNone)
+    if (label_position_ == TapLabelPosition::kNone) {
       return;
+    }
 
     auto* action_view = static_cast<ActionView*>(parent());
 
@@ -221,8 +224,9 @@ class ActionLabelTap : public ActionLabel {
   }
 
   void UpdateLabelPositionType(TapLabelPosition label_position) override {
-    if (label_position_ == label_position)
+    if (label_position_ == label_position) {
       return;
+    }
 
     parent()->SetPosition(
         CalculateParentPositionWithFixedTouchPoint(label_position));
@@ -373,11 +377,13 @@ std::string GetDisplayText(const ui::DomCode code) {
       std::string dom_code_string =
           ui::KeycodeConverter::DomCodeToCodeString(code);
       if (base::StartsWith(dom_code_string, "Key",
-                           base::CompareCase::SENSITIVE))
+                           base::CompareCase::SENSITIVE)) {
         return base::ToLowerASCII(dom_code_string.substr(3));
+      }
       if (base::StartsWith(dom_code_string, "Digit",
-                           base::CompareCase::SENSITIVE))
+                           base::CompareCase::SENSITIVE)) {
         return dom_code_string.substr(5);
+      }
       // TODO(cuicuiruan): better display for number pad. Current it shows in
       // the format of "numpad1" since the number keys on number pad are not
       // considered the same as numbers on the main keyboard.
@@ -455,8 +461,12 @@ std::vector<ActionLabel*> ActionLabel::Show(views::View* parent,
 void ActionLabel::Init() {
   SetRequestFocusOnPress(true);
   SetHorizontalAlignment(gfx::ALIGN_CENTER);
-  SetBorder(views::CreateEmptyBorder(
-      gfx::Insets::VH(0, allow_reposition_ ? kSideInset : kSideInsetAlpha)));
+  if (allow_reposition_) {
+    SetBorder(views::CreateEmptyBorder(gfx::Insets::VH(0, kSideInset)));
+    GetViewAccessibility().OverrideRole(ax::mojom::Role::kLabelText);
+  } else {
+    SetBorder(views::CreateEmptyBorder(gfx::Insets::VH(0, kSideInsetAlpha)));
+  }
   CustomizeAccessibilityName();
 }
 
@@ -501,8 +511,9 @@ void ActionLabel::SetImageActionLabel(MouseAction mouse_action) {
 
 void ActionLabel::SetDisplayMode(DisplayMode mode) {
   DCHECK(mode != DisplayMode::kMenu && mode != DisplayMode::kPreMenu);
-  if (mode == DisplayMode::kMenu || mode == DisplayMode::kPreMenu)
+  if (mode == DisplayMode::kMenu || mode == DisplayMode::kPreMenu) {
     return;
+  }
 
   switch (mode) {
     case DisplayMode::kView:
@@ -534,12 +545,14 @@ void ActionLabel::SetDisplayMode(DisplayMode mode) {
 }
 
 void ActionLabel::ClearFocus() {
-  if (!HasFocus())
+  if (!HasFocus()) {
     return;
+  }
 
   auto* focus_manager = GetFocusManager();
-  if (!focus_manager)
+  if (!focus_manager) {
     return;
+  }
 
   focus_manager->ClearFocus();
   // When it has to clear focus explicitly, set focused view back to its parent,
@@ -582,13 +595,15 @@ bool ActionLabel::OnKeyPressed(const ui::KeyEvent& event) {
 }
 
 void ActionLabel::OnMouseEntered(const ui::MouseEvent& event) {
-  if (IsFocusable() && !HasFocus())
+  if (IsFocusable() && !HasFocus()) {
     SetToEditHover(true);
+  }
 }
 
 void ActionLabel::OnMouseExited(const ui::MouseEvent& event) {
-  if (IsFocusable() && !HasFocus())
+  if (IsFocusable() && !HasFocus()) {
     SetToEditHover(false);
+  }
 }
 
 void ActionLabel::OnFocus() {
@@ -652,8 +667,9 @@ void ActionLabel::SetToViewMode() {
 void ActionLabel::SetToEditMode() {
   display_mode_ = DisplayMode::kEdit;
 
-  if (IsInputUnbound())
+  if (IsInputUnbound()) {
     SetVisible(true);
+  }
 
   SetInstallFocusRingOnFocus(true);
   views::InstallRoundRectHighlightPathGenerator(
@@ -726,8 +742,9 @@ void ActionLabel::SetToEditUnbindInput() {
 }
 
 void ActionLabel::SetToEditInactive() {
-  if (IsInputUnbound())
+  if (IsInputUnbound()) {
     return;
+  }
 
   SetBackground(nullptr);
   SetEnabledTextColors(kEditInactiveTextColor);
@@ -754,17 +771,18 @@ void ActionLabel::CustomizeAccessibilityName() {
     return;
   }
 
-  // TODO(b/260868602): Update the name.
+  std::u16string name =
+      l10n_util::GetStringUTF16(IDS_INPUT_OVERLAY_KEYMAPPING_KEY).append(u" ");
   const std::string text = base::UTF16ToUTF8(label()->GetText());
-  std::u16string name;
   if (text.compare(kSpace) == 0) {
-    name = u"space";
+    name.append(l10n_util::GetStringUTF16(IDS_INPUT_OVERLAY_KEY_LABEL_SPACE));
   } else if (text.compare(kEnter) == 0) {
-    name = u"enter";
+    name.append(l10n_util::GetStringUTF16(IDS_INPUT_OVERLAY_KEY_LABEL_ENTER));
   } else if (text.compare(kBackSpace) == 0) {
-    name = u"backspace";
+    name.append(
+        l10n_util::GetStringUTF16(IDS_INPUT_OVERLAY_KEY_LABEL_BACKSPACE));
   } else {
-    name = label()->GetText();
+    name.append(label()->GetText());
   }
   SetAccessibleName(name);
 }

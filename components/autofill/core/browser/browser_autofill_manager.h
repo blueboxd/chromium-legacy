@@ -400,6 +400,11 @@ class BrowserAutofillManager : public AutofillManager,
 
   FormData* pending_form_data_for_test() { return pending_form_data_.get(); }
 
+  void OnFormProcessedForTesting(const FormData& form,
+                                 const FormStructure& form_structure) {
+    OnFormProcessed(form, form_structure);
+  }
+
  protected:
   // Stores a `callback` for `form_signature`, possibly overriding an older
   // callback for `form_signature` or triggering a pending callback in case too
@@ -715,6 +720,11 @@ class BrowserAutofillManager : public AutofillManager,
   // the FieldInfo metric is recorded into UKM at form submission or form
   // destruction time (whatever comes first).
   void LogEventCountsUMAMetric(const FormStructure& form_structure);
+
+  // When the forms that meet certain criteria are identified as useless to
+  // Autofill, the function should return false and the forms are not recorded
+  // into UKM.
+  bool ShouldUploadUKM(const FormStructure& form_structure);
 
   // Delegates to perform external processing (display, selection) on
   // our behalf.

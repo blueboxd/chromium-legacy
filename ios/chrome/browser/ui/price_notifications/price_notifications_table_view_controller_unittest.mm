@@ -100,7 +100,7 @@ TEST_F(PriceNotificationsTableViewControllerTest,
   EXPECT_TRUE(secondTrackedItemPlaceholder.loading);
 }
 
-// Tests simulates receiving no data from the mediator and checks that the
+// Simulates receiving no data from the mediator and checks that the
 // correct messages are displayed.
 TEST_F(PriceNotificationsTableViewControllerTest,
        DisplayTrackableSectionEmptyStateWhenProductPageIsNotTrackable) {
@@ -108,10 +108,10 @@ TEST_F(PriceNotificationsTableViewControllerTest,
       base::mac::ObjCCast<PriceNotificationsTableViewController>(controller());
 
   [consumer setTrackableItem:nil currentlyTracking:NO];
-  TableViewLinkHeaderFooterItem* item =
-      GetHeaderItemFromSection<TableViewLinkHeaderFooterItem>(
+  TableViewTextHeaderFooterItem* item =
+      GetHeaderItemFromSection<TableViewTextHeaderFooterItem>(
           controller(), SectionIdentifierTableViewHeader);
-  NSString* tableHeadingText = item.text;
+  NSString* tableHeadingText = item.subtitle;
   TableViewTextHeaderFooterItem* trackableHeaderItem =
       GetHeaderItemFromSection<TableViewTextHeaderFooterItem>(
           controller(), SectionIdentifierTrackableItemsOnCurrentSite);
@@ -147,7 +147,7 @@ TEST_F(PriceNotificationsTableViewControllerTest,
               IDS_IOS_PRICE_NOTIFICATIONS_PRICE_TRACK_TRACKING_EMPTY_LIST)]);
 }
 
-// Tests simulates that a trackable item exists and is properly displayed.
+// Simulates that a trackable item exists and is properly displayed.
 TEST_F(PriceNotificationsTableViewControllerTest,
        DisplayTrackableItemWhenAvailable) {
   id<PriceNotificationsConsumer> consumer =
@@ -168,7 +168,7 @@ TEST_F(PriceNotificationsTableViewControllerTest,
   EXPECT_TRUE([items[0].title isEqualToString:item.title]);
 }
 
-// tests simulates that a tracked item exists and is displayed
+// Simulates that a tracked item exists and is displayed
 TEST_F(PriceNotificationsTableViewControllerTest, DisplayUsersTrackedItems) {
   id<PriceNotificationsConsumer> consumer =
       base::mac::ObjCCast<PriceNotificationsTableViewController>(controller());
@@ -187,7 +187,36 @@ TEST_F(PriceNotificationsTableViewControllerTest, DisplayUsersTrackedItems) {
   EXPECT_TRUE([items[0].title isEqualToString:item.title]);
 }
 
-// Test simulates that a trackable item exists, has been selected to be tracked,
+// Simulates that a tracked item exists and is displayed when the user is
+// on that item's webpage.
+TEST_F(PriceNotificationsTableViewControllerTest,
+       DisplayUsersTrackedItemsWhenViewingTrackedItemWebpage) {
+  PriceNotificationsTableViewController* tableViewController =
+      base::mac::ObjCCastStrict<PriceNotificationsTableViewController>(
+          controller());
+  PriceNotificationsTableViewItem* item =
+      [[PriceNotificationsTableViewItem alloc] initWithType:ItemTypeListItem];
+  item.title = @"Test Title";
+
+  [tableViewController setTrackableItem:nil currentlyTracking:YES];
+  [tableViewController addTrackedItem:item toBeginning:NO];
+  NSArray<PriceNotificationsTableViewItem*>* items = GetItemsFromSection(
+      tableViewController.tableViewModel, SectionIdentifierTrackedItems);
+  TableViewTextHeaderFooterItem* trackableHeaderItem =
+      GetHeaderItemFromSection<TableViewTextHeaderFooterItem>(
+          tableViewController, SectionIdentifierTrackableItemsOnCurrentSite);
+
+  EXPECT_TRUE([tableViewController.tableViewModel
+      hasItemForItemType:ItemTypeListItem
+       sectionIdentifier:SectionIdentifierTrackedItems]);
+  EXPECT_EQ(items.count, 1u);
+  EXPECT_TRUE([trackableHeaderItem.subtitle
+      isEqualToString:
+          l10n_util::GetNSString(
+              IDS_IOS_PRICE_NOTIFICAITONS_PRICE_TRACK_TRACKABLE_ITEM_IS_TRACKED)]);
+}
+
+// Simulates that a trackable item exists, has been selected to be tracked,
 // and the item is moved to the tracked section
 TEST_F(PriceNotificationsTableViewControllerTest,
        TrackableItemMovedToTrackedSectionOnStartTracking) {
@@ -204,6 +233,9 @@ TEST_F(PriceNotificationsTableViewControllerTest,
   items = GetItemsFromSection(model, SectionIdentifierTrackedItems);
   NSUInteger trackedItemCountBeforeStartTracking = items.count;
   [consumer didStartPriceTrackingForItem:item];
+  TableViewTextHeaderFooterItem* trackableHeaderItem =
+      GetHeaderItemFromSection<TableViewTextHeaderFooterItem>(
+          controller(), SectionIdentifierTrackableItemsOnCurrentSite);
   items =
       GetItemsFromSection(model, SectionIdentifierTrackableItemsOnCurrentSite);
   NSUInteger trackableItemCountAfterStartTracking = items.count;
@@ -214,9 +246,13 @@ TEST_F(PriceNotificationsTableViewControllerTest,
   EXPECT_EQ(trackedItemCountBeforeStartTracking, 0u);
   EXPECT_EQ(trackableItemCountAfterStartTracking, 0u);
   EXPECT_EQ(trackedItemCountAfterStartTracking, 1u);
+  EXPECT_TRUE([trackableHeaderItem.subtitle
+      isEqualToString:
+          l10n_util::GetNSString(
+              IDS_IOS_PRICE_NOTIFICATIONS_PRICE_TRACK_DESCRIPTION_FOR_TRACKED_ITEM)]);
 }
 
-// Test simulates the user tapping on a tracked item and being redirected to
+// Simulates the user tapping on a tracked item and being redirected to
 // that page.
 TEST_F(PriceNotificationsTableViewControllerTest,
        RedirectToTrackedItemsWebpageOnSelection) {
@@ -258,4 +294,102 @@ TEST_F(PriceNotificationsTableViewControllerTest,
          didSelectRowAtIndexPath:itemIndexPath];
   EXPECT_TRUE(mutator.didNavigateToItemPage);
   return;
+}
+
+// Simulates untracking an item when the user is viewing a page that is not
+// price trackable
+TEST_F(PriceNotificationsTableViewControllerTest,
+       UntrackItemWhenTrackableItemSectionIsEmpty) {
+  id<PriceNotificationsConsumer> consumer =
+      base::mac::ObjCCast<PriceNotificationsTableViewController>(controller());
+  PriceNotificationsTableViewItem* item =
+      [[PriceNotificationsTableViewItem alloc] initWithType:ItemTypeListItem];
+
+  [consumer addTrackedItem:item toBeginning:YES];
+  [consumer didStopPriceTrackingItem:item onCurrentSite:NO];
+  NSArray<PriceNotificationsTableViewItem*>* trackable_section_items =
+      GetItemsFromSection(controller().tableViewModel,
+                          SectionIdentifierTrackableItemsOnCurrentSite);
+  NSArray<PriceNotificationsTableViewItem*>* tracked_section_items =
+      GetItemsFromSection(controller().tableViewModel,
+                          SectionIdentifierTrackedItems);
+
+  EXPECT_EQ(trackable_section_items.count, 0u);
+  EXPECT_EQ(tracked_section_items.count, 0u);
+}
+
+// Simulates untracking an item when the user is viewing that item's
+// webpage.
+TEST_F(PriceNotificationsTableViewControllerTest,
+       UntrackItemFromCurrentlyViewedWebpageWhenTrackableItemSectionIsEmpty) {
+  id<PriceNotificationsConsumer> consumer =
+      base::mac::ObjCCast<PriceNotificationsTableViewController>(controller());
+  PriceNotificationsTableViewItem* item =
+      [[PriceNotificationsTableViewItem alloc] initWithType:ItemTypeListItem];
+
+  [consumer addTrackedItem:item toBeginning:YES];
+  [consumer didStopPriceTrackingItem:item onCurrentSite:YES];
+  NSArray<PriceNotificationsTableViewItem*>* trackable_section_items =
+      GetItemsFromSection(controller().tableViewModel,
+                          SectionIdentifierTrackableItemsOnCurrentSite);
+  NSArray<PriceNotificationsTableViewItem*>* tracked_section_items =
+      GetItemsFromSection(controller().tableViewModel,
+                          SectionIdentifierTrackedItems);
+
+  EXPECT_EQ(trackable_section_items.count, 1u);
+  EXPECT_EQ(tracked_section_items.count, 0u);
+}
+
+// Simulates untracking an item when the user is viewing a page that is
+// price trackable and the number of tracked items is one.
+TEST_F(PriceNotificationsTableViewControllerTest,
+       UntrackItemRemainingTrackedItemWhenTrackableItemSectionIsNotEmpty) {
+  id<PriceNotificationsConsumer> consumer =
+      base::mac::ObjCCast<PriceNotificationsTableViewController>(controller());
+  PriceNotificationsTableViewItem* trackable_item =
+      [[PriceNotificationsTableViewItem alloc] initWithType:ItemTypeListItem];
+  PriceNotificationsTableViewItem* tracked_item =
+      [[PriceNotificationsTableViewItem alloc] initWithType:ItemTypeListItem];
+
+  [consumer setTrackableItem:trackable_item currentlyTracking:NO];
+  [consumer addTrackedItem:tracked_item toBeginning:YES];
+  [consumer didStopPriceTrackingItem:tracked_item onCurrentSite:NO];
+  NSArray<PriceNotificationsTableViewItem*>* trackable_section_items =
+      GetItemsFromSection(controller().tableViewModel,
+                          SectionIdentifierTrackableItemsOnCurrentSite);
+  NSArray<PriceNotificationsTableViewItem*>* tracked_section_items =
+      GetItemsFromSection(controller().tableViewModel,
+                          SectionIdentifierTrackedItems);
+
+  EXPECT_EQ(trackable_section_items.count, 1u);
+  EXPECT_EQ(tracked_section_items.count, 0u);
+}
+
+// Simulates untracking an item when the user is viewing a page that is
+// price trackable and the number of tracked items is greater than 1.
+TEST_F(
+    PriceNotificationsTableViewControllerTest,
+    UntrackItemWithMultipleTrackedItemsRemainingWhenTrackableItemSectionIsNotEmpty) {
+  id<PriceNotificationsConsumer> consumer =
+      base::mac::ObjCCast<PriceNotificationsTableViewController>(controller());
+  PriceNotificationsTableViewItem* trackable_item =
+      [[PriceNotificationsTableViewItem alloc] initWithType:ItemTypeListItem];
+  PriceNotificationsTableViewItem* tracked_item;
+
+  [consumer setTrackableItem:trackable_item currentlyTracking:NO];
+  for (size_t i = 0; i < 5; i++) {
+    tracked_item =
+        [[PriceNotificationsTableViewItem alloc] initWithType:ItemTypeListItem];
+    [consumer addTrackedItem:tracked_item toBeginning:NO];
+  }
+  [consumer didStopPriceTrackingItem:tracked_item onCurrentSite:NO];
+  NSArray<PriceNotificationsTableViewItem*>* trackable_section_items =
+      GetItemsFromSection(controller().tableViewModel,
+                          SectionIdentifierTrackableItemsOnCurrentSite);
+  NSArray<PriceNotificationsTableViewItem*>* tracked_section_items =
+      GetItemsFromSection(controller().tableViewModel,
+                          SectionIdentifierTrackedItems);
+
+  EXPECT_EQ(trackable_section_items.count, 1u);
+  EXPECT_EQ(tracked_section_items.count, 4u);
 }

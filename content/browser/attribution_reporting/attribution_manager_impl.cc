@@ -34,6 +34,7 @@
 #include "build/build_config.h"
 #include "build/buildflag.h"
 #include "components/attribution_reporting/os_support.mojom.h"
+#include "components/attribution_reporting/source_registration.h"
 #include "components/attribution_reporting/source_registration_error.mojom.h"
 #include "components/attribution_reporting/suitable_origin.h"
 #include "components/attribution_reporting/trigger_registration.h"
@@ -48,7 +49,6 @@
 #include "content/browser/attribution_reporting/attribution_info.h"
 #include "content/browser/attribution_reporting/attribution_metrics.h"
 #include "content/browser/attribution_reporting/attribution_observer.h"
-#include "content/browser/attribution_reporting/attribution_observer_types.h"
 #include "content/browser/attribution_reporting/attribution_report.h"
 #include "content/browser/attribution_reporting/attribution_report_network_sender.h"
 #include "content/browser/attribution_reporting/attribution_report_sender.h"
@@ -57,6 +57,7 @@
 #include "content/browser/attribution_reporting/attribution_storage_delegate_impl.h"
 #include "content/browser/attribution_reporting/attribution_storage_sql.h"
 #include "content/browser/attribution_reporting/attribution_trigger.h"
+#include "content/browser/attribution_reporting/create_report_result.h"
 #include "content/browser/attribution_reporting/send_result.h"
 #include "content/browser/attribution_reporting/storable_source.h"
 #include "content/browser/attribution_reporting/stored_source.h"
@@ -76,8 +77,10 @@
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/storage_key/storage_key.h"
 #include "url/gurl.h"
+#include "url/origin.h"
 
 #if BUILDFLAG(IS_ANDROID)
+#include "content/browser/attribution_reporting/attribution_input_event.h"
 #include "content/browser/attribution_reporting/attribution_os_level_manager.h"
 #include "content/browser/attribution_reporting/attribution_os_level_manager_android.h"
 #endif
@@ -326,11 +329,6 @@ bool g_run_in_memory = false;
 
 }  // namespace
 
-struct AttributionManagerImpl::SourceOrTriggerRFH {
-  SourceOrTrigger source_or_trigger;
-  GlobalRenderFrameHostId rfh_id;
-};
-
 BASE_FEATURE(kAttributionVerboseDebugReporting,
              "AttributionVerboseDebugReporting",
              base::FEATURE_ENABLED_BY_DEFAULT);
@@ -505,8 +503,24 @@ AttributionDataHostManager* AttributionManagerImpl::GetDataHostManager() {
 void AttributionManagerImpl::HandleSource(
     StorableSource source,
     GlobalRenderFrameHostId render_frame_id) {
-  MaybeEnqueueEvent(SourceOrTriggerRFH{.source_or_trigger = std::move(source),
-                                       .rfh_id = render_frame_id});
+  bool allowed = IsOperationAllowed(
+      storage_partition_.get(),
+      ContentBrowserClient::AttributionReportingOperation::kSource,
+      RenderFrameHost::FromID(render_frame_id),
+      &*source.common_info().source_origin(),
+      /*destination_origin=*/nullptr,
+      &*source.common_info().reporting_origin());
+  RecordRegisterImpressionAllowed(allowed);
+  if (!allowed) {
+    OnSourceStored(source,
+                   /*cleared_debug_key=*/absl::nullopt,
+                   /*is_debug_cookie_set=*/false,
+                   AttributionStorage::StoreSourceResult(
+                       StorableSource::Result::kProhibitedByBrowserPolicy));
+    return;
+  }
+
+  MaybeEnqueueEvent(std::move(source));
 }
 
 void AttributionManagerImpl::StoreSource(
@@ -541,8 +555,26 @@ void AttributionManagerImpl::OnSourceStored(
 void AttributionManagerImpl::HandleTrigger(
     AttributionTrigger trigger,
     GlobalRenderFrameHostId render_frame_id) {
-  MaybeEnqueueEvent(SourceOrTriggerRFH{.source_or_trigger = std::move(trigger),
-                                       .rfh_id = render_frame_id});
+  bool allowed = IsOperationAllowed(
+      storage_partition_.get(),
+      ContentBrowserClient::AttributionReportingOperation::kTrigger,
+      RenderFrameHost::FromID(render_frame_id),
+      /*source_origin=*/nullptr, &*trigger.destination_origin(),
+      &*trigger.reporting_origin());
+  RecordRegisterConversionAllowed(allowed);
+  if (!allowed) {
+    OnReportStored(
+        trigger,
+        /*cleared_debug_key=*/absl::nullopt, /*is_debug_cookie_set=*/false,
+        CreateReportResult(
+            /*trigger_time=*/base::Time::Now(),
+            AttributionTrigger::EventLevelResult::kProhibitedByBrowserPolicy,
+            AttributionTrigger::AggregatableResult::
+                kProhibitedByBrowserPolicy));
+    return;
+  }
+
+  MaybeEnqueueEvent(std::move(trigger));
 }
 
 void AttributionManagerImpl::StoreTrigger(
@@ -556,7 +588,7 @@ void AttributionManagerImpl::StoreTrigger(
                            cleared_debug_key, is_debug_cookie_set));
 }
 
-void AttributionManagerImpl::MaybeEnqueueEvent(SourceOrTriggerRFH event) {
+void AttributionManagerImpl::MaybeEnqueueEvent(SourceOrTrigger event) {
   const size_t size_before_push = pending_events_.size();
 
   // Avoid unbounded memory growth with adversarial input.
@@ -583,8 +615,8 @@ void AttributionManagerImpl::ProcessEvents() {
     const attribution_reporting::SuitableOrigin* cookie_origin = absl::visit(
         base::Overloaded{
             [](const StorableSource& source) {
-              return source.common_info().debug_key().has_value() ||
-                             source.debug_reporting()
+              return source.registration().debug_key.has_value() ||
+                             source.registration().debug_reporting
                          ? &source.common_info().reporting_origin()
                          : nullptr;
             },
@@ -597,7 +629,7 @@ void AttributionManagerImpl::ProcessEvents() {
                          : nullptr;
             },
         },
-        pending_events_.front().source_or_trigger);
+        pending_events_.front());
     if (cookie_origin) {
       cookie_checker_->IsDebugCookieSet(
           *cookie_origin,
@@ -620,74 +652,33 @@ void AttributionManagerImpl::ProcessEvents() {
 void AttributionManagerImpl::ProcessNextEvent(bool is_debug_cookie_set) {
   DCHECK(!pending_events_.empty());
 
-  SourceOrTriggerRFH event = std::move(pending_events_.front());
+  SourceOrTrigger event = std::move(pending_events_.front());
   pending_events_.pop_front();
 
   absl::visit(
       base::Overloaded{
           [&](StorableSource source) {
-            CommonSourceInfo& common_info = source.common_info();
-
-            bool allowed = IsOperationAllowed(
-                this->storage_partition_.get(),
-                ContentBrowserClient::AttributionReportingOperation::kSource,
-                RenderFrameHost::FromID(event.rfh_id),
-                &*common_info.source_origin(),
-                /*destination_origin=*/nullptr,
-                &*common_info.reporting_origin());
-            RecordRegisterImpressionAllowed(allowed);
-            if (!allowed) {
-              this->OnSourceStored(
-                  source,
-                  /*cleared_debug_key=*/absl::nullopt, is_debug_cookie_set,
-                  AttributionStorage::StoreSourceResult(
-                      StorableSource::Result::kProhibitedByBrowserPolicy));
-              return;
-            }
-
             absl::optional<uint64_t> cleared_debug_key;
-            if (!is_debug_cookie_set && common_info.debug_key().has_value()) {
-              cleared_debug_key = common_info.debug_key();
-              common_info.ClearDebugKey();
+            if (!is_debug_cookie_set) {
+              cleared_debug_key =
+                  std::exchange(source.registration().debug_key, absl::nullopt);
             }
 
             this->StoreSource(std::move(source), cleared_debug_key,
                               is_debug_cookie_set);
           },
-
           [&](AttributionTrigger trigger) {
-            attribution_reporting::TriggerRegistration& registration =
-                trigger.registration();
-            bool allowed = IsOperationAllowed(
-                this->storage_partition_.get(),
-                ContentBrowserClient::AttributionReportingOperation::kTrigger,
-                RenderFrameHost::FromID(event.rfh_id),
-                /*source_origin=*/nullptr, &*trigger.destination_origin(),
-                &*trigger.reporting_origin());
-            RecordRegisterConversionAllowed(allowed);
-            if (!allowed) {
-              this->OnReportStored(
-                  std::move(trigger),
-                  /*cleared_debug_key=*/absl::nullopt, is_debug_cookie_set,
-                  CreateReportResult(/*trigger_time=*/base::Time::Now(),
-                                     AttributionTrigger::EventLevelResult::
-                                         kProhibitedByBrowserPolicy,
-                                     AttributionTrigger::AggregatableResult::
-                                         kProhibitedByBrowserPolicy));
-              return;
-            }
-
             absl::optional<uint64_t> cleared_debug_key;
-            if (!is_debug_cookie_set && registration.debug_key.has_value()) {
-              cleared_debug_key = registration.debug_key;
-              registration.debug_key.reset();
+            if (!is_debug_cookie_set) {
+              cleared_debug_key = std::exchange(
+                  trigger.registration().debug_key, absl::nullopt);
             }
 
             this->StoreTrigger(std::move(trigger), cleared_debug_key,
                                is_debug_cookie_set);
           },
       },
-      std::move(event.source_or_trigger));
+      std::move(event));
 }
 
 void AttributionManagerImpl::OnReportStored(
@@ -712,23 +703,14 @@ void AttributionManagerImpl::OnReportStored(
 
   scheduler_timer_.MaybeSet(min_new_report_time);
 
-  bool reports_changed = false;
-
   if (result.event_level_status() !=
-      AttributionTrigger::EventLevelResult::kInternalError) {
-    // Sources are changed here because storing an event-level report can
-    // cause sources to reach event-level attribution limit or become
-    // associated with a dedup key.
+          AttributionTrigger::EventLevelResult::kInternalError ||
+      result.aggregatable_status() ==
+          AttributionTrigger::AggregatableResult::kSuccess) {
+    // Sources are changed here because storing an event-level report or
+    // aggregatable report can cause sources to reach event-level attribution
+    // limit or become associated with a dedup key.
     NotifySourcesChanged();
-    reports_changed = true;
-  }
-
-  if (result.aggregatable_status() ==
-      AttributionTrigger::AggregatableResult::kSuccess) {
-    reports_changed = true;
-  }
-
-  if (reports_changed) {
     NotifyReportsChanged();
   }
 
@@ -741,8 +723,7 @@ void AttributionManagerImpl::OnReportStored(
 
 void AttributionManagerImpl::MaybeSendDebugReport(AttributionReport&& report) {
   const AttributionInfo& attribution_info = report.attribution_info();
-  if (!attribution_info.debug_key ||
-      !attribution_info.source.common_info().debug_key() ||
+  if (!attribution_info.debug_key || !attribution_info.source.debug_key() ||
       !IsReportAllowed(report)) {
     return;
   }
@@ -1161,11 +1142,95 @@ void AttributionManagerImpl::MaybeSendVerboseDebugReport(
 }
 
 #if BUILDFLAG(IS_ANDROID)
+
 void AttributionManagerImpl::OverrideOsLevelManagerForTesting(
     std::unique_ptr<AttributionOsLevelManager> os_level_manager) {
   attribution_os_level_manager_ = std::move(os_level_manager);
 }
-#endif
+
+struct AttributionManagerImpl::OsRegistration {
+  GURL registration_url;
+  url::Origin top_level_origin;
+  AttributionInputEvent input_event;
+};
+
+void AttributionManagerImpl::HandleOsSource(
+    const GURL& registration_url,
+    const url::Origin& top_level_origin,
+    AttributionInputEvent input_event,
+    GlobalRenderFrameHostId render_frame_id) {
+  if (!attribution_os_level_manager_) {
+    return;
+  }
+
+  const auto registration_origin = url::Origin::Create(registration_url);
+  if (registration_origin.opaque()) {
+    return;
+  }
+
+  // TODO(https://crbug.com/1420704): Support separate behavior on webview for
+  // allowing these.
+  if (!IsOperationAllowed(
+          storage_partition_.get(),
+          ContentBrowserClient::AttributionReportingOperation::kSource,
+          RenderFrameHost::FromID(render_frame_id),
+          /*source_origin=*/&top_level_origin,
+          /*destination_origin=*/nullptr,
+          /*reporting_origin=*/&registration_origin)) {
+    return;
+  }
+
+  const size_t size_before_push = pending_os_events_.size();
+
+  // Avoid unbounded memory growth with adversarial input.
+  bool allowed = size_before_push < max_pending_events_;
+  base::UmaHistogramBoolean("Conversions.EnqueueOsEventAllowed", allowed);
+  if (!allowed) {
+    return;
+  }
+
+  pending_os_events_.push_back(OsRegistration{
+      .registration_url = registration_url,
+      .top_level_origin = top_level_origin,
+      .input_event = std::move(input_event),
+  });
+
+  // Only process the new event if it is the only one in the queue. Otherwise,
+  // there's already an async cookie-check in progress.
+  if (size_before_push == 0) {
+    ProcessNextOsEvent();
+  }
+}
+
+void AttributionManagerImpl::ProcessNextOsEvent() {
+  DCHECK(!pending_os_events_.empty());
+
+  cookie_checker_->IsDebugCookieSet(
+      url::Origin::Create(pending_os_events_.front().registration_url),
+      base::BindOnce(
+          [](base::WeakPtr<AttributionManagerImpl> manager,
+             bool is_debug_key_allowed) {
+            if (!manager) {
+              return;
+            }
+
+            DCHECK(!manager->pending_os_events_.empty());
+
+            const auto& source = manager->pending_os_events_.front();
+
+            manager->attribution_os_level_manager_->RegisterAttributionSource(
+                source.registration_url, source.top_level_origin,
+                is_debug_key_allowed, source.input_event);
+
+            manager->pending_os_events_.pop_front();
+            if (!manager->pending_os_events_.empty()) {
+              manager->ProcessNextOsEvent();
+            }
+          },
+          weak_factory_.GetWeakPtr()));
+}
+
+#endif  // BUILDFLAG(IS_ANDROID)
 
 attribution_reporting::mojom::OsSupport AttributionManagerImpl::GetOsSupport() {
 #if BUILDFLAG(IS_ANDROID)

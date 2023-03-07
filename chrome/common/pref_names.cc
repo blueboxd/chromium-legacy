@@ -1104,6 +1104,11 @@ const char kSharedStorage[] = "shared_storage";
 // window size.
 const char kForceMaximizeOnFirstRun[] = "ui.force_maximize_on_first_run";
 
+// A list of extensions ids that have to be allowed to run in Incognito by the
+// user in order to use Incognito mode.
+const char kMandatoryExtensionsForIncognitoNavigation[] =
+    "mandatory_extensions_for_incognito_navigation";
+
 // Counter for reporting daily OOM kills count.
 const char kOOMKillsDailyCount[] = "oom_kills.daily_count";
 
@@ -1831,11 +1836,11 @@ const char kOfficeFilesAlwaysMove[] = "filebrowser.office.always_move";
 const char kOfficeMoveConfirmationShown[] =
     "filebrowser.office.move_confirmation_shown";
 
-// Whether at least one file has been moved to OneDrive.
+// The timestamp of the latest office file automatically moved to OneDrive.
 const char kOfficeFileMovedToOneDrive[] =
     "filebrowser.office.file_moved_one_drive";
 
-// Whether at least one office file has been moved to Google Drive.
+// The timestamp of the latest office file automatically moved to Google Drive.
 const char kOfficeFileMovedToGoogleDrive[] =
     "filebrowser.office.file_moved_google_drive";
 #endif
@@ -2919,10 +2924,6 @@ const char kCryptAuthInstanceIdToken[] = "cryptauth.instance_id_token";
 // A dictionary that maps user id to hardlock state.
 const char kEasyUnlockHardlockState[] = "easy_unlock.hardlock_state";
 
-// A dictionary that maps user id to public part of RSA key pair used by
-// Easy Sign-in for the user.
-const char kEasyUnlockLocalStateTpmKeys[] = "easy_unlock.public_tpm_keys";
-
 // A dictionary in local state containing each user's Easy Unlock profile
 // preferences, so they can be accessed outside of the user's profile. The value
 // is a dictionary containing an entry for each user. Each user's entry mirrors
@@ -3614,11 +3615,11 @@ const char kOutOfProcessSystemDnsResolutionEnabled[] =
     "net.out_of_process_system_dns_resolution_enabled";
 #endif  // BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_LINUX)
 
-#if BUILDFLAG(IS_ANDROID)
-const char kQuickDeleteDialogSuppressed[] = "quick_delete.dialog_suppressed";
-#endif
-
 // A list of hostnames to disable HTTPS Upgrades / HTTPS-First Mode warnings on.
 const char kHttpAllowlist[] = "https_upgrades.policy.http_allowlist";
+
+// Whether the HTTPS Upgrades feature is enabled or disabled by the
+// `HttpsUpgradesEnabled` enterprise policy.
+const char kHttpsUpgradesEnabled[] = "https_upgrades.policy.upgrades_enabled";
 
 }  // namespace prefs

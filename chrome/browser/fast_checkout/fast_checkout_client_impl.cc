@@ -14,8 +14,8 @@
 #include "chrome/browser/fast_checkout/fast_checkout_enums.h"
 #include "chrome/browser/fast_checkout/fast_checkout_personal_data_helper_impl.h"
 #include "chrome/browser/fast_checkout/fast_checkout_trigger_validator_impl.h"
-#include "chrome/browser/ui/autofill/chrome_autofill_client.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/autofill/content/browser/content_autofill_client.h"
 #include "components/autofill/core/browser/data_model/autofill_profile.h"
 #include "components/autofill/core/browser/data_model/credit_card.h"
 #include "components/autofill/core/common/dense_set.h"
@@ -108,7 +108,7 @@ FastCheckoutClientImpl::FastCheckoutClientImpl(
     content::WebContents* web_contents)
     : content::WebContentsUserData<FastCheckoutClientImpl>(*web_contents),
       autofill_client_(
-          autofill::ChromeAutofillClient::FromWebContents(web_contents)),
+          autofill::ContentAutofillClient::FromWebContents(web_contents)),
       fetcher_(FastCheckoutCapabilitiesFetcherFactory::GetForBrowserContext(
           web_contents->GetBrowserContext())),
       personal_data_helper_(
@@ -214,7 +214,7 @@ void FastCheckoutClientImpl::Stop(bool allow_further_runs) {
   form_filling_states_.clear();
   form_signatures_to_fill_.clear();
   selected_autofill_profile_guid_ = absl::nullopt;
-  selected_credit_card_guid_ = absl::nullopt;
+  selected_credit_card_id_ = absl::nullopt;
   timeout_timer_.AbandonAndStop();
   credit_card_form_global_id_ = absl::nullopt;
   run_id_ = 0;
@@ -257,7 +257,13 @@ void FastCheckoutClientImpl::OnOptionsSelected(
     std::unique_ptr<autofill::CreditCard> selected_credit_card) {
   OnHidden();
   selected_autofill_profile_guid_ = selected_profile->guid();
-  selected_credit_card_guid_ = selected_credit_card->guid();
+  if (autofill::CreditCard::IsLocalCard(selected_credit_card.get())) {
+    selected_credit_card_id_ = selected_credit_card->guid();
+    selected_credit_card_is_local_ = true;
+  } else {
+    selected_credit_card_id_ = selected_credit_card->server_id();
+    selected_credit_card_is_local_ = false;
+  }
   timeout_timer_.Start(FROM_HERE, kTimeout,
                        base::BindOnce(&FastCheckoutClientImpl::OnRunComplete,
                                       weak_ptr_factory_.GetWeakPtr(),
@@ -314,7 +320,7 @@ bool FastCheckoutClientImpl::AllFormsAreFilled() const {
 
 bool FastCheckoutClientImpl::IsFilling() const {
   return IsRunning() && selected_autofill_profile_guid_ &&
-         selected_credit_card_guid_;
+         selected_credit_card_id_;
 }
 
 void FastCheckoutClientImpl::OnAfterLoadedServerPredictions(
@@ -403,9 +409,16 @@ FastCheckoutClientImpl::GetSelectedAutofillProfile() {
 }
 
 autofill::CreditCard* FastCheckoutClientImpl::GetSelectedCreditCard() {
-  autofill::CreditCard* credit_card =
-      personal_data_helper_->GetPersonalDataManager()->GetCreditCardByGUID(
-          selected_credit_card_guid_.value());
+  autofill::CreditCard* credit_card = nullptr;
+  if (selected_credit_card_is_local_) {
+    credit_card =
+        personal_data_helper_->GetPersonalDataManager()->GetCreditCardByGUID(
+            selected_credit_card_id_.value());
+  } else {
+    credit_card =
+        personal_data_helper_->GetPersonalDataManager()
+            ->GetCreditCardByServerId(selected_credit_card_id_.value());
+  }
   if (!credit_card) {
     OnRunComplete(FastCheckoutRunOutcome::kCreditCardDeleted);
   }

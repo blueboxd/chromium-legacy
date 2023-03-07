@@ -162,6 +162,8 @@ COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const char kEnableTouchpadThreeFingerClick[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kEnterpriseDisableArc[];
 COMPONENT_EXPORT(ASH_CONSTANTS)
+extern const char kEnterpriseForceManualEnrollmentInTestBuilds[];
+COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const char kEnterpriseEnableForcedReEnrollment[];
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const char kEnterpriseEnableInitialEnrollment[];
@@ -264,6 +266,13 @@ COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const char kHiddenNetworkMigrationInterval[];
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const char kHiddenNetworkMigrationAge[];
+COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kPrintingPpdChannel[];
+COMPONENT_EXPORT(ASH_CONSTANTS)
+extern const char kPrintingPpdChannelProduction[];
+COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kPrintingPpdChannelStaging[];
+COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kPrintingPpdChannelDev[];
+COMPONENT_EXPORT(ASH_CONSTANTS)
+extern const char kPrintingPpdChannelLocalhost[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kProfileRequiresPolicy[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kPublicAccountsSamlAclUrl[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kQsAddFakeBluetoothDevices[];
@@ -315,6 +324,8 @@ extern const char kWaitForInitialPolicyFetchForTest[];
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const char kWebUiDataSourcePathForTesting[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kGetAccessTokenForTest[];
+COMPONENT_EXPORT(ASH_CONSTANTS)
+extern const char kCameraEffectsSupportedByHardware[];
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -414,6 +425,9 @@ bool IsSkipRecorderNudgeShowThresholdDurationEnabled();
 
 COMPONENT_EXPORT(ASH_CONSTANTS)
 bool IsStabilizeTimeDependentViewForTestsEnabled();
+
+COMPONENT_EXPORT(ASH_CONSTANTS)
+bool IsCameraEffectsSupportedByHardware();
 
 }  // namespace ash::switches
 

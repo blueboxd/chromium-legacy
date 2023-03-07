@@ -491,7 +491,7 @@
         'test': 'webview_instrumentation_test_apk',
         'experiment_percentage': 100,
         'swarming': {
-          'shards': 7,
+          'shards': 10,
         },
       },
     },
@@ -2378,7 +2378,7 @@
             {
               "cipd_package": 'chromium/android_webview/tools/cts_archive',
               'location': 'android_webview/tools/cts_archive',
-              'revision': 'M0v1Dk-st2O98ZDieiKXYME7-RgO6F_UHdSV9xDM09AC',
+              'revision': 'D9ziv4Z61qHwterMTFEoPeCZzFNyUfMnWAlYuxEKlM8C',
             }
           ]
         },
@@ -3473,6 +3473,7 @@
         'desktop_args': [
           '--use-gpu-in-tests',
         ],
+        'linux_args': ['--no-xvfb'],
       },
     },
 
@@ -4501,6 +4502,47 @@
       },
     },
 
+    'network_sandbox_browser_tests': {
+      'browser_tests_network_sandbox': {
+        'args': [
+          '--enable-features=NetworkServiceSandbox',
+        ],
+        'swarming': {
+          'shards': 10,
+        },
+        'test': 'browser_tests',
+      },
+      'components_browsertests_network_sandbox': {
+        'args': [
+          '--enable-features=NetworkServiceSandbox',
+        ],
+        'test': 'components_browsertests',
+      },
+      'content_browsertests_network_sandbox': {
+        'args': [
+          '--enable-features=NetworkServiceSandbox',
+        ],
+        'swarming': {
+          'shards': 10,
+        },
+        'test': 'content_browsertests',
+      },
+      'interactive_ui_tests_network_sandbox': {
+        'args': [
+          '--enable-features=NetworkServiceSandbox',
+        ],
+        'swarming': {
+          'shards': 3,
+        },
+        'test': 'interactive_ui_tests',
+      },
+      'sync_integration_tests_network_sandbox': {
+        'args': [
+          '--enable-features=NetworkServiceSandbox',
+        ],
+        'test': 'sync_integration_tests',
+      },
+    },
     'network_service_fyi_gtests': {
       'network_service_web_request_proxy_browser_tests': {
         'args': [
@@ -5339,7 +5381,7 @@
             {
               "cipd_package": 'chromium/android_webview/tools/cts_archive',
               'location': 'android_webview/tools/cts_archive',
-              'revision': 'M0v1Dk-st2O98ZDieiKXYME7-RgO6F_UHdSV9xDM09AC',
+              'revision': 'D9ziv4Z61qHwterMTFEoPeCZzFNyUfMnWAlYuxEKlM8C',
             }
           ]
         },
@@ -5376,7 +5418,7 @@
             {
               "cipd_package": 'chromium/android_webview/tools/cts_archive',
               'location': 'android_webview/tools/cts_archive',
-              'revision': 'M0v1Dk-st2O98ZDieiKXYME7-RgO6F_UHdSV9xDM09AC',
+              'revision': 'D9ziv4Z61qHwterMTFEoPeCZzFNyUfMnWAlYuxEKlM8C',
             }
           ]
         },
@@ -5394,7 +5436,7 @@
             {
               "cipd_package": 'chromium/android_webview/tools/cts_archive',
               'location': 'android_webview/tools/cts_archive',
-              'revision': 'M0v1Dk-st2O98ZDieiKXYME7-RgO6F_UHdSV9xDM09AC',
+              'revision': 'D9ziv4Z61qHwterMTFEoPeCZzFNyUfMnWAlYuxEKlM8C',
             }
           ]
         },
@@ -5410,7 +5452,7 @@
             {
               'cipd_package': 'chromium/android_webview/tools/cts_archive',
               'location': 'android_webview/tools/cts_archive',
-              'revision': 'M0v1Dk-st2O98ZDieiKXYME7-RgO6F_UHdSV9xDM09AC',
+              'revision': 'D9ziv4Z61qHwterMTFEoPeCZzFNyUfMnWAlYuxEKlM8C',
             }
           ]
         },
@@ -5428,7 +5470,7 @@
             {
               "cipd_package": 'chromium/android_webview/tools/cts_archive',
               'location': 'android_webview/tools/cts_archive',
-              'revision': 'M0v1Dk-st2O98ZDieiKXYME7-RgO6F_UHdSV9xDM09AC',
+              'revision': 'D9ziv4Z61qHwterMTFEoPeCZzFNyUfMnWAlYuxEKlM8C',
             }
           ]
         },
@@ -5443,7 +5485,7 @@
             {
               'cipd_package': 'chromium/android_webview/tools/cts_archive',
               'location': 'android_webview/tools/cts_archive',
-              'revision': 'M0v1Dk-st2O98ZDieiKXYME7-RgO6F_UHdSV9xDM09AC',
+              'revision': 'D9ziv4Z61qHwterMTFEoPeCZzFNyUfMnWAlYuxEKlM8C',
             }
           ]
         },
@@ -5542,17 +5584,6 @@
     },
 
     'wpt_tests_ios': {
-      'ios_cwt_chromedriver_tests_module': {
-        'mixins': [
-          'out_dir_arg',
-          'xcode_14_main',
-          'xctest',
-          'xcode_parallelization',
-        ],
-        'variants': [
-          'SIM_IPHONE_X_16_2',
-        ]
-      },
       'wpt_tests_ios': {
         'args': [
           '--log-wptreport',
@@ -6378,6 +6409,7 @@
       'gpu_common_gtests_passthrough',
       'gpu_desktop_specific_gtests',
       'gpu_gles2_conform_gtests',
+      'gpu_vulkan_gtests',
     ],
 
     'gpu_fyi_linux_release_telemetry_tests': [
@@ -6469,7 +6501,6 @@
       'gpu_fyi_and_optional_non_linux_gtests',
       'gpu_fyi_and_optional_win_specific_gtests',
       'gpu_gles2_conform_gtests',
-      'gpu_vulkan_gtests',
     ],
 
     'gpu_fyi_win_intel_release_telemetry_tests': [
@@ -6737,7 +6768,7 @@
     'chromeos_octopus_skylab_tests': {
       'chromeos_chrome_all_tast_tests': {
         'variants': [
-          'CROS_OCTOPUS_RELEASE_CHROME_FROM_TLS',
+          'CROS_OCTOPUS_RELEASE_CHROME_FROM_TLS_LKGM',
         ]
       },
     },
@@ -7271,6 +7302,7 @@
       'lacros_skylab': {
         'variants': [
           'CROS_JACUZZI_PUBLIC',
+          'CROS_JACUZZI_CQ_PUBLIC',
           'CROS_KEVIN_PUBLIC',
         ]
       },

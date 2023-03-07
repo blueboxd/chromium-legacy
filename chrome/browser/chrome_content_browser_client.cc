@@ -400,6 +400,7 @@
 #include "chrome/browser/ash/login/startup_utils.h"
 #include "chrome/browser/ash/net/network_health/network_health_manager.h"
 #include "chrome/browser/ash/net/system_proxy_manager.h"
+#include "chrome/browser/ash/os_url_handler.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/ash/smb_client/fileapi/smbfs_file_system_backend_delegate.h"
 #include "chrome/browser/ash/system/input_device_settings.h"
@@ -417,7 +418,6 @@
 #include "components/user_manager/user_manager.h"
 #include "services/service_manager/public/mojom/interface_provider_spec.mojom.h"
 #include "storage/browser/file_system/external_mount_points.h"
-#include "ui/display/screen.h"
 #elif BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
 #include "chrome/browser/chrome_browser_main_linux.h"
 #elif BUILDFLAG(IS_ANDROID)
@@ -456,10 +456,6 @@
 #elif BUILDFLAG(IS_FUCHSIA)
 #include "chrome/browser/fuchsia/chrome_browser_main_parts_fuchsia.h"
 #endif
-
-#if !BUILDFLAG(IS_CHROMEOS_ASH)
-#include "ui/accessibility/accessibility_features.h"
-#endif  // !BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if BUILDFLAG(IS_CHROMEOS)
 #include "base/debug/leak_annotations.h"
@@ -691,7 +687,14 @@
 #endif  // defined(_WINDOWS_)
 
 #if BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
+#include "chrome/browser/accessibility/accessibility_state_utils.h"
+#include "chrome/browser/accessibility/pdf_ocr_controller.h"
+#include "chrome/browser/accessibility/pdf_ocr_controller_factory.h"
 #include "components/services/screen_ai/public/cpp/utilities.h"
+#endif
+
+#if BUILDFLAG(ENABLE_SCREEN_AI_SERVICE) || !BUILDFLAG(IS_CHROMEOS_ASH)
+#include "ui/accessibility/accessibility_features.h"
 #endif
 
 using blink::mojom::EffectiveConnectionType;
@@ -1656,6 +1659,10 @@ void ChromeContentBrowserClient::RegisterProfilePrefs(
       policy::policy_prefs::kOffsetParentNewSpecBehaviorEnabled, true);
   registry->RegisterBooleanPref(
       policy::policy_prefs::kSendMouseEventsDisabledFormControlsEnabled, true);
+
+#if BUILDFLAG(IS_CHROMEOS)
+  registry->RegisterListPref(prefs::kMandatoryExtensionsForIncognitoNavigation);
+#endif
 }
 
 // static
@@ -3478,7 +3485,7 @@ std::string ChromeContentBrowserClient::GetGeolocationApiKey() {
 
 device::GeolocationManager*
 ChromeContentBrowserClient::GetGeolocationManager() {
-#if PLATFORM_REQUIRES_SINGLETON_GEOPOSITION_OBSERVER
+#if BUILDFLAG(IS_MAC)
   return g_browser_process->platform_part()->geolocation_manager();
 #else
   return nullptr;
@@ -4675,9 +4682,10 @@ ChromeContentBrowserClient::GetLPACCapabilityNameForNetworkService() {
 // Other code should reside in the content layer. Changes to this function
 // should be reviewed by the security team.
 bool ChromeContentBrowserClient::PreSpawnChild(
-    sandbox::TargetPolicy* policy,
+    sandbox::TargetConfig* config,
     sandbox::mojom::Sandbox sandbox_type,
     ChildSpawnFlags flags) {
+  DCHECK(!config->IsConfigured());
 // Does not work under component build because all the component DLLs would need
 // to be manually added and maintained. Does not work under ASAN build because
 // ASAN has not yet fully initialized its instrumentation by the time the CIG
@@ -4740,10 +4748,6 @@ bool ChromeContentBrowserClient::PreSpawnChild(
   if (!base::PathService::Get(base::FILE_EXE, &exe_path))
     return true;
   if (chrome::kBrowserProcessExecutableName != exe_path.BaseName().value())
-    return true;
-
-  sandbox::TargetConfig* config = policy->GetConfig();
-  if (config->IsConfigured())
     return true;
 
   sandbox::MitigationFlags mitigations = config->GetProcessMitigations();
@@ -6795,14 +6799,30 @@ bool ChromeContentBrowserClient::ShouldBlockRendererDebugURL(
 ui::AXMode ChromeContentBrowserClient::GetAXModeForBrowserContext(
     content::BrowserContext* browser_context) {
   Profile* profile = Profile::FromBrowserContext(browser_context);
-  auto* service = AccessibilityLabelsServiceFactory::GetForProfile(profile);
-  if (service)
-    return service->GetAXMode();
-  // No AccessibilityLabelsService.  Return the current accessibility mode.
   ui::AXMode ax_mode =
       content::BrowserAccessibilityState::GetInstance()->GetAccessibilityMode();
-  // kLabelImages should only be set if there's an AccessibilityLabelsService.
-  DCHECK(!ax_mode.has_mode(ui::AXMode::kLabelImages));
+
+  // TODO(accessibility): Dynamically create AccessibilityLabelsService and
+  // destroy it when unused.
+  auto* labels_service =
+      AccessibilityLabelsServiceFactory::GetForProfile(profile);
+  if (labels_service && labels_service->IsEnabled()) {
+    ax_mode.set_mode(ui::AXMode::kLabelImages, true);
+  }
+#if BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
+  if (features::IsPdfOcrEnabled() &&
+      accessibility_state_utils::IsScreenReaderEnabled()) {
+    // PdfOcrController will be created when the user turns on a screen reader
+    // before or even after starting the browser.
+    auto* pdf_ocr_controller =
+        screen_ai::PdfOcrControllerFactory::GetForProfile(profile);
+    if (pdf_ocr_controller && pdf_ocr_controller->IsEnabled()) {
+      ax_mode.set_mode(ui::AXMode::kPDFOcr, true);
+    }
+    // TODO(crbug.com/1393069): Destroy PdfOcrController when unused (i.e.
+    // when a screen reader gets turned off later).
+  }
+#endif  // BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
   return ax_mode;
 }
 
@@ -7457,24 +7477,12 @@ bool ChromeContentBrowserClient::OpenExternally(
   // If Lacros is the only browser, we intercept any WebUI URLs that would be
   // opened in a regular browser window. We open these with the OsUrlHandler SWA
   // instead, which will load them in an app window (no navigation bar).
-  bool open_with_os_url_handler =
-      from_webui && !crosapi::browser_util::IsAshWebBrowserEnabled() &&
+  if (from_webui && !crosapi::browser_util::IsAshWebBrowserEnabled() &&
       // Kiosk sessions don't support SWA and already hide the navigation bar.
       !profiles::IsKioskSession() &&
       // Terminal's tabs must remain in the Terminal SWA.
-      !url.SchemeIs(content::kChromeUIUntrustedScheme) &&
-      ChromeWebUIControllerFactory::GetInstance()->CanHandleUrl(url) &&
-      !ash::GetCapturingSystemAppForURL(profile, url);
-  if (open_with_os_url_handler) {
-    ash::SystemAppLaunchParams launch_params;
-    launch_params.url = url;
-    int64_t display_id =
-        display::Screen::GetScreen()->GetDisplayForNewWindows().id();
-    ash::LaunchSystemWebAppAsync(
-        ProfileManager::GetPrimaryUserProfile(),
-        ash::SystemWebAppType::OS_URL_HANDLER, launch_params,
-        std::make_unique<apps::WindowInfo>(display_id));
-    return true;
+      !url.SchemeIs(content::kChromeUIUntrustedScheme)) {
+    return ash::TryLaunchOsUrlHandler(url);
   }
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 

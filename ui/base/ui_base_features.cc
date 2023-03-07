@@ -449,7 +449,7 @@ bool IsWaylandScreenCoordinatesEnabled() {
 // Enables chrome color management wayland protocol for lacros.
 BASE_FEATURE(kLacrosColorManagement,
              "LacrosColorManagement",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 bool IsLacrosColorManagementEnabled() {
   return base::FeatureList::IsEnabled(kLacrosColorManagement);
@@ -462,5 +462,9 @@ BASE_FEATURE(kChromeRefresh2023,
 bool IsChromeRefresh2023() {
   return base::FeatureList::IsEnabled(kChromeRefresh2023);
 }
+
+BASE_FEATURE(kUseNanosecondsForMotionEvent,
+             "UseNanosecondsForMotionEvent",
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 }  // namespace features

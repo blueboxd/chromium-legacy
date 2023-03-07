@@ -359,7 +359,7 @@ void WarnIfSandboxIneffective(LocalDOMWindow* window) {
         mojom::blink::ConsoleMessageSource::kSecurity,
         mojom::blink::ConsoleMessageLevel::kWarning,
         "An iframe which has both allow-scripts and allow-same-origin for its "
-        "sandbox attribute can remove its sandboxing."));
+        "sandbox attribute can escape its sandboxing."));
     window->CountUse(WebFeature::kSandboxIneffectiveAllowOriginAllowScript);
   }
 
@@ -2513,6 +2513,12 @@ void DocumentLoader::CommitNavigation() {
   if (!response_.HttpHeaderField(http_names::kExpectCT).empty()) {
     Deprecation::CountDeprecation(frame_->DomWindow(),
                                   mojom::blink::WebFeature::kExpectCTHeader);
+  }
+  for (const auto& policy : security_init.PermissionsPolicyHeader()) {
+    if (policy.deprecated_feature.has_value()) {
+      Deprecation::CountDeprecation(frame_->DomWindow(),
+                                    *policy.deprecated_feature);
+    }
   }
 
   // Clear the user activation state.

@@ -18,7 +18,6 @@
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
-#include "content/browser/fenced_frame/fenced_frame_url_mapping.h"
 #include "content/browser/interest_group/auction_worklet_manager.h"
 #include "content/browser/interest_group/interest_group_auction_reporter.h"
 #include "content/browser/interest_group/interest_group_storage.h"
@@ -241,6 +240,11 @@ class CONTENT_EXPORT InterestGroupAuction
     // callback is invoked immediately.
     base::OnceClosure resume_generate_bid_callback;
 
+    // This is true if after this bid would be a good time to combine pending
+    // trusted signals requests on its worklet and flush them. Currently set
+    // when this is the last bid requested of the worklet.
+    bool send_pending_trusted_signals_after_generate_bid = false;
+
     // Used to avoid sending direct-from-seller signals twice if they are
     // available by time of GenerateBid(). This can be true even if no signals
     // are actually available, just so long as that's known.
@@ -300,8 +304,8 @@ class CONTENT_EXPORT InterestGroupAuction
     Bid(BidRole bid_role,
         std::string ad_metadata,
         double bid,
-        GURL render_url,
-        std::vector<GURL> ad_components,
+        blink::AdDescriptor ad_descriptor,
+        std::vector<blink::AdDescriptor> ad_component_descriptors,
         base::TimeDelta bid_duration,
         absl::optional<uint32_t> bidding_signals_data_version,
         const blink::InterestGroup::Ad* bid_ad,
@@ -319,6 +323,11 @@ class CONTENT_EXPORT InterestGroupAuction
                  : *bid_state->trace_id;
     }
 
+    // Get a vector of ad component urls. For compatible with functions
+    // expecting a vector of `GURL` instead of a vector of
+    // `blink::AdDescriptor`.
+    std::vector<GURL> GetAdComponentUrls() const;
+
     // Which auctions the bid participates in.
     BidRole bid_role;
 
@@ -326,8 +335,8 @@ class CONTENT_EXPORT InterestGroupAuction
     // auction_worklet::mojom::BidderWorkletBid.
     const std::string ad_metadata;
     const double bid;
-    const GURL render_url;
-    const std::vector<GURL> ad_components;
+    const blink::AdDescriptor ad_descriptor;
+    const std::vector<blink::AdDescriptor> ad_component_descriptors;
     const base::TimeDelta bid_duration;
     const absl::optional<uint32_t> bidding_signals_data_version;
 
@@ -812,13 +821,8 @@ class CONTENT_EXPORT InterestGroupAuction
   auction_worklet::mojom::ComponentAuctionOtherSellerPtr GetOtherSellerParam(
       const Bid& bid) const;
 
-  // Requests a WorkletHandle for the interest group identified by
-  // `bid_state`, using the provided callbacks. Returns true if a worklet was
-  // received synchronously.
-  [[nodiscard]] bool RequestBidderWorklet(
-      BidState& bid_state,
-      base::OnceClosure worklet_available_callback,
-      AuctionWorkletManager::FatalErrorCallback fatal_error_callback);
+  // Computes a key for a worklet associated with `bid_state`
+  AuctionWorkletManager::WorkletKey BidderWorkletKey(BidState& bid_state);
 
   // Replaces `${}` placeholders in a debug report URL's query string for post
   // auction signals if exist. Only replaces unescaped placeholder ${}, but

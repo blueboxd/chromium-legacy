@@ -25,6 +25,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
+#include "base/task/bind_post_task.h"
 #include "base/task/sequenced_task_runner.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/task/thread_pool.h"
@@ -35,7 +36,6 @@
 #include "components/viz/common/gpu/raster_context_provider.h"
 #include "media/audio/null_audio_sink.h"
 #include "media/base/audio_renderer_sink.h"
-#include "media/base/bind_to_current_loop.h"
 #include "media/base/cdm_context.h"
 #include "media/base/demuxer.h"
 #include "media/base/encryption_scheme.h"
@@ -428,7 +428,8 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
 
   // Using base::Unretained(this) is safe because the `pipeline` is owned by
   // `this` and the callback will always be made on the main task runner.
-  // Not using BindToCurrentLoop() because CreateRenderer() is a sync call.
+  // Not using base::BindPostTaskToCurrentDefault() because CreateRenderer() is
+  // a sync call.
   auto pipeline = std::make_unique<media::PipelineImpl>(
       media_task_runner_, main_task_runner_,
       base::BindRepeating(&WebMediaPlayerImpl::CreateRenderer,
@@ -513,7 +514,7 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
 
 #if BUILDFLAG(IS_ANDROID)
   renderer_factory_selector_->SetRemotePlayStateChangeCB(
-      media::BindToCurrentLoop(base::BindRepeating(
+      base::BindPostTaskToCurrentDefault(base::BindRepeating(
           &WebMediaPlayerImpl::OnRemotePlayStateChange, weak_this_)));
 #endif  // defined (OS_ANDROID)
 }
@@ -2758,8 +2759,9 @@ std::unique_ptr<media::Renderer> WebMediaPlayerImpl::CreateRenderer(
 
   media::RequestOverlayInfoCB request_overlay_info_cb;
 #if BUILDFLAG(IS_ANDROID)
-  request_overlay_info_cb = media::BindToCurrentLoop(base::BindRepeating(
-      &WebMediaPlayerImpl::OnOverlayInfoRequested, weak_this_));
+  request_overlay_info_cb =
+      base::BindPostTaskToCurrentDefault(base::BindRepeating(
+          &WebMediaPlayerImpl::OnOverlayInfoRequested, weak_this_));
 #endif
 
   if (renderer_type) {
@@ -2827,7 +2829,7 @@ void WebMediaPlayerImpl::StartPipeline() {
       FROM_HERE,
       base::BindOnce(&VideoFrameCompositor::SetOnNewProcessedFrameCallback,
                      base::Unretained(compositor_.get()),
-                     media::BindToCurrentLoop(base::BindOnce(
+                     base::BindPostTaskToCurrentDefault(base::BindOnce(
                          &WebMediaPlayerImpl::OnFirstFrame, weak_this_))));
 
   // base::Unretained(this) is safe here, since |CreateDemuxer| calls the bound
@@ -3442,7 +3444,7 @@ void WebMediaPlayerImpl::RequestVideoFrameCallback() {
   }
 
   compositor_->SetOnFramePresentedCallback(
-      media::BindToCurrentLoop(base::BindOnce(
+      base::BindPostTaskToCurrentDefault(base::BindOnce(
           &WebMediaPlayerImpl::OnNewFramePresentedCallback, weak_this_)));
 }
 

@@ -7,6 +7,7 @@
 #include "base/files/file_path.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/notreached.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/time/time.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/content_index/content_index_provider_impl.h"
@@ -16,6 +17,7 @@
 #include "chrome/browser/download/chrome_download_manager_delegate.h"
 #include "chrome/browser/download/download_core_service.h"
 #include "chrome/browser/download/download_core_service_factory.h"
+#include "chrome/browser/download/download_crx_util.h"
 #include "chrome/browser/download/download_item_model.h"
 #include "chrome/browser/download/download_item_warning_data.h"
 #include "chrome/browser/download/offline_item_model_manager.h"
@@ -42,6 +44,16 @@ constexpr int kMaxDownloadsToShow = 100;
 // automatically and may be annoying to the user. The time is reset when the
 // user clicks on the button to open the main view.
 constexpr base::TimeDelta kShowPartialViewMinInterval = base::Seconds(15);
+// Don't show the "download started" animation/UI for an extension or theme
+// (crx) download until 2 seconds after it has begun. If it is a small download
+// that finishes in under 2 seconds, the download UI does not show at all. If it
+// is a large download that takes longer than 2 seconds, show the UI so that the
+// user knows Chrome is working on it.
+constexpr base::TimeDelta kCrxShowNewItemDelay = base::Seconds(2);
+// Limit the size of the |delayed_crx_guids_| set so it doesn't grow
+// unboundedly. It is unlikely that the user would have 20 active crx downloads
+// simultaneously.
+constexpr int kMaxDelayedCrxGuids = 20;
 
 bool FindOfflineItemByContentId(const ContentId& to_find,
                                 const OfflineItem& candidate) {
@@ -79,7 +91,8 @@ struct StartTimeComparator {
 using SortedDownloadUIModelSet =
     std::multiset<DownloadUIModelPtrList::iterator, StartTimeComparator>;
 
-void MaybeAddModel(DownloadUIModelPtr model,
+// Returns whether model was added.
+bool MaybeAddModel(DownloadUIModelPtr model,
                    base::Time cutoff_time,
                    DownloadUIModelPtrList& models_aggregate,
                    SortedDownloadUIModelSet& sorted_ui_model_iters) {
@@ -87,7 +100,30 @@ void MaybeAddModel(DownloadUIModelPtr model,
       DownloadUIModelIsRecent(model.get(), cutoff_time)) {
     models_aggregate.push_front(std::move(model));
     sorted_ui_model_iters.insert(models_aggregate.begin());
+    return true;
   }
+  return false;
+}
+
+std::vector<DownloadUIModelPtr> GetSortedModelPtrVector(
+    DownloadUIModelPtrList models_list,
+    SortedDownloadUIModelSet sorted_iters) {
+  std::vector<DownloadUIModelPtr> items;
+  if (models_list.empty()) {
+    return items;
+  }
+  DCHECK(!sorted_iters.empty());
+  SortedDownloadUIModelSet::const_iterator sorted_it = sorted_iters.begin();
+  for (size_t i = 0; i < kMaxDownloadsToShow; ++i) {
+    DownloadUIModelPtrList::iterator model_it = *sorted_it;
+    DCHECK(model_it != models_list.end());
+    items.push_back(std::move(*model_it));
+    ++sorted_it;
+    if (sorted_it == sorted_iters.end()) {
+      break;
+    }
+  }
+  return items;
 }
 
 }  // namespace
@@ -133,14 +169,14 @@ bool DownloadBubbleUIController::MaybeAddOfflineItem(const OfflineItem& item,
   if (item.id.name_space == ContentIndexProviderImpl::kProviderNamespace)
     return false;
 
-  std::unique_ptr<DownloadUIModel> model(
-      std::make_unique<OfflineItemModel>(offline_manager_, item));
-  if (!model->ShouldShowInBubble())
+  OfflineItemModel model(offline_manager_, item);
+  if (!model.ShouldShowInBubble()) {
     return false;
+  }
 
   offline_items_.push_back(item);
-  if (is_new) {
-    model->SetActionedOn(false);
+  if (is_new && model.ShouldNotifyUI()) {
+    model.SetActionedOn(false);
   }
   return true;
 }
@@ -205,10 +241,53 @@ void DownloadBubbleUIController::OnItemsAdded(
 
 void DownloadBubbleUIController::OnNewItem(download::DownloadItem* item,
                                            bool may_show_animation) {
-  auto model = std::make_unique<DownloadItemModel>(item);
-  model->SetActionedOn(false);
+  if (download_crx_util::IsExtensionDownload(*item) &&
+      delayed_crx_guids_.size() < kMaxDelayedCrxGuids) {
+    const std::string& guid = item->GetGuid();
+    DCHECK(!delayed_crx_guids_.contains(guid));
+    delayed_crx_guids_.insert(guid);
+    base::SingleThreadTaskRunner::GetCurrentDefault()->PostDelayedTask(
+        FROM_HERE,
+        base::BindOnce(&DownloadBubbleUIController::OnDelayedNewItemByGuid,
+                       weak_factory_.GetWeakPtr(), guid, may_show_animation),
+        kCrxShowNewItemDelay);
+    return;
+  }
+  DoOnNewItem(item, may_show_animation);
+}
+
+void DownloadBubbleUIController::DoOnNewItem(download::DownloadItem* item,
+                                             bool may_show_animation) {
+  DownloadItemModel model(item);
+  UpdateInProgressDownloadItems(model);
+  if (model.ShouldNotifyUI()) {
+    model.SetActionedOn(false);
+  }
   display_controller_->OnNewItem(may_show_animation &&
-                                 model->ShouldShowDownloadStartedAnimation());
+                                 model.ShouldShowDownloadStartedAnimation());
+}
+
+void DownloadBubbleUIController::OnDelayedNewItemByGuid(
+    const std::string& guid,
+    bool may_show_animation) {
+  // This assumes that for extension/theme downloads, the DownloadItem is
+  // removed from the DownloadManager upon completion.
+  download::DownloadItem* item = download_manager_->GetDownloadByGuid(guid);
+  if (item && !item->IsDone()) {
+    DoOnNewItem(item, may_show_animation);
+  }
+  size_t erased = delayed_crx_guids_.erase(guid);
+  DCHECK_EQ(erased, 1u);
+}
+
+void DownloadBubbleUIController::UpdateInProgressDownloadItems(
+    const DownloadUIModel& model) {
+  const std::string& guid = model.GetDownloadItem()->GetGuid();
+  if (IsModelInProgress(&model)) {
+    in_progress_download_item_guids_.insert(guid);
+  } else {
+    in_progress_download_item_guids_.erase(guid);
+  }
 }
 
 bool DownloadBubbleUIController::ShouldShowIncognitoIcon(
@@ -233,6 +312,7 @@ void DownloadBubbleUIController::OnItemRemoved(const ContentId& id) {
 void DownloadBubbleUIController::OnDownloadRemoved(
     content::DownloadManager* manager,
     download::DownloadItem* item) {
+  in_progress_download_item_guids_.erase(item->GetGuid());
   std::make_unique<DownloadItemModel>(item)->SetActionedOn(true);
   const ContentId& id = OfflineItemUtils::GetContentIdForDownload(item);
   display_controller_->OnRemovedItem(id);
@@ -259,9 +339,15 @@ void DownloadBubbleUIController::OnItemUpdated(
 void DownloadBubbleUIController::OnDownloadUpdated(
     content::DownloadManager* manager,
     download::DownloadItem* item) {
+  // If the item is an extension or theme download waiting out its 2-second
+  // delay, don't show a UI update for it.
+  if (delayed_crx_guids_.contains(item->GetGuid())) {
+    return;
+  }
+  DownloadItemModel model(item);
+  UpdateInProgressDownloadItems(model);
   // manager can be different from download_notifier_ when the current profile
   // is off the record.
-  DownloadItemModel model(item);
   if (manager != download_notifier_.GetManager()) {
     display_controller_->OnUpdatedItem(item->IsDone(),
                                        IsPendingDeepScanning(&model),
@@ -319,24 +405,50 @@ DownloadBubbleUIController::GetAllItemsToDisplay() {
                   sorted_ui_model_iters);
   }
 
-  std::vector<DownloadUIModelPtr> items_to_display;
-  if (models_aggregate.empty()) {
-    return items_to_display;
-  }
+  return GetSortedModelPtrVector(std::move(models_aggregate),
+                                 std::move(sorted_ui_model_iters));
+}
 
-  DCHECK(!sorted_ui_model_iters.empty());
-  SortedDownloadUIModelSet::const_iterator sorted_it =
-      sorted_ui_model_iters.begin();
-  for (size_t i = 0; i < kMaxDownloadsToShow; ++i) {
-    DownloadUIModelPtrList::iterator model_it = *sorted_it;
-    DCHECK(model_it != models_aggregate.end());
-    items_to_display.push_back(std::move(*model_it));
-    ++sorted_it;
-    if (sorted_it == sorted_ui_model_iters.end()) {
-      break;
+std::vector<DownloadUIModelPtr>
+DownloadBubbleUIController::GetInProgressItems() {
+  base::Time cutoff_time =
+      base::Time::Now() - base::Days(kShowDownloadsInBubbleForNumDays);
+
+  std::set<std::string> download_item_guids_to_remove;
+
+  // This sorts the models. See comments above in GetAllItemsToDisplay.
+  DownloadUIModelPtrList models;
+  SortedDownloadUIModelSet sorted_ui_model_iters;
+  for (const OfflineItem& item : GetOfflineItems()) {
+    DownloadUIModelPtr model = OfflineItemModel::Wrap(
+        offline_manager_, item,
+        std::make_unique<DownloadUIModel::BubbleStatusTextBuilder>());
+    if (IsModelInProgress(model.get())) {
+      MaybeAddModel(std::move(model), cutoff_time, models,
+                    sorted_ui_model_iters);
     }
   }
-  return items_to_display;
+  for (const std::string& guid : in_progress_download_item_guids_) {
+    download::DownloadItem* item = download_manager_->GetDownloadByGuid(guid);
+    if (!item) {
+      download_item_guids_to_remove.insert(guid);
+      continue;
+    }
+    DownloadUIModelPtr model = DownloadItemModel::Wrap(
+        item, std::make_unique<DownloadUIModel::BubbleStatusTextBuilder>());
+    if (!IsModelInProgress(model.get()) ||
+        !MaybeAddModel(std::move(model), cutoff_time, models,
+                       sorted_ui_model_iters)) {
+      download_item_guids_to_remove.insert(guid);
+    }
+  }
+
+  for (const std::string& guid_to_remove : download_item_guids_to_remove) {
+    in_progress_download_item_guids_.erase(guid_to_remove);
+  }
+
+  return GetSortedModelPtrVector(std::move(models),
+                                 std::move(sorted_ui_model_iters));
 }
 
 std::vector<DownloadUIModelPtr> DownloadBubbleUIController::GetDownloadUIModels(

@@ -716,28 +716,27 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Blink.ContextMenu.ImageSelection.Depth" units="count"
-    expires_after="2022-09-18">
-  <owner>benwgold@google.com</owner>
+    expires_after="2023-08-31">
   <owner>flackr@chromium.org</owner>
+  <owner>blink-interactions-team@google.com</owner>
   <summary>
     The depth of the discovered image node in the hit test list when performing
     a penetrating image selection search.
 
-    Only recorded when the `EnablePenetratingImageSelection` feature is enabled
-    and a user long presses or right clicks a document (and an image is found).
+    Only recorded when a user long presses or right clicks a document (and an
+    image is found).
   </summary>
 </histogram>
 
 <histogram name="Blink.ContextMenu.ImageSelection.ElapsedTime"
-    units="microseconds" expires_after="2022-09-18">
-  <owner>benwgold@google.com</owner>
+    units="microseconds" expires_after="2023-08-31">
   <owner>flackr@chromium.org</owner>
+  <owner>blink-interactions-team@google.com</owner>
   <summary>
     The amount of time it took to iterate through the dom looking for an image
     node.
 
-    Only recorded when the `EnablePenetratingImageSelection` feature is enabled
-    and a user long presses or right clicks a document.
+    Only recorded when a user long presses or right clicks a document.
 
     Note: This metric drops reports on clients with low-resolution clocks, which
     means these reports will be biased against a portion of the population on
@@ -746,29 +745,29 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Blink.ContextMenu.ImageSelection.Outcome"
-    enum="ImageSelectionOutcome" expires_after="2023-06-25">
-  <owner>benwgold@google.com</owner>
+    enum="ImageSelectionOutcome" expires_after="2023-08-31">
   <owner>flackr@chromium.org</owner>
+  <owner>blink-interactions-team@google.com</owner>
   <summary>
     The outcome of an image selection search that may or may not trigger the
     context menu.
 
-    Only recorded when the `EnablePenetratingImageSelection` feature is enabled
-    and a user long presses or right clicks a document (and an image is found).
+    Only recorded when a user long presses or right clicks a document (and an
+    image is found).
   </summary>
 </histogram>
 
 <histogram name="Blink.ContextMenu.ImageSelection.RetrievalOutcome"
-    enum="ImageSelectionRetrievalOutcome" expires_after="2022-08-21">
-  <owner>benwgold@google.com</owner>
+    enum="ImageSelectionRetrievalOutcome" expires_after="2023-08-31">
   <owner>flackr@chromium.org</owner>
+  <owner>blink-interactions-team@google.com</owner>
   <summary>
     The outcome of a follow up retrieval of an image node after a selection has
     occurred, which occurs asynchronously and thus could be unsuccessful due to
     changes that may occur between the initial hit test and the retrieval.
 
-    Only recorded when the `EnablePenetratingImageSelection` feature is enabled
-    and a user long presses or right clicks a document (and an image is found).
+    Only recorded when a user long presses or right clicks a document (and an
+    image is found).
   </summary>
 </histogram>
 
@@ -1464,7 +1463,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Blink.Frame.GetCanonicalUrlRendererTime" units="microseconds"
-    expires_after="2023-07-02">
+    expires_after="2023-09-03">
   <owner>carlosk@chromium.org</owner>
   <owner>harringtond@chromium.org</owner>
   <owner>feed@chromium.org</owner>
@@ -1689,7 +1688,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Blink.HTMLParsing.ParsingTimeMax4" units="microseconds"
-    expires_after="2023-06-30">
+    expires_after="2023-09-03">
   <owner>masonf@chromium.org</owner>
   <owner>dom-dev@chromium.org</owner>
   <summary>
@@ -1704,7 +1703,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Blink.HTMLParsing.ParsingTimeMin4" units="microseconds"
-    expires_after="2023-06-30">
+    expires_after="2023-09-03">
   <owner>masonf@chromium.org</owner>
   <owner>dom-dev@chromium.org</owner>
   <summary>
@@ -1719,7 +1718,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Blink.HTMLParsing.ParsingTimeTotal4" units="microseconds"
-    expires_after="2023-06-30">
+    expires_after="2023-09-03">
   <owner>masonf@chromium.org</owner>
   <owner>dom-dev@chromium.org</owner>
   <summary>
@@ -1734,7 +1733,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Blink.HTMLParsing.TimeToDeferredPumpTokenizer4"
-    units="microseconds" expires_after="2023-06-30">
+    units="microseconds" expires_after="2023-09-03">
   <owner>sky@chromium.org</owner>
   <owner>dom-dev@chromium.org</owner>
   <summary>
@@ -1749,7 +1748,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Blink.HTMLParsing.TokensParsedAverage4" units="tokens"
-    expires_after="2023-06-30">
+    expires_after="2023-09-03">
   <owner>masonf@chromium.org</owner>
   <owner>dom-dev@chromium.org</owner>
   <summary>
@@ -1788,7 +1787,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Blink.HTMLParsing.TokensParsedTotal4" units="tokens"
-    expires_after="2023-06-30">
+    expires_after="2023-09-03">
   <owner>masonf@chromium.org</owner>
   <owner>dom-dev@chromium.org</owner>
   <summary>
@@ -1815,7 +1814,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Blink.HTMLParsing.YieldedTimeMax4" units="microseconds"
-    expires_after="2023-06-30">
+    expires_after="2023-09-03">
   <owner>masonf@chromium.org</owner>
   <owner>dom-dev@chromium.org</owner>
   <summary>
@@ -3203,28 +3202,6 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Blink.UseCounter.FeaturePolicy.Allow"
-    enum="FeaturePolicyFeature" expires_after="2021-10-31">
-  <owner>iclelland@chromium.org</owner>
-  <owner>feature-control@chromium.org</owner>
-  <summary>
-    Counts the use of a specific feature policy via the &quot;allow&quot;
-    attribute. Each policy is counted only once per document load.
-  </summary>
-</histogram>
-
-<histogram name="Blink.UseCounter.FeaturePolicy.AttributeAllowlistType"
-    enum="FeaturePolicyAllowlistType" expires_after="2021-10-31">
-  <owner>iclelland@chromium.org</owner>
-  <owner>feature-control@chromium.org</owner>
-  <summary>
-    Logs the type of allowlist used in a Feature-Policy &quot;allow&quot;
-    attribute; whether it is empty, or contains only a single keyword, is
-    composed only of keywords, or contains explicit tuple origins. Recorded at
-    the point that the attribute is parsed.
-  </summary>
-</histogram>
-
 <histogram name="Blink.UseCounter.FeaturePolicy.Header"
     enum="FeaturePolicyFeature" expires_after="2023-08-20">
   <owner>iclelland@chromium.org</owner>
@@ -3232,18 +3209,6 @@ chromium-metrics-reviews@google.com.
   <summary>
     Counts the use of a specific feature policy via the
     &quot;Feature-Policy&quot; HTTP response header.
-  </summary>
-</histogram>
-
-<histogram name="Blink.UseCounter.FeaturePolicy.HeaderAllowlistType"
-    enum="FeaturePolicyAllowlistType" expires_after="2021-10-31">
-  <owner>iclelland@chromium.org</owner>
-  <owner>feature-control@chromium.org</owner>
-  <summary>
-    Logs the type of allowlist used in a Feature-Policy header; whether it is
-    empty, or contains only a single keyword, is composed only of keywords, or
-    contains explicit tuple origins. Recorded at the point that the header is
-    parsed.
   </summary>
 </histogram>
 
@@ -3484,7 +3449,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram base="true" name="Blink.UserDrivenDocumentUpdate.UpdateTime"
-    units="microseconds" expires_after="2023-07-02">
+    units="microseconds" expires_after="2023-09-03">
 <!-- Name completed by histogram_suffixes name="BlinkUpdateTimePreFCPSuffixes" -->
 
 <!-- Name completed by histogram_suffixes name="BlinkUpdateTimePostFCPSuffixes" -->

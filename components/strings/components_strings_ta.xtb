@@ -487,6 +487,7 @@
 <translation id="2108755909498034140">கம்ப்யூட்டரை மீண்டும் தொடங்கவும்</translation>
 <translation id="2111166930115883695">விளையாடத் தொடங்க Space விசையை அழுத்தவும்</translation>
 <translation id="2112529237938317174">அனுமதி விவரங்களைக் காட்டும்</translation>
+<translation id="2113232594265919362">இந்தத் தளம் HTTPSஸை ஆதரிக்கவில்லை என்பதாலும், நீங்கள் Googleளின் மேம்பட்ட பாதுகாப்புத் திட்டத்தின் கீழ் உள்ளதாலும் எச்சரிக்கை காட்டப்படுகிறது. <ph name="BEGIN_LEARN_MORE_LINK" />மேலும் அறிக<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="2113977810652731515">கார்டு</translation>
 <translation id="2114841414352855701"><ph name="POLICY_NAME" /> ஆல் கொள்கை மேலெழுதப்பட்டுள்ளதால் புறக்கணிக்கப்பட்டது.</translation>
 <translation id="2118132148597630479">என்வெலப் C5</translation>
@@ -874,7 +875,6 @@
 <translation id="317878711435188021">இந்தச் சாதனத்தில் நீங்கள் செயலில் இருப்பது குறித்து அறிந்துகொள்ளுதல்</translation>
 <translation id="3180358318770512945">குழந்தை வளர்ப்பு</translation>
 <translation id="3187306450550410410">பணியை விருப்பத்திற்கேற்ப செய்வதற்கான ஏற்பாடுகள்</translation>
-<translation id="3187380004437786923">பேமெண்ட்டுகளை நிர்வகியுங்கள்</translation>
 <translation id="3187472288455401631">விளம்பர அளவீடு</translation>
 <translation id="3190736958609431397">கண்காணிப்பதை நிறுத்து</translation>
 <translation id="319282854780294203">சமூக வலைத்தளங்கள்</translation>
@@ -1206,6 +1206,7 @@
 <translation id="3990250421422698716">ஜாக் ஆஃப்செட்</translation>
 <translation id="3992684624889376114">இந்தப் பக்கம் - ஓர் அறிமுகம்</translation>
 <translation id="399952081411886534">விளம்பரங்களை மிகவும் தனிப்பட்டவையாக மாற்றும் பிற அம்சங்கள்</translation>
+<translation id="4000598935132966791">நிர்வகிக்கப்பட்ட உலாவிகளில் தளக் கட்டுப்பாடுகள் குறித்து மேலும் தெரிந்துகொள்ளலாம்</translation>
 <translation id="4006465311664329701">Google Payயைப் பயன்படுத்தும் பேமெண்ட் முறைகள், ஆஃபர்கள் மற்றும் முகவரிகள்</translation>
 <translation id="4009243425692662128">நீங்கள் அச்சிடும் பக்கங்களில் உள்ள உள்ளடக்கம் பகுப்பாய்விற்காக Google Cloud அல்லது மூன்றாம் தரப்பினருக்கு அனுப்பப்படும். எடுத்துக்காட்டாக, பாதுகாக்கப்பட வேண்டிய தனிப்பட்ட தரவு உள்ளதா எனக் கண்டறிவதற்காக அது ஸ்கேன் செய்யப்படலாம்.</translation>
 <translation id="4010758435855888356">சேமிப்பக அணுகலை வழங்கவா?</translation>
@@ -1433,7 +1434,6 @@
 <translation id="4522570452068850558">விவரங்கள்</translation>
 <translation id="4524138615196389145">இப்போதிலிருந்து WebAuthnனைப் பயன்படுத்தி மேலும் விரைவாக உங்கள் கார்டுகளை உறுதிப்படுத்துங்கள்</translation>
 <translation id="45243788195988825"><ph name="TOPIC" /> தலைப்பைத் தடுக்கும்</translation>
-<translation id="4524805452350978254">கார்டுகளை நிர்வகி</translation>
 <translation id="4526465106919207193">மக்கள் &amp; சமுதாயம்</translation>
 <translation id="4530347922939905757">மெசேஜ்</translation>
 <translation id="4531477351494678589">விர்ச்சுவல் கார்டு எண்:</translation>
@@ -2162,6 +2162,7 @@
 <translation id="6361757823711327522">B7</translation>
 <translation id="6364095313648930329"><ph name="BEGIN_LINK" />ப்ராக்ஸி, ஃபயர்வால், பாதுகாப்பான DNS உள்ளமைவு ஆகியவற்றைச் சரிபாருங்கள்<ph name="END_LINK" /></translation>
 <translation id="6366710531182496394">டூயல் ஸ்டேப்பில் லெஃப்ட்</translation>
+<translation id="6367196786591004737">உள்ளீட்டை நீக்கும்</translation>
 <translation id="6370022303958842211">உள்நுழைதல் (உள்நுழைய முடியாமல் போனதற்கான காரணங்கள் உட்பட), வெளியேறுதல், லாக் செய்தல், அன்லாக் செய்தல் போன்ற சாதன அணுகல் செயல்கள்</translation>
 <translation id="6374865374745447009">சாளரங்களை நிர்வகித்தல்</translation>
 <translation id="6377268785556383139">'<ph name="SEARCH_TEXT" />'க்கு 1 முடிவு உள்ளது</translation>
@@ -2303,9 +2304,11 @@
 <translation id="6738516213925468394"><ph name="TIME" />க்கு உங்கள் தரவு உங்கள் <ph name="BEGIN_LINK" />ஒத்திசைவுக் கடவுச்சொற்றொடரைக்<ph name="END_LINK" /> கொண்டு என்க்ரிப்ட் செய்யப்பட்டது. ஒத்திசைவைத் தொடங்க, அதை உள்ளிடவும்.</translation>
 <translation id="674375294223700098">தெரியாத சேவையகச் சான்றிதழ் பிழை.</translation>
 <translation id="6744009308914054259">இணைப்புக்காகக் காத்திருக்கும்போது ​​ஆஃப்லைன் கட்டுரைகளைப் படிக்க, ‘பதிவிறக்கங்கள்’ என்பதைப் பார்க்கவும்.</translation>
+<translation id="6745592621698551453">இப்போது புதுப்பி</translation>
 <translation id="6751487147225428522">ROC 8K</translation>
 <translation id="6752086006821653994">டெலி கான்ஃபிரன்ஸிங்</translation>
 <translation id="6753269504797312559">கொள்கை மதிப்பு</translation>
+<translation id="6753434778807740853"><ph name="ENTRY_VOICEOVER" /> உள்ளீட்டை நீக்கும்</translation>
 <translation id="6755241357817244406">chrome://flags</translation>
 <translation id="6757797048963528358">உங்கள் சாதனம் உறக்கநிலைக்குச் சென்றது.</translation>
 <translation id="6767985426384634228">முகவரியை மாற்றவா?</translation>
@@ -2318,6 +2321,7 @@
 <translation id="678982761784843853">பாதுகாக்கப்பட்ட உள்ளடக்க அடையாளங்காட்டிகள்</translation>
 <translation id="6790428901817661496">இயக்கு</translation>
 <translation id="679355240208270552">கொள்கையின்படி இயல்புநிலைத் தேடல் முடக்கப்பட்டுள்ளதால் புறக்கணிக்கப்பட்டது.</translation>
+<translation id="6794049111359324414">Wi-Fi நெட்வொர்க்குகளை அமைக்க <ph name="APP_NAME" /> ஆப்ஸை அனுமதிக்கவா?</translation>
 <translation id="6794951432696553238">இப்போதிலிருந்து Windows Helloவைப் பயன்படுத்தி மேலும் விரைவாக உங்கள் கார்டுகளை உறுதிப்படுத்துங்கள்</translation>
 <translation id="6798460514924505775">என்வெலப் சூ 3</translation>
 <translation id="6805030849054648206">என்வெலப் B6/C4</translation>
@@ -2765,7 +2769,6 @@
 <translation id="7802523362929240268">தளமானது சட்டப்பூர்வமானது</translation>
 <translation id="7802989406998618639">பணப் பரிவர்த்தனை செய்வது நீங்கள்தான் என்பதை உங்கள் பேங்க் சரிபார்க்கக்கூடிய வகையில் <ph name="SIDE_OF_CARD" /> உள்ள <ph name="NUMBER_OF_DIGITS" /> இலக்க பாதுகாப்புக் குறியீட்டை உள்ளிடவும்</translation>
 <translation id="780301667611848630">வேண்டாம்</translation>
-<translation id="7805571567667010077">உங்கள் நிறுவனத்தால் நிர்வகிக்கப்படுகிறது</translation>
 <translation id="7805768142964895445">நிலை</translation>
 <translation id="7812922009395017822">Mir</translation>
 <translation id="7813600968533626083">Chrome இலிருந்து படிவப் பரிந்துரையை அகற்றவா?</translation>
@@ -2811,7 +2814,6 @@
 <translation id="7950027195171824198">Chrome அமைப்புகளில் குக்கீ விருப்பத்தேர்வுகளை நிர்வகியுங்கள்</translation>
 <translation id="7951415247503192394">(32-பிட்)</translation>
 <translation id="7952192831285741665">ஐரோப்பிய Edp</translation>
-<translation id="7952804540472583406">நெட்வொர்க்கில் <ph name="BEGIN_LINK" />உள்நுழைகிறது<ph name="END_LINK" />.</translation>
 <translation id="7953569069500808819">எட்ஜ் ஸ்டிட்ச் டாப்</translation>
 <translation id="7955105108888461311">நேரடியாகக் கேட்கவும்</translation>
 <translation id="7956713633345437162">மொபைல் புக்மார்க்குகள்</translation>
@@ -2989,6 +2991,7 @@
 <translation id="8369073279043109617">புதிய குறியீட்டைப் பெறுக</translation>
 <translation id="8371889962595521444">பிரத்தியேகமான முதன்மை சான்றிதழ்கள்</translation>
 <translation id="8374636051559112948">மாறுபடும்</translation>
+<translation id="8378714024927312812">உங்கள் நிறுவனத்தால் நிர்வகிக்கப்படுகிறது</translation>
 <translation id="8380941800586852976">ஆபத்தானது</translation>
 <translation id="8381674639488873545">இந்தக் கட்டணங்கள் ஒருமுறை அல்லது தொடர்ந்து வசூலிக்கப்படலாம், அவை வெளிப்படையாகத் தெரிவிக்கப்படாமல் இருக்கலாம். <ph name="BEGIN_LINK" />எனினும் காண்பி<ph name="END_LINK" /></translation>
 <translation id="8390725133630534698"><ph name="ORIGIN_NAME" /> என்ற தளத்திலிருந்து <ph name="VM_NAME" />க்குப் பகிர்வது நிர்வாகக் கொள்கையின்படி தடுக்கப்பட்டுள்ளது</translation>
@@ -3358,6 +3361,7 @@
     &lt;li&gt;"<ph name="SOFTWARE_NAME" />" மென்பொருளை நிறுவல் நீக்கவும் அல்லது முடக்கவும்&lt;/li&gt;
     &lt;li&gt;வேறொரு நெட்வொர்க்குடன் இணைக்கவும்&lt;/li&gt;
     &lt;/ul&gt;</translation>
+<translation id="993612073656736454">புதிய Wi-Fi நெட்வொர்க்குகளை அமைக்க இந்த ஆப்ஸ் அனுமதி கோருகிறது. அமைத்த பிறகு, பங்கேற்கும் Wi-Fi நெட்வொர்க்குகளில் உங்கள் <ph name="DEVICE_TYPE" /> தானாகவே இணையும். <ph name="LEARN_MORE" /></translation>
 <translation id="994346157028146140">JIS B1</translation>
 <translation id="997986563973421916">Google Pay இலிருந்து</translation>
 </translationbundle>

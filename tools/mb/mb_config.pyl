@@ -38,7 +38,7 @@
       'linux-chrome': 'official_reclient',
       'linux-chromeos-chrome': 'official_reclient_chromeos_include_unwind_tables',
       'mac-chrome': 'official_reclient_mac',
-      'win-branded-rel': 'chrome_branded_goma_minimal_symbols',
+      'win-branded-rel': 'chrome_branded_reclient_minimal_symbols',
       'win-chrome': 'official_reclient_x86',
       'win64-chrome': 'official_reclient_x64',
     },
@@ -73,7 +73,7 @@
       'lacros-arm64-archive-rel': 'chromeos_arm64-generic_lacros_rel_reclient',
       'lacros64-archive-rel': 'chromeos_amd64-generic_lacros_rel_reclient',
       'linux-archive-dbg': 'debug_bot_reclient',
-      'linux-archive-rel': 'release_bot_reclient',
+      'linux-archive-rel': 'linux_archive_release_bot_reclient',
       'linux-lacros-archive-rel': 'lacros_on_linux_release_not_build_ash_bot_reclient',
       'linux-official': 'official_optimize_reclient',
       'mac-archive-dbg': 'debug_bot_reclient',
@@ -238,6 +238,7 @@
     'chromium.coverage': {
       'android-code-coverage': 'gpu_tests_android_release_bot_minimal_symbols_arm64_fastbuild_java_coverage_reclient',
       'android-code-coverage-native': 'gpu_tests_android_release_bot_no_symbols_arm64_fastbuild_native_coverage_reclient',
+      'android-x86-code-coverage': 'android_release_bot_minimal_symbols_x86_fastbuild_webview_monochrome_reclient_coverage',
       'fuchsia-code-coverage': 'fuchsia_clang_code_coverage_reclient',
       'ios-simulator-code-coverage': 'clang_code_coverage_ios_xctest_reclient',
       'linux-chromeos-code-coverage': 'chromeos_with_codecs_release_bot_coverage_reclient',
@@ -325,7 +326,6 @@
       'Libfuzzer Upload Linux V8-ARM64 ASan': 'libfuzzer_asan_release_bot_v8_arm64_reclient',
       'Libfuzzer Upload Linux V8-ARM64 ASan Debug': 'libfuzzer_asan_debug_bot_v8_arm64_reclient',
       'Libfuzzer Upload Linux32 ASan': 'libfuzzer_asan_release_bot_x86_reclient',
-      'Libfuzzer Upload Linux32 ASan Debug': 'libfuzzer_asan_debug_bot_x86_reclient',
       'Libfuzzer Upload Linux32 V8-ARM ASan': 'libfuzzer_asan_release_bot_x86_v8_arm_reclient',
       'Libfuzzer Upload Linux32 V8-ARM ASan Debug': 'libfuzzer_asan_debug_bot_x86_v8_arm_reclient',
       'Libfuzzer Upload Mac ASan': 'libfuzzer_mac_asan_shared_release_bot_reclient',
@@ -1256,7 +1256,7 @@
       'gpu-fyi-try-mac-nvidia-retina-exp': 'gpu_fyi_tests_release_trybot_reclient',
       'gpu-fyi-try-mac-nvidia-retina-rel': 'gpu_fyi_tests_release_trybot_reclient',
       'gpu-try-mac-amd-retina-dbg': 'gpu_tests_debug_bot_reclient',
-      'gpu-try-mac-intel-dbg': 'gpu_tests_debug_bot',
+      'gpu-try-mac-intel-dbg': 'gpu_tests_debug_bot_reclient',
       'ios-asan': 'ios_simulator_release_static_asan_bot_xctest_reclient',
       'ios-catalyst': 'ios_catalyst_debug_static_bot_compile_only_libfuzzer_asan_no_dsyms_no_remoting_reclient',
       'ios-device': 'ios_device_release_compile_only_reclient',
@@ -1279,7 +1279,7 @@
       'mac-builder-next-rel': 'mac_arm64_gpu_tests_release_bot_minimal_symbols_no_nacl_reclient',
       'mac-code-coverage': 'clang_code_coverage_reclient',
       'mac-fieldtrial-tester': 'mac_arm64_gpu_tests_release_bot_minimal_symbols_no_nacl_reclient',
-      'mac-inverse-fieldtrials-fyi-rel': 'gpu_tests_release_trybot_invert_fieldtrials',
+      'mac-inverse-fieldtrials-fyi-rel': 'gpu_tests_release_trybot_invert_fieldtrials_reclient',
       'mac-osxbeta-rel': 'gpu_tests_debug_trybot_reclient',
       'mac-perfetto-rel': 'perfetto_release_trybot_reclient',
       'mac-rel': 'gpu_tests_release_trybot_no_symbols_mac_code_coverage_reclient',
@@ -1682,6 +1682,12 @@
       'webview_shell',
     ],
 
+    'android_release_bot_minimal_symbols_x86_fastbuild_webview_monochrome_reclient_coverage': [
+      'android', 'release_bot_reclient', 'minimal_symbols', 'x86',
+      'strip_debug_info', 'android_fastbuild', 'webview_monochrome',
+      'webview_shell', 'use_java_coverage'
+    ],
+
     'android_release_bot_minimal_symbols_x86_fastbuild_webview_trichrome_reclient': [
       'android', 'release_bot_reclient', 'minimal_symbols', 'x86',
       'strip_debug_info', 'android_fastbuild', 'webview_trichrome',
@@ -1953,6 +1959,10 @@
 
     'chrome_branded_goma_minimal_symbols': [
       'chrome_branded', 'goma', 'minimal_symbols', 'release_bot',
+    ],
+
+    'chrome_branded_reclient_minimal_symbols': [
+      'chrome_branded', 'minimal_symbols', 'release_bot_reclient',
     ],
 
     'chromeos_amd64-generic-vm_lacros_rel_reclient': [
@@ -2679,8 +2689,8 @@
       'gpu_tests', 'release_bot_reclient', 'x86', 'no_symbols',
     ],
 
-    'gpu_tests_release_trybot_invert_fieldtrials': [
-      'gpu_tests', 'release_trybot', 'invert_fieldtrials',
+    'gpu_tests_release_trybot_invert_fieldtrials_reclient': [
+      'gpu_tests', 'release_trybot_reclient', 'invert_fieldtrials',
     ],
 
     'gpu_tests_release_trybot_mbi_mode_per_render_process_host_reclient': [
@@ -2719,6 +2729,7 @@
     'gpu_tests_release_trybot_no_symbols_use_dummy_lastchange_code_coverage_do_typecheck_reclient': [
       'gpu_tests', 'release_trybot_reclient', 'no_symbols', 'use_dummy_lastchange',
       'use_clang_coverage', 'partial_code_coverage_instrumentation', 'devtools_do_typecheck',
+      'enable_dangling_raw_ptr_checks', 'enable_backup_ref_ptr_feature_flag',
     ],
 
     'gpu_tests_release_trybot_no_symbols_use_dummy_lastchange_do_typecheck_chrome_for_testing_reclient': [
@@ -2937,10 +2948,6 @@
       'libfuzzer', 'asan', 'debug_bot_reclient', 'shared', 'chromeos_codecs', 'pdf_xfa', 'disable_nacl', 'optimize_for_fuzzing', 'v8_simulate_arm64', 'disable_seed_corpus',
     ],
 
-    'libfuzzer_asan_debug_bot_x86_reclient': [
-      'libfuzzer', 'asan', 'debug_bot_reclient', 'shared', 'chromeos_codecs', 'pdf_xfa', 'disable_nacl', 'optimize_for_fuzzing', 'x86', 'x86_host',  'disable_seed_corpus',
-    ],
-
     'libfuzzer_asan_debug_bot_x86_v8_arm_reclient': [
       'libfuzzer', 'asan', 'debug_bot_reclient', 'shared', 'chromeos_codecs', 'pdf_xfa', 'disable_nacl', 'optimize_for_fuzzing', 'x86_host', 'v8_simulate_arm',  'disable_seed_corpus',
     ],
@@ -3014,6 +3021,10 @@
 
     'libfuzzer_windows_asan_release_trybot_reclient': [
       'libfuzzer', 'asan', 'release_trybot_reclient', 'chrome_with_codecs', 'pdf_xfa', 'disable_nacl', 'mojo_fuzzer', 'skip_generate_fuzzer_owners', 'no_symbols',
+    ],
+
+    'linux_archive_release_bot_reclient': [
+      'release_bot_reclient', 'updater',
     ],
 
     'linux_cfm_release_bot_reclient': [
@@ -4063,6 +4074,14 @@
       'mixins': ['enable_vulkan'],
     },
 
+    # Enables backup ref ptr by changing the default value of the feature flag.
+    # This sets the default value of PartitionAllocBackupRefPtr to enabled, with
+    # enabled-processes = non-renderer:
+    # https://source.chromium.org/chromium/chromium/src/+/main:base/allocator/partition_alloc_features.cc;drc=ec53a834a53b2d2f780e83614036a8dc89a247b5;l=105
+    'enable_backup_ref_ptr_feature_flag': {
+      'gn_args': 'enable_backup_ref_ptr_feature_flag=true',
+    },
+
     'enable_blink_animation_use_time_delta': {
       'gn_args': 'blink_animation_use_time_delta=true',
     },
@@ -4076,7 +4095,6 @@
     # https://crsrc.org/c/base/allocator/partition_allocator/partition_alloc_config.h;l=208-216;drc=2d195004c75699bdd87c69cdb7e8d293249dcfdd
     'enable_dangling_raw_ptr_checks': {
       'gn_args': 'enable_dangling_raw_ptr_checks=true',
-      'mixins': ["dcheck_always_on"],
     },
 
     'enable_rust': {

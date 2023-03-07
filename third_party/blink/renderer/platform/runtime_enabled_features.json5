@@ -1070,6 +1070,10 @@
       base_feature: "none",
     },
     {
+      name: "CSSTransitionDiscrete",
+      status: "test",
+    },
+    {
       // Support for tree-scoped [1] timeline names (e.g. produced by
       // scroll-timeline).
       //
@@ -1436,7 +1440,8 @@
     },
     {
       name: "FastPositionIterator",
-      status: "stable",
+      // Not enabled due to a RTL issue. crbug.com/1421016.
+      status: "test",
     },
     {
       name: "FeaturePolicyReporting",
@@ -1739,7 +1744,6 @@
       name: "GetDisplayMediaRequiresUserActivation",
       depends_on: ["GetDisplayMedia"],
       status: "experimental",
-      base_feature: "none",
     },
     {
       // Enables the getDisplayMediaSet API for multi surface capture.
@@ -2005,7 +2009,11 @@
     },
     {
       name: "MachineLearningNeuralNetwork",
-      status: {"Win": "experimental", "default": "test"},
+      status: {
+        "Win": "experimental",
+        "Linux": "experimental",
+        "default": "test"
+      },
       base_feature: "none",
     },
     {
@@ -2963,7 +2971,7 @@
     },
     {
       name: "SendMouseEventsDisabledFormControls",
-      status: "experimental",
+      status: "stable",
       public: true,
     },
     {
@@ -3065,6 +3073,9 @@
       status: "experimental",
       depends_on: ["NavigationId"],
       origin_trial_feature_name: "SoftNavigationHeuristics",
+    },
+    {
+      name: "SolidColorLayers",
     },
     // An origin trial feature name is required for this, even though it's
     // actually enabled by the more specific trial. Having these as separate
@@ -3279,14 +3290,6 @@
       base_feature: "none",
       browser_process_read_write_access: true,
     },
-    // To enable the deprecation trial, use the
-    // `DisableThirdPartyStoragePartitioning` feature instead.
-    {
-      name: "ThirdPartyStoragePartitioning",
-      status: "experimental",
-      base_feature: "none",
-      browser_process_read_write_access: true,
-    },
     {
       name: "TimerThrottlingForBackgroundTabs",
       public: true,
@@ -3311,12 +3314,6 @@
       origin_trial_feature_name: "PrivacySandboxAdsAPIs",
       origin_trial_allows_third_party: true,
       public: true,
-    },
-    // https://crbug.com/1314739
-    {
-      name: "TouchActionEffectiveAtPointerDown",
-      status: "stable",
-      base_feature: "none",
     },
     // This feature allows touch dragging and a context menu to occur
     // simultaneously, with the assumption that the menu is non-modal.  Without
@@ -3391,6 +3388,11 @@
       base_feature: "none",
       origin_trial_feature_name: "UnrestrictedSharedArrayBuffer",
       origin_trial_os: ["win", "mac", "linux", "fuchsia", "chromeos"],
+    },
+    {
+      // A kill switch for crbug.com/1410332.
+      // This was introduced in M113.
+      name: "UpdateVideoIntrinsicSizeDuringLayout",
     },
     {
       name: "URLPatternCompareComponent",
@@ -3743,6 +3745,8 @@
       base_feature: "none",
       origin_trial_feature_name: "WebGPUWebCodecs",
       public: true,
+      // Make the WebGPUDeveloperFeatures also enabled this OT feature.
+      implied_by: ["WebGPUDeveloperFeatures"],
     },
     {
       name: "WebHID",

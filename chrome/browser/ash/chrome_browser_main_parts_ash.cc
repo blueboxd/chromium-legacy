@@ -19,6 +19,7 @@
 #include "ash/public/ash_interfaces.h"
 #include "ash/public/cpp/event_rewriter_controller.h"
 #include "ash/public/cpp/keyboard/keyboard_controller.h"
+#include "ash/public/cpp/session/session_controller.h"
 #include "ash/shell.h"
 #include "ash/system/diagnostics/diagnostics_log_controller.h"
 #include "ash/system/pcie_peripheral/pcie_peripheral_notification_controller.h"
@@ -1008,12 +1009,6 @@ void ChromeBrowserMainPartsAsh::PreProfileInit() {
   lacros_data_backward_migration_mode_policy_observer_ = std::make_unique<
       crosapi::LacrosDataBackwardMigrationModePolicyObserver>();
 
-  // Only creates VideoConferenceAppServiceClient if VcControlsUi is enabled.
-  if (features::IsVideoConferenceEnabled()) {
-    vc_app_service_client_ =
-        std::make_unique<VideoConferenceAppServiceClient>();
-  }
-
   chromeos::machine_learning::ServiceConnection::GetInstance()->Initialize();
 
   // Needs to be initialized after crosapi_manager_.
@@ -1220,6 +1215,11 @@ void ChromeBrowserMainPartsAsh::PostProfileInit(Profile* profile,
 
     manager->SetState(session_manager->GetDefaultIMEState(profile));
 
+    misconfigured_user_cleaner_ = std::make_unique<MisconfiguredUserCleaner>(
+        g_browser_process->local_state(), ash::SessionController::Get());
+
+    misconfigured_user_cleaner_->ScheduleCleanup();
+
     g_browser_process->platform_part()->session_manager()->Initialize(
         *base::CommandLine::ForCurrentProcess(), profile,
         is_integration_test());
@@ -1393,6 +1393,8 @@ void ChromeBrowserMainPartsAsh::PostBrowserStart() {
   if (features::IsVideoConferenceEnabled()) {
     video_conference_manager_client_ =
         std::make_unique<video_conference::VideoConferenceManagerClientImpl>();
+    vc_app_service_client_ =
+        std::make_unique<VideoConferenceAppServiceClient>();
   }
 
   ChromeBrowserMainPartsLinux::PostBrowserStart();

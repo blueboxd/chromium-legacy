@@ -35,6 +35,8 @@
 #import "ios/chrome/browser/ntp/features.h"
 #import "ios/chrome/browser/search_engines/search_engines_util.h"
 #import "ios/chrome/browser/search_engines/template_url_service_factory.h"
+#import "ios/chrome/browser/sessions/session_restoration_browser_agent.h"
+#import "ios/chrome/browser/sessions/session_service_ios.h"
 #import "ios/chrome/browser/signin/fake_system_identity.h"
 #import "ios/chrome/browser/sync/sync_service_factory.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
@@ -168,6 +170,18 @@ NSString* SerializedValue(const base::Value* value) {
 
   return testing::NSErrorWithLocalizedDescription(
       @"Clearing browser cache for main tabs timed out");
+}
+
++ (void)saveSessionImmediately {
+  SessionRestorationBrowserAgent::FromBrowser(
+      chrome_test_util::GetMainBrowser())
+      ->SaveSession(/*immediately=*/true);
+  dispatch_semaphore_t semaphore = dispatch_semaphore_create(0);
+  ProceduralBlock completionBlock = ^{
+    dispatch_semaphore_signal(semaphore);
+  };
+  [[SessionServiceIOS sharedService] shutdownWithCompletion:completionBlock];
+  dispatch_semaphore_wait(semaphore, DISPATCH_TIME_FOREVER);
 }
 
 + (NSError*)clearAllWebStateBrowsingData {
@@ -513,6 +527,22 @@ NSString* SerializedValue(const base::Value* value) {
 + (NSUInteger)incognitoTabCountInWindowWithNumber:(int)windowNumber {
   return chrome_test_util::GetIncognitoTabCountForWindowWithNumber(
       windowNumber);
+}
+
++ (UIWindow*)keyWindow {
+  NSSet<UIScene*>* scenes = UIApplication.sharedApplication.connectedScenes;
+  for (UIScene* scene in scenes) {
+    UIWindowScene* windowScene =
+        base::mac::ObjCCastStrict<UIWindowScene>(scene);
+
+    for (UIWindow* window in windowScene.windows) {
+      if (window.isKeyWindow) {
+        return window;
+      }
+    }
+  }
+
+  return nil;
 }
 
 #pragma mark - WebState Utilities (EG2)
@@ -1320,8 +1350,15 @@ int watchRunNumber = 0;
           if (!watchingButtons.count || runNumber != watchRunNumber)
             return;
 
-          [self findButtonsWithLabelsInViews:[UIApplication sharedApplication]
-                                                 .windows];
+          NSMutableArray<UIWindow*>* windows = [[NSMutableArray alloc] init];
+          for (UIScene* scene in UIApplication.sharedApplication
+                   .connectedScenes) {
+            UIWindowScene* windowScene =
+                base::mac::ObjCCastStrict<UIWindowScene>(scene);
+            [windows addObjectsFromArray:windowScene.windows];
+          }
+
+          [self findButtonsWithLabelsInViews:windows];
 
           if (watchingButtons.count && timeout.is_positive()) {
             [self scheduleNextWatchForButtonsWithTimeout:timeout -

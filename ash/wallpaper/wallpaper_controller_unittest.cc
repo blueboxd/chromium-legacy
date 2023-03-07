@@ -9,7 +9,6 @@
 #include <memory>
 #include <vector>
 
-#include "ash/constants/ash_features.h"
 #include "ash/constants/ash_pref_names.h"
 #include "ash/constants/ash_switches.h"
 #include "ash/public/cpp/shell_window_ids.h"
@@ -1035,7 +1034,7 @@ TEST_F(WallpaperControllerTest, ShouldCalculateColorsBasedOnSessionState) {
   EXPECT_FALSE(ShouldCalculateColors());
 
   SetSessionState(SessionState::OOBE);
-  EXPECT_FALSE(ShouldCalculateColors());
+  EXPECT_TRUE(ShouldCalculateColors());
 
   SetSessionState(SessionState::LOGIN_PRIMARY);
   EXPECT_FALSE(ShouldCalculateColors());
@@ -1103,7 +1102,7 @@ TEST_F(WallpaperControllerTest, ColorsCalculatedForMostRecentWallpaper) {
 
 TEST_F(WallpaperControllerTest, CelebiNotSavedWhenJellyIsDisabled) {
   base::test::ScopedFeatureList features;
-  features.InitAndDisableFeature(features::kJelly);
+  features.InitAndDisableFeature(chromeos::features::kJelly);
   TestWallpaperControllerObserver observer(controller_);
 
   const char location[] = "test_wallpaper_here";
@@ -1126,7 +1125,7 @@ TEST_F(WallpaperControllerTest, CelebiNotSavedWhenJellyIsDisabled) {
 }
 
 TEST_F(WallpaperControllerTest, SaveCelebiColorWhenJellyActive) {
-  base::test::ScopedFeatureList features(features::kJelly);
+  base::test::ScopedFeatureList features(chromeos::features::kJelly);
   TestWallpaperControllerObserver observer(controller_);
 
   const char location[] = "test_wallpaper_here";
@@ -5116,6 +5115,59 @@ TEST_F(WallpaperControllerGooglePhotosWallpaperTest,
   // we do.
   EXPECT_GE(delay, one_day - base::Minutes(1));
   EXPECT_LE(delay, one_day + base::Minutes(61));
+}
+
+TEST_F(WallpaperControllerGooglePhotosWallpaperTest,
+       ResetToDefaultForDisabledGooglePhotosIntegrationPolicyOnStalenessCheck) {
+  SimulateUserLogin(kAccountId1);
+
+  WallpaperInfo info = {kFakeGooglePhotosPhotoId, WALLPAPER_LAYOUT_CENTER,
+                        WallpaperType::kOnceGooglePhotos,
+                        DayBeforeYesterdayish()};
+  pref_manager_->SetUserWallpaperInfo(kAccountId1, info);
+
+  client_.set_wallpaper_google_photos_integration_enabled_for_account_id(
+      kAccountId1, false);
+
+  // Trigger Google Photos wallpaper cache check.
+  controller_->OnActiveUserSessionChanged(kAccountId1);
+  WaitForWallpaperCount(1);
+
+  EXPECT_EQ(controller_->GetWallpaperType(), WallpaperType::kDefault);
+}
+
+TEST_F(
+    WallpaperControllerGooglePhotosWallpaperTest,
+    ResetToDefaultForDisabledGooglePhotosIntegrationPolicyDailyGooglePhotosAlbums) {
+  SimulateUserLogin(kAccountId1);
+
+  base::test::TestFuture<bool> google_photos_future;
+  controller_->SetGooglePhotosWallpaper(
+      {kAccountId1, kFakeGooglePhotosAlbumId, /*daily_refresh_enabled=*/true,
+       WallpaperLayout::WALLPAPER_LAYOUT_CENTER_CROPPED,
+       /*preview_mode=*/false, /*dedup_key=*/absl::nullopt},
+      google_photos_future.GetCallback());
+  EXPECT_TRUE(google_photos_future.Get());
+  RunAllTasksUntilIdle();
+
+  WallpaperInfo current_info;
+  pref_manager_->GetUserWallpaperInfo(kAccountId1, &current_info);
+
+  EXPECT_EQ(WallpaperType::kDailyGooglePhotos, current_info.type);
+
+  // This makes the test fetch in `client_` return a null photo, but a
+  // successful call, which is the sign for the
+  // WallpaperGooglePhotosIntegrationEnabled policy disabled, or a deleted or
+  // empty album.
+  client_.set_wallpaper_google_photos_integration_enabled_for_account_id(
+      kAccountId1, false);
+
+  controller_->UpdateDailyRefreshWallpaperForTesting();
+  RunAllTasksUntilIdle();
+
+  pref_manager_->GetUserWallpaperInfo(kAccountId1, &current_info);
+
+  EXPECT_EQ(WallpaperType::kDefault, current_info.type);
 }
 
 }  // namespace ash

@@ -45,7 +45,10 @@ namespace {
 constexpr char kHeadlessSwitch[] = "headless";
 constexpr char kEnableProtectedMediaIdentifier[] =
     "enable-protected-media-identifier";
+// TODO(crbug.com/1421342): This flag will be removed. Keep for now to prevent
+// users from failing.
 constexpr char kUseWebInstance[] = "use-web-instance";
+constexpr char kUseContextProvider[] = "use-context-provider";
 constexpr char kEnableWebInstanceTmp[] = "enable-web-instance-tmp";
 
 void PrintUsage() {
@@ -86,7 +89,21 @@ int main(int argc, char** argv) {
 
   base::SingleThreadTaskExecutor executor(base::MessagePumpType::IO);
 
-  const bool use_context_provider = !command_line->HasSwitch(kUseWebInstance);
+  const bool use_web_instance = command_line->HasSwitch(kUseWebInstance);
+  const bool use_context_provider =
+      command_line->HasSwitch(kUseContextProvider);
+
+  if (use_web_instance && use_context_provider) {
+    LOG(ERROR) << "Cannot use " << kUseWebInstance << " and "
+               << kUseContextProvider << " simultaneously.";
+    return 1;
+  }
+
+  if (use_web_instance) {
+    LOG(WARNING) << "Flag " << kUseWebInstance << " is deprecated and has no "
+                 << "effect as WebInstance is used by default.";
+  }
+
   if (!use_context_provider) {
     if (auto optional_exit_code = RelaunchForWebInstanceHostIfParent(
             "#meta/web_engine_shell_for_web_instance_host.cm", *command_line);
@@ -149,6 +166,13 @@ int main(int argc, char** argv) {
   create_context_params.set_content_directories(
       {std::move(content_directories)});
 
+  // WebEngine Contexts can only make use of the services provided by the
+  // embedder application. By passing a handle to this process' service
+  // directory to the ContextProvider, we are allowing the Context access to the
+  // same set of services available to this application.
+  create_context_params.set_service_directory(
+      base::OpenDirectoryHandle(base::FilePath(base::kServiceDirectoryPath)));
+
   // Enable other WebEngine features.
   fuchsia::web::ContextFeatureFlags features =
       fuchsia::web::ContextFeatureFlags::AUDIO |
@@ -187,20 +211,12 @@ int main(int argc, char** argv) {
 
   if (use_context_provider) {
     // Connect to the system instance of the ContextProvider.
-    // WebEngine Contexts can only make use of the services provided by the
-    // embedder application. By passing a handle to this process' service
-    // directory to the ContextProvider, we are allowing the Context access to
-    // the same set of services available to this application.
-    create_context_params.set_service_directory(
-        base::OpenDirectoryHandle(base::FilePath(base::kServiceDirectoryPath)));
     web_context_provider = base::ComponentContextForProcess()
                                ->svc()
                                ->Connect<fuchsia::web::ContextProvider>();
     web_context_provider->Create(std::move(create_context_params),
                                  context.NewRequest());
   } else {
-    // Route services dynamically from web_engine_shell's parent down into
-    // created web_instances.
     web_instance_host = std::make_unique<WebInstanceHost>(
         *base::ComponentContextForProcess()->outgoing());
     if (enable_web_instance_tmp) {

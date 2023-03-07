@@ -65,10 +65,6 @@ class COMPONENT_EXPORT(DEVICE_FIDO)
   // authentication prompt.
   LAContext* authentication_context() const { return context_; }
 
-  // access_control returns a reference to the SecAccessControl object that was
-  // evaluated/authorized in the local user authentication prompt.
-  SecAccessControlRef access_control() const { return access_control_; }
-
  protected:
   TouchIdContext();
 
@@ -85,8 +81,6 @@ class COMPONENT_EXPORT(DEVICE_FIDO)
   void RunCallback(bool success);
 
   base::scoped_nsobject<LAContext> context_;
-  base::ScopedCFTypeRef<SecAccessControlRef> access_control_{
-      TouchIdCredentialStore::DefaultAccessControl()};
   Callback callback_;
   base::WeakPtrFactory<TouchIdContext> weak_ptr_factory_{this};
 

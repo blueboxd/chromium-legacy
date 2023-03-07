@@ -7,11 +7,9 @@
 
 #include "ash/ash_export.h"
 #include "ash/system/video_conference/effects/video_conference_tray_effects_manager.h"
-#include "ash/system/video_conference/video_conference_media_state.h"
-#include "base/auto_reset.h"
+#include "ash/system/video_conference/video_conference_common.h"
 #include "base/observer_list_types.h"
 #include "base/time/time.h"
-#include "base/timer/timer.h"
 #include "chromeos/ash/components/audio/cras_audio_handler.h"
 #include "chromeos/crosapi/mojom/video_conference.mojom-forward.h"
 #include "media/capture/video/chromeos/camera_hal_dispatcher_impl.h"
@@ -76,7 +74,7 @@ class ASH_EXPORT VideoConferenceTrayController
   // FakeVideoConferenceTrayController; which is a simpler approach.
   // (2) We need this initialization in
   // ChromeBrowserMainExtraPartsAsh::PreProfileInit for production code.
-  void Initialize();
+  void Initialize(VideoConferenceManagerBase* video_conference_manager);
 
   // Observer functions.
   void AddObserver(Observer* observer);
@@ -97,24 +95,23 @@ class ASH_EXPORT VideoConferenceTrayController
   bool IsCapturingMicrophone() const;
 
   // Sets the state for camera mute. Virtual for testing/mocking.
-  virtual void SetCameraMuted(bool muted) = 0;
+  virtual void SetCameraMuted(bool muted);
 
   // Gets the state for camera mute. Virtual for testing/mocking.
-  virtual bool GetCameraMuted() = 0;
+  virtual bool GetCameraMuted();
 
   // Sets the state for microphone mute. Virtual for testing/mocking.
-  virtual void SetMicrophoneMuted(bool muted) = 0;
+  virtual void SetMicrophoneMuted(bool muted);
 
   // Gets the state for microphone mute. Virtual for testing/mocking.
-  virtual bool GetMicrophoneMuted() = 0;
+  virtual bool GetMicrophoneMuted();
 
   // Returns asynchronously a vector of media apps that will be displayed in the
   // "Return to app" panel of the bubble. Virtual for testing/mocking.
-  virtual void GetMediaApps(
-      base::OnceCallback<void(MediaApps)> ui_callback) = 0;
+  virtual void GetMediaApps(base::OnceCallback<void(MediaApps)> ui_callback);
 
   // Brings the app with the given `id` to the foreground.
-  virtual void ReturnToApp(const base::UnguessableToken& id) = 0;
+  virtual void ReturnToApp(const base::UnguessableToken& id);
 
   // Updates the tray UI with the given `VideoConferenceMediaState`.
   void UpdateWithMediaState(VideoConferenceMediaState state);
@@ -145,10 +142,9 @@ class ASH_EXPORT VideoConferenceTrayController
     return camera_muted_by_software_switch_;
   }
 
- private:
-  // Callback for `tray_hide_delay_timer_`.
-  void SetTraysVisibilityAfterDelayHiding();
+  bool initialized() const { return initialized_; }
 
+ private:
   // This keeps track the current VC media state. The state is being updated by
   // `UpdateWithMediaState()`, calling from `VideoConferenceManagerAsh`.
   VideoConferenceMediaState state_;
@@ -167,15 +163,12 @@ class ASH_EXPORT VideoConferenceTrayController
   // The last time speak-on-mute notification showed.
   absl::optional<base::TimeTicks> last_speak_on_mute_notification_time_;
 
-  // Timer to delay hiding all the VC trays for 12 seconds.
-  base::OneShotTimer tray_hide_delay_timer_;
-
-  // These are used to cache the old state of camera/microphone permissions.
-  // When the timer is running, we will use these old states to display the
-  // icons accordingly.
-  bool camera_permission_during_timer_ = false;
-  bool microphone_permission_during_timer_ = false;
-
+  // video_conference_manager_ should be valid after initialized_.
+  // Currently, VideoConferenceTrayController is destroyed inside
+  // ChromeBrowserMainParts::PostMainMessageLoopRun() as a chrome_extra_part;
+  // VideoConferenceManagerAsh is destroyed inside crosapi_manager_.reset()
+  // which is after VideoConferenceTrayController.
+  base::raw_ptr<VideoConferenceManagerBase> video_conference_manager_ = nullptr;
   bool initialized_ = false;
 
   base::WeakPtrFactory<VideoConferenceTrayController> weak_ptr_factory_{this};

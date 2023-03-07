@@ -4,12 +4,16 @@
 
 #include "chrome/browser/ui/views/passwords/manage_passwords_details_view.h"
 
+#include <memory>
+
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/ui/views/accessibility/non_accessible_image_view.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
+#include "chrome/browser/ui/views/passwords/manage_passwords_view_ids.h"
 #include "chrome/browser/ui/views/passwords/password_bubble_view_base.h"
 #include "chrome/browser/ui/views/passwords/views_utils.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/password_manager/core/browser/password_ui_utils.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/vector_icons/vector_icons.h"
@@ -19,6 +23,8 @@
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/button/image_button_factory.h"
 #include "ui/views/controls/highlight_path_generator.h"
+#include "ui/views/controls/label.h"
+#include "ui/views/controls/scroll_view.h"
 #include "ui/views/controls/textarea/textarea.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/layout/flex_layout_view.h"
@@ -26,13 +32,16 @@
 
 namespace {
 
+using password_manager::ManagePasswordsViewIDs;
+using password_manager::metrics_util::PasswordManagementBubbleInteractions;
+
 constexpr int kIconSize = 16;
 // TODO(crbug.com/1408790): Row height should be computed from line/icon heights
 // and desired paddings, instead of a fixed value to account for font size
 // changes.
 // The height of the row in the table layout displaying the password details.
 constexpr int kDetailRowHeight = 44;
-constexpr int kMaxLinesVisibleFromPasswordNote = 3;
+constexpr int kMaxLinesVisibleFromPasswordNote = 7;
 
 void WriteToClipboard(const std::u16string& text) {
   ui::ScopedClipboardWriter scw(ui::ClipboardBuffer::kCopyPaste);
@@ -80,7 +89,8 @@ std::unique_ptr<views::View> CreateDetailsRow(
     std::unique_ptr<views::View> detail_view,
     const gfx::VectorIcon& action_icon,
     const std::u16string& action_button_tooltip_text,
-    views::Button::PressedCallback action_button_callback) {
+    views::Button::PressedCallback action_button_callback,
+    ManagePasswordsViewIDs action_button_id) {
   auto row = std::make_unique<views::FlexLayoutView>();
   row->SetCollapseMargins(true);
   row->SetDefault(
@@ -102,6 +112,7 @@ std::unique_ptr<views::View> CreateDetailsRow(
       CreateVectorImageButtonWithNativeTheme(std::move(action_button_callback),
                                              action_icon, kIconSize);
   action_button->SetTooltipText(action_button_tooltip_text);
+  action_button->SetID(static_cast<int>(action_button_id));
   row->AddChildView(CreateWrappedView(std::move(action_button)));
   return row;
 }
@@ -125,6 +136,8 @@ std::unique_ptr<views::View> CreatePasswordLabelWithEyeIconView(
   eye_icon->SetToggledTooltipText(
       l10n_util::GetStringUTF16(IDS_MANAGE_PASSWORDS_HIDE_PASSWORD));
   eye_icon->SetImageVerticalAlignment(views::ImageButton::ALIGN_MIDDLE);
+  eye_icon->SetID(
+      static_cast<int>(ManagePasswordsViewIDs::kRevealPasswordButton));
   views::SetImageFromVectorIconWithColorId(
       eye_icon, views::kEyeIcon, ui::kColorIcon, ui::kColorIconDisabled);
   views::SetToggledImageFromVectorIconWithColorId(
@@ -135,13 +148,20 @@ std::unique_ptr<views::View> CreatePasswordLabelWithEyeIconView(
          views::Label* password_label) {
         password_label->SetObscured(!password_label->GetObscured());
         toggle_button->SetToggled(!toggle_button->GetToggled());
+
+        if (!password_label->GetObscured()) {
+          password_manager::metrics_util::
+              LogUserInteractionsInPasswordManagementBubble(
+                  PasswordManagementBubbleInteractions::
+                      kPasswordShowButtonClicked);
+        }
       },
       eye_icon, password_label_ptr));
 
   return password_label_with_eye_icon_view;
 }
 
-std::unique_ptr<views::Label> CreateNoteLabel(
+std::unique_ptr<views::View> CreateNoteLabel(
     const password_manager::PasswordForm& form) {
   // TODO(crbug.com/1382017): use internationalized string.
   std::u16string note_to_display = u"No note added";
@@ -158,20 +178,30 @@ std::unique_ptr<views::Label> CreateNoteLabel(
       std::move(note_to_display), views::style::CONTEXT_DIALOG_BODY_TEXT,
       views::style::STYLE_SECONDARY);
   note_label->SetMultiLine(true);
-  // TODO(crbug.com/1408790): The label should scroll when contains more lines.
-  note_label->SetMaxLines(kMaxLinesVisibleFromPasswordNote);
   // TODO(crbug.com/1382017): Review string with UX and use internationalized
   // string.
   note_label->SetAccessibleName(u"Password Note");
-  int line_height = views::style::GetLineHeight(note_label->GetTextContext(),
-                                                note_label->GetTextStyle());
-  int vertical_margin = (kDetailRowHeight - line_height) / 2;
-  note_label->SetProperty(views::kMarginsKey,
-                          gfx::Insets::VH(vertical_margin, 0));
   note_label->SetVerticalAlignment(gfx::VerticalAlignment::ALIGN_TOP);
   note_label->SetHorizontalAlignment(gfx::HorizontalAlignment::ALIGN_LEFT);
   note_label->SetSelectable(true);
-  return note_label;
+  int kNoteLabelMaxWidth = views::LayoutProvider::Get()->GetDistanceMetric(
+                               views::DISTANCE_BUBBLE_PREFERRED_WIDTH) -
+                           4 * ChromeLayoutProvider::Get()->GetDistanceMetric(
+                                   views::DISTANCE_RELATED_CONTROL_HORIZONTAL) -
+                           2 * kIconSize;
+  note_label->SetMaximumWidth(kNoteLabelMaxWidth);
+
+  int line_height = views::style::GetLineHeight(note_label->GetTextContext(),
+                                                note_label->GetTextStyle());
+  int vertical_margin = (kDetailRowHeight - line_height) / 2;
+  auto scroll_view = std::make_unique<views::ScrollView>(
+      views::ScrollView::ScrollWithLayers::kEnabled);
+  scroll_view->SetProperty(views::kMarginsKey,
+                           gfx::Insets::VH(vertical_margin, 0));
+  scroll_view->SetContents(std::move(note_label));
+  scroll_view->ClipHeightTo(line_height,
+                            kMaxLinesVisibleFromPasswordNote * line_height);
+  return scroll_view;
 }
 
 std::unique_ptr<views::View> CreateEditUsernameRow(
@@ -262,11 +292,19 @@ ManagePasswordsDetailsView::ManagePasswordsDetailsView(
           std::move(switched_to_edit_mode_callback)) {
   SetOrientation(views::BoxLayout::Orientation::kVertical);
   if (!password_form.username_value.empty()) {
+    auto copy_username_button_callback =
+        base::BindRepeating(&WriteToClipboard, password_form.username_value)
+            .Then(base::BindRepeating(
+                &password_manager::metrics_util::
+                    LogUserInteractionsInPasswordManagementBubble,
+                PasswordManagementBubbleInteractions::
+                    kUsernameCopyButtonClicked));
     AddChildView(CreateDetailsRow(
         kAccountCircleIcon, CreateUsernameLabel(password_form),
         vector_icons::kContentCopyIcon,
         l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_UI_COPY_USERNAME),
-        base::BindRepeating(&WriteToClipboard, password_form.username_value)));
+        std::move(copy_username_button_callback),
+        ManagePasswordsViewIDs::kCopyUsernameButton));
   } else {
     // TODO(crbug.com/1408790): use internationalized string for the username
     // action
@@ -276,7 +314,8 @@ ManagePasswordsDetailsView::ManagePasswordsDetailsView(
         vector_icons::kEditIcon, u"Edit Username",
         base::BindRepeating(
             &ManagePasswordsDetailsView::SwitchToEditUsernameMode,
-            base::Unretained(this))));
+            base::Unretained(this)),
+        ManagePasswordsViewIDs::kEditUsernameButton));
     edit_username_row_ = AddChildView(
         CreateEditUsernameRow(password_form, &username_textfield_));
     edit_username_row_->SetVisible(false);
@@ -284,6 +323,15 @@ ManagePasswordsDetailsView::ManagePasswordsDetailsView(
 
   std::unique_ptr<views::Label> password_label =
       CreatePasswordLabel(password_form);
+  password_label->SetID(
+      static_cast<int>(ManagePasswordsViewIDs::kPasswordLabel));
+  auto copy_password_button_callback =
+      base::BindRepeating(&WriteToClipboard, password_form.password_value)
+          .Then(base::BindRepeating(
+              &password_manager::metrics_util::
+                  LogUserInteractionsInPasswordManagementBubble,
+              PasswordManagementBubbleInteractions::
+                  kPasswordCopyButtonClicked));
   AddChildView(CreateDetailsRow(
       kKeyIcon,
       password_form.federation_origin.opaque()
@@ -291,7 +339,8 @@ ManagePasswordsDetailsView::ManagePasswordsDetailsView(
           : std::move(password_label),
       vector_icons::kContentCopyIcon,
       l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_UI_COPY_PASSWORD),
-      base::BindRepeating(&WriteToClipboard, password_form.password_value)));
+      std::move(copy_password_button_callback),
+      ManagePasswordsViewIDs::kCopyPasswordButton));
 
   // TODO(crbug.com/1408790): use internationalized string for the note action
   // button tooltip text.
@@ -302,7 +351,8 @@ ManagePasswordsDetailsView::ManagePasswordsDetailsView(
       kNotesIcon, CreateNoteLabel(password_form), vector_icons::kEditIcon,
       u"Edit Note",
       base::BindRepeating(&ManagePasswordsDetailsView::SwitchToEditNoteMode,
-                          base::Unretained(this))));
+                          base::Unretained(this)),
+      ManagePasswordsViewIDs::kEditNoteButton));
   edit_note_row_ =
       AddChildView(CreateEditNoteRow(password_form, &note_textarea_));
   edit_note_row_->SetVisible(false);
